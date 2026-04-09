@@ -43,7 +43,7 @@ supabase
   .on(
     'postgres_changes',
     { event: 'INSERT', schema: 'public', table: 'agent_delegations' },
-    async (payload) => {
+    async (payload: any) => {
       const { id, target_agent, prompt } = payload.new;
       console.log(`\n🔔 ¡NUEVA ORDEN RECIBIDA DE SAMMY! (ID: ${id})`);
       
@@ -65,7 +65,7 @@ supabase
       }
     }
   )
-  .subscribe((status) => {
+  .subscribe((status: string) => {
     if (status === 'SUBSCRIBED') {
       console.log('✅ Conectado al websocket de Supabase exitosamente.');
     } else if (status === 'CHANNEL_ERROR') {

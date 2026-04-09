@@ -3,24 +3,27 @@
   "description": "Article Producer que usa /article-content en lugar de publicar directamente",
   "changes": [
     {
-      "node": "Preparar JSON Lookitry",
-      "action": "MODIFY",
-      "description": "Cambiar para enviar a /api/blog/article-content en lugar de /api/blog/webhook",
-      "newUrl": "https://api.lookitry.com/api/blog/article-content",
-      "newBody": {
-        "topic_id": "{{ $json.topic_id }}",
-        "title": "{{ $json.title }}",
-        "html_content": "{{ $json.content }}",
-        "excerpt": "{{ $json.excerpt }}",
-        "meta_description": "{{ $json.meta_description }}",
-        "tags": "{{ $json.tags }}",
-        "category_slug": "{{ $json.category_slug }}"
+      "node": "Redactor IA",
+      "action": "UPDATE_PROMPT",
+      "description": "Cambiar el prompt para que devuelva JSON estructurado (sections, faqs, image_prompts)",
+      "targetSchema": {
+        "title": "string",
+        "slug": "string",
+        "excerpt": "string",
+        "meta_description": "string",
+        "category_slug": "string",
+        "sections": "Section[]",
+        "faqs": "Faq[]",
+        "image_prompts": "ImagePrompt[]",
+        "cta_context": "{ type: string }"
       }
     },
     {
-      "node": "Llamar Image Generator",
+      "node": "Preparar JSON Lookitry",
       "action": "MODIFY",
-      "description": "Mantener igual - llama al Image Generator"
+      "description": "Enviar JSON estructurado a /api/blog/article-content",
+      "newUrl": "https://api.lookitry.com/api/blog/article-content",
+      "newBody": "={{ $json }}"
     },
     {
       "node": "Wait",

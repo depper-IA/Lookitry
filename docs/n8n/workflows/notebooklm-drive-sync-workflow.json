@@ -1,4 +1,5 @@
 {
+  "name": "Lookitry - NotebookLM Google Drive Sync",
   "nodes": [
     {
       "parameters": {
@@ -7,112 +8,41 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "fa0d28a3-bfa1-4d51-ab17-93a25f9d79d3",
+      "id": "d9ecc211-491d-4652-95ac-2fc9fede902f",
       "name": "Webhook - Recibir archivos",
       "type": "n8n-nodes-base.webhook",
-      "position": [
-        288,
-        -16
-      ],
+      "position": [480, 300],
       "typeVersion": 2,
       "webhookId": "notebooklm-sync"
     },
     {
       "parameters": {
-        "jsCode": "// Parsear entrada del webhook\nconst body = $input.first().json.body ?? $input.first().json;\n\n// El script sync_project_knowledge.py envía archivos directamente\nconst files = Array.isArray(body.files) ? body.files : [body];\n\nconst processed = files.map(f => ({\n  file_name: f.file_name || f.file_path?.split('/').pop() || 'unknown.md',\n  file_path: f.file_path || f.file_name || '',\n  content: f.content || '',\n  commit_sha: f.commit_sha || f.version || new Date().toISOString()\n})).filter(f => f.content);\n\nif (processed.length === 0) {\n  throw new Error('No se proporcionaron archivos con contenido');\n}\n\nreturn processed.map(f => ({ json: f }));"
+        "jsCode": "// Parsear entrada del webhook\nconst body = $input.first().json.body ?? $input.first().json;\n\nconst files = Array.isArray(body.files) ? body.files : [body];\n\nconst processed = files.map(f => ({\n  file_name: f.file_name || f.file_path?.split('/').pop() || 'unknown.md',\n  file_path: f.file_path || f.file_name || '',\n  content: f.content || '',\n  commit_sha: f.commit_sha || f.version || new Date().toISOString()\n})).filter(f => f.content && String(f.file_name).toLowerCase().endsWith('.md'));\n\nif (processed.length === 0) {\n  throw new Error('No se proporcionaron archivos .md con contenido');\n}\n\nreturn processed.map(f => ({ json: f }));"
       },
-      "id": "e101884c-c559-4182-a705-025606bf83f2",
-      "name": "Parsear entrada",
+      "id": "fe5766d0-673e-4ae3-870d-344075c7d066",
+      "name": "Parsear y filtrar .md",
       "type": "n8n-nodes-base.code",
-      "position": [
-        496,
-        -16
-      ],
+      "position": [700, 300],
       "typeVersion": 2
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": false,
-            "typeValidation": "strict"
-          },
-          "conditions": [
-            {
-              "id": "md-check",
-              "parameter1": "{{ $json.file_name }}",
-              "parameter2": "",
-              "type": "string",
-              "operation": "endsWith",
-              "value": ".md"
-            }
-          ],
-          "combinator": "and"
+        "jsCode": "// Preparar nombre final del archivo para Drive\nconst data = $input.first().json;\nconst commitSha = String(data.commit_sha || new Date().toISOString());\nconst timestamp = commitSha.substring(0, 7);\nconst baseName = String(data.file_name).replace(/\\.md$/i, '');\n\nreturn [{ json: {\n  file_name: `${baseName}.md`,\n  search_name: `${baseName}.md`,\n  original_name: data.file_name,\n  content: data.content,\n  commit_sha: commitSha,\n  description: `Lookitry docs - Commit: ${commitSha}`\n} }];"
+      },
+      "id": "1128233f-5fd4-4e1d-9a7d-418e7255ad43",
+      "name": "Preparar archivo",
+      "type": "n8n-nodes-base.code",
+      "position": [920, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "queryFilters": {
+          "searchMethod": "name",
+          "value": "={{ $json.file_name }}"
         },
-        "options": {}
-      },
-      "id": "71c5dec6-5006-4f70-8999-f68312ed3d3b",
-      "name": "Filtrar archivos .md",
-      "type": "n8n-nodes-base.if",
-      "position": [
-        736,
-        -16
-      ],
-      "typeVersion": 2.3
-    },
-    {
-      "parameters": {
-        "jsCode": "// Preparar metadata y contenido para Google Drive\nconst data = $input.first().json;\n\n// Crear nombre de archivo con timestamp para evitar duplicados\nconst timestamp = data.commit_sha?.substring(0, 7) || new Date().toISOString().split('T')[0];\nconst baseName = data.file_name.replace('.md', '');\nconst fileName = `${baseName}_${timestamp}.md`;\n\nreturn [{ json: {\n  file_name: fileName,\n  original_name: data.file_name,\n  content: data.content,\n  mimeType: 'text/markdown',\n  description: `Lookitry docs - Commit: ${data.commit_sha}`\n} }];"
-      },
-      "id": "75ef586e-73c8-420b-a116-3cb66f70f2d0",
-      "name": "Preparar archivo para Drive",
-      "type": "n8n-nodes-base.code",
-      "position": [
-        960,
-        -32
-      ],
-      "typeVersion": 2
-    },
-    {
-      "parameters": {},
-      "id": "b41c5c2b-cb62-4893-a427-3ddab2c4386f",
-      "name": "Log éxito",
-      "type": "n8n-nodes-base.noOp",
-      "position": [
-        1392,
-        -32
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {},
-      "id": "b2ecc2a0-ed89-41b3-86d2-c68808e24cdc",
-      "name": "Log omitido",
-      "type": "n8n-nodes-base.noOp",
-      "position": [
-        928,
-        256
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={ \"ok\": true, \"synced_count\": 1, \"timestamp\": new Date().toISOString() }",
-        "options": {}
-      },
-      "id": "f23f610d-a15d-4797-9c18-e23a8b09033c",
-      "name": "Responder OK",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "position": [
-        1616,
-        -32
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "operation": "createFromText",
+        "limit": 1,
         "driveId": {
           "__rl": true,
           "mode": "list",
@@ -120,19 +50,111 @@
         },
         "folderId": {
           "__rl": true,
-          "mode": "list",
-          "value": "root",
-          "cachedResultName": "/ (Root folder)"
+          "value": "1EWF5O5458wC0zIdyAG7bOtfAhbEHzFB4",
+          "mode": "id"
         },
         "options": {}
       },
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [
-        1184,
-        -32
-      ],
-      "id": "46c11766-b471-4339-9f02-d2e431fc4387",
+      "position": [1140, 300],
+      "id": "a1b2c3d4-e5f6-7890-abcd-buscar-drive",
+      "name": "Buscar en Drive",
+      "continueOnFail": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3JCkh9uFiAjVVrRA",
+          "name": "Samwilkiedevs"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combinar resultado de búsqueda con datos del archivo original\n// $input contiene el resultado de la búsqueda en Drive (puede estar vacío si no encontró)\n// Necesitamos recuperar los datos originales del nodo anterior\n\nconst searchResult = $input.first()?.json || {};\nconst fileData = $('Preparar archivo').first().json;\n\n// Si la búsqueda encontró un archivo, tendrá 'id'\nconst existingId = searchResult?.id || null;\n\nreturn [{ json: {\n  ...fileData,\n  existing_id: existingId,\n  file_found: !!existingId\n} }];"
+      },
+      "id": "merge-results-node-uuid-001",
+      "name": "Combinar resultado",
+      "type": "n8n-nodes-base.code",
+      "position": [1360, 300],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "check-file-found",
+              "leftValue": "={{ $json.file_found }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [1580, 300],
+      "id": "ddd8cb7c-f0a4-492f-9f6c-e1617dcf033b",
+      "name": "¿Existe?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.existing_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1800, 200],
+      "id": "7519d8c3-a85d-498f-a2fe-9c12c655e49b",
+      "name": "Update file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3JCkh9uFiAjVVrRA",
+          "name": "Samwilkiedevs"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "name": "={{ $json.file_name }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1EWF5O5458wC0zIdyAG7bOtfAhbEHzFB4",
+          "mode": "id"
+        },
+        "content": "={{ $json.content }}",
+        "options": {
+          "mimeType": "text/plain"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1800, 400],
+      "id": "d72d9aca-0cbd-485c-92d8-518506ce261b",
       "name": "Create file from text",
       "credentials": {
         "googleDriveOAuth2Api": {
@@ -140,86 +162,68 @@
           "name": "Samwilkiedevs"
         }
       }
+    },
+    {
+      "parameters": {},
+      "id": "c636cf7c-af7c-4b78-8c05-7fdcfb71f2cf",
+      "name": "Log éxito",
+      "type": "n8n-nodes-base.noOp",
+      "position": [2020, 300],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"ok\": true, \"synced_count\": 1}",
+        "options": {}
+      },
+      "id": "ee3403c1-b98e-4f97-8a8b-3829cecf98e3",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [2240, 300],
+      "typeVersion": 1
     }
   ],
   "connections": {
     "Webhook - Recibir archivos": {
+      "main": [[{ "node": "Parsear y filtrar .md", "type": "main", "index": 0 }]]
+    },
+    "Parsear y filtrar .md": {
+      "main": [[{ "node": "Preparar archivo", "type": "main", "index": 0 }]]
+    },
+    "Preparar archivo": {
+      "main": [[{ "node": "Buscar en Drive", "type": "main", "index": 0 }]]
+    },
+    "Buscar en Drive": {
+      "main": [[{ "node": "Combinar resultado", "type": "main", "index": 0 }]]
+    },
+    "Combinar resultado": {
+      "main": [[{ "node": "¿Existe?", "type": "main", "index": 0 }]]
+    },
+    "¿Existe?": {
       "main": [
-        [
-          {
-            "node": "Parsear entrada",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "Update file", "type": "main", "index": 0 }],
+        [{ "node": "Create file from text", "type": "main", "index": 0 }]
       ]
     },
-    "Parsear entrada": {
-      "main": [
-        [
-          {
-            "node": "Filtrar archivos .md",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Filtrar archivos .md": {
-      "main": [
-        [
-          {
-            "node": "Preparar archivo para Drive",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Log omitido",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Preparar archivo para Drive": {
-      "main": [
-        [
-          {
-            "node": "Create file from text",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Log éxito": {
-      "main": [
-        [
-          {
-            "node": "Responder OK",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Update file": {
+      "main": [[{ "node": "Log éxito", "type": "main", "index": 0 }]]
     },
     "Create file from text": {
-      "main": [
-        [
-          {
-            "node": "Log éxito",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Log éxito", "type": "main", "index": 0 }]]
+    },
+    "Log éxito": {
+      "main": [[{ "node": "Responder OK", "type": "main", "index": 0 }]]
     }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "America/Bogota",
+    "callerPolicy": "workflowsFromSameOwner"
   },
   "pinData": {},
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+    "templateCredsSetupCompleted": true
   }
 }

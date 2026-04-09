@@ -1,778 +1,294 @@
 ﻿{
-    "updatedAt":  "2026-04-01T16:30:56.597Z",
-    "createdAt":  "2026-03-13T05:55:20.516Z",
-    "id":  "wPLypk7KhBcFLicX",
-    "name":  "Virtual Try-On - Flujo Completo",
-    "description":  null,
-    "active":  true,
-    "isArchived":  false,
-    "nodes":  [
-                  {
-                      "parameters":  {
-                                         "httpMethod":  "POST",
-                                         "path":  "tryon",
-                                         "responseMode":  "responseNode",
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "id":  "38a3f5ab-0a6c-458c-a5f1-1637b6f47e7e",
-                      "name":  "Webhook",
-                      "type":  "n8n-nodes-base.webhook",
-                      "typeVersion":  2,
-                      "position":  [
-                                       3344,
-                                       752
-                                   ],
-                      "webhookId":  "e225a330-9cec-4dc1-9179-8e22cb16fc27"
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const item = $input.item.json;\nconst body = item.body || item;\nif (!body || typeof body !== \u0027object\u0027) {\n  throw new Error(\u0027No se recibio body valido. Recibido: \u0027 + JSON.stringify(item).substring(0, 200));\n}\nconst required = [\u0027brand_id\u0027, \u0027product_id\u0027, \u0027selfie_url\u0027, \u0027product_image_url\u0027, \u0027prompt\u0027];\nconst missing = required.filter(f =\u003e !body[f]);\nif (missing.length \u003e 0) {\n  throw new Error(\u0027Faltan campos: \u0027 + missing.join(\u0027, \u0027) + \u0027. Body recibido: \u0027 + JSON.stringify(Object.keys(body)));\n}\nconst urlRegex = /^https?:\\/\\/.+/;\nif (!urlRegex.test(body.product_image_url)) {\n  throw new Error(\u0027product_image_url no es URL valida: \u0027 + body.product_image_url);\n}\nif (!urlRegex.test(body.selfie_url)) {\n  throw new Error(\u0027selfie_url no es URL valida: \u0027 + body.selfie_url);\n}\nconst now = new Date();\nconst timestamp = now.toISOString();\nconst timestamp_safe = timestamp.replace(/[:.]/g, \u0027-\u0027);\nreturn { json: { brand_id: body.brand_id, product_id: body.product_id, selfie_url: body.selfie_url, product_image_url: body.product_image_url, prompt: body.prompt, timestamp, timestamp_safe } };"
-                                     },
-                      "id":  "f1dbdcac-2b67-4ee4-9220-d991160dd305",
-                      "name":  "Validar Input",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       3552,
-                                       752
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const data = $(\u0027Validar Input\u0027).item.json;\nreturn { json: { brand_id: data.brand_id, product_id: data.product_id, product_image_url: data.product_image_url, timestamp: data.timestamp, timestamp_safe: data.timestamp_safe, full_prompt: data.prompt, selfie_url: data.selfie_url } };"
-                                     },
-                      "id":  "afc2bf88-a1a9-4389-b2e1-68776b0d23ec",
-                      "name":  "Preparar Prompt Gemini",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       3776,
-                                       752
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "method":  "POST",
-                                         "url":  "https://openrouter.ai/api/v1/chat/completions",
-                                         "authentication":  "genericCredentialType",
-                                         "genericAuthType":  "httpBearerAuth",
-                                         "sendHeaders":  true,
-                                         "headerParameters":  {
-                                                                  "parameters":  [
-                                                                                     {
-                                                                                         "name":  "HTTP-Referer",
-                                                                                         "value":  "https://n8n.wilkiedevs.com"
-                                                                                     },
-                                                                                     {
-                                                                                         "name":  "X-Title",
-                                                                                         "value":  "Virtual Try-On"
-                                                                                     }
-                                                                                 ]
-                                                              },
-                                         "sendBody":  true,
-                                       "specifyBody":  "json",
-                                          "jsonBody":  "={{ JSON.stringify({ \"model\": \"google/gemini-2.5-flash-image\", \"modalities\": [\"image\", \"text\"], \"messages\": [{ \"role\": \"user\", \"content\": [ { \"type\": \"text\", \"text\": $json.full_prompt }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.selfie_url } }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.product_image_url } } ] }], \"max_tokens\": 1024, \"temperature\": 0.3 }) }}",
-                                          "options":  {
-                                                         "timeout":  120000
-                                                     }
-                                     },
-                      "id":  "47554ac3-3674-4008-a972-466e8fbe47ff",
-                      "name":  "Generar con Gemini",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
-                      "position":  [
-                                       3984,
-                                       752
-                                   ],
-                      "credentials":  {
-                                          "httpBearerAuth":  {
-                                                                 "id":  "zoSkapW7VQMaPW6Y",
-                                                                 "name":  "Open Pruebalo"
-                                                             }
-                                      }
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const r = $input.item.json;\nconst prev = $(\u0027Preparar Prompt Gemini\u0027).item.json;\nif (!r.choices?.[0]?.message) throw new Error(\u0027Respuesta invalida de Gemini: \u0027 + JSON.stringify(r).substring(0,300));\nconst msg = r.choices[0].message;\nlet b64 = null;\nif (Array.isArray(msg.images) \u0026\u0026 msg.images.length \u003e 0) {\n  const img = msg.images[0];\n  if (img.image_url?.url) { const m = img.image_url.url.match(/base64,(.+)/s); if (m) b64 = m[1]; }\n}\nif (!b64 \u0026\u0026 Array.isArray(msg.content)) {\n  for (const block of msg.content) {\n    if (block.type === \u0027image_url\u0027 \u0026\u0026 block.image_url?.url?.startsWith(\u0027data:image\u0027)) {\n      const m = block.image_url.url.match(/base64,(.+)/s); if (m) b64 = m[1];\n    }\n    if (block.type === \u0027image\u0027 \u0026\u0026 block.source?.data) b64 = block.source.data;\n    if (block.type === \u0027inline_data\u0027 \u0026\u0026 block.inline_data?.data) b64 = block.inline_data.data;\n  }\n}\nif (!b64 \u0026\u0026 typeof msg.content === \u0027string\u0027) {\n  const m = msg.content.match(/data:image\\/[^;]+;base64,([A-Za-z0-9+\\/=\\s]+)/s);\n  if (m) b64 = m[1];\n}\nif (!b64) throw new Error(\u0027No se encontro imagen. Estructura: \u0027 + JSON.stringify({keys:Object.keys(msg), hasImages:!!msg.images, contentType:typeof msg.content}).substring(0,200));\n\nreturn { json: {\n  brand_id: prev.brand_id,\n  product_id: prev.product_id,\n  timestamp: prev.timestamp,\n  timestamp_safe: prev.timestamp_safe,\n  selfie_url: prev.selfie_url,\n  selfie_width: 0,\n  selfie_height: 0,\n  generated_image_base64: b64.replace(/\\s+/g,\u0027\u0027)\n}};"
-                                     },
-                      "id":  "9bd66972-d910-4ab3-9dd2-6e33eb84d131",
-                      "name":  "Extraer Imagen Base64",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       4192,
-                                       752
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "operation":  "toBinary",
-                                         "sourceProperty":  "generated_image_base64",
-                                         "options":  {
-                                                         "fileName":  ".jpeg"
-                                                     }
-                                     },
-                      "id":  "84d62fb4-10fa-4b69-9b6f-5bc889a5f1d9",
-                      "name":  "Convert to File",
-                      "type":  "n8n-nodes-base.convertToFile",
-                      "typeVersion":  1.1,
-                      "position":  [
-                                       4416,
-                                       752
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "method":  "POST",
-                                         "url":  "https://api.lookitry.com/api/upload/selfie",
-                                         "authentication":  "genericCredentialType",
-                                         "genericAuthType":  "httpHeaderAuth",
-                                         "sendHeaders":  true,
-                                         "headerParameters":  {
-                                                                  "parameters":  [
-                                                                                     {
-                                                                                         "name":  "Authorization",
-                                                                                         "value":  "Bearer [USAR_CREDENCIAL]"
-                                                                                     }
-                                                                                 ]
-                                                              },
-                                         "sendBody":  true,
-                                         "contentType":  "multipart-form-data",
-                                         "bodyParameters":  {
-                                                                "parameters":  [
-                                                                                   {
-                                                                                       "parameterType":  "formBinaryData",
-                                                                                       "name":  "file",
-                                                                                       "inputDataFieldName":  "data"
-                                                                                   },
-                                                                                   {
-                                                                                       "name":  "temporary",
-                                                                                       "value":  "false"
-                                                                                   }
-                                                                               ]
-                                                            },
-                                         "options":  {
-                                                         "timeout":  30000
-                                                     }
-                                     },
-                      "id":  "ce66dafd-e0ee-4154-a871-b1cc02a47bfa",
-                      "name":  "Subir Imagen Final",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
-                      "position":  [
-                                       4624,
-                                       752
-                                   ],
-                      "credentials":  {
-                                          "httpHeaderAuth":  {
-                                                                 "id":  "lU8GncdQbT8nLleA",
-                                                                 "name":  "pruebalo.wilkiedevs"
-                                                             }
-                                      }
-                  },
-                  {
-                      "parameters":  {
-
-                                     },
-                      "id":  "00fdff32-d5ea-4166-9636-a44000c7a902",
-                      "name":  "Limpieza Temporal (pendiente)",
-                      "type":  "n8n-nodes-base.noOp",
-                      "typeVersion":  1,
-                      "position":  [
-                                       4848,
-                                       752
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "assignments":  {
-                                                             "assignments":  [
-                                                                                 {
-                                                                                     "id":  "field-image-url",
-                                                                                     "name":  "image_url",
-                                                                                     "value":  "={{ $(\u0027Subir Imagen Final\u0027).item.json.url }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                  {
-                                                                                      "id":  "field-model",
-                                                                                      "name":  "_meta_model",
-                                                                                      "value":  "google/gemini-2.0-flash-exp",
-                                                                                      "type":  "string"
-                                                                                  },
-                                                                                 {
-                                                                                     "id":  "field-execution",
-                                                                                     "name":  "_meta_execution_id",
-                                                                                     "value":  "={{ $execution.id }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "field-timestamp",
-                                                                                     "name":  "_meta_timestamp",
-                                                                                     "value":  "={{ new Date().toISOString() }}",
-                                                                                     "type":  "string"
-                                                                                 }
-                                                                             ]
-                                                         },
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "id":  "9cdd0b09-00eb-4464-932e-849152f689fb",
-                      "name":  "Preparar Respuesta",
-                      "type":  "n8n-nodes-base.set",
-                      "typeVersion":  3.4,
-                      "position":  [
-                                       5040,
-                                       752
-                                   ]
-                  },
-                  {
-                      "parameters":  {
-                                         "respondWith":  "json",
-                                         "responseBody":  "={{ { success: true, imageUrl: $json.image_url, _meta: { model: $json._meta_model, executionId: $json._meta_execution_id, generatedAt: $json._meta_timestamp } } }}",
-                                         "options":  {
-                                                         "responseCode":  200,
-                                                         "responseHeaders":  {
-                                                                                 "entries":  [
-                                                                                                 {
-                                                                                                     "name":  "Content-Type",
-                                                                                                     "value":  "application/json"
-                                                                                                 }
-                                                                                             ]
-                                                                             }
-                                                     }
-                                     },
-                      "id":  "cd28099d-9ebd-4c8c-8f92-49cda94fcef9",
-                      "name":  "Responder Exito",
-                      "type":  "n8n-nodes-base.respondToWebhook",
-                      "typeVersion":  1.1,
-                      "position":  [
-                                       5232,
-                                       752
-                                   ]
-                  }
-              ],
-    "connections":  {
-                        "Webhook":  {
-                                        "main":  [
-                                                     [
-                                                         {
-                                                             "node":  "Validar Input",
-                                                             "type":  "main",
-                                                             "index":  0
-                                                         }
-                                                     ]
-                                                 ]
-                                    },
-                        "Validar Input":  {
-                                              "main":  [
-                                                           [
-                                                               {
-                                                                   "node":  "Preparar Prompt Gemini",
-                                                                   "type":  "main",
-                                                                   "index":  0
-                                                               }
-                                                           ]
-                                                       ]
-                                          },
-                        "Preparar Prompt Gemini":  {
-                                                       "main":  [
-                                                                    [
-                                                                        {
-                                                                            "node":  "Generar con Gemini",
-                                                                            "type":  "main",
-                                                                            "index":  0
-                                                                        }
-                                                                    ]
-                                                                ]
-                                                   },
-                        "Generar con Gemini":  {
-                                                   "main":  [
-                                                                [
-                                                                    {
-                                                                        "node":  "Extraer Imagen Base64",
-                                                                        "type":  "main",
-                                                                        "index":  0
-                                                                    }
-                                                                ]
-                                                            ]
-                                               },
-                        "Extraer Imagen Base64":  {
-                                                      "main":  [
-                                                                   [
-                                                                       {
-                                                                           "node":  "Convert to File",
-                                                                           "type":  "main",
-                                                                           "index":  0
-                                                                       }
-                                                                   ]
-                                                               ]
-                                                  },
-                        "Convert to File":  {
-                                                "main":  [
-                                                             [
-                                                                 {
-                                                                     "node":  "Subir Imagen Final",
-                                                                     "type":  "main",
-                                                                     "index":  0
-                                                                 }
-                                                             ]
-                                                         ]
-                                            },
-                        "Subir Imagen Final":  {
-                                                   "main":  [
-                                                                [
-                                                                    {
-                                                                        "node":  "Limpieza Temporal (pendiente)",
-                                                                        "type":  "main",
-                                                                        "index":  0
-                                                                    }
-                                                                ]
-                                                            ]
-                                               },
-                        "Limpieza Temporal (pendiente)":  {
-                                                              "main":  [
-                                                                           [
-                                                                               {
-                                                                                   "node":  "Preparar Respuesta",
-                                                                                   "type":  "main",
-                                                                                   "index":  0
-                                                                               }
-                                                                           ]
-                                                                       ]
-                                                          },
-                        "Preparar Respuesta":  {
-                                                   "main":  [
-                                                                [
-                                                                    {
-                                                                        "node":  "Responder Exito",
-                                                                        "type":  "main",
-                                                                        "index":  0
-                                                                    }
-                                                                ]
-                                                            ]
-                                               }
-                    },
-    "settings":  {
-                     "executionOrder":  "v1",
-                     "callerPolicy":  "workflowsFromSameOwner",
-                     "availableInMCP":  false,
-                     "errorWorkflow":  "PNri7NdZYkZhpPnm",
-                     "binaryMode":  "separate"
-                 },
-    "staticData":  null,
-    "meta":  {
-                 "templateCredsSetupCompleted":  true
-             },
-    "pinData":  null,
-    "versionId":  "b9e2197c-f485-4d0b-ada1-5f5434ef2e7a",
-    "activeVersionId":  "b9e2197c-f485-4d0b-ada1-5f5434ef2e7a",
-    "versionCounter":  244,
-    "triggerCount":  1,
-    "shared":  [
-                   {
-                       "updatedAt":  "2026-03-13T05:55:20.520Z",
-                       "createdAt":  "2026-03-13T05:55:20.520Z",
-                       "role":  "workflow:owner",
-                       "workflowId":  "wPLypk7KhBcFLicX",
-                       "projectId":  "ZwHHlnZoKhyDqulQ",
-                       "project":  {
-                                       "updatedAt":  "2025-09-11T15:11:06.112Z",
-                                       "createdAt":  "2025-09-11T14:54:34.020Z",
-                                       "id":  "ZwHHlnZoKhyDqulQ",
-                                       "name":  "Samuel Wilkie \u003csamwilkiedevs@gmail.com\u003e",
-                                       "type":  "personal",
-                                       "icon":  null,
-                                       "description":  null,
-                                       "creatorId":  "54e1e62b-dcc4-4bde-9ace-690f2010b200"
-                                   }
-                   }
-               ],
-    "tags":  [
-                 {
-                     "updatedAt":  "2026-03-15T19:05:45.164Z",
-                     "createdAt":  "2026-03-15T19:05:45.164Z",
-                     "id":  "bidpNCaxW9N10X8S",
-                     "name":  "SaaS"
-                 }
-             ],
-    "activeVersion":  {
-                          "updatedAt":  "2026-04-01T16:30:56.598Z",
-                          "createdAt":  "2026-04-01T16:30:56.598Z",
-                          "versionId":  "b9e2197c-f485-4d0b-ada1-5f5434ef2e7a",
-                          "workflowId":  "wPLypk7KhBcFLicX",
-                          "nodes":  [
-                                        {
-                                            "parameters":  {
-                                                               "httpMethod":  "POST",
-                                                               "path":  "tryon",
-                                                               "responseMode":  "responseNode",
-                                                               "options":  {
-
-                                                                           }
-                                                           },
-                                            "id":  "38a3f5ab-0a6c-458c-a5f1-1637b6f47e7e",
-                                            "name":  "Webhook",
-                                            "type":  "n8n-nodes-base.webhook",
-                                            "typeVersion":  2,
-                                            "position":  [
-                                                             3344,
-                                                             752
-                                                         ],
-                                            "webhookId":  "e225a330-9cec-4dc1-9179-8e22cb16fc27"
-                                        },
-                                        {
-                                            "parameters":  {
-                                                               "jsCode":  "const item = $input.item.json;\nconst body = item.body || item;\nif (!body || typeof body !== \u0027object\u0027) {\n  throw new Error(\u0027No se recibio body valido. Recibido: \u0027 + JSON.stringify(item).substring(0, 200));\n}\nconst required = [\u0027brand_id\u0027, \u0027product_id\u0027, \u0027selfie_url\u0027, \u0027product_image_url\u0027, \u0027prompt\u0027];\nconst missing = required.filter(f =\u003e !body[f]);\nif (missing.length \u003e 0) {\n  throw new Error(\u0027Faltan campos: \u0027 + missing.join(\u0027, \u0027) + \u0027. Body recibido: \u0027 + JSON.stringify(Object.keys(body)));\n}\nconst urlRegex = /^https?:\\/\\/.+/;\nif (!urlRegex.test(body.product_image_url)) {\n  throw new Error(\u0027product_image_url no es URL valida: \u0027 + body.product_image_url);\n}\nif (!urlRegex.test(body.selfie_url)) {\n  throw new Error(\u0027selfie_url no es URL valida: \u0027 + body.selfie_url);\n}\nconst now = new Date();\nconst timestamp = now.toISOString();\nconst timestamp_safe = timestamp.replace(/[:.]/g, \u0027-\u0027);\nreturn { json: { brand_id: body.brand_id, product_id: body.product_id, selfie_url: body.selfie_url, product_image_url: body.product_image_url, prompt: body.prompt, timestamp, timestamp_safe } };"
-                                                           },
-                                            "id":  "f1dbdcac-2b67-4ee4-9220-d991160dd305",
-                                            "name":  "Validar Input",
-                                            "type":  "n8n-nodes-base.code",
-                                            "typeVersion":  2,
-                                            "position":  [
-                                                             3552,
-                                                             752
-                                                         ]
-                                        },
-                                        {
-                                            "parameters":  {
-                                                               "jsCode":  "const data = $(\u0027Validar Input\u0027).item.json;\nreturn { json: { brand_id: data.brand_id, product_id: data.product_id, product_image_url: data.product_image_url, timestamp: data.timestamp, timestamp_safe: data.timestamp_safe, full_prompt: data.prompt, selfie_url: data.selfie_url } };"
-                                                           },
-                                            "id":  "afc2bf88-a1a9-4389-b2e1-68776b0d23ec",
-                                            "name":  "Preparar Prompt Gemini",
-                                            "type":  "n8n-nodes-base.code",
-                                            "typeVersion":  2,
-                                            "position":  [
-                                                             3776,
-                                                             752
-                                                         ]
-                                        },
-                                        {
-                                            "parameters":  {
-                                                               "method":  "POST",
-                                                               "url":  "https://openrouter.ai/api/v1/chat/completions",
-                                                               "authentication":  "genericCredentialType",
-                                                               "genericAuthType":  "httpBearerAuth",
-                                                               "sendHeaders":  true,
-                                                               "headerParameters":  {
-                                                                                        "parameters":  [
-                                                                                                           {
-                                                                                                               "name":  "HTTP-Referer",
-                                                                                                               "value":  "https://n8n.wilkiedevs.com"
-                                                                                                           },
-                                                                                                           {
-                                                                                                               "name":  "X-Title",
-                                                                                                               "value":  "Virtual Try-On"
-                                                                                                           }
-                                                                                                       ]
-                                                                                    },
-                                                               "sendBody":  true,
-                                                               "specifyBody":  "json",
-                                                               "jsonBody":  "={{ JSON.stringify({ \"model\": \"google/gemini-2.0-flash-exp\", \"modalities\": [\"image\", \"text\"], \"messages\": [{ \"role\": \"user\", \"content\": [ { \"type\": \"text\", \"text\": $json.full_prompt }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.selfie_url } }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.product_image_url } } ] }], \"max_tokens\": 1024, \"temperature\": 0.3 }) }}",
-                                                               "options":  {
-                                                                               "timeout":  120000
-                                                                           }
-                                                           },
-                                            "id":  "47554ac3-3674-4008-a972-466e8fbe47ff",
-                                            "name":  "Generar con Gemini",
-                                            "type":  "n8n-nodes-base.httpRequest",
-                                            "typeVersion":  4.2,
-                                            "position":  [
-                                                             3984,
-                                                             752
-                                                         ],
-                                            "credentials":  {
-                                                                "httpBearerAuth":  {
-                                                                                       "id":  "zoSkapW7VQMaPW6Y",
-                                                                                       "name":  "Open Pruebalo"
-                                                                                   }
-                                                            }
-                                        },
-                                        {
-                                            "parameters":  {
-                                                               "jsCode":  "const r = $input.item.json;\nconst prev = $(\u0027Preparar Prompt Gemini\u0027).item.json;\nif (!r.choices?.[0]?.message) throw new Error(\u0027Respuesta invalida de Gemini: \u0027 + JSON.stringify(r).substring(0,300));\nconst msg = r.choices[0].message;\nlet b64 = null;\nif (Array.isArray(msg.images) \u0026\u0026 msg.images.length \u003e 0) {\n  const img = msg.images[0];\n  if (img.image_url?.url) { const m = img.image_url.url.match(/base64,(.+)/s); if (m) b64 = m[1]; }\n}\nif (!b64 \u0026\u0026 Array.isArray(msg.content)) {\n  for (const block of msg.content) {\n    if (block.type === \u0027image_url\u0027 \u0026\u0026 block.image_url?.url?.startsWith(\u0027data:image\u0027)) {\n      const m = block.image_url.url.match(/base64,(.+)/s); if (m) b64 = m[1];\n    }\n    if (block.type === \u0027image\u0027 \u0026\u0026 block.source?.data) b64 = block.source.data;\n    if (block.type === \u0027inline_data\u0027 \u0026\u0026 block.inline_data?.data) b64 = block.inline_data.data;\n  }\n}\nif (!b64 \u0026\u0026 typeof msg.content === \u0027string\u0027) {\n  const m = msg.content.match(/data:image\\/[^;]+;base64,([A-Za-z0-9+\\/=\\s]+)/s);\n  if (m) b64 = m[1];\n}\nif (!b64) throw new Error(\u0027No se encontro imagen. Estructura: \u0027 + JSON.stringify({keys:Object.keys(msg), hasImages:!!msg.images, contentType:typeof msg.content}).substring(0,200));\n\nreturn { json: {\n  brand_id: prev.brand_id,\n  product_id: prev.product_id,\n  timestamp: prev.timestamp,\n  timestamp_safe: prev.timestamp_safe,\n  selfie_url: prev.selfie_url,\n  selfie_width: 0,\n  selfie_height: 0,\n  generated_image_base64: b64.replace(/\\s+/g,\u0027\u0027)\n}};"
-                                                           },
-                                            "id":  "9bd66972-d910-4ab3-9dd2-6e33eb84d131",
-                                            "name":  "Extraer Imagen Base64",
-                                            "type":  "n8n-nodes-base.code",
-                                            "typeVersion":  2,
-                                            "position":  [
-                                                             4192,
-                                                             752
-                                                         ]
-                                        },
-                                        {
-                                            "parameters":  {
-                                                               "operation":  "toBinary",
-                                                               "sourceProperty":  "generated_image_base64",
-                                                               "options":  {
-                                                                               "fileName":  ".jpeg"
-                                                                           }
-                                                           },
-                                            "id":  "84d62fb4-10fa-4b69-9b6f-5bc889a5f1d9",
-                                            "name":  "Convert to File",
-                                            "type":  "n8n-nodes-base.convertToFile",
-                                            "typeVersion":  1.1,
-                                            "position":  [
-                                                             4416,
-                                                             752
-                                                         ]
-                                        },
-                                        {
-                                            "parameters":  {
-                                                               "method":  "POST",
-                                                               "url":  "https://api.lookitry.com/api/upload/selfie",
-                                                               "authentication":  "genericCredentialType",
-                                                               "genericAuthType":  "httpHeaderAuth",
-                                                               "sendHeaders":  true,
-                                                               "headerParameters":  {
-                                                                                        "parameters":  [
-                                                                                                           {
-                                                                                                               "name":  "Authorization",
-                                                                                                               "value":  "Bearer [USAR_CREDENCIAL]"
-                                                                                                           }
-                                                                                                       ]
-                                                                                    },
-                                                               "sendBody":  true,
-                                                               "contentType":  "multipart-form-data",
-                                                               "bodyParameters":  {
-                                                                                      "parameters":  [
-                                                                                                         {
-                                                                                                             "parameterType":  "formBinaryData",
-                                                                                                             "name":  "file",
-                                                                                                             "inputDataFieldName":  "data"
-                                                                                                         },
-                                                                                                         {
-                                                                                                             "name":  "temporary",
-                                                                                                             "value":  "false"
-                                                                                                         }
-                                                                                                     ]
-                                                                                  },
-                                                               "options":  {
-                                                                               "timeout":  30000
-                                                                           }
-                                                           },
-                                            "id":  "ce66dafd-e0ee-4154-a871-b1cc02a47bfa",
-                                            "name":  "Subir Imagen Final",
-                                            "type":  "n8n-nodes-base.httpRequest",
-                                            "typeVersion":  4.2,
-                                            "position":  [
-                                                             4624,
-                                                             752
-                                                         ],
-                                            "credentials":  {
-                                                                "httpHeaderAuth":  {
-                                                                                       "id":  "lU8GncdQbT8nLleA",
-                                                                                       "name":  "pruebalo.wilkiedevs"
-                                                                                   }
-                                                            }
-                                        },
-                                        {
-                                            "parameters":  {
-
-                                                           },
-                                            "id":  "00fdff32-d5ea-4166-9636-a44000c7a902",
-                                            "name":  "Limpieza Temporal (pendiente)",
-                                            "type":  "n8n-nodes-base.noOp",
-                                            "typeVersion":  1,
-                                            "position":  [
-                                                             4848,
-                                                             752
-                                                         ]
-                                        },
-                                        {
-                                            "parameters":  {
-                                                               "assignments":  {
-                                                                                   "assignments":  [
-                                                                                                       {
-                                                                                                           "id":  "field-image-url",
-                                                                                                           "name":  "image_url",
-                                                                                                           "value":  "={{ $(\u0027Subir Imagen Final\u0027).item.json.url }}",
-                                                                                                           "type":  "string"
-                                                                                                       },
-                                                                                                       {
-                                                                                                           "id":  "field-model",
-                                                                                                           "name":  "_meta_model",
-                                                                                                           "value":  "google/gemini-2.0-flash-exp",
-                                                                                                           "type":  "string"
-                                                                                                       },
-                                                                                                       {
-                                                                                                           "id":  "field-execution",
-                                                                                                           "name":  "_meta_execution_id",
-                                                                                                           "value":  "={{ $execution.id }}",
-                                                                                                           "type":  "string"
-                                                                                                       },
-                                                                                                       {
-                                                                                                           "id":  "field-timestamp",
-                                                                                                           "name":  "_meta_timestamp",
-                                                                                                           "value":  "={{ new Date().toISOString() }}",
-                                                                                                           "type":  "string"
-                                                                                                       }
-                                                                                                   ]
-                                                                               },
-                                                               "options":  {
-
-                                                                           }
-                                                           },
-                                            "id":  "9cdd0b09-00eb-4464-932e-849152f689fb",
-                                            "name":  "Preparar Respuesta",
-                                            "type":  "n8n-nodes-base.set",
-                                            "typeVersion":  3.4,
-                                            "position":  [
-                                                             5040,
-                                                             752
-                                                         ]
-                                        },
-                                        {
-                                            "parameters":  {
-                                                               "respondWith":  "json",
-                                                               "responseBody":  "={{ { success: true, imageUrl: $json.image_url, _meta: { model: $json._meta_model, executionId: $json._meta_execution_id, generatedAt: $json._meta_timestamp } } }}",
-                                                               "options":  {
-                                                                               "responseCode":  200,
-                                                                               "responseHeaders":  {
-                                                                                                       "entries":  [
-                                                                                                                       {
-                                                                                                                           "name":  "Content-Type",
-                                                                                                                           "value":  "application/json"
-                                                                                                                       }
-                                                                                                                   ]
-                                                                                                   }
-                                                                           }
-                                                           },
-                                            "id":  "cd28099d-9ebd-4c8c-8f92-49cda94fcef9",
-                                            "name":  "Responder Exito",
-                                            "type":  "n8n-nodes-base.respondToWebhook",
-                                            "typeVersion":  1.1,
-                                            "position":  [
-                                                             5232,
-                                                             752
-                                                         ]
-                                        }
-                                    ],
-                          "connections":  {
-                                              "Webhook":  {
-                                                              "main":  [
-                                                                           [
-                                                                               {
-                                                                                   "node":  "Validar Input",
-                                                                                   "type":  "main",
-                                                                                   "index":  0
-                                                                               }
-                                                                           ]
-                                                                       ]
-                                                          },
-                                              "Validar Input":  {
-                                                                    "main":  [
-                                                                                 [
-                                                                                     {
-                                                                                         "node":  "Preparar Prompt Gemini",
-                                                                                         "type":  "main",
-                                                                                         "index":  0
-                                                                                     }
-                                                                                 ]
-                                                                             ]
-                                                                },
-                                              "Preparar Prompt Gemini":  {
-                                                                             "main":  [
-                                                                                          [
-                                                                                              {
-                                                                                                  "node":  "Generar con Gemini",
-                                                                                                  "type":  "main",
-                                                                                                  "index":  0
-                                                                                              }
-                                                                                          ]
-                                                                                      ]
-                                                                         },
-                                              "Generar con Gemini":  {
-                                                                         "main":  [
-                                                                                      [
-                                                                                          {
-                                                                                              "node":  "Extraer Imagen Base64",
-                                                                                              "type":  "main",
-                                                                                              "index":  0
-                                                                                          }
-                                                                                      ]
-                                                                                  ]
-                                                                     },
-                                              "Extraer Imagen Base64":  {
-                                                                            "main":  [
-                                                                                         [
-                                                                                             {
-                                                                                                 "node":  "Convert to File",
-                                                                                                 "type":  "main",
-                                                                                                 "index":  0
-                                                                                             }
-                                                                                         ]
-                                                                                     ]
-                                                                        },
-                                              "Convert to File":  {
-                                                                      "main":  [
-                                                                                   [
-                                                                                       {
-                                                                                           "node":  "Subir Imagen Final",
-                                                                                           "type":  "main",
-                                                                                           "index":  0
-                                                                                       }
-                                                                                   ]
-                                                                               ]
-                                                                  },
-                                              "Subir Imagen Final":  {
-                                                                         "main":  [
-                                                                                      [
-                                                                                          {
-                                                                                              "node":  "Limpieza Temporal (pendiente)",
-                                                                                              "type":  "main",
-                                                                                              "index":  0
-                                                                                          }
-                                                                                      ]
-                                                                                  ]
-                                                                     },
-                                              "Limpieza Temporal (pendiente)":  {
-                                                                                    "main":  [
-                                                                                                 [
-                                                                                                     {
-                                                                                                         "node":  "Preparar Respuesta",
-                                                                                                         "type":  "main",
-                                                                                                         "index":  0
-                                                                                                     }
-                                                                                                 ]
-                                                                                             ]
-                                                                                },
-                                              "Preparar Respuesta":  {
-                                                                         "main":  [
-                                                                                      [
-                                                                                          {
-                                                                                              "node":  "Responder Exito",
-                                                                                              "type":  "main",
-                                                                                              "index":  0
-                                                                                          }
-                                                                                      ]
-                                                                                  ]
-                                                                     }
-                                          },
-                          "authors":  "Samuel Wilkie",
-                          "name":  null,
-                          "description":  null,
-                          "autosaved":  false,
-                          "workflowPublishHistory":  [
-                                                         {
-                                                             "createdAt":  "2026-04-01T16:30:56.683Z",
-                                                             "id":  622,
-                                                             "workflowId":  "wPLypk7KhBcFLicX",
-                                                             "versionId":  "b9e2197c-f485-4d0b-ada1-5f5434ef2e7a",
-                                                             "event":  "activated",
-                                                             "userId":  "54e1e62b-dcc4-4bde-9ace-690f2010b200"
-                                                         },
-                                                         {
-                                                             "createdAt":  "2026-04-01T16:30:56.657Z",
-                                                             "id":  621,
-                                                             "workflowId":  "wPLypk7KhBcFLicX",
-                                                             "versionId":  "b9e2197c-f485-4d0b-ada1-5f5434ef2e7a",
-                                                             "event":  "deactivated",
-                                                             "userId":  "54e1e62b-dcc4-4bde-9ace-690f2010b200"
-                                                         }
-                                                     ]
-                      }
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lookitry-blog-images",
+        "options": {}
+      },
+      "id": "60fedd6e-19d1-4afb-8827-f071db1d162d",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        1136,
+        3120
+      ],
+      "webhookId": "df880cd7-2498-401b-a6d3-765dc190dc0a"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first()?.json?.body || $input.first()?.json || {};\nconst topic_id = String(input.topic_id || '');\nconst title = input.title || 'Fashion Article';\nconst category = input.category_slug || 'moda-y-estilo';\n\nconst contexts = {\n  'ecommerce': 'Colombian ecommerce fashion',\n  'ia': 'AI technology',\n  'moda-y-estilo': 'Colombian fashion style',\n  'negocios-y-saas': 'business SaaS'\n};\n\nconst ctx = contexts[category] || contexts['moda-y-estilo'];\n\nreturn [\n  {\n    json: {\n      tipo: 'hero',\n      prompt: 'Professional fashion photo: ' + title + '. ' + ctx + '. Studio lighting, editorial.',\n      topic_id: topic_id,\n      title: title\n    }\n  },\n  {\n    json: {\n      tipo: 'body1',\n      prompt: 'Lifestyle fashion photo: ' + title + '. ' + ctx + '. Boutique, natural light.',\n      topic_id: topic_id,\n      title: title\n    }\n  },\n  {\n    json: {\n      tipo: 'body2',\n      prompt: 'Fashion detail photo: ' + title + '. ' + ctx + '. Close-up, texture.',\n      topic_id: topic_id,\n      title: title\n    }\n  }\n];"
+      },
+      "id": "60bbc3ec-bd96-489b-ba39-130949f3f403",
+      "name": "Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b4a721a2-0e34-45f8-a6fb-4d295fac65d7",
+      "name": "Loop Imágenes",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1504,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer r8_D4VY9Ay3avB9k5qMARUTqD09qIaiTne3TKVu0"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait=10"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({\n  input: {\n    prompt: $json.prompt,\n    aspect_ratio: \"16:9\",\n    output_format: \"png\",\n    output_quality: 90,\n    num_inference_steps: 4,\n    go_fast: true,\n    megapixels: \"1\"\n  }\n}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "6a908272-b184-4f1d-a5f7-5f96d22d2544",
+      "name": "Replicate FLUX",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1264,
+        3376
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst currentItem = $('Loop Imágenes').item.json;\nconst token = 'r8_D4VY9Ay3avB9k5qMARUTqD09qIaiTne3TKVu0';\n\nasync function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }\n\nasync function getPrediction(url) {\n  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });\n  if (!res.ok) throw new Error(`Replicate lookup failed (${res.status}): ${await res.text()}`);\n  return await res.json();\n}\n\nasync function resolvePrediction(pred) {\n  let cur = pred;\n  for (let i = 0; i < 30; i++) {\n    if (cur?.error) throw new Error(`Replicate error en ${currentItem.tipo}: ${cur.error}`);\n    if (cur?.status === 'failed' || cur?.status === 'canceled') throw new Error(`Replicate ${cur.status}. ID: ${cur.id}`);\n    if (cur?.status === 'succeeded' && cur?.output) {\n      const imageUrl = Array.isArray(cur.output) ? cur.output[0] : cur.output;\n      await sleep(12000);\n      return [{ json: { ...currentItem, imageUrl, predictionId: cur.id } }];\n    }\n    const pollUrl = cur?.urls?.get;\n    if (!pollUrl) throw new Error(`Sin output ni poll URL. Status: ${cur?.status || 'unknown'}`);\n    await sleep(4000);\n    cur = await getPrediction(pollUrl);\n  }\n  throw new Error(`Replicate timeout para ${currentItem.tipo}`);\n}\n\nreturn await resolvePrediction(response);"
+      },
+      "id": "fa953623-dd70-4905-bdf8-4315af57d13f",
+      "name": "Replicate Extraer URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        3376
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "6ecc4896-1c9c-491c-9f76-c4e8cee3d867",
+      "name": "Descargar PNG Replicate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1696,
+        3376
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst tipo = item.json.tipo || 'imagen';\nif (item.binary?.data) {\n  item.binary.data.fileName = `${tipo}.png`;\n  item.binary.data.mimeType = 'image/png';\n}\nreturn { json: { ...item.json, tipo }, binary: item.binary };"
+      },
+      "id": "aa1f4c95-35aa-4674-85dc-0f9f874a3186",
+      "name": "Renombrar PNG",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1888,
+        3376
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-blog-secret",
+              "value": "Travis2305**_blog_n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "filename",
+              "value": "={{ $('Renombrar PNG').item.binary.data.fileName }}"
+            },
+            {
+              "name": "topic_id",
+              "value": "={{ $('Loop Imágenes').item.json.topic_id }}"
+            },
+            {
+              "name": "image_type",
+              "value": "={{ $('Loop Imágenes').item.json.tipo }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8bad4f48-88c1-4b27-ac67-539c6a98ba33",
+      "name": "Uploader Imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        3376
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": "={\n  \"success\": true,\n  \"topic_id\": \"{{ $('Input').first().json.topic_id }}\",\n  \"message\": \"Imágenes generadas y artículo publicado\"\n}"
+        }
+      },
+      "id": "aaa9fae1-d497-4461-8e02-8ff62bd1bd2c",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1728,
+        3104
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input": {
+      "main": [
+        [
+          {
+            "node": "Loop Imágenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Imágenes": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replicate FLUX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replicate FLUX": {
+      "main": [
+        [
+          {
+            "node": "Replicate Extraer URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replicate Extraer URL": {
+      "main": [
+        [
+          {
+            "node": "Descargar PNG Replicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar PNG Replicate": {
+      "main": [
+        [
+          {
+            "node": "Renombrar PNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Renombrar PNG": {
+      "main": [
+        [
+          {
+            "node": "Uploader Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uploader Imagen": {
+      "main": [
+        [
+          {
+            "node": "Loop Imágenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+  }
 }
