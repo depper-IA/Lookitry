@@ -195,12 +195,12 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
             
             <div className="mb-8">
               <label className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Logo de la marca</label>
-              <div className="flex items-center gap-6 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-base)] p-5">
-                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-[var(--border-color)] bg-white shadow-sm">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-base)] p-4 sm:p-5">
+                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center overflow-hidden rounded-2xl border border-[var(--border-color)] bg-white shadow-sm shrink-0">
                   {formData.logo ? <img src={formData.logo} alt="Logo" className="h-full w-full object-contain" /> : <Upload size={20} className="text-[var(--text-muted)]" />}
                 </div>
                 <div className="space-y-2">
-                  <label className="inline-block rounded-2xl bg-[var(--text-primary)] px-6 py-3 text-xs font-black uppercase tracking-[0.18em] text-[var(--bg-card)] cursor-pointer hover:opacity-90 transition-opacity">
+                  <label className="inline-block rounded-2xl bg-[var(--text-primary)] px-4 py-2.5 sm:px-6 sm:py-3 text-xs font-black uppercase tracking-[0.18em] text-[var(--bg-card)] cursor-pointer hover:opacity-90 transition-opacity">
                     Subir logo
                     <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
                   </label>
@@ -209,7 +209,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Nombre de la marca</label>
                 <input name="name" value={formData.name || ''} onChange={handleChange} className={inputClass} />
@@ -222,35 +222,35 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                   onChange={handleChange} 
                   className={inputClass} 
                   disabled={!isPro}
-                  placeholder={!isPro ? "Disponible en Plan Pro" : undefined}
+                  placeholder={!isPro ? "Plan Pro" : undefined}
                 />
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Color principal (Acción)</label>
                 <div className="flex items-center gap-3">
-                  <div className="relative group">
-                    <input type="color" name="primaryColor" value={formData.primaryColor || '#FF5C3A'} onChange={handleChange} className="h-14 w-14 rounded-2xl cursor-pointer border-2 border-[var(--border-color)] p-1.5 transition-all group-hover:scale-105" />
+                  <div className="relative group shrink-0">
+                    <input type="color" name="primaryColor" value={formData.primaryColor || '#FF5C3A'} onChange={handleChange} className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl cursor-pointer border-2 border-[var(--border-color)] p-1.5 transition-all group-hover:scale-105" />
                   </div>
-                  <input name="primaryColor" value={formData.primaryColor || '#FF5C3A'} onChange={handleChange} className="flex-1 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 py-3 text-sm font-mono uppercase focus:border-[#FF5C3A] outline-none" />
+                  <input name="primaryColor" value={formData.primaryColor || '#FF5C3A'} onChange={handleChange} className="flex-1 min-w-0 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 py-3 text-sm font-mono uppercase focus:border-[#FF5C3A] outline-none" />
                 </div>
               </div>
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Color de fondo</label>
                 <div className="flex items-center gap-3">
-                  <div className="relative group">
-                    <input type="color" name="secondaryColor" value={formData.secondaryColor || '#FFFFFF'} onChange={handleChange} className="h-14 w-14 rounded-2xl cursor-pointer border-2 border-[var(--border-color)] p-1.5 transition-all group-hover:scale-105" />
+                  <div className="relative group shrink-0">
+                    <input type="color" name="secondaryColor" value={formData.secondaryColor || '#FFFFFF'} onChange={handleChange} className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl cursor-pointer border-2 border-[var(--border-color)] p-1.5 transition-all group-hover:scale-105" />
                   </div>
-                  <input name="secondaryColor" value={formData.secondaryColor || '#FFFFFF'} onChange={handleChange} className="flex-1 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 py-3 text-sm font-mono uppercase focus:border-[#FF5C3A] outline-none" />
+                  <input name="secondaryColor" value={formData.secondaryColor || '#FFFFFF'} onChange={handleChange} className="flex-1 min-w-0 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 py-3 text-sm font-mono uppercase focus:border-[#FF5C3A] outline-none" />
                 </div>
               </div>
             </div>
             
             <div className="mb-8">
               <label className="mb-4 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Seleccionar Plantilla</label>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
                 {TEMPLATES.filter((tpl) => isPro || !tpl.proOnly).map((tpl) => (
                   <TemplatePreviewCard
                     key={tpl.id}
@@ -268,30 +268,30 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Texto del botón central</label>
                 <input name="buttonText" value={formData.buttonText || ''} onChange={handleChange} className={inputClass} placeholder="Probarme esto" />
               </div>
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Mensaje de bienvenida</label>
-                <input name="welcomeMessage" value={formData.welcomeMessage || ''} onChange={handleChange} className={inputClass} placeholder="¡Pruébate virtualmente!" />
+                <input name="welcomeMessage" value={formData.welcomeMessage || ''} onChange={handleChange} className={inputClass} placeholder="¡Pruébate!" />
               </div>
             </div>
             
-            <div className="flex items-center gap-4 pt-6 border-t border-[var(--border-color)]">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-6 border-t border-[var(--border-color)]">
               {!isPro ? (
                 <p className="hidden md:block text-[11px] text-[var(--text-muted)] italic font-medium">Los templates PRO y slugs personalizados están bloqueados</p>
               ) : (
                 <div />
               )}
               
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                 <a 
                   href={`/marca/${brand.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] px-6 py-4 text-xs font-black uppercase tracking-[0.18em] text-[var(--text-primary)] transition-all hover:bg-[var(--bg-hover)] active:scale-[0.98]"
+                  className="flex items-center justify-center gap-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] px-4 py-3 sm:px-6 sm:py-4 text-xs font-black uppercase tracking-[0.18em] text-[var(--text-primary)] transition-all hover:bg-[var(--bg-hover)] active:scale-[0.98]"
                 >
                   <span className="mb-0.5">Ver Mostrador</span>
                   <Code2 size={16} className="text-[#FF5C3A]" />
@@ -301,9 +301,9 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                   type="button" 
                   onClick={handleSubmit} 
                   disabled={isSubmitting}
-                  className="rounded-2xl bg-[#FF5C3A] hover:bg-[#ff451f] disabled:opacity-50 px-10 py-4 text-xs font-black uppercase tracking-[0.18em] text-white shadow-lg shadow-[#FF5C3A]/20 transition-all active:scale-[0.98]"
+                  className="rounded-2xl bg-[#FF5C3A] hover:bg-[#ff451f] disabled:opacity-50 px-6 py-3 sm:px-10 sm:py-4 text-xs font-black uppercase tracking-[0.18em] text-white shadow-lg shadow-[#FF5C3A]/20 transition-all active:scale-[0.98]"
                 >
-                  {isSubmitting ? 'Guardando cambios...' : 'Guardar configuración'}
+                  {isSubmitting ? 'Guardando...' : 'Guardar'}
                 </button>
               </div>
             </div>

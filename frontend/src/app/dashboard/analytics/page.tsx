@@ -126,7 +126,7 @@ export default function AnalyticsPage() {
       </motion.header>
 
       {/* ══ KPI GRID ══ */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {[
           { label: 'Generaciones', value: analytics.totalGenerations, sub: 'Pruebas totales', icon: Zap, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
           { label: 'Exitosas', value: analytics.successfulGenerations, sub: 'Renderizado OK', icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },

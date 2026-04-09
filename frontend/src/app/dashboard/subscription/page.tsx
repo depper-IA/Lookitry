@@ -388,7 +388,7 @@ export default function SubscriptionPage() {
                         Plan actual
                      </span>
                   </div>
-                  <h2 className="text-6xl sm:text-7xl font-bold tracking-tighter text-[var(--text-primary)] leading-none font-jakarta">
+                   <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tighter text-[var(--text-primary)] leading-none font-jakarta">
                      {currentDesign.name}
                   </h2>
                </div>

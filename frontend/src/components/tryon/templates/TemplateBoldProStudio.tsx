@@ -188,7 +188,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                           <button
                             key={p.id}
                             onClick={() => onProductSelect(p)}
-                            className={`flex-shrink-0 ${isSmall ? 'w-28' : 'w-36'} rounded-2xl overflow-hidden border-2 transition-all duration-300 relative group`}
+                            className={`flex-shrink-0 ${isSmall ? 'w-24 sm:w-28' : 'w-32 sm:w-36'} rounded-2xl overflow-hidden border-2 transition-all duration-300 relative group`}
                             style={{
                               borderColor: sel ? primaryColor : borderColor,
                               backgroundColor: bgLuminance ? '#ffffff' : 'rgba(255,255,255,0.03)',
@@ -196,7 +196,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                               boxShadow: sel ? `0 0 20px ${primaryColor}40` : 'none'
                             }}
                           >
-                            <div className="aspect-[4/5] bg-black/20 overflow-hidden">
+                            <div className="aspect-[4/5] sm:aspect-[4/5] bg-black/20 overflow-hidden">
                               <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                               {alreadyGenerated && (
                                 <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-black text-white border border-white/20">

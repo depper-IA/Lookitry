@@ -248,7 +248,7 @@ export function ResultDisplay({
   if (pluginView) {
     return (
       <>
-        <div className="mx-auto w-full max-w-6xl">
+        <div className="mx-auto w-full max-w-xs sm:max-w-md md:max-w-5xl lg:max-w-6xl">
           <div className="mb-4 flex flex-col items-center text-center md:mb-5">
             <div 
               className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border shadow-sm"
@@ -264,7 +264,7 @@ export function ResultDisplay({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_280px] lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
             <div 
               className="rounded-[28px] border p-3 shadow-sm md:p-4"
               style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6' }}

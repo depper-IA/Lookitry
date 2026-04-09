@@ -63,7 +63,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
       )}
       {step !== 'generating' && (
         <div className={`flex-1 w-full px-4 ${centerUploadInEmbed ? 'flex items-center justify-center py-6 md:py-8' : 'py-4 md:py-6'}`}>
-          <div className={`${centerUploadInEmbed ? 'w-full max-w-lg' : (pluginView && step === 'result' ? 'mx-auto w-full max-w-6xl' : 'max-w-lg mx-auto w-full')}`}>
+          <div className={`${centerUploadInEmbed ? 'w-full max-w-md sm:max-w-lg' : (pluginView && step === 'result' ? 'mx-auto w-full max-w-5xl sm:max-w-6xl' : 'max-w-sm sm:max-w-lg mx-auto w-full')}`}>
             <ErrorBanner error={error} isService={errorIsService} />
             <NoticeBanner notice={notice} />
 
