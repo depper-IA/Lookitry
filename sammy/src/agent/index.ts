@@ -46,7 +46,7 @@ ${projectContext}`;
     const state: AgentState = {
       messages: [
         { role: 'system', content: systemPrompt },
-        ...this.memory.getMessages(conversationId),
+        ...this.memory.getMessages(conversationId, 15),
         { role: 'user', content: userMessage },
       ],
       iterations: 0,

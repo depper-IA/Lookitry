@@ -291,22 +291,18 @@ export class LLMManager {
 
     // Orden de prioridad: MiniMax → Groq
     for (let i = 0; i < this.providers.length; i++) {
-      const provider = this.providers[(this.currentProviderIndex + i) % this.providers.length];
-      
-      // Skip OpenRouter - solo usar para imágenes del widget, NO para tareas generales
-      if (provider.name === 'openrouter') {
-        console.log('Skipping OpenRouter for general task (only for widget images)');
-        continue;
-      }
-      
-      try {
-        const result = await provider.complete(messages, tools);
-        this.currentProviderIndex = (this.currentProviderIndex + i) % this.providers.length;
-        return result;
-      } catch (error) {
-        lastError = error as Error;
-        console.error(`Provider ${provider.name} failed:`, lastError.message);
-      }
+    // Priority: MiniMax → Groq → OpenRouter (Safety Fallback)
+    for (let i = 0; i < this.providers.length; i++) {
+        const provider = this.providers[i]; 
+        
+        try {
+            const result = await provider.complete(messages, tools);
+            return result;
+        } catch (error) {
+            lastError = error as Error;
+            console.error(`Provider ${provider.name} failed:`, lastError.message);
+        }
+    }
     }
 
     throw lastError ?? new Error('All LLM providers failed');
