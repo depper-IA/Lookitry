@@ -250,10 +250,9 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                     <img 
                       src={p.imageUrl} 
                       alt={p.name} 
-                      className={`${isSelected ? 'ring-2' : ''} w-12 h-12 rounded-xl object-cover shadow-md transition-all`}
+                      className="w-12 h-12 rounded-xl object-cover shadow-md transition-all"
                       style={{ 
-                        ringColor: primaryColor,
-                        boxShadow: isSelected ? `0 4px 12px ${primaryGlow}` : '0 2px 8px rgba(0,0,0,0.2)'
+                        boxShadow: isSelected ? `0 4px 12px ${primaryGlow}, 0 0 0 2px ${primaryColor}` : '0 2px 8px rgba(0,0,0,0.2)'
                       }} 
                     />
                     {wasGenerated && !isSelected && (
