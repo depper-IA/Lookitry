@@ -186,6 +186,13 @@ run(ssh, f"cd {REPO} && docker compose -f docker-compose.errors.yml up -d")
 
 if do_backend:
     print("\n=== Rebuild BACKEND ===")
+    # Crear env file de Sammy si no existe (requerido por docker-compose)
+    run(
+        ssh,
+        f"if [ ! -f {REPO}/sammy/.env.production ]; then cp {REPO}/sammy/.env {REPO}/sammy/.env.production; fi",
+        check=False,
+    )
+
     run(
         ssh,
         f"cd {REPO} && docker compose -f docker-compose.backend.yml down && "
