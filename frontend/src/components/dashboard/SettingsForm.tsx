@@ -124,10 +124,10 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   const inputClass = 'w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]';
 
   return (
-    <div className="grid grid-cols-1 gap-6 xl:grid-cols-4 items-start">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 items-start">
       {/* Sidebar - Visualizador Real */}
-      <div className="xl:col-span-1 xl:sticky xl:top-6 space-y-6">
-        <div className="flex gap-2 overflow-x-auto rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] p-2 xl:flex-col">
+      <div className="lg:col-span-1 lg:sticky lg:top-6 space-y-6">
+        <div className="flex gap-2 overflow-x-auto rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] p-2 lg:flex-col">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -183,12 +183,12 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
         </div>
       </div>
 
-      <div className="xl:col-span-3">
+      <div className="lg:col-span-2">
         {activeTab === 'design' && (
           <section className={cardClass}>
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-2xl font-bold text-[var(--text-primary)]">Diseño del Widget</h3>
-              <div className="xl:hidden text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-full">
+              <div className="lg:hidden text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-full">
                 Vista previa real activa
               </div>
             </div>
