@@ -186,12 +186,25 @@ run(ssh, f"cd {REPO} && docker compose -f docker-compose.errors.yml up -d")
 
 if do_backend:
     print("\n=== Rebuild BACKEND ===")
-    # Crear env file de Sammy si no existe (requerido por docker-compose)
-    run(
-        ssh,
-        f"if [ ! -f {REPO}/sammy/.env.production ]; then cp {REPO}/sammy/.env {REPO}/sammy/.env.production; fi",
-        check=False,
+    # Subir env file de Sammy si no existe en VPS
+    sammy_env_local = os.path.join(
+        os.path.dirname(__file__), "..", "sammy", ".env.production"
     )
+    if os.path.exists(sammy_env_local):
+        print(f"[INFO] Subiendo sammy/.env.production al VPS...")
+        with open(sammy_env_local, "r") as f:
+            sammy_env_content = f.read()
+        run(
+            ssh,
+            f"cat > {REPO}/sammy/.env.production << 'SAMMYEOF'\n{sammy_env_content}\nSAMMYEOF",
+            check=False,
+        )
+    else:
+        run(
+            ssh,
+            f"if [ ! -f {REPO}/sammy/.env.production ]; then touch {REPO}/sammy/.env.production; fi",
+            check=False,
+        )
 
     run(
         ssh,
