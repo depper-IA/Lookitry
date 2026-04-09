@@ -1,5 +1,5 @@
 {
-  "name": "Project Knowledge RAG",
+  "name": "Project Knowledge RAG (Gemini)",
   "nodes": [
     {
       "parameters": {
@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// =============================================\n// Validate & Prepare Documentation\n// =============================================\nconst body = $input.first().json.body ?? $input.first().json;\n\n\nconst fileName = body.file_name;\nconst filePath = body.file_path || body.file_name;\nconst content = body.content;\nconst version = body.version;\nconst timestamp = body.timestamp;\n\n// Validate required fields\nif (!fileName) {\n  throw new Error('Missing required field: file_name');\n}\nif (!content) {\n  throw new Error('Missing required field: content');\n}\n\n// =============================================\n// Determine document type from filename\n// =============================================\nlet docType = 'OTHER';\nconst upperFileName = fileName.toUpperCase();\nif (upperFileName.includes('PRD')) {\n  docType = 'PRD';\n} else if (upperFileName.includes('DESIGN')) {\n  docType = 'DESIGN';\n} else if (upperFileName.includes('TECH_STACK')) {\n  docType = 'TECH_STACK';\n} else if (upperFileName.includes('REGLAS')) {\n  docType = 'REGLAS';\n} else if (upperFileName.includes('CHANGELOG')) {\n  docType = 'CHANGELOG';\n}\n\n// =============================================\n// Calculate SHA256 content hash\n// =============================================\nconst crypto = require('crypto');\nconst contentHash = crypto.createHash('sha256').update(content).digest('hex');\n\n\n// =============================================\n// Prepare enriched text for embedding\n// Truncate if too long (OpenAI has 8191 token limit for embedding)\n// =============================================\nconst maxChars = 30000;\nlet embedText = content;\nif (embedText.length > maxChars) {\n  const chunkSize = Math.floor(maxChars / 2);\n  embedText = embedText.substring(0, chunkSize) + '\\n\\n...[content truncated for embedding]...\\n\\n' + embedText.substring(embedText.length - chunkSize);\n}\n\nconst enrichedContent = `[${docType}] ${fileName}\\n\\n${embedText}`;\n\nreturn [{ json: {\n  file_name: fileName,\n  file_path: filePath,\n  content: content,\n  content_hash: contentHash,\n  version: version || null,\n  doc_type: docType,\n  enriched_content: enrichedContent,\n  timestamp: timestamp || new Date().toISOString()\n} }];"
+        "jsCode": "// =============================================\n// Validate & Prepare Documentation\n// =============================================\nconst body = $input.first().json.body ?? $input.first().json;\n\nconst fileName = body.file_name;\nconst filePath = body.file_path || body.file_name;\nconst content = body.content;\nconst version = body.version;\nconst timestamp = body.timestamp;\n\nif (!fileName) throw new Error('Missing required field: file_name');\nif (!content) throw new Error('Missing required field: content');\n\nlet docType = 'OTHER';\nconst upperFileName = fileName.toUpperCase();\nif (upperFileName.includes('PRD')) docType = 'PRD';\nelse if (upperFileName.includes('DESIGN')) docType = 'DESIGN';\nelse if (upperFileName.includes('TECH_STACK')) docType = 'TECH_STACK';\nelse if (upperFileName.includes('REGLAS')) docType = 'REGLAS';\nelse if (upperFileName.includes('CHANGELOG')) docType = 'CHANGELOG';\n\nconst crypto = require('crypto');\nconst contentHash = crypto.createHash('sha256').update(content).digest('hex');\n\n\nconst maxChars = 30000;\nlet embedText = content;\nif (embedText.length > maxChars) {\n  const chunkSize = Math.floor(maxChars / 2);\n  embedText = embedText.substring(0, chunkSize) + '\\n\\n...[truncated]...\\n\\n' + embedText.substring(embedText.length - chunkSize);\n}\n\nconst enrichedContent = `[${docType}] ${fileName}\\n\\n${embedText}`;\n\nreturn [{ json: {\n  file_name: fileName,\n  file_path: filePath,\n  content: content,\n  content_hash: contentHash,\n  version: version,\n  doc_type: docType,\n  enriched_content: enrichedContent\n} }];"
       },
       "id": "validate-prepare",
       "name": "Validate & Prepare",
@@ -31,29 +31,15 @@
         "url": "=https://vkdooutklowctuudjnkl.supabase.co/rest/v1/project_knowledge",
         "queryParameters": {
           "parameters": [
-            {
-              "name": "file_path",
-              "value": "eq.{{ $json.file_path }}"
-            },
-            {
-              "name": "select",
-              "value": "id,content_hash"
-            }
+            { "name": "file_path", "value": "eq.{{ $json.file_path }}" },
+            { "name": "select", "value": "id,content_hash" }
           ]
         },
-        "options": {
-          "timeout": 10000
-        },
+        "options": { "timeout": 10000 },
         "headers": {
           "values": [
-            {
-              "name": "apikey",
-              "value": "{{ $env.SUPABASE_SERVICE_KEY }}"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
-            }
+            { "name": "apikey", "value": "{{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
           ]
         }
       },
@@ -66,25 +52,15 @@
     {
       "parameters": {
         "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict"
-          },
+          "options": { "caseSensitive": true, "typeValidation": "strict" },
           "conditions": [
             {
               "id": "hash-compare",
               "leftValue": "={{ $json.content_hash }}",
               "rightValue": "={{ $('Check Existing').first().json.content_hash }}",
-              "operator": {
-                "type": "different",
-                "operation": "notEqual"
-              }
+              "operator": { "type": "different", "operation": "notEqual" }
             }
-          ],
-          "optionsCombinations": {
-            "combinations": []
-          }
+          ]
         },
         "options": {}
       },
@@ -97,36 +73,25 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.openai.com/v1/embeddings",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key={{ $env.GEMINI_API_KEY }}",
         "body": {
-          "model": "text-embedding-3-small",
-          "input": "={{ $json.enriched_content }}"
+          "model": "models/gemini-embedding-001",
+          "content": { "parts": [{ "text": "={{ $json.enriched_content }}" }] },
+          "taskType": "RETRIEVAL_DOCUMENT",
+          "outputDimensionality": 768
         },
-        "options": {
-          "timeout": 60000
-        },
-        "headers": {
-          "values": [
-            {
-              "name": "Authorization",
-              "value": "Bearer {{ $env.OPENAI_API_KEY }}"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        }
+        "options": { "timeout": 60000 },
+        "headers": { "values": [{ "name": "Content-Type", "value": "application/json" }] }
       },
-      "id": "openai-embedding",
-      "name": "OpenAI Embedding",
+      "id": "gemini-embedding",
+      "name": "Gemini Embedding",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [980, 220]
     },
     {
       "parameters": {
-        "jsCode": "// =============================================\n// Extract Embedding Array from OpenAI Response\n// =============================================\nconst openAiResponse = $input.first().json;\n\n// OpenAI returns: { data: [{ embedding: [...], index: 0, object: \"embedding\" }], model: \"...\", object: \"list\", usage: {...} }\nconst embeddingObj = openAiResponse.data && openAiResponse.data[0];\n\n\nif (!embeddingObj || !embeddingObj.embedding) {\n  throw new Error('OpenAI did not return a valid embedding');\n}\n\nconst embedding = embeddingObj.embedding;\n\n// Get the prepared data from earlier\nconst preparedData = $('Validate & Prepare').first().json;\n\nreturn [{ json: {\n  ...preparedData,\n  embedding: embedding\n} }];"
+        "jsCode": "// =============================================\n// Extract Embedding from Gemini Response\n// =============================================\nconst response = $input.first().json;\nconst embedding = response.embedding?.values || [];\n\nif (!Array.isArray(embedding) || embedding.length === 0) {\n  throw new Error('Gemini did not return valid embedding');\n}\n\nconst preparedData = $('Validate & Prepare').first().json;\nreturn [{ json: { ...preparedData, embedding: embedding } }];"
       },
       "id": "extract-embedding",
       "name": "Extract Embedding",
@@ -147,27 +112,13 @@
           "p_version": "={{ $json.version }}",
           "p_doc_type": "={{ $json.doc_type }}"
         },
-        "options": {
-          "timeout": 30000
-        },
+        "options": { "timeout": 30000 },
         "headers": {
           "values": [
-            {
-              "name": "apikey",
-              "value": "{{ $env.SUPABASE_SERVICE_KEY }}"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "name": "Prefer",
-              "value": "return=minimal"
-            }
+            { "name": "apikey", "value": "{{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
           ]
         }
       },
@@ -180,11 +131,9 @@
     {
       "parameters": {
         "respondWith": {
-          "responseBody": "={{ { \"status\": \"success\", \"file_name\": $json.file_name, \"doc_type\": $json.doc_type, \"message\": \"Document indexed successfully\" } }}"
+          "responseBody": "={{ { \"status\": \"success\", \"file_name\": $json.file_name, \"doc_type\": $json.doc_type, \"dimensions\": $json.embedding?.length } }}"
         },
-        "options": {
-          "responseStatusCode": 200
-        }
+        "options": { "responseStatusCode": 200 }
       },
       "id": "respond-success",
       "name": "Respond Success",
@@ -195,11 +144,9 @@
     {
       "parameters": {
         "respondWith": {
-          "responseBody": "={{ { \"status\": \"skipped\", \"file_name\": $json.file_name, \"message\": \"Document content unchanged, skipping indexing\" } }}"
+          "responseBody": "={{ { \"status\": \"skipped\", \"file_name\": $json.file_name, \"message\": \"Content unchanged\" } }}"
         },
-        "options": {
-          "responseStatusCode": 200
-        }
+        "options": { "responseStatusCode": 200 }
       },
       "id": "respond-skipped",
       "name": "Respond Skipped",
@@ -212,9 +159,7 @@
         "respondWith": {
           "responseBody": "={{ { \"status\": \"error\", \"message\": \"Failed to process document\" } }}"
         },
-        "options": {
-          "responseStatusCode": 500
-        }
+        "options": { "responseStatusCode": 500 }
       },
       "id": "respond-error",
       "name": "Respond Error",
@@ -224,95 +169,23 @@
     }
   ],
   "connections": {
-    "Webhook Trigger": {
-      "main": [
-        [
-          {
-            "node": "Validate & Prepare",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Validate & Prepare": {
-      "main": [
-        [
-          {
-            "node": "Check Existing",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Existing": {
-      "main": [
-        [
-          {
-            "node": "Hash Changed?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
+    "Webhook Trigger": { "main": [[{ "node": "Validate & Prepare", "type": "main", "index": 0 }]] },
+    "Validate & Prepare": { "main": [[{ "node": "Check Existing", "type": "main", "index": 0 }]] },
+    "Check Existing": { "main": [[{ "node": "Hash Changed?", "type": "main", "index": 0 }]] },
     "Hash Changed?": {
       "main": [
-        [
-          {
-            "node": "OpenAI Embedding",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Respond Skipped",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "Gemini Embedding", "type": "main", "index": 0 }],
+        [{ "node": "Respond Skipped", "type": "main", "index": 0 }]
       ]
     },
-    "OpenAI Embedding": {
-      "main": [
-        [
-          {
-            "node": "Extract Embedding",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extract Embedding": {
-      "main": [
-        [
-          {
-            "node": "Upsert to Supabase",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Upsert to Supabase": {
-      "main": [
-        [
-          {
-            "node": "Respond Success",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
+    "Gemini Embedding": { "main": [[{ "node": "Extract Embedding", "type": "main", "index": 0 }]] },
+    "Extract Embedding": { "main": [[{ "node": "Upsert to Supabase", "type": "main", "index": 0 }]] },
+    "Upsert to Supabase": { "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]] }
   },
   "settings": {
     "executionOrder": "v1",
     "timezone": "America/Bogota"
   },
   "staticData": null,
-  "tags": ["SaaS", "documentation", "RAG", "embeddings"]
+  "tags": ["SaaS", "RAG", "embeddings", "Gemini"]
 }
