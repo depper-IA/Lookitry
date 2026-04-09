@@ -1,5 +1,37 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-09] - Social Proof y Reseñas Dinámicas en Landing
+
+### Landing Page - Dynamic Reviews
+- **Dynamic Content**: La landing principal (`page.tsx`) ahora fusiona reseñas reales de la base de datos (`brand_reviews`) con reseñas "mock" como fallback, garantizando siempre contenido en el slider.
+- **Auto-Aprobación**: Se configuró el backend (`reviewsController.ts`) para aprobar automáticamente reseñas con `rating >= 4.5`, reduciendo carga de moderación.
+
+### Mejoras UI/UX en Sistema de Reseñas
+- **Calificación Media Estrella**: Refactorizado el sistema de puntuación para soportar fracciones de 0.5 estrellas tanto en la validación backend como en el renderizado frontend usando técnicas de máscara visual (`overflow-hidden`) en `ReviewsSlider.tsx`.
+- **Renderizado de SVG**: Habilitado `dangerouslyAllowSVG: true` en `next.config.js` junto con la directiva Content Security Policy (CSP) adecuada para permitir cargar exitosamente los logos SVG externos en el slider de reseñas.
+
+## [2026-04-09] - Skill NotebookLM Instalada para OpenCode
+
+### Skill NotebookLM Adaptada para OpenCode
+- **Origen**: Repo https://github.com/PleasePrompto/notebooklm-skill (Claude Code skill)
+- **Adaptación**: Modificada para funcionar con OpenCode en lugar de Claude Code
+- **Ubicación**: `.opencode/skills/notebooklm/`
+- **Estructura**:
+  - `SKILL.md` - Instrucciones adaptadas para OpenCode
+  - `scripts/` - Python automation (auth, notebook management, question asking)
+  - `references/` - Documentación extendida (API, troubleshooting, usage patterns)
+  - `requirements.txt` - Dependencias (patchright, python-dotenv)
+- **Funcionalidad**:
+  - Browser automation con Chrome real via Patchright
+  - Autenticación Google persistente
+  - Gestión de library de notebooks
+  - Query source-grounded a NotebookLM
+
+### Configuración
+- Requiere Python 3.8+ y Chrome instalado
+- Setup automático del virtual environment en `.venv`
+- Datos almacenados en `.opencode/skills/notebooklm/data/`
+
 ## [2026-04-09] - NotebookLM Drive Sync Workflow v2
 
 ### Workflow n8n - NotebookLM Google Drive Sync (Corregido)

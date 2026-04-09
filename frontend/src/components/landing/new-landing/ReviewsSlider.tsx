@@ -88,9 +88,24 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
                         >
                           <div className="mb-4 sm:mb-5 flex items-center justify-between gap-4">
                             <div className="flex items-center gap-0.5 sm:gap-1" aria-label={`${review.rating} de 5 estrellas`}>
-                              {Array.from({ length: 5 }).map((__, starIndex) => (
-                                <Star key={`${review.id}-${starIndex}`} className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${starIndex < review.rating ? 'fill-[#FF5C3A] text-[#FF5C3A]' : 'text-[#e7dfd6] dark:text-white/10'}`} aria-hidden="true" />
-                              ))}
+                              {Array.from({ length: 5 }).map((__, starIndex) => {
+                                const filled = review.rating >= starIndex + 1;
+                                const halfFilled = !filled && review.rating >= starIndex + 0.5;
+
+                                return (
+                                  <div key={`${review.id}-${starIndex}`} className="relative h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0">
+                                    <Star className="absolute inset-0 text-[#e7dfd6] dark:text-white/10" aria-hidden="true" />
+                                    {filled && (
+                                      <Star className="absolute inset-0 fill-[#FF5C3A] text-[#FF5C3A]" aria-hidden="true" />
+                                    )}
+                                    {!filled && halfFilled && (
+                                      <div className="absolute inset-y-0 left-0 overflow-hidden w-1/2">
+                                        <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-[#FF5C3A] text-[#FF5C3A] max-w-none" aria-hidden="true" />
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                             <span className="rounded-full border border-[#f1d5cd] dark:border-[#FF5C3A]/20 bg-[#fff4f1] dark:bg-[#FF5C3A]/10 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] text-[#FF5C3A]">
                               {review.reviewer_plan}

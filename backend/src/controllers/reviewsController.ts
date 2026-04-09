@@ -19,7 +19,7 @@ function isTrialBrand(brand: Pick<Brand, 'plan' | 'subscription_status'>): boole
 
 function parseRating(value: unknown): number | null {
   const parsed = Number(value);
-  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 5) return null;
+  if (Number.isNaN(parsed) || parsed < 1 || parsed > 5 || parsed % 0.5 !== 0) return null;
   return parsed;
 }
 
@@ -97,7 +97,7 @@ export class ReviewsController {
           comment,
           reviewer_name: brand.name,
           reviewer_plan: brand.plan,
-          status: 'pending',
+          status: rating >= 4.5 ? 'approved' : 'pending',
           avatar_url: brand.logo || null,
         })
         .select('*')
