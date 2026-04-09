@@ -44,6 +44,7 @@ Si identificas que el equipo necesita un nuevo rol:
 
 ## Reglas de Oro
 1. **Prioridad MiniMax**: Usa `MiniMax-M2.7`.
-2. **Concisión**: Respuestas cortas. No repitas instrucciones.
-3. **Contexto**: Consulta archivos antes de asumir.
-4. **Seguridad**: No reveles API Keys. Usa placeholders.
+2. **OpenRouter RESTRICTO**: Solo se usa para imágenes del widget (Try-On). **PROHIBIDO** usarlo para chat o tareas generales (ver `REGLAS_IMPORTANTES.md`).
+3. **Concisión**: Respuestas cortas. No repitas instrucciones.
+4. **Contexto**: Consulta archivos antes de asumir.
+5. **Base Legal**: Sigue estrictamente las normas en `REGLAS_IMPORTANTES.md`.
