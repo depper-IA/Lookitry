@@ -1,0 +1,188 @@
+{
+  "name": "Lookitry - NotebookLM Google Drive Sync",
+  "description": "Sincroniza documentación core a Google Drive para alimentar NotebookLM. Se ejecuta via webhook cuando hay commits.",
+  "nodes": [
+    {
+      "id": "webhook-trigger",
+      "name": "Webhook - Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "notebooklm-sync",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "typeVersion": 2,
+      "webhookId": "notebooklm-sync"
+    },
+    {
+      "id": "parse-input",
+      "name": "Parsear entrada",
+      "type": "n8n-nodes-base.code",
+      "position": [460, 300],
+      "parameters": {
+        "jsCode": "// Parsear entrada del webhook o Git hook\nconst body = $input.first().json.body ?? $input.first().json;\n\n// Determinar si viene de Git hook o es manual\nconst isGitHook = body.commit || body.commits || body.pusher;\n\nif (isGitHook) {\n  // Formato GitHub/Gitea webhook\n  const commits = body.commits || [];\n  const changedFiles = [];\n  \n  for (const commit of commits) {\n    for (const file of commit.added || []) {\n      changedFiles.push({ path: file, action: 'added' });\n    }\n    for (const file of commit.modified || []) {\n      changedFiles.push({ path: file, action: 'modified' });\n    }\n    for (const file of commit.removed || []) {\n      changedFiles.push({ path: file, action: 'removed' });\n    }\n  }\n  \n  return [{\n    json: {\n      source: 'git',\n      pusher: body.pusher?.name || 'unknown',\n      repository: body.repository?.name || 'lookitry',\n      branch: body.ref?.replace('refs/heads/', '') || 'main',\n      changed_files: changedFiles.filter(f => \n        f.path.endsWith('.md') || \n        f.path.startsWith('docs/') ||\n        ['PRD.md', 'DESIGN.md', 'TECH_STACK.md', 'REGLAS_IMPORTANTES.md', 'CHANGELOG.md'].includes(f.path)\n      ),\n      commit_sha: commits[0]?.id || body.after || 'unknown'\n    }\n  }];\n} else {\n  // Formato manual o script directo\n  return [{\n    json: {\n      source: 'manual',\n      files: body.files || [],\n      commit: body.commit || new Date().toISOString()\n    }\n  }];\n}"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "check-git-files",
+      "name": "¿Git hook files?",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [680, 300],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "parameters": {
+        "jsCode": "// Split batch para procesar archivos\noffset: 0\ncount: 10\n"
+      }
+    },
+    {
+      "id": "fetch-file-content",
+      "name": "GitHub - Obtener archivo",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [900, 200],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/repos/wilkiedev/Lookitry/contents/{{ $json.path }}?ref={{ $json.commit_sha }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "decode-content",
+      "name": "Decodificar contenido",
+      "type": "n8n-nodes-base.code",
+      "position": [1120, 200],
+      "parameters": {
+        "jsCode": "// Decodificar contenido base64 del archivo\nconst response = $input.first().json;\n\nif (response.content) {\n  // GitHub API returns base64 encoded content\n  const content = Buffer.from(response.content.replace(/\\n/g, ''), 'base64').toString('utf-8');\n  const fileName = response.name || $('Parsear entrada').first().json.path.split('/').pop();\n  \n  return [{\n    json: {\n      file_name: fileName,\n      file_path: response.path,\n      content: content,\n      sha: response.sha,\n      commit_sha: $('Parsear entrada').first().json.commit_sha\n    }\n  }];\n} else {\n  throw new Error('No se pudo obtener contenido del archivo');\n}"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "filter-relevant",
+      "name": "Filtrar archivos relevantes",
+      "type": "n8n-nodes-base.if",
+      "position": [1340, 200],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "md-check",
+              "parameter1": "{{ $json.file_name }}",
+              "parameter2": "",
+              "type": "string",
+              "operation": "endsWith",
+              "value": ".md"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "prepare-gdrive",
+      "name": "Preparar metadata Drive",
+      "type": "n8n-nodes-base.code",
+      "position": [1560, 100],
+      "parameters": {
+        "jsCode": "// Preparar archivo para Google Drive\nconst data = $('Decodificar contenido').first().json;\n\n// Carpeta destino en Drive\nconst FOLDER_ID = $env.GDRIVE_NOTEBOOKLM_FOLDER_ID || 'LOOKITRY_PROJECT_KNOWLEDGE';\n\nreturn [{\n  json: {\n    file_name: data.file_name,\n    file_path: data.file_path,\n    content: data.content,\n    folder_id: FOLDER_ID,\n    mimeType: 'text/markdown',\n    description: `Sincronizado desde Lookitry repo - Commit: ${data.commit_sha}`\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "gdrive-upload",
+      "name": "Google Drive - Subir archivo",
+      "type": "n8n-nodes-base.google.assistant",
+      "position": [1780, 100],
+      "parameters": {
+        "operation": "upload",
+        "fileName": "{{ $json.file_name }}",
+        "folder": "{{ $json.folder_id }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "log-success",
+      "name": "Log éxito",
+      "type": "n8n-nodes-base.noOp",
+      "position": [2000, 100],
+      "parameters": {}
+    },
+    {
+      "id": "log-skipped",
+      "name": "Log omitido",
+      "type": "n8n-nodes-base.noOP",
+      "position": [1560, 380],
+      "parameters": {
+        "jsCode": "// Log archivos omitidos que no son .md\nconsole.log('Archivo omitido (no es .md):', $input.first().json.path);"
+      }
+    },
+    {
+      "id": "respond-success",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [2220, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \n  ok: true, \n  source: $('Parsear entrada').first().json.source,\n  synced_count: $input.length,\n  timestamp: new Date().toISOString()\n} }}"
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Webhook - Trigger": {
+      "main": [[{ "node": "Parsear entrada", "type": "main", "index": 0 }]]
+    },
+    "Parsear entrada": {
+      "main": [[{ "node": "check-git-files", "type": "main", "index": 0 }]]
+    },
+    "check-git-files": {
+      "main": [[{ "node": "fetch-file-content", "type": "main", "index": 0 }]]
+    },
+    "fetch-file-content": {
+      "main": [[{ "node": "Decodificar contenido", "type": "main", "index": 0 }]]
+    },
+    "Decodificar contenido": {
+      "main": [[{ "node": "Filtrar archivos relevantes", "type": "main", "index": 0 }]]
+    },
+    "Filtrar archivos relevantes": {
+      "main": [
+        [{ "node": "Preparar metadata Drive", "type": "main", "index": 0 }],
+        [{ "node": "Log omitido", "type": "main", "index": 0 }]
+      ]
+    },
+    "Preparar metadata Drive": {
+      "main": [[{ "node": "Google Drive - Subir archivo", "type": "main", "index": 0 }]]
+    },
+    "Google Drive - Subir archivo": {
+      "main": [[{ "node": "Log éxito", "type": "main", "index": 0 }]]
+    },
+    "Log éxito": {
+      "main": [[{ "node": "Responder OK", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [{ "name": "SaaS" }]
+}

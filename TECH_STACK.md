@@ -120,6 +120,7 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | `lookitry-backend` | `node:20-alpine` | API Express |
 | `root-n8n-1` | `n8nio/n8n` | Orquestador de flujos |
 | `minio` | `quay.io/minio/minio` | Almacenamiento local S3 |
+| `lookitry-sammy` | `node:20-alpine` (custom build) | Agente orquestador Sammy (Telegram bot + LLM) |
 
 ### 4.3 Reverse Proxy (Traefik)
 - **Frontend:** `lookitry.com` y `www.lookitry.com`
@@ -546,6 +547,18 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | `last_reset_monthly` | date | Último reset mensual |
 | `updated_at` | timestamptz | |
 
+### 5.29 `project_knowledge` (RAG — Segundo Cerebro)
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | uuid PK | |
+| `file_path` | text UNIQUE | Ruta del archivo .md |
+| `content` | text | Contenido completo o chunks |
+| `embedding` | vector(768) | pgvector para similitud semántica |
+| `version` | text | Commit SHA o fecha |
+| `updated_at` | timestamptz | Auto-actualizado |
+| **Índices** | IVFFlat (embedding) | Búsqueda por similitud coseno |
+| **RPC** | `upsert_project_knowledge`, `search_project_knowledge` | Procedimientos de upsert/búsqueda |
+
 ---
 
 ## 6. Arquitectura n8n — El Motor de IA
@@ -560,6 +573,8 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | **Blog Post Creation** | `/api/blog/webhook` (backend) | — | `N8N_BLOG_WEBHOOK_URL` |
 | **Blog Image Upload** | `/api/blog/upload` (backend) | — | — |
 | **Feedback Embedding** | Asíncrono vía n8n | — | — |
+| **Project Knowledge RAG** | `/webhook/project-knowledge-rag` | — | — |
+| **NotebookLM Drive Sync** | `/webhook/notebooklm-sync` | — | — |
 
 ### 6.2 Prompt Rules Engine (`prompt-rules.ts`)
 Motor de reglas de prompt por categoría de producto con 15+ categorías:
@@ -567,9 +582,12 @@ Motor de reglas de prompt por categoría de producto con 15+ categorías:
 - Cada categoría tiene reglas de `replacement` (reemplazar prenda) o `keep` (mantener prenda existente).
 
 ### 6.3 RAG (Retrieval-Augmented Generation)
-- Feedback de usuarios se almacena con embeddings pgvector (768-dim).
-- Función de búsqueda por similitud para encontrar feedback similar.
-- Se usa para mejorar prompts futuros basándose en errores pasados.
+- **Feedback de usuarios** se almacena con embeddings pgvector (768-dim) en tabla `generation_feedback`.
+- **Project Knowledge (Segundo Cerebro)**: Documentación core indexada en `project_knowledge` con embeddings pgvector (768-dim).
+- **Archivos indexados**: PRD.md, DESIGN.md, TECH_STACK.md, REGLAS_IMPORTANTES.md, CHANGELOG.md (recientes).
+- **Flujo de indexación**: n8n detecta cambios en commits → genera embeddings → upsert a Supabase.
+- **Flujo de búsqueda**: Agentes consultan `/api/agent/rag/search` con query en lenguaje natural → embedding → búsqueda vectorial → resultados ranked.
+- **Sincronización NotebookLM**: En cada push, script `sync_project_knowledge.py` sincroniza archivos .md a Google Drive para research manual.
 
 ---
 

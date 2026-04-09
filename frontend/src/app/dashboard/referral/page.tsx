@@ -106,14 +106,18 @@ export default function ReferralPage() {
           </div>
           <div className="mt-3 flex items-center gap-2">
             <code className="text-2xl font-bold text-white">{data?.referralCode || '—'}</code>
-            <button onClick={copyCode} className="relative rounded-lg p-2 transition-colors hover:bg-[var(--bg-hover)]" title="Copiar">
+            <button
+              onClick={copyCode}
+              aria-label="Copiar código de referido"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg p-3 transition-colors hover:bg-[var(--bg-hover)] active:scale-95"
+            >
               {copied ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               ) : (
-                <Copy className="h-4 w-4 text-[var(--text-muted)]" />
+                <Copy className="h-5 w-5 text-[var(--text-muted)]" />
               )}
               {copied && (
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-emerald-500 px-2 py-1 text-[10px] font-bold text-white">
+                <span className="absolute -top-9 left-1/2 -translate-x-1/2 rounded bg-emerald-500 px-2 py-1 text-[10px] font-bold text-white whitespace-nowrap">
                   ¡Copiado!
                 </span>
               )}
@@ -191,20 +195,22 @@ export default function ReferralPage() {
             </p>
           </div>
         ) : (
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <input
               type="text"
               value={claimCode}
               onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
               placeholder="Ej: ABC12345"
-              className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-white placeholder:text-[var(--text-muted)] focus:border-[#FF5C3A] focus:outline-none"
+              aria-label="Código de referido"
+              className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-4 text-white placeholder:text-[var(--text-muted)] focus:border-[#FF5C3A] focus:outline-none min-h-[48px] text-base"
             />
             <button
               onClick={handleClaim}
               disabled={claimLoading || !claimCode.trim()}
-              className="flex items-center gap-2 rounded-xl bg-[#FF5C3A] px-6 py-3 font-medium text-white transition-colors hover:bg-[#FF5C3A]/90 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Aplicar código de referido"
+              className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] px-8 py-4 font-medium text-white transition-colors hover:bg-[#FF5C3A]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 min-h-[48px] text-base"
             >
-              {claimLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Aplicar <ArrowRight className="h-4 w-4" /></>}
+              {claimLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Aplicar <ArrowRight className="h-5 w-5" /></>}
             </button>
           </div>
         )}

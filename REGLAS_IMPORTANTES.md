@@ -150,7 +150,19 @@ Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 50
 
 ---
 
-## 6. Reglas de Base de Datos
+## 6. Reglas de Proxy y Multimedia
+
+**REGLA DE ORO:** El proxy de imágenes (`/api/img-proxy`) y la validación de dominios para embeds **DEBEN ser dinámicos.**
+
+1. **Prohibición de Whitelist Estática:** NUNCA revertir el proxy a una lista de dominios hardcodeada para sitios de clientes (WooCommerce, Shopify, etc.).
+2. **Sincronización:** Cualquier dominio autorizado para embedding en el perfil de la marca (website, custom_domain, allowed_origins) debe ser automáticamente autorizado para el proxy de imágenes.
+3. **Validación Dinámica:** El proxy debe consultar siempre la tabla `brands` en Supabase para verificar la propiedad del dominio antes de procesar la imagen.
+4. **Caché:** Se permite el uso de caché en memoria de corto plazo (10-15 min) para optimizar el rendimiento, pero la fuente de verdad siempre debe ser la base de datos.
+5. **Seguridad SSRF:** La validación dinámica NO exime de la protección SSRF. Se debe seguir verificando que los hostnames no resuelvan a IPs internas/privadas.
+
+---
+
+## 7. Reglas de Base de Datos
 
 >参考: `TECH_STACK.md`
 
