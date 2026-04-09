@@ -104,7 +104,8 @@ export class MiniMaxProvider implements LLMProvider {
     }
 
     return withRetry(async () => {
-      const response = await fetch('https://api.minimax.io/v1/text/chatcompletion_v2', {
+      console.log(`📡 Llamando a MiniMax (${this.model})...`);
+      const response = await fetch('https://api.minimaxi.chat/v1/text/chatcompletion_v2', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
@@ -289,8 +290,6 @@ export class LLMManager {
   async complete(messages: Message[], tools?: ToolDefinition[]): Promise<LLMResponse> {
     let lastError: Error | null = null;
 
-    // Orden de prioridad: MiniMax → Groq
-    for (let i = 0; i < this.providers.length; i++) {
     // Priority: MiniMax → Groq
     for (let i = 0; i < this.providers.length; i++) {
         const provider = this.providers[i]; 
@@ -301,13 +300,14 @@ export class LLMManager {
         }
         
         try {
+            console.log(`🔄 Intentando con proveedor: ${provider.name}`);
             const result = await provider.complete(messages, tools);
             return result;
         } catch (error) {
             lastError = error as Error;
-            console.error(`Provider ${provider.name} failed:`, lastError.message);
+            const errorMsg = `⚠️ Provider ${provider.name} falló: ${lastError.message}`;
+            console.error(errorMsg);
         }
-    }
     }
 
     throw lastError ?? new Error('All LLM providers failed');

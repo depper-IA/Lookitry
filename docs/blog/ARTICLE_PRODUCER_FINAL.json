@@ -1,0 +1,223 @@
+{
+  "name": "Lookitry Blog Article Producer - FIXED",
+  "nodes": [
+    {
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lookitry-blog-producer",
+        "options": {}
+      }
+    },
+    {
+      "id": "extract-input",
+      "name": "Extraer Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "jsCode": "const body = $input.first().json?.body || $input.first().json || {};\nconst topic_id = String(body.topic_id || '');\nconst title = body.title || 'Artículo de moda';\nconst category_slug = body.category_slug || 'moda-y-estilo';\nconst source_url = body.source_url || '';\nconst keywords = body.keywords || '';\n\nreturn [{ json: { topic_id, title, category_slug, source_url, keywords } }];"
+      }
+    },
+    {
+      "id": "verificador-check",
+      "name": "Verificador: Existe borrador?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://vkdooutklowctuudjnkl.supabase.co/rest/v1/blog_draft_articles?topic_id=eq.{{ $json.topic_id }}&select=id,topic_id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "***REMOVED-SECRET***" },
+            { "name": "Authorization", "value": "Bearer ***REMOVED-SECRET***" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "if-exists",
+      "name": "IF: Ya existe?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "length-check",
+              "leftValue": "={{ $json.length }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "merge-context",
+      "name": "Combinar Contexto",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1120, 420],
+      "parameters": {
+        "mode": "passThrough",
+        "output": "input2"
+      }
+    },
+    {
+      "id": "redactor-ia",
+      "name": "Redactor IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 420],
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "HTTP-Referer", "value": "https://lookitry.com" },
+            { "name": "X-Title", "value": "Lookitry Blog" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({\n  model: \"openai/gpt-4o-mini\",\n  messages: [\n    {\n      role: \"system\",\n      content: \"Eres el Editor Jefe de Lookitry. Genera artículos de blog para el mercado colombiano de moda y ecommerce.\\n\\nREGLA CRÍTICA: Responde ÚNICAMENTE con un objeto JSON válido. SIN markdown, SIN ```json, SIN texto extra antes o después.\\n\\nEstructura OBLIGATORIA:\\n{\\n  \\\"title\\\": \\\"Título SEO atractivo\\\",\\n  \\\"slug\\\": \\\"url-amigable-con-keyword\\\",\\n  \\\"excerpt\\\": \\\"Resumen de 2 oraciones máximo\\\",\\n  \\\"meta_description\\\": \\\"Max 155 caracteres para Google\\\",\\n  \\\"category_slug\\\": \\\"moda-y-estilo\\\",\\n  \\\"sections\\\": [\\n    {\\n      \\\"heading\\\": \\\"Título de sección H2\\\",\\n      \\\"content\\\": \\\"Párrafos completos aquí, mínimo 200 palabras por sección. Con datos reales, ejemplos colombianos y lenguaje natural.\\\",\\n      \\\"callout\\\": \\\"Dato estadístico o cita impactante (opcional)\\\"\\n    }\\n  ],\\n  \\\"faqs\\\": [\\n    { \\\"question\\\": \\\"¿Pregunta frecuente?\\\", \\\"answer\\\": \\\"Respuesta clara de 2-3 oraciones\\\" }\\n  ],\\n  \\\"image_prompts\\\": [\\n    { \\\"position\\\": \\\"hero\\\", \\\"prompt\\\": \\\"Cinematic fashion photo, Colombian ecommerce model, studio lighting, editorial style\\\" },\\n    { \\\"position\\\": \\\"body1\\\", \\\"prompt\\\": \\\"Lifestyle photo of person using smartphone app to try on clothes virtually\\\" },\\n    { \\\"position\\\": \\\"body2\\\", \\\"prompt\\\": \\\"Close-up fabric texture, luxury fashion detail, soft natural light\\\" },\\n    { \\\"position\\\": \\\"body3\\\", \\\"prompt\\\": \\\"Colombian boutique interior, fashion display, warm ambient lighting\\\" }\n  ],\\n  \\\"cta_context\\\": { \\\"type\\\": \\\"trial\\\" }\\n}\\n\\nRequisitos: mínimo 5 secciones, mínimo 4 FAQs, 4 image_prompts exactos, lenguaje colombiano familiar.\"\n    },\n    {\n      role: \"user\",\n      content: \"Genera el artículo completo para:\\nTítulo: \" + $('Extraer Input').first().json.title + \"\\nCategoría: \" + $('Extraer Input').first().json.category_slug + \"\\nKeywords: \" + $('Extraer Input').first().json.keywords + \"\\ntopic_id: \" + $('Extraer Input').first().json.topic_id\n    }\n  ],\n  response_format: { type: \"json_object\" },\n  max_tokens: 8000,\n  temperature: 0.7\n}) }}",
+        "options": { "timeout": 180000 },
+        "retryOnFail": true,
+        "waitBetweenTries": 3000,
+        "maxTries": 2
+      },
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "zoSkapW7VQMaPW6Y",
+          "name": "Open Pruebalo"
+        }
+      }
+    },
+    {
+      "id": "parse-json",
+      "name": "Parsear JSON Artículo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 420],
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst topic_data = $('Extraer Input').first().json;\n\n// Extraer contenido del LLM\nlet content = response?.choices?.[0]?.message?.content || response?.content || '{}';\n\n// Limpiar posible markdown si lo hay\ncontent = content.trim();\nif (content.startsWith('```')) {\n  content = content.replace(/^```json?\\n?/, '').replace(/\\n?```$/, '').trim();\n}\n\nlet article;\ntry {\n  article = typeof content === 'string' ? JSON.parse(content) : content;\n} catch(e) {\n  throw new Error('La IA no devolvió JSON válido: ' + content.substring(0, 200));\n}\n\n// Asegurar topic_id y category\narticle.topic_id = topic_data.topic_id;\narticle.category_slug = article.category_slug || topic_data.category_slug;\n\nreturn [{ json: article }];"
+      }
+    },
+    {
+      "id": "post-article-content",
+      "name": "POST: Guardar Contenido",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 420],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/article-content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-blog-secret", "value": "Travis2305**_blog_n8n" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": { "timeout": 30000 }
+      }
+    },
+    {
+      "id": "llamar-image-generator",
+      "name": "Llamar Image Generator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2000, 420],
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n.wilkiedevs.com/webhook/lookitry-blog-images-v7",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  topic_id: $('Parsear JSON Artículo').first().json.topic_id,\n  title: $('Parsear JSON Artículo').first().json.title,\n  category_slug: $('Parsear JSON Artículo').first().json.category_slug,\n  image_prompts: $('Parsear JSON Artículo').first().json.image_prompts\n} }}",
+        "options": { "timeout": 10000 }
+      }
+    },
+    {
+      "id": "responder-ok",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2220, 420],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, topic_id: $('Parsear JSON Artículo').first().json.topic_id, message: 'Articulo guardado e imagenes en proceso' } }}",
+        "options": { "responseCode": 200 }
+      }
+    },
+    {
+      "id": "log-skip",
+      "name": "Log: Borrador ya existe",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1120, 200],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{ "node": "Extraer Input", "type": "main", "index": 0 }]]
+    },
+    "Extraer Input": {
+      "main": [[{ "node": "Verificador: Existe borrador?", "type": "main", "index": 0 }]]
+    },
+    "Verificador: Existe borrador?": {
+      "main": [[{ "node": "IF: Ya existe?", "type": "main", "index": 0 }]]
+    },
+    "IF: Ya existe?": {
+      "main": [
+        [{ "node": "Log: Borrador ya existe", "type": "main", "index": 0 }],
+        [{ "node": "Combinar Contexto", "type": "main", "index": 0 }]
+      ]
+    },
+    "Combinar Contexto": {
+      "main": [[{ "node": "Redactor IA", "type": "main", "index": 0 }]]
+    },
+    "Redactor IA": {
+      "main": [[{ "node": "Parsear JSON Artículo", "type": "main", "index": 0 }]]
+    },
+    "Parsear JSON Artículo": {
+      "main": [[{ "node": "POST: Guardar Contenido", "type": "main", "index": 0 }]]
+    },
+    "POST: Guardar Contenido": {
+      "main": [[{ "node": "Llamar Image Generator", "type": "main", "index": 0 }]]
+    },
+    "Llamar Image Generator": {
+      "main": [[{ "node": "Responder OK", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "PNri7NdZYkZhpPnm"
+  },
+  "pinData": {}
+}
