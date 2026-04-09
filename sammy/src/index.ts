@@ -27,7 +27,7 @@ async function main() {
     telegramAllowedUserIds: new Set(env.TELEGRAM_ALLOWED_USER_IDS),
     groqApiKey: env.GROQ_API_KEY || '',
     openrouterApiKey: env.OPENROUTER_API_KEY || '',
-    openrouterModel: 'openrouter/auto',
+    openrouterModel: 'google/gemini-2.0-flash-lite-001',
     minimaxApiKey: env.MINIMAX_API_KEY || '',
     minimaxModel: 'MiniMax-M2.7',
     dbPath: env.DB_PATH,
