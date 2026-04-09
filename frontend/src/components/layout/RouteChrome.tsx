@@ -8,7 +8,14 @@ export function RouteChrome() {
   const pathname = usePathname();
 
   if (!pathname) return null;
-  if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) {
+  if (
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/embed/') ||
+    pathname.startsWith('/pruebalo/') ||
+    pathname.startsWith('/sitio/') ||
+    pathname.startsWith('/marca/')
+  ) {
     return null;
   }
 

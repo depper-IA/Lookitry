@@ -76,7 +76,7 @@ export function FriendlyProductSelector({
         <p className="text-sm md:text-base font-black text-gray-900 uppercase italic tracking-tight">¿Qué quieres probarte?</p>
         <p className="text-[10px] md:text-sm text-gray-500 font-medium uppercase tracking-widest mt-0.5">Toca el producto que más te guste</p>
       </div>
-      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 md:gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 md:gap-3">
         {products.map(p => {
           const sel = selected?.id === p.id;
           const alreadyGenerated = generatedProducts.has(p.id);

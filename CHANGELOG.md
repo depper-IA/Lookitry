@@ -1,5 +1,107 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-08] - Template Modern Neo-Luxury Redesign
+
+### Nueva Estética: Neo-Luxury con Profundidad
+- **Sidebar decorativo**: Gradiente sutil, borde de acento con color de marca, sombra 2xl
+- **Step indicators**: Círculos con glow effect, sombras suaves, escala animada en hover
+- **Progress bar**: Conexiones visuales entre pasos, colores derivados del primary
+- **Product cards desktop**: Transiciones suaves, `translateX` en selección, badges con pulse
+- **Product cards mobile**: Grid con glow radial cuando seleccionado, aspect-ratio square
+- **Selected product card**: Glassmorphism con gradiente, glow effect decorativo
+- **Empty state**: Icono grande con fondo sutil, mensaje amigable
+- **Top bar desktop**: Backdrop blur 60, badge de status "En vivo"
+- **Botones**: Shadows-xl a 2xl, hover scale, transiciones fluidas
+- **Paleta derivada**: `adjustBrightness()` para generar primaryDark, primaryGlow, primarySubtle
+
+### Mejoras de UX
+- Responsive breakpoint ajustado a 768px (md en lugar de 600px)
+- Selfie preview card con glassmorphism en mobile
+- Mejor jerarquía visual con tipografía más marcada
+- Animaciones staggered en productos (40ms delay)
+- Ambient glow effects con blur para profundidad
+
+## [2026-04-08] - Full Responsive Widget Templates
+
+### Template Showcase - Responsive Completo
+- **Grid productos**: `grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5` (móvil→tablet→laptop→desktop)
+- **Gaps**: `gap-3 sm:gap-4 md:gap-5` (espaciado progresivo)
+- **Padding contenido**: `px-4 sm:px-6 md:px-8 lg:px-12` (margen lateral adaptativo)
+- **Padding BottomCTA**: `p-3 sm:p-4`, `max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl`
+- **SelfiePreview**: Tamaño de imagen `w-12 h-12 sm:w-14 sm:h-14`, padding `p-3 sm:p-4`
+- **Header**: Logo `h-7 sm:h-9`, padding `px-4 sm:px-6 py-3 sm:py-4`
+- **Título "Elige tu look"**: `text-2xl sm:text-3xl md:text-4xl lg:text-5xl`
+- **Hero spacing**: `space-y-6 sm:space-y-8`
+- **pb-40**: `pb-36 sm:pb-40 md:pb-44` (espacio extra para CTA en diferentes pantallas)
+
+### Template Showcase Redesign (Mobile)
+
+### Nueva Identidad Visual: Editorial Fashion Vitrine
+- **Header**: Glassmorphism sticky con backdrop-blur-2xl, logo + botón reiniciar
+- **SelfiePreview**: Card flotante glassmorphism con glow effect del color de marca
+- **ProductGrid**: **Grid 2 columnas** (no scroll horizontal) con:
+  - Cards con aspect-ratio square e imagen cover
+  - Hover effect: scale + overlay gradient + nombre desliza desde abajo
+  - Ring de selección con glow del color de marca
+  - Badges de estado (generado/seleccionado) en esquina
+  - Animación staggered por índice
+- **BottomCTA**: Glassmorphism fixed con blur 20px, flecha de navegación
+- **Estilo general**: Editorial/Magazine - vitrina de moda inmersiva
+
+### Diferencias vs Modern Template
+| Aspecto | Showcase (nuevo) | Modern |
+|---------|-----------------|--------|
+| Layout | Grid 2col, sin sidebar | Sidebar lateral |
+| Scroll | Vertical natural | Horizontal en sidebar |
+| Cards | Glassmorphism + glow | Solid cards |
+| Header | Sticky glass | Colored header |
+| Preview | Overlay flotante | Inline bar |
+
+## [2026-04-08] - Widget Scroll Fixes
+
+### Navegación en Widgets (Critical Fix)
+- **RouteChrome**: Excluidos `/embed/`, `/pruebalo/`, `/sitio/`, `/marca/` de MobileBottomNav y CookieConsent
+- **Motivo**: El bottom nav y cookie banner NO deben aparecer en páginas de widgets públicos
+- Estos cambios ya están en producción (ambos servers retornan 200 OK)
+
+### Template Showcase Mobile
+- **Contenido scroll**: Reducido `pb-24` a `pb-4` ya que BottomCTA es fixed y no requiere padding extra en el scroll area
+
+## [2026-04-08] - Dashboard & Settings Responsive Audit
+
+### Layout y Navegación
+- **DashboardLayout**: Corregido padding-top del main para coincidir con altura del header sticky (64px móvil, 80px tablet+)
+- **DashboardBottomNav**: Navegación móvil ya tenía `md:hidden` con 5 items principales (Inicio, Productos, Pruebas IA, Resultados, Perfil)
+
+### Dashboard Principal
+- **Hero grid**: Agregado `grid-cols-1` base antes del breakpoint `lg:grid-cols-[1.35fr_0.95fr]` para correcto stacking en móvil
+
+### Analytics
+- **KPI grid**: Agregado breakpoint `xs:grid-cols-2` para pantallas muy pequeñas (320px+), gap reducido a `gap-4 sm:gap-6`
+
+### Productos (ThumbnailsView)
+- **Grid columnas**: Agregado `xl:grid-cols-6` para desktops anchos, gap mejorado a `gap-3 sm:gap-4 md:gap-6`
+
+### Suscripción
+- **Título del plan**: Tamaño responsivo progresivo `text-4xl sm:text-5xl lg:text-6xl xl:text-7xl` para mejor visualización en todos los tamaños
+
+### Settings Page
+- **Template grid**: `grid-cols-2 sm:grid-cols-4 lg:grid-cols-4` con gaps `gap-3 sm:gap-4`
+- **Bottom actions**: `flex-col sm:flex-row` con stacking vertical en móvil, botones full-width
+- **Logo upload**: Layout vertical en móvil `flex-col sm:flex-row`, logo 64x64 en móvil
+- **Color pickers**: `grid-cols-1 sm:grid-cols-2`, color inputs `h-12 w-12 sm:h-14 sm:w-14`
+- **Name/Slug y ButtonText/Welcome**: `grid-cols-1 sm:grid-cols-2` con gap 6
+
+## [2026-04-08] - Responsive Widget Templates
+
+### Mejoras de Responsive
+- **TemplateBare**: Contenedor más adaptable con `max-w-md sm:max-w-lg` para mejor visualización en móviles
+- **TemplateShowcase**: Productos con anchos responsivos `w-28 sm:w-32 md:w-36`, flechas de scroll reducidas en móvil `w-8 h-8 sm:w-10 sm:h-10`
+- **TemplateModernSidebar**: Grid de productos mejorado `grid-cols-2 sm:grid-cols-3` para mejor aprovechamiento en pantallas pequeñas
+- **TemplateBoldProStudio**: Anchos de productos responsivos `w-24 sm:w-28 sm:w-36`
+- **FriendlyProductSelector**: Grid ajustado a `grid-cols-3 sm:grid-cols-4 md:grid-cols-5` para mejor distribución
+- **ResultDisplay**: Layout del plugin con breakpoints md para grid de acciones
+
 ## [2026-04-08] - JSON-to-HTML Generation (Blog v2)
 
 ### Arquitectura Corregida
@@ -34,9 +136,20 @@
 - Image Generator: l4Mb3wMfHUnsbEXH (usa Replicate, NO OpenRouter)
 
 ### Pendientes
-- [ ] Tablas blog_draft_articles y blog_topic_images no versionadas en schema
+- [x] Tablas blog_draft_articles y blog_topic_images versionadas en schema ✅
 - [ ] API key de Replicate hardcodeada en workflows
 - [ ] Por verificar Article Producer en producción
+
+## [2026-04-08] - Schema Actualizado (Blog)
+
+### Tablas Versionadas
+- `blog_draft_articles` - Artículos en proceso de generación (JSON estructurado)
+- `blog_topic_images` - Imágenes generadas para artículos
+- Total de tablas: 26 → 28
+
+### Políticas RLS Agregadas
+- `blog_draft_articles_service_role_all` - Solo service_role tiene acceso
+- `blog_topic_images_service_role_all` - Solo service_role tiene acceso
 
 ## [2026-04-08] - Fixes Críticos de Templates y Panel
 

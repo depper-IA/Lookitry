@@ -150,7 +150,7 @@ function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
 
 function ThumbnailsView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
       <AnimatePresence mode='popLayout'>
         {products.map((product, idx) => (
           <motion.div

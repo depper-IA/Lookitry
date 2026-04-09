@@ -406,7 +406,7 @@ export default function DashboardPage() {
         className="relative overflow-hidden rounded-[2.2rem] border border-[#FF5C3A]/20 bg-[linear-gradient(135deg,rgba(255,92,58,0.08),var(--bg-card)_28%,var(--bg-card)_100%)] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.1)] md:p-10 dark:border-[#FF5C3A]/15 dark:bg-[linear-gradient(135deg,rgba(255,92,58,0.10),rgba(20,20,20,0.96)_28%,rgba(10,10,10,1)_100%)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.28)]"
       >
         <div className="absolute right-0 top-0 h-36 w-36 rounded-full bg-[#FF5C3A]/10 blur-3xl" />
-        <div className="relative grid gap-8 lg:grid-cols-[1.35fr_0.95fr]">
+        <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-[1.35fr_0.95fr]">
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-3">
               <span className="rounded-full border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">
