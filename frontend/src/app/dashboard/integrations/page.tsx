@@ -141,13 +141,32 @@ export default function IntegrationsPage() {
 
    const copyToClipboard = () => {
       if (apiKey.includes('•')) return;
-      navigator.clipboard.writeText(apiKey);
+      try {
+        navigator.clipboard.writeText(apiKey);
+      } catch {
+        // Fallback para contextos seguros
+        const input = document.createElement('input');
+        input.value = apiKey;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
    };
 
    const copyCodeBlock = (code: string) => {
-      navigator.clipboard.writeText(code);
+      try {
+        navigator.clipboard.writeText(code);
+      } catch {
+        const input = document.createElement('input');
+        input.value = code;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
       setCodeCopied(true);
       setTimeout(() => setCodeCopied(false), 2000);
    };

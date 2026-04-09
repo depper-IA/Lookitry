@@ -48,7 +48,16 @@ export default function ReferralPage() {
 
   const copyCode = () => {
     if (data?.referralCode) {
-      navigator.clipboard.writeText(data.referralCode);
+      try {
+        navigator.clipboard.writeText(data.referralCode);
+      } catch {
+        const input = document.createElement('input');
+        input.value = data.referralCode;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
