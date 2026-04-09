@@ -103,6 +103,7 @@ export default function IntegrationsPage() {
    const { brand, refreshBrand } = useAuth();
    const [showKey, setShowKey] = useState(false);
    const [copied, setCopied] = useState(false);
+   const [codeCopied, setCodeCopied] = useState(false);
    const [metricsLoading, setMetricsLoading] = useState(true);
    const [wooMetrics, setWooMetrics] = useState<null | WooMetrics>(null);
 
@@ -138,12 +139,17 @@ export default function IntegrationsPage() {
             ? 'Activa tu plan y conecta la API para marcarlo como activo'
             : 'Aún no hay evidencia de activación del plugin';
 
-
    const copyToClipboard = () => {
       if (apiKey.includes('•')) return;
       navigator.clipboard.writeText(apiKey);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+   };
+
+   const copyCodeBlock = (code: string) => {
+      navigator.clipboard.writeText(code);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
    };
 
    const steps = [
@@ -265,10 +271,10 @@ export default function IntegrationsPage() {
                               </button>
                               <button
                                  onClick={copyToClipboard}
-                                 className={`flex-1 md:flex-none px-6 md:px-10 py-3 md:py-4 ${copied ? 'bg-emerald-500' : 'bg-[#0a0a0a]'} text-white rounded-lg md:rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-2 md:gap-3`}
+                                 className={`flex-1 md:flex-none px-6 md:px-10 py-3 md:py-4 ${copied ? 'bg-emerald-500' : 'bg-[#0a0a0a]'} text-white rounded-lg md:rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-2 md:gap-3 relative`}
                               >
                                  {copied ? <Check size={14} /> : <Copy size={14} />}
-                                 {copied ? 'Listo' : 'Copiar clave'}
+                                 {copied ? '¡Copiado!' : 'Copiar clave'}
                               </button>
                            </div>
                         </div>
@@ -365,7 +371,21 @@ export default function IntegrationsPage() {
                      </div>
                      <div className="bg-zinc-800/50 backdrop-blur-3xl rounded-3xl border border-white/5 p-8 md:p-12 font-mono text-[12px] text-zinc-400 leading-relaxed shadow-deep ring-1 ring-white/10 relative group/code overflow-hidden">
                         <div className="absolute top-4 right-6 flex gap-2.5">
-                           <X className="w-3 h-3 text-zinc-600" />
+                           <button 
+                              onClick={() => copyCodeBlock(`// Engine Try-On
+await lookitry.init("${apiKey.substring(0, 8)}");
+
+const { image } = await lookitry.render({
+  sku: "LK-PREMIUM-01",
+  source: user_media_stream,
+  enhancement: 0.95
+});`)}
+                              className="p-2 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white"
+                              title="Copiar script"
+                           >
+                              {codeCopied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                              {codeCopied ? '¡Copiado!' : 'Copiar'}
+                           </button>
                         </div>
                         <pre className="mt-4 opacity-90 overflow-x-auto no-scrollbar whitespace-pre">
                            {`// Engine Try-On

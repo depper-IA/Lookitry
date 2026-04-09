@@ -49,6 +49,7 @@ export interface UpdateBrandDto {
   modal_features?: string[] | null;
   show_brand_name?: boolean | null;
   custom_domain?: string | null;
+  onboarding_dismissed?: boolean;
 }
 
 export class BrandsService {

@@ -2,11 +2,11 @@
 
 ## 🔴 Críticos (Bloquean funcionamiento)
 
-| # | Tema | Descripción | Archivos |
-|---|------|-------------|----------|
-| 1 | **Versionar tablas en schema** | `blog_draft_articles` y `blog_topic_images` no existen en `backend/supabase-schema.sql` | `supabase/schema.sql` |
-| 2 | **Verificar Article Producer** | No hay certeza de que el workflow en producción envíe JSON estructurado | n8n workflow VMAu93Zx4k5qgzdm |
-| 3 | **API Key en credentials** | La key de Replicate está hardcodeada en workflows | Workflows n8n |
+| # | Tema | Descripción | Archivos | Estado |
+|---|------|-------------|----------|--------|
+| 1 | **Versionar tablas en schema** | `blog_draft_articles` y `blog_topic_images` agregadas a `backend/supabase-schema.sql` | `backend/supabase-schema.sql` | ✅ Listo |
+| 2 | **Verificar Article Producer** | Workflow verifica JSON estructurado con sections, faqs, cta_context, image_prompts | n8n workflow VMAu93Zx4k5qgzdm | ✅ Verificado |
+| 3 | **API Key en credentials** | La key de Replicate está hardcodeada en workflows | Workflows n8n | ⏳ Pendiente |
 
 ---
 

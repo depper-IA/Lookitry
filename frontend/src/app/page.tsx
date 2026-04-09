@@ -34,8 +34,25 @@ export default async function HomePage() {
   const basicPrice = pricing?.basic?.precio_mensual_cop ?? 150000;
   const proPrice = pricing?.pro?.precio_mensual_cop ?? 250000;
 
-  // Testimonios curados para la home premium
-  const reviews = [
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+  
+  let dynamicReviews = null;
+  try {
+    const res = await fetch(`${API_URL}/api/reviews/public`, { 
+        next: { revalidate: 3600 } 
+    });
+    if (res.ok) {
+        const data = await res.json();
+        if (data.reviews && data.reviews.length > 0) {
+            dynamicReviews = data.reviews;
+        }
+    }
+  } catch (err) {
+    console.error("Error fetching reviews", err);
+  }
+
+  // Testimonios curados para la home premium como fallback si falla la bd
+  const reviews = dynamicReviews || [
     {
       id: '1',
       rating: 5,

@@ -32,6 +32,7 @@ export interface Brand {
   created_at: string;
   updated_at: string;
   custom_domain: string | null;
+  onboarding_dismissed?: boolean;
 }
 
 export type ReviewStatus = 'pending' | 'approved' | 'rejected';

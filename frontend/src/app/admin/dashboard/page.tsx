@@ -8,7 +8,7 @@ import {
   ArrowRight, ExternalLink, BarChart2, AlertTriangle, XCircle,
   Clock, ChevronRight, Activity, Zap, Target, Plus,
   MoreHorizontal, Search, Filter, ArrowUpDown, Eye, Pencil, Trash2,
-  CheckCircle2, CircleDashed, Sparkles, Play, Pause
+  CheckCircle2, CircleDashed, Sparkles, Play, Pause, Star
 } from 'lucide-react';
 import { adminApi } from '@/services/adminApi';
 
@@ -20,6 +20,7 @@ interface GlobalStats {
   successRate: number;
   brandsByPlan: { BASIC: number; PRO: number; TRIAL: number };
   landingStats: { active: number; suspended: number; inactive: number };
+  reviewsStats?: { pendingCount: number; recentApproved: any[] };
 }
 
 interface ConversionStats {
@@ -329,8 +330,9 @@ export default function AdminDashboardPage() {
 
       {/* Bottom Grid */}
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        {/* Plan Distribution */}
-        <motion.section
+        <div className="space-y-6">
+          {/* Plan Distribution */}
+          <motion.section
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12 }}
@@ -383,6 +385,65 @@ export default function AdminDashboardPage() {
             <MiniStat icon={<MinusCircle className="h-4 w-4" />} value={landingStats.inactive} label="Inactivas" color="#64748b" />
           </div>
         </motion.section>
+
+        {/* Reviews Section */}
+        {global.reviewsStats && (
+          <motion.section
+            initial={{ opacity: 0, y: 22 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.14 }}
+            className="rounded-[2rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-xl md:p-8"
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em]" style={{ color: 'var(--text-muted)' }}>
+                  Feedback
+                </p>
+                <div className="flex items-center gap-3">
+                  <h3 className="mt-1 text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                    Reseñas recientes
+                  </h3>
+                  {global.reviewsStats.pendingCount > 0 && (
+                    <span className="flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-500 border border-amber-500/20">
+                      <Sparkles className="h-3 w-3" /> {global.reviewsStats.pendingCount} pendientes
+                    </span>
+                  )}
+                </div>
+              </div>
+              <a href="/admin/feedback" className="text-xs font-bold uppercase tracking-wider text-[var(--accent)] transition-all hover:opacity-80">
+                Ver todas <ExternalLink className="ml-1 inline h-3 w-3" />
+              </a>
+            </div>
+
+            <div className="space-y-4">
+              {global.reviewsStats.recentApproved.length === 0 ? (
+                <p className="py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>Sin reseñas aprobadas recientes.</p>
+              ) : (
+                global.reviewsStats.recentApproved.map((review) => (
+                  <div key={review.id} className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] p-4 relative overflow-hidden transition-all hover:border-[var(--accent)]/30">
+                    {review.is_featured && (
+                      <div className="absolute right-3 top-3 text-[var(--accent)]">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3 mb-2">
+                       <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{review.reviewer_name}</p>
+                       <span className="flex text-amber-400">
+                          {Array.from({ length: review.rating }).map((_, i) => (
+                            <Star key={i} className="w-3 h-3 fill-current" />
+                          ))}
+                       </span>
+                    </div>
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                       &quot;{review.comment}&quot;
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.section>
+        )}
+        </div>
 
         {/* Recent Activity */}
         <motion.section
