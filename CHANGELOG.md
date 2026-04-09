@@ -1,44 +1,4 @@
 # Changelog - Lookitry (AI Assisted)
- 
-+## [2026-04-09] - Dynamic Image Proxy & Security Rules
-+
-+### Frontend - Proxy de Imágenes
-+- **Implementación Dinámica**: El proxy `/api/img-proxy` ahora valida dominios contra la base de datos de Supabase en tiempo real.
-+- **Soporte SaaS**: Autoriza automáticamente sitios de WooCommerce, dominios personalizados y sitios web definidos en el perfil de marca.
-+- **Optimización**: Añadido caché en memoria con TTL de 10 minutos para dominios autorizados.
-+- **Seguridad**: Mantenimiento de protección SSRF y DNS resolution.
-+
-+### Documentación y Reglas
-+- **REGLAS_IMPORTANTES.md**: Agregada sección "6. Reglas de Proxy y Multimedia" que prohíbe whitelists estáticas para dominios de clientes.
-+
-+### Archivos Modificados
-+- `frontend/src/app/api/img-proxy/route.ts`
-+- `REGLAS_IMPORTANTES.md`
-+
-
-## [2026-04-09] - Mejora Visual Topbar y ThemeToggle
-
-### Frontend - Diseño Premium
-
-#### PublicTopbar Rediseñado
-- **Nuevo diseño**: Topbar con logo SVG de Lookitry (círculo con gradiente naranja), nombre de marca con acento `#FF5C3A`
-- **Navegación desktop**: Links con hover underline animado en `#FF5C3A`
-- **CTA "Prueba gratis"**: Botón con sombra naranja y efecto hover scale
-- **Header dinámico**: Altura aumenta con scroll, blur backdrop, borde sutil naranja
-- **Menú mobile**: Overlay animado con framer-motion, transición suave
-
-#### ThemeToggle Premium
-- **Diseño pill/switch**: Toggle elegante en lugar de botón circular básico
-- **Animaciones**: 
-  - Icono sol/luna con rotación y scale (framer-motion)
-  - Knob deslizante con spring physics
-  - Estrellas decorativas (modo oscuro) / puntos brillantes (modo claro)
-- **Efecto glow**: Resplandor naranja `#FF5C3A` en modo oscuro
-- **Hover**: Efecto radial de brillo surrounds the toggle
-
-### Archivos Modificados
-- `frontend/src/components/ui/ThemeToggle.tsx` - Rediseño completo con animaciones
-- `frontend/src/components/layout/PublicTopbar.tsx` - Topbar premium con logo y navegación
 
 ## [2026-04-09] - Segundo Cerebro: RAG + NotebookLM Bridge
 
