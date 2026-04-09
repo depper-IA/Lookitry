@@ -102,7 +102,12 @@ async function main() {
     console.log(`📨 Message from ${ctx.from?.id}: ${text.substring(0, 100)}`);
     try {
       const response = await agent.run(text, `telegram_${ctx.from?.id}`);
-      await ctx.reply(response, { parse_mode: 'HTML' });
+      try {
+        await ctx.reply(response, { parse_mode: 'Markdown' });
+      } catch (parseError: any) {
+        console.warn('Markdown parse failed, sending as plain text', parseError.message);
+        await ctx.reply(response);
+      }
     } catch (error) {
       console.error('Agent error:', error);
       await ctx.reply('⚠️ Error processing your request. Please try again.');
