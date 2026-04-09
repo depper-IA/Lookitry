@@ -147,6 +147,7 @@ if not only_back and not only_front:
     if current_sha != remote_sha:
         backend_changed = (
             contains_path(changed_files, "backend/")
+            or contains_path(changed_files, "sammy/")
             or "docker-compose.backend.yml" in changed_files
         )
         frontend_changed = (

@@ -1,4 +1,142 @@
 # Changelog - Lookitry (AI Assisted)
+ 
++## [2026-04-09] - Dynamic Image Proxy & Security Rules
++
++### Frontend - Proxy de Imágenes
++- **Implementación Dinámica**: El proxy `/api/img-proxy` ahora valida dominios contra la base de datos de Supabase en tiempo real.
++- **Soporte SaaS**: Autoriza automáticamente sitios de WooCommerce, dominios personalizados y sitios web definidos en el perfil de marca.
++- **Optimización**: Añadido caché en memoria con TTL de 10 minutos para dominios autorizados.
++- **Seguridad**: Mantenimiento de protección SSRF y DNS resolution.
++
++### Documentación y Reglas
++- **REGLAS_IMPORTANTES.md**: Agregada sección "6. Reglas de Proxy y Multimedia" que prohíbe whitelists estáticas para dominios de clientes.
++
++### Archivos Modificados
++- `frontend/src/app/api/img-proxy/route.ts`
++- `REGLAS_IMPORTANTES.md`
++
+
+## [2026-04-09] - Mejora Visual Topbar y ThemeToggle
+
+### Frontend - Diseño Premium
+
+#### PublicTopbar Rediseñado
+- **Nuevo diseño**: Topbar con logo SVG de Lookitry (círculo con gradiente naranja), nombre de marca con acento `#FF5C3A`
+- **Navegación desktop**: Links con hover underline animado en `#FF5C3A`
+- **CTA "Prueba gratis"**: Botón con sombra naranja y efecto hover scale
+- **Header dinámico**: Altura aumenta con scroll, blur backdrop, borde sutil naranja
+- **Menú mobile**: Overlay animado con framer-motion, transición suave
+
+#### ThemeToggle Premium
+- **Diseño pill/switch**: Toggle elegante en lugar de botón circular básico
+- **Animaciones**: 
+  - Icono sol/luna con rotación y scale (framer-motion)
+  - Knob deslizante con spring physics
+  - Estrellas decorativas (modo oscuro) / puntos brillantes (modo claro)
+- **Efecto glow**: Resplandor naranja `#FF5C3A` en modo oscuro
+- **Hover**: Efecto radial de brillo surrounds the toggle
+
+### Archivos Modificados
+- `frontend/src/components/ui/ThemeToggle.tsx` - Rediseño completo con animaciones
+- `frontend/src/components/layout/PublicTopbar.tsx` - Topbar premium con logo y navegación
+
+## [2026-04-09] - Segundo Cerebro: RAG + NotebookLM Bridge
+
+### Infraestructura - Sistema de Conocimiento Bidireccional
+
+#### RAG para Agentes (Embeddings)
+- **Tabla `project_knowledge`**: Nueva tabla en Supabase con columna `embedding vector(768)` para similitud semántica
+- **Índices**: IVFFlat para búsqueda vectorial, RPC `upsert_project_knowledge` y `search_project_knowledge`
+- **Workflow n8n**: `project-knowledge-rag-workflow.json` — indexa documentación core (PRD, DESIGN, TECH_STACK, REGLAS_IMPORTANTES)
+- **Endpoints backend**: `/api/agent/rag/search`, `/api/agent/rag/stats`, `/api/agent/rag/list`, `/api/agent/rag/index`
+
+#### Puente NotebookLM (Google Drive Sync)
+- **Workflow n8n**: `notebooklm-drive-sync-workflow.json` — sincroniza archivos .md a Google Drive
+- **Script**: `scripts/sync_project_knowledge.py` — detecta cambios en commits, soporta modo hook y manual
+- **Git Hook**: `scripts/git-hooks/post-receive` — automatiza sync en cada push a main
+
+### Archivos Creados
+- `supabase/migrations/20260409_create_project_knowledge.sql`
+- `docs/n8n/workflows/project-knowledge-rag-workflow.json`
+- `docs/n8n/workflows/notebooklm-drive-sync-workflow.json`
+- `scripts/sync_project_knowledge.py`
+- `scripts/git-hooks/post-receive`
+- `docs/PROJECT_KNOWLEDGE_RAG.md`
+- `backend/src/routes/agent.routes.ts`
+
+## [2026-04-09] - Fix Modal Bienvenida PRO
+
+### Frontend - Modal Bienvenida PRO
+- **Problema**: El modal de bienvenida PRO aparecía cada vez que el usuario abría su cuenta
+- **Solución**: Nueva clave `pro_welcome_shown_{brand.id}` en localStorage que se setea permanentemente la primera vez
+- **Archivo**: `frontend/src/app/dashboard/DashboardRouteShell.tsx`
+- **Lógica**: Si el plan es PRO y NO se ha mostrado antes, se muestra y se marca como mostrado. La marca nunca se borra para que solo aparezca UNA SOLA VEZ
+
+## [2026-04-09] - Sammy Orchestrator Deployment
+
+### Infraestructura - Microservicio Sammy
+- **Objetivo**: Desplegar Sammy (orquestador de agentes) como contenedor Docker 24/7 en el VPS de producción
+- **Arquitectura**: Opción B - Microservicio separado, integrado en `docker-compose.backend.yml` con límites de memoria (300M límite, 100M reserva)
+- **Volumen persistente**: `sammy_data` para SQLite memory, montaje del proyecto Lookitry (`/root/virtual-tryon:/app/project:ro`)
+- **Healthcheck**: Básico, verifica que el proceso Node esté activo
+- **Script deploy**: Actualizado `scripts/_deploy_now.py` para detectar cambios en directorio `sammy/` y disparar rebuild
+
+### Servicio Sammy - Agente Orquestador
+- **Punto de entrada**: `sammy/src/index.ts` integra bot Telegram, agent, LLM providers (MiniMax, Groq, OpenRouter), tools, memory SQLite
+- **Variables de entorno**: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALLOWED_USER_IDS`, `MINIMAX_API_KEY`, `GROQ_API_KEY`, `PROJECT_ROOT`, `API_BASE_URL`, etc.
+- **Herramientas**: `list_files`, `read_file`, `search_code`, `git_status`, `get_current_time`, `read_project_context`
+- **Sincronización**: `AgentActivitySync` y `HeartbeatService` opcionales con backend Lookitry
+- **Build**: TypeScript compilado a `dist/`, Dockerfile multi‑stage (Node 20 Alpine)
+
+### Archivos Creados/Modificados:
+- `sammy/` (directorio completo con estructura modular)
+- `docker-compose.backend.yml` (servicio `sammy` agregado)
+- `scripts/_deploy_now.py` (detección de cambios en `sammy/`)
+- `CHANGELOG.md` (esta entrada)
+
+## [2026-04-09] - Project Knowledge RAG System (Segundo Cerebro)
+
+### Sistema RAG para Agentes - Embedding de Documentación
+- **Tabla `project_knowledge`**: Nueva tabla en Supabase con pgvector para almacenar embeddings de documentación core
+- **Workflow n8n RAG**: `docs/n8n/workflows/project-knowledge-rag-workflow.json` - Indexa documentos via webhook
+- **Webhook**: `POST /webhook/project-knowledge-rag` para recibir archivos y generar embeddings Gemini
+- **RPC Functions**: `upsert_project_knowledge` y `search_project_knowledge` para upsert y búsqueda semántica
+
+### API Endpoints RAG (Backend)
+- **POST /api/agent/rag/search**: Búsqueda semántica con embeddings (usa Gemini para query embedding)
+- **GET /api/agent/rag/stats**: Estadísticas de documentos indexados
+- **GET /api/agent/rag/list**: Listar todos los documentos
+- **POST /api/agent/rag/index**: Indexar documento manualmente via n8n
+
+### Puente NotebookLM (Google Drive Sync)
+- **Workflow n8n**: `docs/n8n/workflows/notebooklm-drive-sync-workflow.json`
+- **Script Python**: `scripts/sync_project_knowledge.py` - Sincroniza a n8n RAG y Google Drive
+- **Git Hook**: `scripts/git-hooks/post-receive` - Automatiza sync en push a main
+
+### Archivos Creados:
+- `supabase/migrations/20260409_create_project_knowledge.sql` - Schema + funciones RPC
+- `docs/n8n/workflows/project-knowledge-rag-workflow.json` - Workflow n8n RAG
+- `docs/n8n/workflows/notebooklm-drive-sync-workflow.json` - Workflow n8n Drive sync
+- `scripts/sync_project_knowledge.py` - Script de sincronización
+- `scripts/git-hooks/post-receive` - Git hook para automation
+- `docs/PROJECT_KNOWLEDGE_RAG.md` - Documentación completa del sistema
+
+### Archivos Modificados:
+- `backend/src/routes/agent.routes.ts` - Agregados 4 endpoints RAG
+
+---
+
+## [2026-04-09] - Fix Mobile Touch Referral Buttons
+
+### Corrección Mobile - Página de Referidos
+- **Botón "Copiar código"**: Agregado `min-h-[44px] min-w-[44px]`, `p-3`, `active:scale-95`, `aria-label`, iconos `h-5 w-5`, tooltip reposicionado a `-top-9` con `whitespace-nowrap`
+- **Botón "Aplicar"**: Cambiado layout a `flex-col gap-3 sm:flex-row` para mobile, `min-h-[48px] py-4 px-8`, iconos `h-5 w-5`, `aria-label`
+- **Input código**: Agregado `min-h-[48px] py-4 text-base` para mejor touch target
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/referral/page.tsx`
+
+---
 
 ## [2026-04-09] - Dashboard UX & Reviews Integration
 

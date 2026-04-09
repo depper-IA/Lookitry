@@ -1,0 +1,48 @@
+#!/bin/bash
+# Git post-receive hook para sincronizar documentación a n8n RAG y Google Drive
+# Ubicación: .git/hooks/post-receive
+# 
+# Para instalar:
+#   cp scripts/git-hooks/post-receive .git/hooks/post-receive
+#   chmod +x .git/hooks/post-receive
+
+# Configuración
+REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+KNOWLEDGE_SYNC_SCRIPT="$REPO_ROOT/scripts/sync_project_knowledge.py"
+LOG_FILE="$REPO_ROOT/logs/knowledge_sync.log"
+
+# Crear directorio de logs si no existe
+mkdir -p "$REPO_ROOT/logs"
+
+# Logging
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
+
+# Leer input del hook
+read OLD_COMMIT NEW_COMMIT REF_NAME
+
+# Solo procesar pushes a main/master
+if [[ "$REF_NAME" != "refs/heads/main" && "$REF_NAME" != "refs/heads/master" ]]; then
+    log "Skipping push to $REF_NAME (only main/master are processed)"
+    exit 0
+fi
+
+log "=== Knowledge Sync Triggered ==="
+log "Branch: $REF_NAME"
+log "Old commit: $OLD_COMMIT"
+log "New commit: $NEW_COMMIT"
+
+# Ejecutar script de sync
+cd "$REPO_ROOT"
+python3 "$KNOWLEDGE_SYNC_SCRIPT" --git-hook 2>&1 | tee -a "$LOG_FILE"
+SYNC_EXIT=$?
+
+if [ $SYNC_EXIT -eq 0 ]; then
+    log "Knowledge sync completed successfully"
+else
+    log "Knowledge sync failed with exit code $SYNC_EXIT"
+fi
+
+log "=== Knowledge Sync Finished ==="
+exit $SYNC_EXIT

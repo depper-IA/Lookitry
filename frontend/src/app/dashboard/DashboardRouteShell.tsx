@@ -39,14 +39,15 @@ export function DashboardRouteShell({
           localStorage.setItem('brand', JSON.stringify(brand));
           dispatchAuthStateChanged();
 
-          const prevPlan = localStorage.getItem('brand_plan');
-          const proBannerSeenKey = `pro_upgrade_banner_seen_${brand.id}`;
-          const alreadySeenProBanner = localStorage.getItem(proBannerSeenKey) === '1';
+          // Solo mostrar el modal de bienvenida PRO una única vez
+          // La marca 'pro_welcome_shown_{id}' se setea permanently y nunca se borra
+          const proWelcomeKey = `pro_welcome_shown_${brand.id}`;
+          const hasShownProWelcome = localStorage.getItem(proWelcomeKey) === '1';
 
-          if (brand.plan === 'PRO' && prevPlan !== 'PRO' && !alreadySeenProBanner) {
+          if (brand.plan === 'PRO' && !hasShownProWelcome) {
+            localStorage.setItem(proWelcomeKey, '1');
             setShowProBanner(true);
           }
-          localStorage.setItem('brand_plan', brand.plan);
 
           const subscriptionAnchor = brand.subscriptionStartDate ? new Date(brand.subscriptionStartDate) : null;
           const threeDaysMs = 3 * 24 * 60 * 60 * 1000;

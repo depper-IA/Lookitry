@@ -1,0 +1,230 @@
+{
+  "name": "Lookitry - Project Knowledge RAG",
+  "description": "Indexa documentación del proyecto (PRD, DESIGN, TECH_STACK, REGLAS) para RAG de agentes. Se dispara via webhook con datos del archivo.",
+  "nodes": [
+    {
+      "id": "webhook-trigger",
+      "name": "Webhook - Recibir documento",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "project-knowledge-rag",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "typeVersion": 2,
+      "webhookId": "project-knowledge-rag"
+    },
+    {
+      "id": "validate-input",
+      "name": "Validar entrada",
+      "type": "n8n-nodes-base.code",
+      "position": [460, 300],
+      "parameters": {
+        "jsCode": "// Validar y normalizar entrada\nconst body = $input.first().json.body ?? $input.first().json;\n\nconst fileName = body.file_name;\nconst filePath = body.file_path || body.file_name;\nconst content = body.content;\nconst version = body.version || new Date().toISOString().split('T')[0];\n\n// Validar campos requeridos\nif (!fileName) {\n  throw new Error('file_name es requerido');\n}\n\nif (!content) {\n  throw new Error('content es requerido');\n}\n\n// Determinar tipo de documento\nlet docType = 'OTHER';\nconst upperFileName = fileName.toUpperCase();\nif (upperFileName.includes('PRD')) docType = 'PRD';\nelse if (upperFileName.includes('DESIGN')) docType = 'DESIGN';\nelse if (upperFileName.includes('TECH_STACK')) docType = 'TECH_STACK';\nelse if (upperFileName.includes('REGLAS') || upperFileName.includes('RULES')) docType = 'REGLAS';\nelse if (upperFileName.includes('CHANGELOG')) docType = 'CHANGELOG';\nelse if (upperFileName.includes('README')) docType = 'README';\nelse if (upperFileName.includes('AGENTS')) docType = 'AGENTS';\n\n// Calcular hash del contenido para detectar cambios\nconst contentHash = require('crypto')\n  .createHash('sha256')\n  .update(content)\n  .digest('hex');\n\nreturn [{\n  json: {\n    file_name: fileName,\n    file_path: filePath,\n    content: content,\n    content_hash: contentHash,\n    version: version,\n    doc_type: docType\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "check-existing",
+      "name": "Supabase - Verificar existente",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [680, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "https://vkdooutklowctuudjnkl.supabase.co/rest/v1/project_knowledge?file_path=eq.{{ $json.file_path }}&select=id,content_hash",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "***REMOVED-SECRET***"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer ***REMOVED-SECRET***"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "filter-changes",
+      "name": "Filtrar si hay cambios",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 300],
+      "parameters": {
+        "jsCode": "// Verificar si el contenido cambió\nconst existing = $input.first().json;\nconst current = $('Validar entrada').first().json;\n\nconst hasExisting = Array.isArray(existing) && existing.length > 0;\nconst sameHash = hasExisting && existing[0]?.content_hash === current.content_hash;\n\nif (hasExisting && sameHash) {\n  // No hay cambios, terminar\n  return [{ json: { skip: true, reason: 'content_unchanged', file_name: current.file_name } }];\n}\n\n// Devolver el registro existente si hay (para update) o null\nreturn [{\n  json: {\n    skip: false,\n    existing_id: hasExisting ? existing[0]?.id : null,\n    ...current\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "skip-node",
+      "name": "Saltar si sin cambios",
+      "type": "n8n-nodes-base.if",
+      "position": [1120, 300],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "skip-condition",
+              "parameter": "{{ $json.skip }}",
+              "type": "boolean",
+              "booleanValue": false
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "prepare-content",
+      "name": "Preparar contenido para embedding",
+      "type": "n8n-nodes-base.code",
+      "position": [1340, 200],
+      "parameters": {
+        "jsCode": "// Preparar texto optimizado para embedding\nconst data = $('Filtrar si hay cambios').first().json;\n\n// Truncar si es muy largo (Gemini tiene límites)\nlet content = data.content;\nconst maxLength = 8000; // Safe limit for embedding\n\nif (content.length > maxLength) {\n  // Tomar primero y último (mejor retención de contexto)\n  const chunkSize = Math.floor(maxLength / 2);\n  content = content.substring(0, chunkSize) + '\\n\\n...[contenido truncado]...\\n\\n' + content.substring(content.length - chunkSize);\n}\n\n// Crear texto enriquecido para embedding\nconst embedText = `[${data.doc_type}] ${data.file_name}\\n\\n${content}`;\n\nreturn [{\n  json: {\n    file_name: data.file_name,\n    file_path: data.file_path,\n    content: data.content,\n    content_hash: data.content_hash,\n    version: data.version,\n    doc_type: data.doc_type,\n    existing_id: data.existing_id,\n    embedding_text: embedText\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "gemini-embedding",
+      "name": "Gemini - Generar embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1560, 200],
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      { \"text\": {{ JSON.stringify($json.embedding_text) }} }\n    ]\n  },\n  \"taskType\": \"RETRIEVAL_DOCUMENT\",\n  \"outputDimensionality\": 768\n}"
+      },
+      "typeVersion": 4.2,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ReWa7OVkhJwwgxXG",
+          "name": "Info.sam API"
+        }
+      }
+    },
+    {
+      "id": "extract-embedding",
+      "name": "Extraer embedding",
+      "type": "n8n-nodes-base.code",
+      "position": [1780, 200],
+      "parameters": {
+        "jsCode": "// Extraer y validar embedding de Gemini\nconst response = $input.first().json;\nconst previousData = $('Preparar contenido para embedding').first().json;\n\nconst embedding = response.embedding?.values ?? [];\n\nif (!Array.isArray(embedding) || embedding.length === 0) {\n  throw new Error(`Gemini no devolvio embedding valido. Respuesta: ${JSON.stringify(response).slice(0, 400)}`);\n}\n\nif (embedding.length !== 768) {\n  throw new Error(`Dimension incorrecta: esperadas 768, recibidas ${embedding.length}`);\n}\n\nreturn [{\n  json: {\n    ...previousData,\n    embedding: embedding,\n    dimensions: embedding.length\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "supabase-upsert",
+      "name": "Supabase - Upsert conocimiento",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [2000, 200],
+      "parameters": {
+        "method": "POST",
+        "url": "https://vkdooutklowctuudjnkl.supabase.co/rest/v1/rpc/upsert_project_knowledge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "***REMOVED-SECRET***"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer ***REMOVED-SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  p_file_name: $json.file_name,\n  p_file_path: $json.file_path,\n  p_content: $json.content,\n  p_content_hash: $json.content_hash,\n  p_embedding: $json.embedding,\n  p_version: $json.version,\n  p_doc_type: $json.doc_type\n}) }}"
+      }
+    },
+    {
+      "id": "respond-success",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [2220, 200],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \n  ok: true, \n  file_name: $json.file_name,\n  doc_type: $json.doc_type,\n  dimensions: $json.dimensions,\n  message: 'Knowledge indexed successfully'\n} }}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "respond-skipped",
+      "name": "Responder Saltado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1340, 460],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \n  ok: true, \n  skipped: true, \n  reason: $('Filtrar si hay cambios').first().json.reason,\n  file_name: $('Filtrar si hay cambios').first().json.file_name\n} }}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "log-error",
+      "name": "Log error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [2400, 300],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Webhook - Recibir documento": {
+      "main": [[{ "node": "Validar entrada", "type": "main", "index": 0 }]]
+    },
+    "Validar entrada": {
+      "main": [[{ "node": "Supabase - Verificar existente", "type": "main", "index": 0 }]]
+    },
+    "Supabase - Verificar existente": {
+      "main": [[{ "node": "Filtrar si hay cambios", "type": "main", "index": 0 }]]
+    },
+    "Filtrar si hay cambios": {
+      "main": [[{ "node": "Saltar si sin cambios", "type": "main", "index": 0 }]]
+    },
+    "Saltar si sin cambios": {
+      "main": [
+        [{ "node": "Preparar contenido para embedding", "type": "main", "index": 0 }],
+        [{ "node": "Responder Saltado", "type": "main", "index": 0 }]
+      ]
+    },
+    "Preparar contenido para embedding": {
+      "main": [[{ "node": "Gemini - Generar embedding", "type": "main", "index": 0 }]]
+    },
+    "Gemini - Generar embedding": {
+      "main": [[{ "node": "Extraer embedding", "type": "main", "index": 0 }]]
+    },
+    "Extraer embedding": {
+      "main": [[{ "node": "Supabase - Upsert conocimiento", "type": "main", "index": 0 }]]
+    },
+    "Supabase - Upsert conocimiento": {
+      "main": [[{ "node": "Responder OK", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "tags": [{ "name": "SaaS" }]
+}

@@ -39,6 +39,91 @@ const ALLOWED_HOSTS = [
   'supabase.co',
 ];
 
+// Cache persistente en memoria para dominios dinámicos (10 min TTL)
+const authorizedDomainsCache = new Map<string, { authorized: boolean; expires: number }>();
+const CACHE_TTL = 10 * 60 * 1000;
+
+/**
+ * Verifica si un host está autorizado, ya sea por la lista estática o dinámicamente en la DB.
+ */
+async function isDomainAuthorized(hostname: string): Promise<boolean> {
+  const now = Date.now();
+  
+  // 1. Verificar caché
+  const cached = authorizedDomainsCache.get(hostname);
+  if (cached && cached.expires > now) {
+    return cached.authorized;
+  }
+
+  // 2. Verificar lista estática (Fast track)
+  const isStaticallyAllowed = ALLOWED_HOSTS.some(allowed => 
+    hostname === allowed || hostname.endsWith(`.${allowed}`)
+  );
+  if (isStaticallyAllowed) {
+    authorizedDomainsCache.set(hostname, { authorized: true, expires: now + CACHE_TTL });
+    return true;
+  }
+
+  // 3. Consulta dinámica a Supabase
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    // Usamos SERVICE_KEY si está disponible para saltar RLS, si no ANON_KEY
+    const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('[Img Proxy] Credenciales de Supabase no encontradas para validación dinámica');
+      return false;
+    }
+
+    // Buscamos en la tabla 'brands' cualquier registro que coincida con el hostname solicitado.
+    // Revisamos: website, custom_domain, y campos dentro de social_links (jsonb).
+    const query = new URL(`${supabaseUrl}/rest/v1/brands`);
+    query.searchParams.set('select', 'id');
+    
+    // Construimos el filtro OR buscando el hostname en múltiples campos
+    // Se incluyen variantes con/sin protocolo para mayor robustez
+    const conditions = [
+      `website.ilike.*${hostname}*`,
+      `custom_domain.eq.${hostname}`,
+      `social_links->>website.ilike.*${hostname}*`,
+      `social_links->>woo_plugin_store_domain.eq.${hostname}`,
+      `social_links->>allowed_origins.ilike.*${hostname}*`
+    ];
+    query.searchParams.set('or', `(${conditions.join(',')})`);
+
+    const res = await fetch(query.toString(), {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+      },
+      // @ts-ignore - signal: AbortSignal.timeout is stable in modern Node
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!res.ok) {
+      console.warn(`[Img Proxy] Supabase query falló: ${res.status}`);
+      return false;
+    }
+
+    const data = await res.json();
+    const authorized = Array.isArray(data) && data.length > 0;
+
+    // Guardar en caché el resultado (tanto positivos como negativos para evitar DDOS al proxy)
+    authorizedDomainsCache.set(hostname, { authorized, expires: now + CACHE_TTL });
+    
+    if (authorized) {
+      console.log(`[Img Proxy] Dominio autorizado dinámicamente via DB: ${hostname}`);
+    } else {
+      console.warn(`[Img Proxy] Intento de acceso desde dominio no autorizado: ${hostname}`);
+    }
+
+    return authorized;
+  } catch (err: any) {
+    console.error(`[Img Proxy] Error en validación dinámica para ${hostname}:`, err.message);
+    return false;
+  }
+}
+
 // Rangos de IP privados/internos que deben ser bloqueados (prevención SSRF)
 function isPrivateOrInternalIP(ip: string): boolean {
   // IPv4 loopback
@@ -91,15 +176,12 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Invalid URL', { status: 400 });
   }
 
-  // Verificar que el hostname esté en la allowlist
+  // Verificar que el hostname esté autorizado (estático o dinámico)
   const hostname = parsedUrl.hostname.toLowerCase();
-  const isAllowed = ALLOWED_HOSTS.some(allowed => 
-    hostname === allowed || hostname.endsWith(`.${allowed}`)
-  );
+  const isAuthorized = await isDomainAuthorized(hostname);
 
-  if (!isAllowed) {
-    console.warn(`[Img Proxy] Dominio no permitido: ${hostname}`);
-    return new NextResponse('Dominio no permitido', { status: 403 });
+  if (!isAuthorized) {
+    return new NextResponse('Dominio no permitido. Registra tu sitio en el perfil de Lookitry.', { status: 403 });
   }
 
   // Verificar que no apunte a IPs internas (prevención SSRF)
