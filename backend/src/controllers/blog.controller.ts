@@ -449,6 +449,118 @@ async function getCtaTemplates(): Promise<Record<string, CtaTemplate>> {
   };
 }
 
+/**
+ * Auto-ensambla y publica el artículo cuando todas las imágenes están listas.
+ * Se llama automáticamente después de cada upload de imagen.
+ */
+async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean; message: string; slug?: string }> {
+  try {
+    console.log(`[Blog AutoAssemble] Verificando si topic ${topicId} está listo para ensamblar...`);
+
+    // 1. Verificar que existe draft
+    const { data: draft, error: draftError } = await supabaseAdmin
+      .from('blog_draft_articles')
+      .select('*')
+      .eq('topic_id', topicId)
+      .maybeSingle();
+
+    if (draftError || !draft) {
+      return { success: false, message: 'No hay draft para ensamblar' };
+    }
+
+    // 2. Verificar imágenes
+    const { data: images, error: imagesError } = await supabaseAdmin
+      .from('blog_topic_images')
+      .select('imagen_hero_url, imagen_body1_url, imagen_body2_url, imagen_body3_url, imagen_body4_url, status')
+      .eq('topic_id', topicId)
+      .maybeSingle();
+
+    if (imagesError || !images) {
+      return { success: false, message: 'No hay imágenes para ensamblar' };
+    }
+
+    // 3. Verificar que al menos el hero esté presente
+    if (!images.imagen_hero_url) {
+      return { success: false, message: 'Hero image aún no está lista' };
+    }
+
+    // 4. Si ya está publicado, no hacer nada
+    const { data: existingBlog } = await supabaseAdmin
+      .from('blogs')
+      .select('slug')
+      .eq('topic_id', topicId)
+      .maybeSingle();
+
+    if (existingBlog) {
+      return { success: true, message: 'Ya publicado', slug: existingBlog.slug };
+    }
+
+    // 5. Obtener CTA templates
+    const ctaTemplates = await getCtaTemplates();
+
+    // 6. Generar HTML con las imágenes disponibles (usa pool para body images)
+    const finalHtml = generateArticleHTML(
+      draft as BlogDraftArticle,
+      images as BlogTopicImages,
+      ctaTemplates,
+      []
+    );
+
+    // 7. Obtener categoría
+    let categoryId = null;
+    const targetSlug = (draft as BlogDraftArticle).category_slug || 'ia';
+    const { data: cat } = await supabaseAdmin
+      .from('blog_categories')
+      .select('id')
+      .eq('slug', targetSlug)
+      .maybeSingle();
+    if (cat) categoryId = cat.id;
+
+    // 8. Crear slug único
+    const articleSlug = await buildUniqueBlogSlug((draft as BlogDraftArticle).title || `article-${topicId}`);
+
+    // 9. Insertar artículo
+    const insertData = {
+      title: (draft as BlogDraftArticle).title,
+      content: finalHtml,
+      excerpt: (draft as BlogDraftArticle).excerpt,
+      meta_description: (draft as BlogDraftArticle).meta_description || (draft as BlogDraftArticle).excerpt,
+      featured_image: images.imagen_hero_url,
+      category_id: categoryId,
+      tags: (draft as BlogDraftArticle).tags,
+      toc_items: (draft as BlogDraftArticle).toc_items,
+      status: 'published',
+      slug: articleSlug,
+      topic_id: topicId,
+      published_at: new Date().toISOString(),
+    };
+
+    const { data: publishedPost, error: publishError } = await supabaseAdmin
+      .from('blogs')
+      .insert(insertData)
+      .select()
+      .maybeSingle();
+
+    if (publishError) {
+      console.error(`[Blog AutoAssemble] Error publicando:`, publishError);
+      return { success: false, message: 'Error al publicar' };
+    }
+
+    // 10. Marcar topic como published
+    await supabaseAdmin
+      .from('blog_topics')
+      .update({ status: 'published', updated_at: new Date().toISOString() })
+      .eq('id', topicId);
+
+    console.log(`[Blog AutoAssemble] Artículo publicado para topic ${topicId}: ${articleSlug}`);
+
+    return { success: true, message: 'Publicado exitosamente', slug: articleSlug };
+  } catch (error: any) {
+    console.error(`[Blog AutoAssemble] Error:`, error);
+    return { success: false, message: sanitizeError(error, 'Error en auto-assemble') };
+  }
+}
+
 export const blogController = {
   /**
    * n8n Webhook: Crea un post de blog directamente.
@@ -779,6 +891,12 @@ export const blogController = {
               .insert({ topic_id: topicId, ...updateField });
           }
           console.log(`[Blog Upload] Imagen ${normalizedType} guardada en blog_topic_images para topic ${topicId}: ${url}`);
+
+          // AUTO-ASSEMBLE: Verificar si todas las imágenes están listas y publicar
+          const autoResult = await autoAssembleIfReady(topicId);
+          if (autoResult.success) {
+            console.log(`[Blog Upload] Auto-assemble exitoso: ${autoResult.slug}`);
+          }
         }
 
         return res.status(200).json(result);
@@ -825,6 +943,12 @@ export const blogController = {
           await supabaseAdmin.from('blog_topic_images').insert({ topic_id, ...updateField });
         }
         console.log(`[Blog Upload Base64] Imagen ${normalizedType} guardada para topic ${topic_id}: ${url}`);
+
+        // AUTO-ASSEMBLE: Verificar si todas las imágenes están listas y publicar
+        const autoResult = await autoAssembleIfReady(topic_id);
+        if (autoResult.success) {
+          console.log(`[Blog Upload Base64] Auto-assemble exitoso: ${autoResult.slug}`);
+        }
       }
 
       return res.status(200).json(result);
