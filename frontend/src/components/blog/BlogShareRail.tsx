@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Facebook, Linkedin, Link2, MessageCircle } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface BlogShareRailProps {
   title: string;
@@ -18,6 +19,7 @@ function XIcon() {
 
 export function BlogShareRail({ title, url }: BlogShareRailProps) {
   const [copied, setCopied] = useState(false);
+  const { isDark } = useTheme();
 
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
@@ -57,11 +59,11 @@ export function BlogShareRail({ title, url }: BlogShareRailProps) {
 
   return (
     <aside className="hidden 2xl:flex fixed left-6 top-1/2 -translate-y-1/2 z-40">
-      <div className="flex flex-col items-center gap-3 rounded-[1.75rem] border border-white/10 bg-[#111111]/95 px-3 py-4 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur">
-        <span className="[writing-mode:vertical-rl] rotate-180 text-[10px] font-bold uppercase tracking-[0.28em] text-[#999]">
+      <div className={`flex flex-col items-center gap-3 rounded-[1.75rem] border ${isDark ? 'border-white/10 bg-[#111111]/95 shadow-[0_24px_70px_rgba(0,0,0,0.28)]' : 'border-black/5 bg-white/95 shadow-[0_12px_40px_rgba(0,0,0,0.08)]'} px-3 py-4 backdrop-blur transition-all duration-300`}>
+        <span className={`[writing-mode:vertical-rl] rotate-180 text-[10px] font-bold uppercase tracking-[0.28em] ${isDark ? 'text-[#999]' : 'text-gray-400'}`}>
           Compartir
         </span>
-        <div className="h-10 w-px bg-white/10" />
+        <div className={`h-10 w-px ${isDark ? 'bg-white/10' : 'bg-black/5'}`} />
         {shareItems.map((item) => {
           return (
             <a
@@ -70,7 +72,11 @@ export function BlogShareRail({ title, url }: BlogShareRailProps) {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={item.label}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#FF5C3A]/25 bg-[#191919] text-[#FF5C3A] transition-all hover:-translate-y-0.5 hover:border-[#FF5C3A] hover:bg-[#221613]"
+              className={`flex h-11 w-11 items-center justify-center rounded-full border border-[#FF5C3A]/25 transition-all hover:-translate-y-0.5 hover:border-[#FF5C3A] ${
+                isDark 
+                  ? 'bg-[#191919] text-[#FF5C3A] hover:bg-[#221613]' 
+                  : 'bg-[#fff5f2] text-[#FF5C3A] hover:bg-[#ffece6]'
+              }`}
             >
               {item.icon}
             </a>
@@ -79,7 +85,11 @@ export function BlogShareRail({ title, url }: BlogShareRailProps) {
         <button
           type="button"
           onClick={copyLink}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-[#FF5C3A]/25 bg-[#191919] text-[#FF5C3A] transition-all hover:-translate-y-0.5 hover:border-[#FF5C3A] hover:bg-[#221613]"
+          className={`flex h-11 w-11 items-center justify-center rounded-full border border-[#FF5C3A]/25 transition-all hover:-translate-y-0.5 hover:border-[#FF5C3A] ${
+            isDark 
+              ? 'bg-[#191919] text-[#FF5C3A] hover:bg-[#221613]' 
+              : 'bg-[#fff5f2] text-[#FF5C3A] hover:bg-[#ffece6]'
+          }`}
           aria-label="Copiar enlace del artículo"
           title="Copiar enlace"
         >

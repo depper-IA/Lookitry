@@ -5,8 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, ChevronDown, Layout, Zap, Terminal, User, LogOut, ArrowRight } from 'lucide-react';
 import { authService } from '@/services/auth.service';
-import { usePromoBanner } from '@/context/PromoBannerContext';
+import { usePromoBanner } from '@/contexts/PromoBannerContext';
 import { usePublicSession } from '@/hooks/usePublicSession';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 
 interface LandingNavProps {
   currency?: 'COP' | 'USD';
@@ -25,6 +27,7 @@ export default function LandingNav({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const megaMenuRef = useRef<HTMLDivElement>(null);
   const { session } = usePublicSession();
+  const { toggleTheme, isDark } = useTheme();
 
   useEffect(() => {
     if (!externalCurrency) {
@@ -345,31 +348,44 @@ export default function LandingNav({
           aria-label="Menu de navegacion"
         >
           <div className="mx-auto my-auto flex w-full max-w-sm flex-col items-center gap-6 rounded-[2rem] border border-black/10 bg-white px-5 py-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.12)] dark:border-white/8 dark:bg-white/[0.03] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-            <div className="flex flex-col items-center justify-center gap-3">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-black/25 dark:text-white/25">Moneda</span>
-              <div
-                className="flex items-center gap-2.5 rounded-full border border-black/10 bg-black/5 px-3 py-1.5 dark:border-white/10 dark:bg-white/5"
-                role="group"
-                aria-label="Selector de moneda"
-              >
-                <button
-                  onClick={() => onCurrencyChange('COP')}
-                  aria-pressed={currency === 'COP'}
-                  className={`cursor-pointer text-xs font-bold uppercase transition-colors ${
-                    currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/35 dark:text-white/35'
-                  }`}
+            <div className="flex w-full items-center justify-center gap-8 px-4">
+              <div className="flex flex-col items-center gap-3">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-black/25 dark:text-white/25">Moneda</span>
+                <div
+                  className="flex items-center gap-2.5 rounded-full border border-black/10 bg-black/5 px-3 py-1.5 dark:border-white/10 dark:bg-white/5"
+                  role="group"
+                  aria-label="Selector de moneda"
                 >
-                  COP
-                </button>
-                <div className="h-2.5 w-[1px] bg-black/10 dark:bg-white/10" aria-hidden="true" />
+                  <button
+                    onClick={() => onCurrencyChange('COP')}
+                    aria-pressed={currency === 'COP'}
+                    className={`cursor-pointer text-xs font-bold uppercase transition-colors ${
+                      currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/35 dark:text-white/35'
+                    }`}
+                  >
+                    COP
+                  </button>
+                  <div className="h-2.5 w-[1px] bg-black/10 dark:bg-white/10" aria-hidden="true" />
+                  <button
+                    onClick={() => onCurrencyChange('USD')}
+                    aria-pressed={currency === 'USD'}
+                    className={`cursor-pointer text-xs font-bold uppercase transition-colors ${
+                      currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/35 dark:text-white/35'
+                    }`}
+                  >
+                    USD
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center gap-3">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-black/25 dark:text-white/25">Tema</span>
                 <button
-                  onClick={() => onCurrencyChange('USD')}
-                  aria-pressed={currency === 'USD'}
-                  className={`cursor-pointer text-xs font-bold uppercase transition-colors ${
-                    currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/35 dark:text-white/35'
-                  }`}
+                  onClick={toggleTheme}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/5 text-[#FF5C3A] transition-all active:scale-95 dark:border-white/10 dark:bg-white/5"
+                  aria-label={isDark ? 'Modo claro' : 'Modo oscuro'}
                 >
-                  USD
+                  {isDark ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
               </div>
             </div>

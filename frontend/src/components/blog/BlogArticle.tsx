@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/utils/cn';
 import { 
   Calendar, 
   Tag, 
@@ -88,9 +90,7 @@ function slugify(text: string): string {
     .trim();
 }
 
-function cn(...classes: (string | boolean | undefined | null)[]): string {
-  return classes.filter(Boolean).join(' ');
-}
+
 
 function getRandomCTA() {
   return CTA_INTERESTS[0]; // Stable fallback for SSR
@@ -119,6 +119,7 @@ function ReadingProgress() {
 export function TableOfContents({ items, className }: { items: TocItem[]; className?: string }) {
   const [activeId, setActiveId] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -157,7 +158,12 @@ export function TableOfContents({ items, className }: { items: TocItem[]; classN
       {/* Mobile Toggle */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="xl:hidden w-full flex items-center justify-between p-4 bg-gradient-to-r from-[#FF5C3A]/10 to-transparent rounded-xl border border-[#FF5C3A]/20 mb-3"
+        className={cn(
+          "xl:hidden w-full flex items-center justify-between p-4 rounded-xl border mb-3",
+          isDark 
+            ? "bg-gradient-to-r from-[#FF5C3A]/10 to-transparent border-[#FF5C3A]/20" 
+            : "bg-white border-[#FF5C3A]/10 shadow-sm"
+        )}
         whileTap={{ scale: 0.98 }}
       >
         <span className="text-xs font-bold uppercase tracking-widest text-[#FF5C3A] flex items-center gap-2">
@@ -204,8 +210,8 @@ export function TableOfContents({ items, className }: { items: TocItem[]; classN
               className={cn(
                 "block py-2 text-sm transition-all duration-200 border-l-2 pl-4 relative overflow-hidden group",
                 activeId === item.id
-                  ? "border-[#FF5C3A] text-white font-semibold"
-                  : "border-transparent text-[#999] hover:text-white hover:border-white/30"
+                  ? cn("border-[#FF5C3A] font-semibold", isDark ? "text-white" : "text-gray-900")
+                  : cn("border-transparent hover:border-[#FF5C3A]/30", isDark ? "text-[#999] hover:text-white" : "text-gray-500 hover:text-gray-900")
               )}
             >
               <span className={cn(
@@ -217,7 +223,10 @@ export function TableOfContents({ items, className }: { items: TocItem[]; classN
                   "w-5 h-5 rounded-full border flex items-center justify-center text-[10px] transition-all",
                   activeId === item.id 
                     ? "border-[#FF5C3A] bg-[#FF5C3A] text-white" 
-                    : "border-white/30 text-white/50 group-hover:border-[#FF5C3A]/50"
+                    : cn(
+                        "group-hover:border-[#FF5C3A]/50",
+                        isDark ? "border-white/30 text-white/50" : "border-gray-300 text-gray-400"
+                      )
                 )}>
                   {index + 1}
                 </span>
@@ -237,6 +246,7 @@ export function TableOfContents({ items, className }: { items: TocItem[]; classN
 
 function ShareButtons({ title, url }: { title: string; url: string }) {
   const [copied, setCopied] = useState(false);
+  const { isDark } = useTheme();
 
   const handleCopy = useCallback(async () => {
     try {
@@ -260,7 +270,12 @@ function ShareButtons({ title, url }: { title: string; url: string }) {
         href={shareLinks.twitter}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-10 h-10 rounded-full bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-[#999] hover:text-[#1DA1F2] hover:border-[#1DA1F2]/50 transition-all"
+        className={cn(
+          "w-10 h-10 rounded-full flex items-center justify-center transition-all",
+          isDark 
+            ? "bg-[#1a1a1a] border border-white/10 text-[#999] hover:text-[#1DA1F2] hover:border-[#1DA1F2]/50" 
+            : "bg-white border border-black/10 text-gray-500 hover:text-[#1DA1F2] hover:border-[#1DA1F2]/50 shadow-sm"
+        )}
         aria-label="Compartir en Twitter"
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.95 }}
@@ -271,7 +286,12 @@ function ShareButtons({ title, url }: { title: string; url: string }) {
         href={shareLinks.linkedin}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-10 h-10 rounded-full bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-[#999] hover:text-[#0A66C2] hover:border-[#0A66C2]/50 transition-all"
+        className={cn(
+          "w-10 h-10 rounded-full flex items-center justify-center transition-all",
+          isDark 
+            ? "bg-[#1a1a1a] border border-white/10 text-[#999] hover:text-[#0A66C2] hover:border-[#0A66C2]/50" 
+            : "bg-white border border-black/10 text-gray-500 hover:text-[#0A66C2] hover:border-[#0A66C2]/50 shadow-sm"
+        )}
         aria-label="Compartir en LinkedIn"
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.95 }}
@@ -282,7 +302,12 @@ function ShareButtons({ title, url }: { title: string; url: string }) {
         href={shareLinks.facebook}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-10 h-10 rounded-full bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-[#999] hover:text-[#1877F2] hover:border-[#1877F2]/50 transition-all"
+        className={cn(
+          "w-10 h-10 rounded-full flex items-center justify-center transition-all",
+          isDark 
+            ? "bg-[#1a1a1a] border border-white/10 text-[#999] hover:text-[#1877F2] hover:border-[#1877F2]/50" 
+            : "bg-white border border-black/10 text-gray-500 hover:text-[#1877F2] hover:border-[#1877F2]/50 shadow-sm"
+        )}
         aria-label="Compartir en Facebook"
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.95 }}
@@ -291,7 +316,12 @@ function ShareButtons({ title, url }: { title: string; url: string }) {
       </motion.a>
       <motion.button
         onClick={handleCopy}
-        className="w-10 h-10 rounded-full bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-[#999] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/50 transition-all"
+        className={cn(
+          "w-10 h-10 rounded-full flex items-center justify-center transition-all",
+          isDark 
+            ? "bg-[#1a1a1a] border border-white/10 text-[#999] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/50" 
+            : "bg-white border border-black/10 text-gray-500 hover:text-[#FF5C3A] hover:border-[#FF5C3A]/50 shadow-sm"
+        )}
         aria-label="Copiar enlace"
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.95 }}
@@ -319,6 +349,7 @@ function ShareButtons({ title, url }: { title: string; url: string }) {
 function InlineCTA({ type = 'default' }: { type?: 'default' | 'highlight' | 'minimal' }) {
   const [cta, setCta] = useState(CTA_INTERESTS[0]);
   const [mounted, setMounted] = useState(false);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -332,14 +363,19 @@ function InlineCTA({ type = 'default' }: { type?: 'default' | 'highlight' | 'min
   if (type === 'minimal') {
     return (
       <motion.div
-        className="my-8 inline-flex items-center gap-3 px-5 py-3 rounded-full border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 text-sm"
+        className={cn(
+          "my-8 inline-flex items-center gap-3 px-5 py-3 rounded-full border text-sm",
+          isDark 
+            ? "border-[#FF5C3A]/20 bg-[#FF5C3A]/5 shadow-none" 
+            : "border-[#FF5C3A]/20 bg-white shadow-sm shadow-[#FF5C3A]/10"
+        )}
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
         <Icon size={16} className="text-[#FF5C3A]" />
-        <span className="text-gray-300">¿Te interesa?</span>
-        <Link href={cta.href} className="text-[#FF5C3A] font-semibold hover:underline flex items-center gap-1">
+        <span className={isDark ? "text-gray-300" : "text-gray-700 font-medium"}>¿Te interesa?</span>
+        <Link href={cta.href} className="text-[#FF5C3A] font-bold hover:underline flex items-center gap-1">
           {cta.label} <ChevronRight size={14} />
         </Link>
       </motion.div>
@@ -351,8 +387,17 @@ function InlineCTA({ type = 'default' }: { type?: 'default' | 'highlight' | 'min
       className={cn(
         "my-10 rounded-2xl border p-6 md:p-8",
         type === 'highlight' 
-          ? "bg-gradient-to-r from-[#FF5C3A]/10 via-[#FF5C3A]/5 to-transparent border-[#FF5C3A]/30" 
-          : "bg-[#141414] border-white/10"
+          ? cn(
+              "bg-gradient-to-r", 
+              isDark 
+                ? "border-[#FF5C3A]/30 from-[#FF5C3A]/10 via-[#FF5C3A]/5 to-transparent shadow-none" 
+                : "border-[#FF5C3A]/20 from-[#FF5C3A]/10 via-[#FF5C3A]/5 to-white shadow-lg shadow-[#FF5C3A]/5"
+            )
+          : cn(
+              isDark 
+                ? "bg-[#141414] border-white/10 shadow-none" 
+                : "bg-white border-black/5 shadow-xl shadow-black/5"
+            )
       )}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -368,7 +413,7 @@ function InlineCTA({ type = 'default' }: { type?: 'default' | 'highlight' | 'min
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-[#FF5C3A] mb-1">Contenido relacionado</p>
-            <p className="text-white font-semibold">Descubre cómo {cta.label.toLowerCase()} puede ayudarte</p>
+            <p className={cn("font-semibold", isDark ? "text-white" : "text-gray-900")}>Descubre cómo {cta.label.toLowerCase()} puede ayudarte</p>
           </div>
         </div>
         <motion.div
@@ -394,16 +439,22 @@ function InlineCTA({ type = 'default' }: { type?: 'default' | 'highlight' | 'min
 // ============================================================================
 
 function StatBox({ value, label, icon: Icon }: { value: string; label: string; icon?: React.ElementType }) {
+  const { isDark } = useTheme();
   return (
     <motion.div
-      className="bg-gradient-to-br from-[#FF5C3A]/10 to-transparent rounded-xl p-5 border border-[#FF5C3A]/20"
+      className={cn(
+        "rounded-xl p-5 border",
+        isDark 
+          ? "bg-gradient-to-br from-[#FF5C3A]/10 to-transparent border-[#FF5C3A]/20" 
+          : "bg-white border-[#FF5C3A]/10 shadow-md"
+      )}
       whileHover={{ scale: 1.02 }}
     >
       <div className="flex items-center gap-3 mb-2">
         {Icon && <Icon size={18} className="text-[#FF5C3A]" />}
-        <span className="text-3xl font-black text-white">{value}</span>
+        <span className={cn("text-3xl font-black", isDark ? "text-white" : "text-gray-900")}>{value}</span>
       </div>
-      <p className="text-sm text-gray-400">{label}</p>
+      <p className={cn("text-sm", isDark ? "text-gray-400" : "text-gray-500")}>{label}</p>
     </motion.div>
   );
 }
@@ -413,6 +464,7 @@ function StatBox({ value, label, icon: Icon }: { value: string; label: string; i
 // ============================================================================
 
 function StepBox({ number, title, description }: { number: number; title: string; description: string }) {
+  const { isDark } = useTheme();
   return (
     <motion.div
       className="relative pl-12 py-4"
@@ -424,8 +476,8 @@ function StepBox({ number, title, description }: { number: number; title: string
         <span className="text-white font-black text-sm">{number}</span>
       </div>
       <div className="absolute left-3 top-8 bottom-0 w-0.5 bg-gradient-to-b from-[#FF5C3A]/50 to-transparent" />
-      <h4 className="text-white font-bold mb-1">{title}</h4>
-      <p className="text-gray-400 text-sm leading-relaxed">{description}</p>
+      <h4 className={cn("font-bold mb-1", isDark ? "text-white" : "text-gray-900")}>{title}</h4>
+      <p className={cn("text-sm leading-relaxed", isDark ? "text-gray-400" : "text-gray-600")}>{description}</p>
     </motion.div>
   );
 }
@@ -435,6 +487,7 @@ function StepBox({ number, title, description }: { number: number; title: string
 // ============================================================================
 
 function PullQuote({ text, author }: { text: string; author?: string }) {
+  const { isDark } = useTheme();
   return (
     <motion.blockquote
       className="relative my-10 py-6 px-8 border-l-4 border-[#FF5C3A]"
@@ -443,7 +496,7 @@ function PullQuote({ text, author }: { text: string; author?: string }) {
       viewport={{ once: true }}
     >
       <div className="absolute -top-3 left-8 text-6xl text-[#FF5C3A]/30 font-serif">&quot;</div>
-      <p className="text-xl md:text-2xl text-white font-medium leading-relaxed italic">
+      <p className={cn("text-xl md:text-2xl font-medium leading-relaxed italic", isDark ? "text-white" : "text-gray-800")}>
         {text}
       </p>
       {author && (
@@ -458,6 +511,7 @@ function PullQuote({ text, author }: { text: string; author?: string }) {
 // ============================================================================
 
 function InfoBox({ type, title, children }: { type: 'tip' | 'warning' | 'stat' | 'note'; title: string; children: React.ReactNode }) {
+  const { isDark } = useTheme();
   const styles = {
     tip: {
       bg: 'from-[#22c55e]/10 to-transparent',
@@ -506,9 +560,9 @@ function InfoBox({ type, title, children }: { type: 'tip' | 'warning' | 'stat' |
         >
           <Icon size={16} style={{ color: style.iconColor }} />
         </div>
-        <h4 className="font-bold text-white">{title}</h4>
+        <h4 className={cn("font-bold", isDark ? "text-white" : "text-gray-900")}>{title}</h4>
       </div>
-      <div className="text-gray-300 text-sm leading-relaxed [&>p]:mb-3 [&>p:last-child]:mb-0">
+      <div className={cn("text-sm leading-relaxed [&>p]:mb-3 [&>p:last-child]:mb-0", isDark ? "text-gray-300" : "text-gray-700")}>
         {children}
       </div>
     </motion.div>
@@ -520,41 +574,31 @@ function InfoBox({ type, title, children }: { type: 'tip' | 'warning' | 'stat' |
 // ============================================================================
 
 function ArticleContent({ html }: { html: string }) {
-  // Strip backend-generated header (with hero image, title, excerpt) and inline TOC to avoid UI duplication
+  const { isDark } = useTheme();
+  // Strip backend-generated headers (with or without hero image, title, excerpt) and inline TOC to avoid UI duplication
   // We strip the entire article shell structure since the frontend page renders these elements separately
   let cleanHtml = html
     // Remove the article wrapper
     .replace(/<article class="blog-article">/i, '')
-    // Remove header with hero image, title, excerpt, meta
-    .replace(/<header class="blog-header">[\s\S]*?<\/header>\s*/i, '')
+    // Remove header with hero image (legacy format) - matches any content between header tags
+    .replace(/<header class="blog-header"[^>]*>[\s\S]*?<\/header>\s*/gi, '')
+    // Remove header without hero image (new format - only meta)
+    .replace(/<header class="blog-header-only-meta"[^>]*>[\s\S]*?<\/header>\s*/gi, '')
     // Remove standalone TOC nav (in case it appears outside header)
-    .replace(/<nav class="blog-toc"[^>]*>[\s\S]*?<\/nav>\s*/i, '')
+    .replace(/<nav class="blog-toc"[^>]*>[\s\S]*?<\/nav>\s*/gi, '')
     // Remove blog-layout wrapper div if present
-    .replace(/<div class="blog-layout">/i, '')
+    .replace(/<div class="blog-layout">/gi, '')
     // Remove closing blog-layout div
-    .replace(/<\/div>\s*(<div class="blog-content">)/i, '$1');
+    .replace(/<\/div>\s*(<div class="blog-content">)/gi, '$1');
 
   return (
     <div 
-      className="blog-content relative
-        prose prose-invert prose-lg max-w-none
-        prose-headings:text-white prose-headings:font-black prose-headings:tracking-tight
-        prose-h2:text-3xl prose-h2:mt-16 prose-h2:mb-6 prose-h2:capitalize
-        prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-4 prose-h3:capitalize
-        prose-h4:text-xl prose-h4:mt-8 prose-h4:mb-3 prose-h4:capitalize
-        prose-p:text-gray-300 prose-p:text-justify prose-p:leading-loose prose-p:mb-6
-        prose-a:text-[#FF5C3A] prose-a:font-semibold prose-a:no-underline hover:prose-a:underline hover:prose-a:bg-[#FF5C3A]/10 hover:prose-a:px-1 hover:prose-a:rounded transition-all
-        prose-blockquote:border-l-[#FF5C3A] prose-blockquote:bg-[#FF5C3A]/5 prose-blockquote:rounded-r-xl prose-blockquote:py-2 prose-blockquote:not-italic prose-blockquote:text-gray-300
-        prose-strong:text-white prose-strong:font-bold
-        prose-em:text-gray-200
-        prose-img:rounded-2xl prose-img:shadow-2xl prose-img:border prose-img:border-white/10
-        prose-hr:border-white/10 prose-hr:my-12
-        prose-li:text-gray-300 prose-li:leading-relaxed prose-li:mb-2
-        prose-ul:my-6 prose-ul:space-y-2
-        prose-ol:my-6 prose-ol:space-y-3
-        marker:text-[#FF5C3A] marker:font-bold
-        first-of-type:prose-p:text-justify
-        [&>p:first-of-type::first-letter]:float-left [&>p:first-of-type::first-letter]:text-6xl [&>p:first-of-type::first-letter]:font-black [&>p:first-of-type::first-letter]:text-[#FF5C3A] [&>p:first-of-type::first-letter]:mr-3 [&>p:first-of-type::first-letter]:leading-none [&>p:first-of-type::first-letter]:mt-1"
+      className={cn(
+        "blog-content relative prose prose-lg max-w-none transition-colors duration-300",
+        isDark 
+          ? "prose-invert prose-headings:text-white prose-p:text-gray-300 prose-strong:text-white prose-em:text-gray-200 prose-li:text-gray-300" 
+          : "prose-slate prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-em:text-gray-800 prose-li:text-gray-700"
+      )}
       dangerouslySetInnerHTML={{ __html: cleanHtml }}
     />
   );
@@ -573,9 +617,10 @@ function ArticleFooter({
   publishedAt?: string; 
   readingTime?: string;
 }) {
+  const { isDark } = useTheme();
   return (
     <motion.div 
-      className="mt-12 pt-8 border-t border-white/10"
+      className={cn("mt-12 pt-8 border-t", isDark ? "border-white/10" : "border-gray-200")}
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
@@ -586,7 +631,12 @@ function ArticleFooter({
             {tags.map((tag) => (
               <motion.span 
                 key={tag} 
-                className="rounded-full border border-[#FF5C3A]/20 bg-[#171717] px-4 py-1.5 text-[#FF5C3A] text-xs font-semibold"
+                className={cn(
+                  "rounded-full border px-4 py-1.5 text-[#FF5C3A] text-xs font-bold transition-colors",
+                  isDark 
+                    ? "border-[#FF5C3A]/20 bg-[#171717] hover:bg-[#222]" 
+                    : "border-[#FF5C3A]/10 bg-white hover:bg-gray-50 shadow-sm shadow-[#FF5C3A]/5"
+                )}
                 whileHover={{ scale: 1.05 }}
               >
                 #{tag}
@@ -594,7 +644,7 @@ function ArticleFooter({
             ))}
           </div>
         )}
-        <div className="flex items-center gap-6 text-[#999] text-sm ml-auto">
+        <div className={cn("flex items-center gap-6 text-sm ml-auto", isDark ? "text-[#999]" : "text-gray-500")}>
           {publishedAt && (
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-[#FF5C3A]" />
@@ -620,6 +670,7 @@ function ArticleFooter({
 function NewsletterCTA() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const { isDark } = useTheme();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -630,7 +681,12 @@ function NewsletterCTA() {
 
   return (
     <motion.div
-      className="my-12 rounded-2xl border border-[#FF5C3A]/20 bg-gradient-to-br from-[#FF5C3A]/10 via-[#141414] to-[#141414] p-8"
+      className={cn(
+        "my-12 rounded-2xl border p-8",
+        isDark 
+          ? "border-[#FF5C3A]/20 bg-gradient-to-br from-[#FF5C3A]/10 via-[#141414] to-[#141414]" 
+          : "border-[#FF5C3A]/10 bg-gradient-to-br from-[#FF5C3A]/5 via-white to-white shadow-lg shadow-[#FF5C3A]/5"
+      )}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -640,8 +696,8 @@ function NewsletterCTA() {
           <MessageCircle size={20} className="text-[#FF5C3A]" />
         </div>
         <div>
-          <h4 className="text-white font-bold">Suscríbete al newsletter</h4>
-          <p className="text-gray-400 text-sm">Recibe análisis y guías cada semana</p>
+          <h4 className={cn("font-bold", isDark ? "text-white" : "text-gray-900")}>Suscríbete al newsletter</h4>
+          <p className={cn("text-sm", isDark ? "text-gray-400" : "text-gray-600")}>Recibe análisis y guías cada semana</p>
         </div>
       </div>
       
@@ -661,7 +717,10 @@ function NewsletterCTA() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
-            className="flex-1 px-4 py-3 rounded-xl bg-[#0a0a0a] border border-white/10 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#FF5C3A]/50 transition-colors"
+            className={cn(
+              "flex-1 px-4 py-3 rounded-xl border text-white placeholder:text-gray-500 focus:outline-none focus:border-[#FF5C3A]/50 transition-colors",
+              isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-black/10 text-gray-900"
+            )}
             required
           />
           <motion.button
@@ -683,9 +742,15 @@ function NewsletterCTA() {
 // ============================================================================
 
 function FinalCTA() {
+  const { isDark } = useTheme();
   return (
     <motion.div
-      className="mt-16 rounded-3xl overflow-hidden border border-[#FF5C3A]/30 bg-gradient-to-br from-[#141414] via-[#0a0a0a] to-[#141414] p-10 text-center relative"
+      className={cn(
+        "mt-16 rounded-3xl overflow-hidden border p-10 text-center relative",
+        isDark 
+          ? "border-[#FF5C3A]/30 bg-gradient-to-br from-[#141414] via-[#0a0a0a] to-[#141414]" 
+          : "border-[#FF5C3A]/20 bg-gradient-to-br from-[#FF5C3A]/10 via-white to-white shadow-2xl shadow-[#FF5C3A]/10"
+      )}
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -700,10 +765,10 @@ function FinalCTA() {
           Empieza hoy
         </div>
         
-        <h3 className="text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">
+        <h3 className={cn("text-3xl md:text-4xl font-black mb-4 tracking-tight", isDark ? "text-white" : "text-gray-900")}>
           Transforma tu ecommerce con LOOKITRY
         </h3>
-        <p className="text-gray-400 max-w-xl mx-auto mb-8">
+        <p className={cn("max-w-xl mx-auto mb-8", isDark ? "text-gray-400" : "text-gray-600")}>
           Únete a cientos de marcas de moda que ya están usando Try-On virtual para aumentar sus conversiones y reducir devoluciones.
         </p>
         
@@ -720,7 +785,12 @@ function FinalCTA() {
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Link
               href="/planes"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-white/20 text-white font-bold text-lg hover:border-white/40 transition-colors"
+              className={cn(
+                "inline-flex items-center gap-2 px-8 py-4 rounded-xl border font-bold text-lg transition-colors",
+                isDark 
+                  ? "border-white/20 text-white hover:border-white/40 bg-white/5" 
+                  : "border-[#FF5C3A]/20 text-gray-900 bg-[#FF5C3A]/5 hover:bg-[#FF5C3A]/10"
+              )}
             >
               Ver planes
               <ChevronRight size={20} />
@@ -728,7 +798,7 @@ function FinalCTA() {
           </motion.div>
         </div>
         
-        <div className="flex items-center justify-center gap-6 mt-8 text-sm text-gray-500">
+        <div className={cn("flex items-center justify-center gap-6 mt-8 text-sm", isDark ? "text-gray-500" : "text-gray-400 font-medium")}>
           <span className="flex items-center gap-1">
             <Check size={14} className="text-[#22c55e]" /> Sin tarjeta de crédito
           </span>
@@ -760,6 +830,7 @@ export default function BlogArticle({
   readingTime,
   tocItems = [],
 }: BlogArticleProps) {
+  const { isDark } = useTheme();
   const [shareUrl, setShareUrl] = useState('');
 
   useEffect(() => {
@@ -784,11 +855,11 @@ export default function BlogArticle({
           float: left;
           font-size: 4rem;
           line-height: 1;
-          font-weight: 900;
+          font-weight: 1000;
           color: #FF5C3A;
           margin-right: 0.75rem;
           margin-top: 0.125rem;
-          text-shadow: 0 0 40px rgba(255, 92, 58, 0.3);
+          text-shadow: 0 0 40px rgba(255, 92, 58, 0.2);
         }
 
         /* Enhanced links */
@@ -910,8 +981,8 @@ export default function BlogArticle({
         /* Enhanced images */
         .blog-content img {
           border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+          border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
+          box-shadow: 0 20px 60px ${isDark ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.1)'};
           margin: 2rem 0;
         }
 
@@ -919,7 +990,7 @@ export default function BlogArticle({
         .blog-content hr {
           border: none;
           height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+          background: linear-gradient(90deg, transparent, ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}, transparent);
           margin: 3rem 0;
         }
 
@@ -951,11 +1022,11 @@ export default function BlogArticle({
           margin: 32px 0;
         }
         [data-blog-faq="accordion"] details {
-          background: #1a1a1a;
+          background: ${isDark ? '#1a1a1a' : '#f8f9fa'};
           border-radius: 12px;
           margin-bottom: 12px;
           overflow: hidden;
-          border: 1px solid rgba(255,255,255,0.05);
+          border: 1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
           transition: border-color 0.3s;
         }
         [data-blog-faq="accordion"] details:hover {
@@ -968,7 +1039,7 @@ export default function BlogArticle({
           padding: 16px 20px;
           cursor: pointer;
           font-weight: 600;
-          color: white;
+          color: ${isDark ? 'white' : '#1a1a1a'};
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -991,38 +1062,52 @@ export default function BlogArticle({
         }
         [data-blog-faq="accordion"] div {
           padding: 0 20px 16px 20px;
-          color: #999;
+          color: ${isDark ? '#999' : '#666'};
           line-height: 1.6;
         }
 
-        /* CTA Final */
         [data-blog-cta] {
-          background: linear-gradient(135deg, rgba(255, 92, 58, 0.15) 0%, rgba(255, 92, 58, 0.05) 100%);
-          border: 1px solid rgba(255, 92, 58, 0.4);
-          border-radius: 16px;
-          padding: 32px;
-          margin: 40px 0;
+          background: ${isDark 
+            ? 'linear-gradient(135deg, rgba(255, 92, 58, 0.15) 0%, rgba(255, 92, 58, 0.05) 100%)' 
+            : 'linear-gradient(135deg, rgba(255, 92, 58, 0.08) 0%, rgba(255, 92, 58, 0.02) 100%)'};
+          border: 1px solid ${isDark ? 'rgba(255, 92, 58, 0.2)' : 'rgba(255, 92, 58, 0.15)'};
+          border-radius: 1.5rem;
+          padding: 2.5rem;
+          margin: 3rem 0;
           text-align: center;
+          position: relative;
+          overflow: hidden;
+          box-shadow: ${isDark ? 'none' : '0 20px 40px -20px rgba(255, 92, 58, 0.1)'};
         }
-        [data-blog-cta] h3 {
-          font-size: 24px;
-          font-weight: 700;
-          color: white;
-          margin: 0 0 12px 0;
+
+        [data-blog-cta] h2, [data-blog-cta] h3 {
+          color: ${isDark ? 'white' : '#0a0a0a'};
+          font-size: 1.875rem;
+          font-weight: 900;
+          margin-bottom: 1rem;
+          letter-spacing: -0.025em;
         }
+
         [data-blog-cta] p {
-          color: #999;
-          margin: 0 0 24px 0;
+          color: ${isDark ? '#999' : '#4b5563'};
+          margin-bottom: 2rem;
+          max-width: 32rem;
+          margin-left: auto;
+          margin-right: auto;
         }
+
         [data-blog-cta] a {
-          display: inline-block;
-          background: #FF5C3A;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          background-color: #FF5C3A;
           color: white;
+          padding: 1rem 2rem;
+          border-radius: 0.75rem;
           font-weight: 700;
-          padding: 14px 32px;
-          border-radius: 10px;
           text-decoration: none;
-          transition: background 0.2s;
+          transition: all 0.2s;
+          box-shadow: 0 10px 15px -3px rgba(255, 92, 58, 0.3);
         }
         [data-blog-cta] a:hover {
           background: #e04a2c;
@@ -1055,6 +1140,85 @@ export default function BlogArticle({
           object-fit: cover;
         }
 
+        /* CTA Mid - Intermediate callout box */
+        .blog-cta-mid {
+          background: ${isDark ? '#141414' : '#f8f9fa'};
+          border: 1px solid ${isDark ? 'rgba(255, 92, 58, 0.25)' : 'rgba(255, 92, 58, 0.15)'};
+          border-radius: 16px;
+          padding: 2rem 2.5rem;
+          margin: 3rem 0;
+          position: relative;
+          overflow: hidden;
+          transition: border-color 0.3s ease;
+        }
+        .blog-cta-mid:hover {
+          border-color: ${isDark ? 'rgba(255, 92, 58, 0.4)' : 'rgba(255, 92, 58, 0.25)'};
+        }
+        .blog-cta-mid .cta-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: rgba(255,92,58,0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .blog-cta-mid h3 {
+          color: ${isDark ? '#ffffff' : '#1a1a1a'};
+          margin: 0 0 0.5rem 0;
+          font-size: 1.4rem;
+          font-weight: 700;
+          line-height: 1.3;
+        }
+        .blog-cta-mid p {
+          color: ${isDark ? '#999999' : '#6b7280'};
+          margin: 0;
+          font-size: 0.95rem;
+          line-height: 1.6;
+        }
+        .blog-cta-mid a {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: all 0.2s;
+        }
+        .blog-cta-mid .cta-primary {
+          background: #FF5C3A;
+          color: #fff;
+          padding: 0.75rem 1.5rem;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 0.95rem;
+          text-decoration: none;
+          box-shadow: 0 4px 12px rgba(255,92,58,0.3);
+        }
+        .blog-cta-mid .cta-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(255,92,58,0.4);
+        }
+        .blog-cta-mid .cta-secondary {
+          background: transparent;
+          color: ${isDark ? '#999' : '#6b7280'};
+          padding: 0.75rem 1.25rem;
+          border-radius: 10px;
+          font-weight: 600;
+          font-size: 0.9rem;
+          text-decoration: none;
+          border: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+        }
+        .blog-cta-mid .cta-secondary:hover {
+          border-color: ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)'};
+          color: ${isDark ? '#fff' : '#1a1a1a'};
+        }
+        @media (max-width: 640px) {
+          .blog-cta-mid {
+            padding: 1.5rem;
+          }
+          .blog-cta-mid h3 {
+            font-size: 1.2rem;
+          }
+        }
+
 
         
         /* Responsive adjustments */
@@ -1071,7 +1235,12 @@ export default function BlogArticle({
         }
       `}</style>
 
-      <div className="rounded-[1.75rem] border border-white/10 bg-[#111111] p-8 md:p-12 mb-8 shadow-[0_24px_70px_rgba(0,0,0,0.22)]">
+      <div className={cn(
+        "rounded-[1.75rem] border p-8 md:p-12 mb-8 transition-colors duration-300",
+        isDark 
+          ? "border-white/10 bg-[#111111] shadow-[0_24px_70px_rgba(0,0,0,0.22)]" 
+          : "border-black/5 bg-white shadow-[0_24px_70px_rgba(0,0,0,0.05)]"
+      )}>
         <ArticleContent html={content} />
         
         {/* Inline CTA after main content */}

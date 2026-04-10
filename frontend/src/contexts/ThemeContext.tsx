@@ -2,12 +2,95 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-interface ThemeContextType {
+type Theme = 'dark' | 'light';
+
+interface ThemeContextValue {
+  theme: Theme;
   isDark: boolean;
   toggle: () => void;
+  toggleTheme: () => void; // Aliased for compatibility
+  setTheme: (theme: Theme) => void;
+  colors: {
+    bg: string;
+    card: string;
+    textPrimary: string;
+    textSecondary: string;
+    accent: string;
+  };
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+
+const THEME_STORAGE_KEY = 'lookitry-theme';
+
+const themes = {
+  dark: {
+    bg: '#0a0a0a',
+    card: '#141414',
+    textPrimary: '#ffffff',
+    textSecondary: '#999999',
+    accent: '#FF5C3A',
+  },
+  light: {
+    bg: '#fafafa',
+    card: '#ffffff',
+    textPrimary: '#0a0a0a',
+    textSecondary: '#666666',
+    accent: '#FF5C3A',
+  },
+};
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>('dark');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+    if (stored === 'light' || stored === 'dark') {
+      setThemeState(stored);
+    } else if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) {
+       // Only default to light if explicitly preferred, otherwise keep dark as default for Lookitry
+       // However, many users might prefer system. For now, let's keep dark as primary.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+      // document.body.style.backgroundColor = themes[theme].bg; // This can cause issues with other layouts, maybe use CSS variables
+    }
+  }, [theme, mounted]);
+
+  const toggle = useCallback(() => {
+    setThemeState(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem(THEME_STORAGE_KEY, next);
+      return next;
+    });
+  }, []);
+
+  const setTheme = useCallback((newTheme: Theme) => {
+    setThemeState(newTheme);
+    localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+  }, []);
+
+  const value: ThemeContextValue = {
+    theme,
+    isDark: theme === 'dark',
+    toggle,
+    toggleTheme: toggle,
+    setTheme,
+    colors: themes[theme],
+  };
+
+  return (
+    <ThemeContext.Provider value={value}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
 
 export function useTheme() {
   const context = useContext(ThemeContext);
@@ -17,44 +100,4 @@ export function useTheme() {
   return context;
 }
 
-function getInitialTheme(): boolean {
-  if (typeof window === 'undefined') return false;
-  const stored = localStorage.getItem('theme');
-  if (stored === 'dark') return true;
-  if (stored === 'light') return false;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(getInitialTheme);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDark);
-  }, [isDark]);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      const stored = localStorage.getItem('theme');
-      if (!stored) {
-        setIsDark(e.matches);
-      }
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  const toggle = useCallback(() => {
-    setIsDark(prev => {
-      const next = !prev;
-      localStorage.setItem('theme', next ? 'dark' : 'light');
-      return next;
-    });
-  }, []);
-
-  return (
-    <ThemeContext.Provider value={{ isDark, toggle }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-}
+export default ThemeProvider;

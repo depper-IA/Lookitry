@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BlogCard } from './BlogCard';
 import { fetchBlogCategories, fetchBlogPosts, BlogCategory, BlogPost, BlogPagination } from '@/services/blog.service';
 import { Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const POSTS_PER_PAGE = 5;
 
@@ -110,13 +110,13 @@ export const BlogList: React.FC = () => {
           <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#FF5C3A] mb-3 text-center md:text-left">
             Explora por categoría
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 justify-start">
+          <div className="flex gap-2 overflow-x-auto pb-2 justify-start scrollbar-hide">
             <button
               onClick={() => { setSelectedCategory(null); setCurrentPage(1); }}
               className={`shrink-0 px-4 py-2.5 rounded-full text-sm font-bold transition-all border ${
                   selectedCategory === null
                     ? 'bg-[#FF5C3A] text-white border-[#FF5C3A] shadow-lg shadow-[#FF5C3A]/20'
-                    : `${colors.card} hover:bg-[#1a1a1a] hover:text-white border-white/10`
+                    : `${isDark ? 'bg-[#141414] text-zinc-400 border-white/5 hover:bg-zinc-800' : 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200'} hover:text-[#FF5C3A]`
                 }`}
             >
               Todos {totalCount > 0 && <span className="ml-1.5 opacity-70">({totalCount})</span>}
@@ -128,7 +128,7 @@ export const BlogList: React.FC = () => {
                 className={`shrink-0 px-4 py-2.5 rounded-full text-sm font-bold transition-all border ${
                   selectedCategory === cat.id
                     ? 'bg-[#FF5C3A] text-white border-[#FF5C3A] shadow-lg shadow-[#FF5C3A]/20'
-                    : 'bg-[#141414] text-[#b8b8b8] hover:bg-[#1a1a1a] hover:text-white border-white/10'
+                    : `${isDark ? 'bg-[#141414] text-zinc-400 border-white/5 hover:bg-zinc-800' : 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200'} hover:text-[#FF5C3A]`
                 }`}
               >
                 {cat.name} <span className="ml-1.5 opacity-70">({cat.count})</span>
@@ -138,13 +138,17 @@ export const BlogList: React.FC = () => {
         </div>
 
         <div className="relative w-full md:w-80">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#999]" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
           <input
             type="text"
             placeholder="Buscar artículos..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#141414] border border-white/5 rounded-full pl-11 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5C3A]/50 transition-all"
+            className={`w-full border rounded-full pl-11 pr-4 py-2.5 text-sm transition-all focus:outline-none focus:border-[#FF5C3A]/50 ${
+              isDark 
+                ? 'bg-[#141414] border-white/5 text-white placeholder-zinc-600' 
+                : 'bg-white border-zinc-200 text-zinc-900 placeholder-zinc-400 shadow-sm'
+            }`}
           />
         </div>
       </div>
@@ -153,7 +157,7 @@ export const BlogList: React.FC = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <Loader2 className="animate-spin text-[#FF5C3A]" size={40} />
-          <p className="text-[#999] animate-pulse">Cargando artículos premium...</p>
+          <p className={`${isDark ? 'text-zinc-500' : 'text-zinc-400'} animate-pulse`}>Cargando artículos premium...</p>
         </div>
       ) : filteredPosts.length > 0 ? (
         <>
@@ -194,9 +198,9 @@ export const BlogList: React.FC = () => {
               transition={{ delay: 0.3 }}
               className="mt-16 flex flex-col items-center gap-4"
             >
-              <div className="flex items-center gap-4 text-sm text-[#999]">
+              <div className={`flex items-center gap-4 text-sm ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
                 <span className="font-medium">Página {currentPage} de {totalPages}</span>
-                <span className="text-white/20">·</span>
+                <span className="opacity-20">·</span>
                 <span>{totalCount} artículos</span>
               </div>
 
@@ -204,7 +208,11 @@ export const BlogList: React.FC = () => {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={!pagination?.hasPrevPage}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#141414] border border-white/10 text-sm font-bold text-[#b8b8b8] hover:text-white hover:border-white/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-white/10 disabled:hover:text-[#b8b8b8]"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                    isDark 
+                      ? 'bg-[#141414] border-white/10 text-zinc-400 hover:text-white hover:border-white/30' 
+                      : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300'
+                  }`}
                 >
                   <ChevronLeft size={16} />
                   Anterior
@@ -219,13 +227,15 @@ export const BlogList: React.FC = () => {
                         className={`w-10 h-10 rounded-full text-sm font-bold transition-all ${
                           page === currentPage
                             ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20'
-                            : 'bg-[#141414] text-[#b8b8b8] hover:text-white hover:bg-[#1a1a1a] border border-white/10'
+                            : isDark 
+                              ? 'bg-[#141414] text-zinc-400 border border-white/10 hover:text-white hover:bg-zinc-800' 
+                              : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-100'
                         }`}
                       >
                         {page}
                       </button>
                     ) : (
-                      <span key={`ellipsis-${idx}`} className="w-10 text-center text-[#666]">…</span>
+                      <span key={`ellipsis-${idx}`} className={`w-10 text-center ${isDark ? 'text-zinc-700' : 'text-zinc-300'}`}>…</span>
                     )
                   ))}
                 </div>
@@ -233,7 +243,11 @@ export const BlogList: React.FC = () => {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={!pagination?.hasNextPage}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#141414] border border-white/10 text-sm font-bold text-[#b8b8b8] hover:text-white hover:border-white/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-white/10 disabled:hover:text-[#b8b8b8]"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                    isDark 
+                      ? 'bg-[#141414] border-white/10 text-zinc-400 hover:text-white hover:border-white/30' 
+                      : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300'
+                  }`}
                 >
                   Siguiente
                   <ChevronRight size={16} />
