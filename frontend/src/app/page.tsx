@@ -31,8 +31,8 @@ export default async function HomePage() {
     pricing = null;
   }
 
-  const basicPrice = pricing?.basic?.precio_mensual_cop ?? 150000;
-  const proPrice = pricing?.pro?.precio_mensual_cop ?? 250000;
+  const basicPrice = pricing?.basic?.precio_mensual_cop ?? 180000;
+  const proPrice = pricing?.pro?.precio_mensual_cop ?? 350000;
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
   

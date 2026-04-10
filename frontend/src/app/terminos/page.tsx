@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
+import { getPricingConfig } from '@/lib/pricing';
 import TerminosClient from './TerminosClient';
+
+export const revalidate = 300;
 
 const BASE_URL = 'https://lookitry.com';
 
@@ -22,6 +25,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function TerminosPage() {
-  return <TerminosClient />;
+export default async function TerminosPage() {
+  const pricing = await getPricingConfig();
+  return <TerminosClient pricing={pricing} />;
 }

@@ -509,7 +509,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               </a>
             </div>
             <p className="theme-text-muted/80 text-sm mt-8">
-              Sin tarjeta de crédito para comenzar · Cancela cuando quieras
+              Trial de 7 días por $20.000 COP · Cancela cuando quieras
             </p>
           </div>
         </section>

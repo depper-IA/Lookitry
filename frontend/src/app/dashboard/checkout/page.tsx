@@ -31,7 +31,7 @@ type PendingPaymentSummary = {
 const PLAN_INFO_FALLBACK: Record<PlanType, { name: string; price: number; features: string[] }> = {
   BASIC: {
     name: 'Plan Básico',
-    price: 150000,
+    price: 180000,
     features: [
       'Hasta 5 productos activos',
       '400 fotos por mes',
@@ -42,7 +42,7 @@ const PLAN_INFO_FALLBACK: Record<PlanType, { name: string; price: number; featur
   },
   PRO: {
     name: 'Plan Pro',
-    price: 250000,
+    price: 350000,
     features: [
       'Hasta 15 productos activos',
       '1.200 fotos por mes',

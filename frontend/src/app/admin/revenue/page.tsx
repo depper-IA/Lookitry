@@ -616,8 +616,8 @@ export default function RevenuePage() {
   const [meta, setMeta]       = useState<MetaConfig | null>(null);
   const [trm, setTrm]         = useState(3700);
   const [trmLive, setTrmLive] = useState(3700);
-  const [basicPrecio, setBasicPrecio]     = useState(150000);
-  const [proPrecio, setProPrecio]         = useState(250000);
+  const [basicPrecio, setBasicPrecio]     = useState(180000);
+  const [proPrecio, setProPrecio]         = useState(350000);
   const [landingPrecio, setLandingPrecio] = useState(650000);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');

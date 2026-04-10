@@ -323,7 +323,7 @@ export default function LandingNav({
               href="/checkout?plan=TRIAL"
               className="group relative hidden overflow-hidden rounded-full bg-[#FF5C3A] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 active:scale-95 sm:px-8 sm:py-3.5 md:inline-flex"
             >
-              <span className="relative z-10">Probar ahora</span>
+              <span className="relative z-10">Trial 7 días por $20.000</span>
               <div className="pointer-events-none absolute inset-0 translate-y-full bg-white opacity-20 transition-transform duration-300 group-hover:translate-y-0" />
             </Link>
 
@@ -433,7 +433,7 @@ export default function LandingNav({
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-transform hover:scale-[1.01]"
               >
-                Probar Ahora
+                Trial $20.000
               </Link>
             </div>
 
