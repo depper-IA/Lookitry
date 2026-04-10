@@ -42,172 +42,199 @@ export function TemplateBare(props: TryOnTemplateProps) {
     onGenerate,
   } = props;
 
-  // Colores adaptativos según el fondo
+  // Lógica de diseño: Bare siempre es independiente y sólido
   const bgLuminance = isLightBg(secondaryColor || '#ffffff');
-  const textPrimary = bgLuminance ? '#1a1a1a' : '#ffffff';
-  const textMuted = bgLuminance ? '#666666' : '#ffffffcc';
-  const cardBg = bgLuminance ? '#ffffff' : 'rgba(255,255,255,0.05)';
-  const borderColor = bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)';
+  const textPrimary = bgLuminance ? '#050505' : '#ffffff';
+  const textMuted = bgLuminance ? '#666666' : '#ffffff99';
+  const cardBg = bgLuminance ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)';
+  const borderColor = bgLuminance ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+  const primaryGlow = `${primaryColor}40`;
 
   const centerUploadInEmbed = isEmbed && step === 'upload';
   const isMinilandingOrPlugin = lockProductSelection || pluginView || (isEmbed && step === 'upload');
 
   return (
     <div
-      className={`flex flex-col font-sans transition-all duration-700 min-h-screen min-h-[100dvh] ${
-        isEmbed ? '' : 'bg-[#0a0a0a]'
-      }`}
-      style={{ backgroundColor: isEmbed ? secondaryColor : undefined }}
+      className="flex flex-col font-sans transition-all duration-700 min-h-screen min-h-[100dvh]"
+      style={{ backgroundColor: secondaryColor }}
     >
+      {/* Header con Marca */}
+      <div className="pt-8 px-6 text-center animate-in fade-in duration-700">
+        <div className="flex flex-col items-center gap-2">
+          {config.brand.logo ? (
+            <img 
+              src={config.brand.logo} 
+              alt={config.brand.name} 
+              className="h-10 w-auto object-contain mb-1" 
+            />
+          ) : (
+             <div className="text-xl font-black italic uppercase tracking-tighter" style={{ color: textPrimary }}>
+              Look<span style={{ color: primaryColor }}>itry</span>
+            </div>
+          )}
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40 italic" style={{ color: textPrimary }}>
+            {config.brand.name}
+          </span>
+        </div>
+      </div>
+
       {step === 'generating' && (
-        <div className="flex-1 flex items-center justify-center">
-          <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-sm">
+            <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
+          </div>
         </div>
       )}
+
       {step !== 'generating' && (
-        <div className="flex-1 flex items-center justify-center px-3 sm:px-4 py-4 sm:py-6 overflow-y-auto">
-          <div className={`${centerUploadInEmbed ? 'w-full max-w-md sm:max-w-lg' : (pluginView && step === 'result' ? 'mx-auto w-full max-w-5xl sm:max-w-6xl' : 'max-w-sm sm:max-w-lg mx-auto w-full')}`}>
-            <ErrorBanner error={error} isService={errorIsService} />
-            <NoticeBanner notice={notice} />
+        <div className="flex-1 flex flex-col items-center justify-center px-4 pt-4 pb-12 overflow-y-auto overflow-x-hidden">
+          <div className="max-w-md mx-auto w-full">
+            <ErrorBanner 
+              error={error} 
+              isService={errorIsService} 
+              onDismiss={props.onDismissError}
+              textColor={textPrimary}
+              mutedColor={textMuted}
+              cardBg={cardBg}
+              cardBorder={borderColor}
+            />
+            <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
 
-            {/* Paso Upload: Solo se muestra si estamos en minilanding/plugin (que fuerza step='upload') */}
-             {step === 'upload' && (
-               <div className="space-y-3 sm:space-y-4">
-                 {isMinilandingOrPlugin && selectedProduct && !pluginView && (
-                    <div className="rounded-2xl sm:rounded-[24px] border p-3 sm:p-4 shadow-sm" style={{ backgroundColor: cardBg, borderColor }}>
-                      <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.18em]" style={{ color: textMuted }}>
-                        {lockProductSelection ? 'Producto para probar' : 'Producto seleccionado'}
-                      </p>
-                      <div className="mt-2 sm:mt-3 flex items-center gap-2 sm:gap-3">
-                        <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl object-cover" style={{ borderColor }} />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs sm:text-sm font-black uppercase italic" style={{ color: textPrimary }}>{selectedProduct.name}</p>
-                          <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: textMuted }}>
-                            {lockProductSelection ? 'Elegido en el catálogo' : selectedProduct.category}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                 )}
-                 {pluginView && selectedProduct && (
-                    <div className="rounded-2xl sm:rounded-[24px] border p-3 sm:p-4 shadow-sm" style={{ backgroundColor: cardBg, borderColor }}>
-                      <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.18em]" style={{ color: textMuted }}>Producto fijado</p>
-                      <div className="mt-2 sm:mt-3 flex items-center gap-2 sm:gap-3">
-                        <img
-                          src={selectedProduct.imageUrl}
-                          alt={selectedProduct.name}
-                          className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl object-cover"
-                          style={{ borderColor }}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs sm:text-sm font-black uppercase italic" style={{ color: textPrimary }}>{selectedProduct.name}</p>
-                          <p className="mt-0.5 text-[10px] sm:text-xs" style={{ color: textMuted }}>
-                            Este producto ya fue seleccionado desde la página del producto en WooCommerce.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                 )}
-                 <SelfieUploader 
-                   onUpload={onSelfieUpload} 
-                   primaryColor={primaryColor} 
-                   welcomeMessage={welcomeMessage} 
-                   privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al subir una nueva foto" 
-                   textColor={textPrimary} 
-                   mutedColor={textMuted}
-                   cardBg={cardBg}
-                   cardBorder={borderColor}
-                 />
-                 {selectedProduct && selfiePreview && (
-                    <div className="pt-2">
-                      <button
-                        onClick={onGenerate}
-                        className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-white text-xs sm:text-sm shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
-                        style={{ backgroundColor: primaryColor }}
-                      >
-                        {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
-                      </button>
-                    </div>
+            {/* Paso 1: Selección de Producto */}
+            {step === 'select' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="text-center space-y-2 mb-8 mt-4">
+                  <h2 className="text-2xl font-black italic uppercase tracking-tighter" style={{ color: textPrimary }}>
+                    ¿Qué quieres probarte?
+                  </h2>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: textMuted }}>
+                    Toca el producto que más te guste
+                  </p>
+                </div>
+
+                <FriendlyProductSelector
+                  products={config.products}
+                  selected={selectedProduct}
+                  onSelect={(p) => {
+                    onProductSelect(p);
+                  }}
+                  primaryColor={primaryColor}
+                  generatedProducts={generatedProducts}
+                />
+
+                {selectedProduct && (
+                  <div className="pt-4 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <button
+                      onClick={() => props.onProceedToUpload?.()}
+                      className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group"
+                      style={{ 
+                        backgroundColor: primaryColor,
+                        boxShadow: `0 8px 32px ${primaryGlow}`
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                      <span className="relative z-10">Siguiente paso</span>
+                      <svg className="w-4 h-4 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </button>
+                  </div>
                 )}
-               </div>
-              )}
+              </div>
+            )}
 
-            {/* Paso Select: Selector y Uploader en la misma pantalla */}
-            {step === 'select' && !lockProductSelection && (
-              <div className="space-y-6 sm:space-y-8 md:space-y-10 pb-10 sm:pb-12">
-                <SelfieThumb preview={selfiePreview} onReset={onReset} />
-                
-                {/* 1. Selector de Producto */}
-                <div>
-                  <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest mb-3 sm:mb-4" style={{ color: textPrimary }}>
-                    1. Selecciona un producto
-                  </h3>
-                  <FriendlyProductSelector
-                    products={config.products}
-                    selected={selectedProduct}
-                    onSelect={onProductSelect}
-                    primaryColor={primaryColor}
-                    generatedProducts={generatedProducts}
-                  />
-                </div>
+            {/* Paso 2: Subida de Selfie */}
+            {step === 'upload' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                 {/* Resumen del producto elegido */}
+                 {selectedProduct && (
+                   <div 
+                    className="flex items-center gap-4 p-4 rounded-2xl border backdrop-blur-sm"
+                    style={{ backgroundColor: cardBg, borderColor }}
+                   >
+                     <img 
+                      src={selectedProduct.imageUrl} 
+                      alt={selectedProduct.name} 
+                      className="h-14 w-14 rounded-xl object-cover shrink-0" 
+                     />
+                     <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1" style={{ color: textPrimary }}>Producto seleccionado</p>
+                        <p className="text-sm font-black italic uppercase truncate" style={{ color: textPrimary }}>{selectedProduct.name}</p>
+                     </div>
+                     <button 
+                      onClick={() => props.onBack?.()}
+                      className="ml-auto text-[9px] font-black uppercase tracking-widest px-3 py-2 rounded-lg border hover:bg-white/5 transition-colors"
+                      style={{ borderColor, color: textMuted }}
+                     >
+                      Cambiar
+                     </button>
+                   </div>
+                 )}
 
-                {/* 2. Subida de Foto */}
-                <div className={`transition-opacity duration-300 ${!selectedProduct ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2" style={{ color: textPrimary }}>
-                    2. Sube tu foto frontal
-                    {!selectedProduct && (
-                      <span className="text-[10px] sm:text-xs tracking-normal normal-case font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
-                        Requerido arriba
-                      </span>
-                    )}
-                  </h3>
-                  <SelfieUploader 
-                    onUpload={onSelfieUpload} 
-                    primaryColor={primaryColor} 
-                    welcomeMessage={welcomeMessage} 
-                    privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al subir una nueva foto" 
-                    textColor={textPrimary} 
-                    mutedColor={textMuted}
-                    cardBg={cardBg}
-                    cardBorder={borderColor}
-                  />
+                <div className="text-center space-y-2 mb-4 mt-4">
+                  <h2 className="text-2xl font-black italic uppercase tracking-tighter" style={{ color: textPrimary }}>
+                    Sube tu Foto
+                  </h2>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: textMuted }}>
+                    Para procesar tu prueba virtual
+                  </p>
                 </div>
                 
-                {/* 3. Acción */}
-                {selectedProduct && selfiePreview && (
-                  <div className="sticky bottom-3 sm:bottom-4 pt-3 sm:pt-4 mt-4 sm:mt-6 z-10">
+                <SelfieUploader 
+                  onUpload={onSelfieUpload} 
+                  primaryColor={primaryColor} 
+                  welcomeMessage={welcomeMessage} 
+                  privacyNotice="Procesamiento local seguro" 
+                  textColor={textPrimary} 
+                  mutedColor={textMuted}
+                  cardBg={cardBg}
+                  cardBorder={borderColor}
+                />
+
+                {selfiePreview && (
+                   <div className="pt-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <button
                       onClick={onGenerate}
-                      className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.1em] text-xs sm:text-sm shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
-                      style={{ backgroundColor: primaryColor }}
+                      className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group"
+                      style={{ 
+                        backgroundColor: primaryColor,
+                        boxShadow: `0 8px 32px ${primaryGlow}`
+                      }}
                     >
-                      {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                      <span className="relative z-10">{generatedProducts.has(selectedProduct?.id || '') ? 'Ver resultado' : buttonText}</span>
+                      <svg className="w-4 h-4 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
                     </button>
-                    <p className="text-center text-[10px] sm:text-xs mt-2 sm:mt-3 font-medium" style={{ color: textMuted }}>
-                      {generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
+                    <p className="text-center text-[10px] font-black uppercase tracking-widest mt-4 italic opacity-40" style={{ color: textMuted }}>
+                      {generatedProducts.has(selectedProduct?.id || '') ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
                     </p>
                   </div>
                 )}
               </div>
             )}
 
+            {/* Paso 3: Resultado */}
             {step === 'result' && resultImageUrl && (
-              <ResultDisplay
-                imageUrl={resultImageUrl}
-                productName={selectedProduct?.name || ''}
-                selfiePreview={selfiePreview}
-                onReset={onReset}
-                primaryColor={primaryColor}
-                generationId={generationId ?? undefined}
-                brandSlug={brandSlug}
-                brandName={config.brand.name}
-                brandPlan={config.brand.plan}
-                pluginView={pluginView}
-                textColor={textPrimary}
-                mutedColor={textMuted}
-                cardBg={cardBg}
-                cardBorder={borderColor}
-              />
+              <div className="animate-in zoom-in-95 duration-500">
+                <ResultDisplay
+                  imageUrl={resultImageUrl}
+                  productName={selectedProduct?.name || ''}
+                  selfiePreview={selfiePreview}
+                  onReset={onReset}
+                  primaryColor={primaryColor}
+                  generationId={generationId ?? undefined}
+                  brandSlug={brandSlug}
+                  brandName={config.brand.name}
+                  brandPlan={config.brand.plan}
+                  pluginView={pluginView}
+                  textColor={textPrimary}
+                  mutedColor={textMuted}
+                  cardBg={cardBg}
+                  cardBorder={borderColor}
+                />
+              </div>
             )}
           </div>
         </div>

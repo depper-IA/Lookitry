@@ -380,9 +380,17 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
         )}
 
         {/* Content Area */}
-        <div className={`flex-1 ${isSmall ? 'p-4 overflow-y-auto' : 'p-6 lg:p-8 overflow-y-auto'}`}>
-          <ErrorBanner error={error} isService={errorIsService} />
-          <NoticeBanner notice={notice} />
+        <div className={`flex-1 ${isSmall ? 'p-4' : 'p-6 lg:p-8 overflow-y-auto'}`}>
+          <ErrorBanner 
+            error={error} 
+            isService={errorIsService} 
+            onDismiss={props.onDismissError}
+            textColor={mainTextPrimary}
+            mutedColor={mainTextMuted}
+            cardBg={mainCardBg}
+            cardBorder={mainBorderColor}
+          />
+          <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
 
           {/* Welcome Message Header (PRO) */}
           {(step === 'upload' || step === 'select') && (

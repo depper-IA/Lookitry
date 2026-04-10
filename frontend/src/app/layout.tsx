@@ -23,10 +23,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
     ],
     shortcut: ['/favicon.ico'],
-    apple: [{ url: '/icon.png', type: 'image/png', sizes: '180x180' }],
+    apple: [{ url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' }],
   },
   title: {
     default: 'Lookitry — Probador virtual con IA para tu tienda online',
@@ -142,7 +142,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
 
-      <body className="font-sans">
+      <body className="font-sans" suppressHydrationWarning>
         {/* Google Tag Manager (noscript) */}
         {GTM_ID && (
           <noscript>
@@ -179,4 +179,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-

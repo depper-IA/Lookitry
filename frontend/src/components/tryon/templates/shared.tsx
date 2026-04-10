@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertCircle, CheckCircle, Info } from 'lucide-react';
 import type { TryOnConfigResponse } from '@/types';
@@ -227,9 +228,28 @@ interface ErrorBannerProps {
   cardBorder?: string;
   textColor?: string;
   mutedColor?: string;
+  autoDismiss?: number; // Time in ms, optional
 }
 
-export function ErrorBanner({ error, isService = false, onDismiss, cardBg, cardBorder, textColor, mutedColor }: ErrorBannerProps) {
+export function ErrorBanner({ 
+  error, 
+  isService = false, 
+  onDismiss, 
+  cardBg, 
+  cardBorder, 
+  textColor, 
+  mutedColor,
+  autoDismiss = 8000 // Default 8s for errors
+}: ErrorBannerProps) {
+  useEffect(() => {
+    if (error && onDismiss && autoDismiss > 0) {
+      const timer = setTimeout(() => {
+        onDismiss();
+      }, autoDismiss);
+      return () => clearTimeout(timer);
+    }
+  }, [error, onDismiss, autoDismiss]);
+
   if (!error) return null;
 
   const isServiceError = isService || error === 'SERVICE_CREDITS_EXHAUSTED';
@@ -276,7 +296,7 @@ export function ErrorBanner({ error, isService = false, onDismiss, cardBg, cardB
               whileTap={{ scale: 0.9 }}
               aria-label="Cerrar notificación"
             >
-              <X className="w-4 h-4" style={{ color: mutedColor || '#666' }} />
+              <X className="w-4 h-4" style={{ color: mutedColor || (isServiceError ? '#666' : '#991b1b') }} />
             </motion.button>
           )}
         </div>
@@ -293,9 +313,27 @@ interface NoticeBannerProps {
   cardBorder?: string;
   mutedColor?: string;
   primaryColor?: string;
+  autoDismiss?: number;
 }
 
-export function NoticeBanner({ notice, onDismiss, cardBg, cardBorder, mutedColor, primaryColor }: NoticeBannerProps) {
+export function NoticeBanner({ 
+  notice, 
+  onDismiss, 
+  cardBg, 
+  cardBorder, 
+  mutedColor, 
+  primaryColor,
+  autoDismiss = 5000 // Default 5s for success notices
+}: NoticeBannerProps) {
+  useEffect(() => {
+    if (notice && onDismiss && autoDismiss > 0) {
+      const timer = setTimeout(() => {
+        onDismiss();
+      }, autoDismiss);
+      return () => clearTimeout(timer);
+    }
+  }, [notice, onDismiss, autoDismiss]);
+
   if (!notice) return null;
 
   return (

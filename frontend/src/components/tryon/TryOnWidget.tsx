@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { tryonService } from '@/services/tryon.service';
 import type { TryOnConfigResponse } from '@/types';
 import { TemplateBare } from './templates/TemplateBare';
+import { TemplateLandingEmbed } from './templates/TemplateLandingEmbed';
 import { TemplateShowcase } from './templates/TemplateShowcase';
 import { TemplateModernSidebar } from './templates/TemplateModernSidebar';
 import { TemplateBoldProStudio } from './templates/TemplateBoldProStudio';
@@ -301,11 +302,13 @@ export function TryOnWidget({
     onProceedToUpload: () => setStep('upload'),
     onBack: () => setStep('select'),
     onGenerate: () => handleGenerate(),
+    onDismissError: () => setError(null),
+    onDismissNotice: () => setNotice(null),
   } as const;
 
   switch (effectiveLayout) {
     case 'bare':
-      return <TemplateBare {...templateProps} />;
+      return isEmbed ? <TemplateLandingEmbed {...templateProps} /> : <TemplateBare {...templateProps} />;
     case 'sidebar':
       return <TemplateModernSidebar {...templateProps} />;
     case 'centered':
