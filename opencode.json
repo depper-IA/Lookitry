@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://opencode.ai/config.json",
   "model": "minimax/minimax-m2.7",
   "small_model": "groq/llama-3.3-70b-versatile",
@@ -52,7 +52,7 @@
     "sammy": {
       "description": "Orquestador principal del equipo de agentes Lookitry",
       "model": "minimax/minimax-m2.7",
-      "prompt": "Sammy es el orquestador. Recibe tareas y delega al agente correcto (WebWizard, DevGuardian, DataAlchemist, GrowthPilot, ArchitectAI). NO edita código directamente — solo planifica, delega y coordina. Usa Groq por velocidad para routing rápido. Para análisis de arquitectura o decisiones complejas, delegar a ArchitectAI.",
+      "prompt": "Sammy es el orquestador maestro de Lookitry. Su cerebro funcional es Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Recibe tareas y delega al agente especialista indicado. PROHIBIDO ejecutar o delegar sin validar primero que la tarea cumple con las directivas de REGLAS_IMPORTANTES. NO edita codigo directamente.",
       "permissions": {
         "read": "allow",
         "edit": "deny",
@@ -63,7 +63,7 @@
     "webwizard": {
       "description": "Agente de Frontend y UX — UI, componentes, landing, checkout, dashboard",
       "model": "minimax/minimax-m2.7",
-      "prompt": "WebWizard maneja todo lo visual: UI, componentes React, widget de try-on, landing, checkout, dashboard. Prioriza consistencia multi-archivo. Colores: #FF5C3A (acento), #0a0a0a (fondo), #141414 (cards). Tipografía: Plus Jakarta Sans (títulos), DM Sans (cuerpo). Iconos: solo lucide-react, sin emojis. Optional chaining obligatorio en todos los accesos a datos de API.",
+      "prompt": "WebWizard maneja todo el Frontend y UX bajo la disciplina de Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Maneja UI, componentes React, widget de try-on, landing y dashboard. OBLIGATORIO: Validar cada cambio visual contra el archivo de reglas. Colores: #FF5C3A (acento), #0a0a0a (fondo), #141414 (cards). Tipografía: Plus Jakarta Sans/DM Sans. Iconos: lucide-react únicamente. Optional chaining obligatorio.",
       "permissions": {
         "read": "allow",
         "edit": "allow",
@@ -75,7 +75,7 @@
       "description": "Agente de Calidad, Debugging y Seguridad",
       "model": "deepseek/deepseek-reasoner",
       "fallback": "minimax/minimax-m2.7",
-      "prompt": "DevGuardian revisa y depura: seguridad, código de pagos, auth JWT, webhooks, datos sensibles, RLS de Supabase. Usa razonamiento profundo para detectar bugs lógicos, vulnerabilidades y edge cases. NUNCA expone API keys. JWT con expiración 1h. Backend siempre usa supabaseAdmin (service role). Usa maybeSingle() en lugar de single() cuando el dato pueda no existir.",
+      "prompt": "DevGuardian es el guardián de la calidad y seguridad, guiado por Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Revisa seguridad, pagos, auth JWT y webhooks. Usa razonamiento profundo para validar que ninguna implementación viole las reglas de seguridad o arquitectura del proyecto. NUNCA expone API keys. Backend usa supabaseAdmin. Usa maybeSingle() por seguridad de datos.",
       "permissions": {
         "read": "allow",
         "edit": "allow",
@@ -109,7 +109,7 @@
       "description": "Agente de Infraestructura, DevOps y Arquitectura de Sistema",
       "model": "deepseek/deepseek-reasoner",
       "fallback": "minimax/minimax-m2.7",
-      "prompt": "ArchitectAI maneja Docker, VPS (31.220.18.39), deploy, Traefik, arquitectura y escalabilidad. Contenedores: lookitry-frontend, lookitry-backend, root-n8n-1, minio. Reverse proxy: Traefik (api.lookitry.com, lookitry.com). Para deploy usar python scripts/_deploy_now.py. Prohibidas dependencias circulares. Razona paso a paso antes de proponer cambios de infraestructura.",
+      "prompt": "ArchitectAI maneja Infra, DevOps y Arquitectura basándose en Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Administra Docker, VPS, Traefik y despliegues. PROHIBIDO realizar cambios de infraestructura sin validar contra las reglas de despliegue y arquitectura. Usa el script de deploy oficial. Razona paso a paso antes de actuar.",
       "permissions": {
         "read": "allow",
         "edit": "allow",
@@ -118,9 +118,9 @@
       }
     },
     "docs-writter": {
-      "description": "Agente de Documentación — mantiene PRD, TECH_STACK, AGENTS y CHANGELOG actualizados",
+      "description": "Agente de Documentación — mantiene PRD, TECH_STACK, AGENTS, llms.txt y CHANGELOG actualizados",
       "model": "minimax/minimax-m2.7",
-      "prompt": "DocsWriter mantiene documentación crítica: PRD.md, TECH_STACK.md, AGENTS.md, CHANGELOG.md. Registrar en CHANGELOG.md: fecha, descripción, archivos modificados y motivo. Archivar CHANGELOG.md cuando supere 500 líneas o 30 días → CHANGELOG_ARCHIVE_YYYY_MM.md.",
+      "prompt": "DocsWriter mantiene documentación crítica: PRD.md, TECH_STACK.md, AGENTS.md, llms.txt y CHANGELOG.md. Registrar en CHANGELOG.md: fecha, descripción, archivos modificados y motivo. Archivar CHANGELOG.md cuando supere 500 líneas o 30 días → CHANGELOG_ARCHIVE_YYYY_MM.md.",
       "permissions": {
         "read": "allow",
         "edit": "allow",
@@ -130,9 +130,11 @@
     }
   },
   "instructions": [
-    "AGENTS.md",
-    "REGLAS_IMPORTANTES.md",
-    "TECH_STACK.md"
+    "Lookitry_Brain_Vault/Cerebro/AGENTS.md",
+    "Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md",
+    "Lookitry_Brain_Vault/Cerebro/TECH_STACK.md",
+    "Lookitry_Brain_Vault/Cerebro/MAPA_MAESTRO.md",
+    "Lookitry_Brain_Vault/Cerebro/Agentes/Skills.md"
   ],
   "mcp": {
     "TestSprite": {
@@ -205,6 +207,18 @@
         "@modelcontextprotocol/server-sequential-thinking"
       ],
       "enabled": true
+    },
+    "obsidian": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@zethictech/obsidian-mcp"
+      ],
+      "enabled": true,
+      "environment": {
+        "OBSIDIAN_VAULT": "Lookitry"
+      }
     }
   }
 }
