@@ -5,8 +5,24 @@ import { useState } from 'react';
 import LandingNav from '@/components/landing/new-landing/LandingNav';
 import LandingFooter from '@/components/landing/new-landing/LandingFooter';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import type { PricingConfig } from '@/lib/pricing';
 
-const ARTICLES = [
+interface Props {
+  pricing: PricingConfig;
+}
+
+// Helper para formatear COP
+function formatCop(value: number): string {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function buildArticles(pricing: PricingConfig) {
+  return [
   {
     id: 'art1',
     title: 'Articulo 1. Identificacion del prestador',
@@ -30,7 +46,49 @@ const ARTICLES = [
   {
     id: 'art5',
     title: 'Articulo 5. Planes, precios y facturacion',
-    content: 'Los precios estan expresados en pesos colombianos (COP) y estan sujetos a cambios. La facturacion es anticipada por el periodo seleccionado.\n\nPlanes disponibles:\n\nTRIAL (pago unico):\n- Precio: $20.000 COP\n- Productos activos: 1\n- Generaciones incluidas: 15 (configurables por campaña)\n- Duracion: 7 dias\n\nBASICO:\n- Precio: $150.000 COP/mes\n- Productos activos: 5\n- Generaciones incluidas: 400/mes\n\nPRO:\n- Precio: $250.000 COP/mes\n- Productos activos: 15\n- Generaciones incluidas: 1.200/mes\n\nENTERPRISE:\n- Precio: $800.000 COP/mes\n- Productos activos: 50\n- Generaciones incluidas: 2.000/mes\n- Sincronizacion externa de productos (CSV/API)\n\nDescuentos por duracion del plan:\n- 1 mes: 0% de descuento\n- 3 meses: 5% de descuento\n- 6 meses: 10% de descuento\n- 12 meses: 15% de descuento\n\nServicios adicionales:\n- Mini-Landing: $650.000 COP (pago unico, requiere plan BASICO o PRO activo)\n- Creditos adicionales (Add-on Credits): paquetes de generaciones comprables por separado, se descuentan del saldo de creditos extra\n\nReglas de facturacion:\n- Los planes se cobran de forma anticipada al inicio de cada periodo\n- Los upgrades de plan se aplican de forma prorrateada; el credito del plan anterior se aplica al nuevo\n- El nuevo plan inicia inmediatamente tras el pago\n- Las generaciones no utilizadas no son acumulables entre periodos\n- Lookitry puede ofrecer cupones de descuento que cubren parcial o totalmente el costo del plan\n- Programa de referidos: el referente recibe 500 creditos extra cuando el referido completa su primer pago mensual elegible',
+    content: `Los precios estan expresados en pesos colombianos (COP) y estan sujetos a cambios. La facturacion es anticipada por el periodo seleccionado.
+
+Planes disponibles:
+
+TRIAL (pago unico):
+- Precio: ${formatCop(20000)} COP
+- Productos activos: 1
+- Generaciones incluidas: 15 (configurables por campana)
+- Duracion: 7 dias
+
+BASICO:
+- Precio: ${formatCop(pricing.basic.precio_mensual_cop)} COP/mes
+- Productos activos: ${pricing.basic.productos_max}
+- Generaciones incluidas: ${pricing.basic.generaciones_mensuales}/mes
+
+PRO:
+- Precio: ${formatCop(pricing.pro.precio_mensual_cop)} COP/mes
+- Productos activos: ${pricing.pro.productos_max}
+- Generaciones incluidas: ${pricing.pro.generaciones_mensuales}/mes
+
+ENTERPRISE:
+- Precio: ${formatCop(pricing.enterprise.precio_mensual_cop)} COP/mes
+- Productos activos: ${pricing.enterprise.productos_max}
+- Generaciones incluidas: ${pricing.enterprise.generaciones_mensuales}/mes
+- Sincronizacion externa de productos (CSV/API)
+
+Descuentos por duracion del plan:
+- 1 mes: ${pricing.descuentos_duracion.meses_1}% de descuento
+- 3 meses: ${pricing.descuentos_duracion.meses_3}% de descuento
+- 6 meses: ${pricing.descuentos_duracion.meses_6}% de descuento
+- 12 meses: ${pricing.descuentos_duracion.meses_12}% de descuento
+
+Servicios adicionales:
+- Mini-Landing: ${formatCop(pricing.mini_landing.precio_unico_cop)} COP (pago unico, requiere plan BASICO o PRO activo)
+- Creditos adicionales (Add-on Credits): paquetes de generaciones comprables por separado, se descargan del saldo de creditos extra
+
+Reglas de facturacion:
+- Los planes se cobran de forma anticipada al inicio de cada periodo
+- Los upgrades de plan se aplican de forma prorrateada; el credito del plan anterior se aplica al nuevo
+- El nuevo plan inicia inmediatamente tras el pago
+- Las generaciones no utilizadas no son acumulables entre periodos
+- Lookitry puede ofrecer cupones de descuento que cubren parcial o totalmente el costo del plan
+- Programa de referidos: el referente recibe 500 creditos extra cuando el referido completa su primer pago mensual elegible`,
   },
   {
     id: 'art6',
@@ -88,6 +146,7 @@ const ARTICLES = [
     content: 'Estos Terminos y Condiciones se rigen por las leyes de la Republica de Colombia.\n\nResolucion de controversias:\n- Las partes se comprometen a intentar resolver cualquier controversia mediante negociacion directa\n- De no alcanzarse un acuerdo, las controversias se someteran a los jueces competentes de Bogota D.C., Colombia\n\nPara asuntos de consumo:\n- El usuario puede acudir a la Superintendencia de Industria y Comercio (SIC)\n- Portal: www.sic.gov.co\n- La SIC es la autoridad competente en materia de proteccion al consumidor y proteccion de datos personales en Colombia',
   },
 ];
+}
 
 function IconChevron({ open }: { open: boolean }) {
   return (
@@ -101,8 +160,9 @@ function IconChevron({ open }: { open: boolean }) {
   );
 }
 
-export default function TerminosClient() {
+export default function TerminosClient({ pricing }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
+  const ARTICLES = buildArticles(pricing);
 
   return (
     <div className="overflow-x-clip">

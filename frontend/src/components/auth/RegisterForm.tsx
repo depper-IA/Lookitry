@@ -32,7 +32,7 @@ function formatCOP(amount: number): string {
   }).format(amount);
 }
 
-const PLANS_PREVIEW = {
+const PLANS_PREVIEW_BASE = {
   TRIAL: {
     name: 'Trial',
     price: 20000,
@@ -41,13 +41,11 @@ const PLANS_PREVIEW = {
   },
   BASIC: {
     name: 'Básico',
-    price: 150000,
     badge: null,
     features: ['Hasta 5 productos', '400 generaciones/mes', 'Branding básico', 'URL propia del probador'],
   },
   PRO: {
     name: 'Pro',
-    price: 250000,
     badge: '#FF5C3A',
     features: ['Hasta 15 productos', '1.200 generaciones/mes', 'Plugin WooCommerce', 'Templates Pro'],
   },
@@ -128,21 +126,55 @@ export default function RegisterForm() {
   const [slugChecking, setSlugChecking] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   
-  const [planParam, setPlanParam] = useState<keyof typeof PLANS_PREVIEW | null>(null);
+  const [planParam, setPlanParam] = useState<keyof typeof PLANS_PREVIEW_BASE | null>(null);
   const [monthsParam, setMonthsParam] = useState(1);
+  const [dynamicPrices, setDynamicPrices] = useState<Record<string, number>>({});
+
+  // Cargar precios dinámicos desde Supabase
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+          },
+        });
+        const rows = await res.json();
+        if (Array.isArray(rows)) {
+          const basic = rows.find((r: any) => r.id === 'basic')?.data;
+          const pro = rows.find((r: any) => r.id === 'pro')?.data;
+          setDynamicPrices({
+            BASIC: basic?.precio_mensual_cop || 150000,
+            PRO: pro?.precio_mensual_cop || 250000,
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching pricing:', err);
+      }
+    };
+    fetchPricing();
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const plan = params.get('plan')?.toUpperCase();
     const months = parseInt(params.get('months') || '1', 10);
     
-    if (plan && plan in PLANS_PREVIEW) {
-      setPlanParam(plan as keyof typeof PLANS_PREVIEW);
+    if (plan && plan in PLANS_PREVIEW_BASE) {
+      setPlanParam(plan as keyof typeof PLANS_PREVIEW_BASE);
     }
     if (months && [1, 3, 6, 12].includes(months)) {
       setMonthsParam(months);
     }
   }, []);
+
+  // Construir PLANS_PREVIEW con precios dinámicos
+  const PLANS_PREVIEW = {
+    ...PLANS_PREVIEW_BASE,
+    BASIC: { ...PLANS_PREVIEW_BASE.BASIC, price: dynamicPrices.BASIC || 150000 },
+    PRO: { ...PLANS_PREVIEW_BASE.PRO, price: dynamicPrices.PRO || 250000 },
+  };
 
   const suggestedPlan = planParam ? PLANS_PREVIEW[planParam] : null;
   const planDiscount = monthsParam > 1 ? (monthsParam === 3 ? 5 : monthsParam === 6 ? 10 : 15) : 0;

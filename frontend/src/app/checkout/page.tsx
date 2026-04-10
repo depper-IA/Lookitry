@@ -41,7 +41,7 @@ interface PricingSettings {
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
-const PLAN_BASE_FALLBACK: Record<'BASIC' | 'PRO', number> = { BASIC: 150000, PRO: 250000 };
+const PLAN_BASE_FALLBACK: Record<'BASIC' | 'PRO', number> = { BASIC: 180000, PRO: 350000 };
 
 const DISCOUNTS_FALLBACK = [
   { months: 1,  pct: 0,  label: '1 mes' },

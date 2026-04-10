@@ -9,6 +9,15 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   eslint: { ignoreDuringBuilds: false },
+  async redirects() {
+    return [
+      // Redirecciones de páginas 404
+      { source: '/probador-virtual', destination: '/', permanent: false },
+      { source: '/mini-landing', destination: '/planes', permanent: false },
+      { source: '/plugin-woocommerce', destination: '/planes', permanent: false },
+      { source: '/api-developer', destination: '/planes', permanent: false },
+    ];
+  },
   images: {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",

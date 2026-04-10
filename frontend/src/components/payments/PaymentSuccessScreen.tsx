@@ -55,13 +55,13 @@ export default function PaymentSuccessScreen() {
   const [showConfetti, setShowConfetti] = useState(true);
   const [plan, setPlan] = useState<string>('BASIC');
   const [months, setMonths] = useState(1);
-  const [amount, setAmount] = useState(150000);
+  const [amount, setAmount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const planParam = searchParams.get('plan')?.toUpperCase() || 'BASIC';
     const monthsParam = parseInt(searchParams.get('months') || '1', 10);
-    const amountParam = parseInt(searchParams.get('amount') || '150000', 10);
+    const amountParam = parseInt(searchParams.get('amount') || '0', 10);
 
     setPlan(['TRIAL', 'BASIC', 'PRO', 'ENTERPRISE'].includes(planParam) ? planParam : 'BASIC');
     setMonths(monthsParam);

@@ -237,7 +237,7 @@ export default function AdminSubscriptionsPage() {
   // MRR
   const mrr = subscriptions
     .filter(s => s.subscription_status === 'active' && s.plan !== 'TRIAL' && s.plan !== 'LANDING')
-    .reduce((acc, s) => acc + (s.plan === 'PRO' ? 250000 : 150000), 0);
+    .reduce((acc, s) => acc + (s.plan === 'PRO' ? 350000 : 180000), 0);
 
   const expiringSoon = subscriptions.filter(s =>
     s.plan !== 'TRIAL' &&

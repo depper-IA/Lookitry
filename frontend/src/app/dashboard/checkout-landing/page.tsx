@@ -35,10 +35,10 @@ export default function CheckoutLandingPage() {
   const [error, setError] = useState('');
   const [pricing, setPricing] = useState({ 
     landingPrice: 650000, 
-    landingOriginalPrice: 900000, 
+    landingOriginalPrice: 850000, 
     trm: 3900,
-    basicPrice: 150000,
-    proPrice: 250000,
+    basicPrice: 180000,
+    proPrice: 350000,
     discounts: { meses_1: 0, meses_3: 5, meses_6: 10, meses_12: 15 } as Record<string, number>
   });
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
@@ -75,16 +75,16 @@ export default function CheckoutLandingPage() {
         if (Array.isArray(rows)) {
           const basic = rows.find(r => r.id === 'basic')?.data;
           const pro = rows.find(r => r.id === 'pro')?.data;
-          const landing = rows.find(r => r.id === 'landing')?.data;
-          const discounts = rows.find(r => r.id === 'descuentos_duracion')?.data;
+          const landing = rows.find(r => r.id === 'mini_landing')?.data;
+          const descData = rows.find(r => r.id === 'descuentos_duracion')?.data;
           
           setPricing(prev => ({
             ...prev,
             basicPrice: basic?.precio_mensual_cop || prev.basicPrice,
             proPrice: pro?.precio_mensual_cop || prev.proPrice,
-            landingPrice: landing?.precio || prev.landingPrice,
-            landingOriginalPrice: landing?.precio_original || prev.landingOriginalPrice,
-            discounts: discounts || prev.discounts
+            landingPrice: landing?.precio_unico_cop || prev.landingPrice,
+            landingOriginalPrice: landing?.precio_original_cop || prev.landingOriginalPrice,
+            discounts: descData || prev.discounts
           }));
         }
       } catch (err) {
