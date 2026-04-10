@@ -116,6 +116,52 @@ Antes de entregar cualquier componente:
 [ ] Optional chaining (?.) en todos los accesos a datos
 ```
 
+## RESPONSIVE Y THEMING — OBLIGATORIO PARA TODA PÁGINA NUEVA
+
+**Toda página o componente NUEVO DEBE implementar:**
+
+### 1. Breakpoints Obligatorios
+```
+- WIDE:     >= 1440px
+- LAPTOP:   1024px - 1439px
+- TABLET:   768px  - 1023px
+- TELÉFONO: < 768px
+```
+
+### 2. Modo Dark/Light
+```
+Dark mode (DEFAULT):
+- Fondo base:    #0a0a0a
+- Cards:         #141414
+- Texto primary: #ffffff
+- Texto secondary: #999999
+
+Light mode:
+- Fondo base:    #fafafa
+- Cards:         #ffffff
+- Texto primary: #0a0a0a
+- Texto secondary: #666666
+
+Toggle activo: #FF5C3A
+```
+
+### 3. Implementación Requerida
+- Crear/usar ThemeProvider con context para toggle
+- Botón toggle con iconos Sun/Moon (lucide-react, NO emojis)
+- Persistencia en localStorage
+- Estilos condicionales via Tailwind classes
+- Usar `data-theme` attribute o CSS variables para theming
+
+### 4. Checklist de Verificación
+```
+[ ] Toggle visible y funcional en todos los breakpoints
+[ ] Tema persiste al recargar página
+[ ] Estilos aplicados correctamente en dark Y light
+[ ] Responsive funciona en: Wide, Laptop, Tablet, Teléfono
+[ ] No hay overflow horizontal en móvil
+[ ] Imágenes y cards se adaptan correctamente
+```
+
 ## Optimización de Tokens
 
 **Reglas para responder:**

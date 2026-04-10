@@ -3,6 +3,7 @@ import LandingNav from '@/components/landing/new-landing/LandingNav';
 import LandingFooter from '@/components/landing/new-landing/LandingFooter';
 import { BlogList } from '@/components/blog/BlogList';
 import { BlogHero } from '@/components/blog/BlogHero';
+import { BlogThemeWrapper, BlogHeader } from '@/components/blog/BlogThemeWrapper';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -10,15 +11,24 @@ export const metadata: Metadata = {
   description: 'Descubre las últimas tendencias en probadores virtuales, IA aplicada a la moda y estrategias para potenciar tu eCommerce con Lookitry.',
 };
 
-export default function BlogPage() {
+function BlogPageContent() {
   return (
     <div className="overflow-x-clip">
       <LandingNav />
-      <main className="min-h-screen bg-[#0a0a0a] selection:bg-[#FF5C3A]/30">
+      <BlogHeader />
+      <main className="min-h-screen bg-[#0a0a0a] dark:bg-[#0a0a0a] light:bg-[#fafafa] selection:bg-[#FF5C3A]/30">
         <BlogHero />
         <BlogList />
       </main>
       <LandingFooter />
     </div>
+  );
+}
+
+export default function BlogPage() {
+  return (
+    <BlogThemeWrapper>
+      <BlogPageContent />
+    </BlogThemeWrapper>
   );
 }

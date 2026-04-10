@@ -9,6 +9,7 @@ import { Calendar, Tag, ChevronLeft, ArrowUpRight, Zap, BarChart3 } from 'lucide
 import Link from 'next/link';
 import BlogArticle, { TableOfContents } from '@/components/blog/BlogArticle';
 import { BlogImageWithFallback } from '@/components/blog/BlogImageWithFallback';
+import { BlogThemeWrapper, BlogHeader } from '@/components/blog/BlogThemeWrapper';
 
 interface BlogPostPageProps {
   params: {
@@ -106,14 +107,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   };
 
   return (
-    <div className="overflow-x-clip">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <LandingNav />
-      <main className="min-h-screen bg-[#0a0a0a] selection:bg-[#FF5C3A]/30 pb-20">
-      <BlogShareRail title={post.title} url={shareUrl} />
+    <BlogThemeWrapper>
+      <div className="overflow-x-clip">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <LandingNav />
+        <BlogHeader />
+        <main className="min-h-screen bg-[#0a0a0a] dark:bg-[#0a0a0a] light:bg-[#fafafa] selection:bg-[#FF5C3A]/30">
 
       {/* Header del articulo */}
       <article className="mx-auto max-w-[1320px] px-6 pt-20">
@@ -310,8 +312,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </section>
         )}
       </article>
-    </main>
-      <LandingFooter />
-    </div>
+      </main>
+        <LandingFooter />
+      </div>
+    </BlogThemeWrapper>
   );
 }
