@@ -143,10 +143,17 @@ interface BlogTopicImages {
 // generateArticleHTML - Genera HTML completo desde JSON estructurado
 // ============================================================
 
+// Add interface for SEO interlinking
+interface InterlinkingPost {
+  title: string;
+  slug: string;
+}
+
 function generateArticleHTML(
   draft: BlogDraftArticle,
   images: BlogTopicImages,
-  ctaTemplates: Record<string, CtaTemplate>
+  ctaTemplates: Record<string, CtaTemplate>,
+  interlinkPosts: InterlinkingPost[] = []
 ): string {
   const { title, excerpt, meta_description, tags, sections, faqs, cta_context, image_prompts, reading_time_minutes } = draft;
 
@@ -170,52 +177,152 @@ function generateArticleHTML(
     </div>`;
   }
 
+  // Generar pool de imágenes disponibles
+  const availableImages = [
+    images.imagen_body1_url,
+    images.imagen_body2_url,
+    images.imagen_body3_url,
+    images.imagen_body4_url
+  ].filter(Boolean) as string[];
+
   //Generar sections HTML
   let sectionsHtml = '';
   if (sections && sections.length > 0) {
-    for (const section of sections) {
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
       const slugId = section.id.replace(/[^a-z0-9]/gi, '-').toLowerCase();
       sectionsHtml += `<section id="${slugId}">`;
       sectionsHtml += `<h2>${section.title}</h2>`;
 
-      //Párrafos
+      //Párrafos enriquecidos
       if (section.paragraphs && section.paragraphs.length > 0) {
-        for (const para of section.paragraphs) {
-          sectionsHtml += `<p>${para}</p>`;
+        for (let pIdx = 0; pIdx < section.paragraphs.length; pIdx++) {
+          let para = section.paragraphs[pIdx];
+
+          // 1. Detectar y formatear listas con viñetas si Gemini las devolvió en el párrafo
+          if (para.includes('\n- ') || para.includes('\n* ') || para.trim().startsWith('- ') || para.trim().startsWith('* ')) {
+            const lines = para.split('\n');
+            let listHtml = '<ul style="margin: 1.5rem 0; padding-left: 1.5rem; list-style-type: none;">';
+            let hasList = false;
+            
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                hasList = true;
+                // Aplicar viñeta pro con color de acento
+                listHtml += `<li style="margin-bottom: 0.8rem; position: relative; padding-left: 1.5rem;">
+                  <span style="position: absolute; left: 0; color: #FF5C3A;">✦</span>
+                  ${trimmed.substring(2)}
+                </li>`;
+              } else if (trimmed !== '') {
+                 listHtml += `</ul><p style="text-align: justify; line-height: 1.8; margin-bottom: 1.5rem;">${trimmed}</p><ul style="margin: 1.5rem 0; padding-left: 1.5rem; list-style-type: none;">`;
+              }
+            }
+            listHtml += '</ul>';
+            // Limpiar listas vacías
+            listHtml = listHtml.replace('<ul style="margin: 1.5rem 0; padding-left: 1.5rem; list-style-type: none;"></ul>', '');
+            if (hasList) para = listHtml;
+          }
+
+          // 2. Parseo seguro de negritas Markdown (**texto**) para evitar corromper atributos HTML CSS
+          para = para.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #fff; font-size: 1.05em;">$1</strong>');
+
+
+          // 3. Letra Capital (Drop Cap) para el mismísimo PRIMER párrafo de todo el artículo
+          if (i === 0 && pIdx === 0 && !para.startsWith('<')) {
+            const firstLetter = para.charAt(0);
+            const rest = para.slice(1);
+            para = `<span class="drop-cap" style="float: left; font-size: 4rem; line-height: 0.8; font-weight: 800; color: #FF5C3A; margin-right: 0.8rem; margin-top: 0.5rem; text-shadow: 2px 2px 0px rgba(255,92,58,0.2);">${firstLetter}</span>${rest}`;
+          }
+
+          // Renderizar
+          if (para.startsWith('<ul') || para.startsWith('<p')) {
+             sectionsHtml += para;
+          } else {
+             // Texto justificado
+             sectionsHtml += `<p style="text-align: justify; line-height: 1.8; margin-bottom: 1.5rem;">${para}</p>`;
+          }
         }
       }
 
       //Callout block
       if (section.callout) {
-        const calloutClass =
-          section.callout.type === 'stat'
-            ? 'blog-callout blog-callout-stat'
+        const calloutStyle = section.callout.type === 'stat' 
+            ? 'background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6;' 
             : section.callout.type === 'tip'
-            ? 'blog-callout blog-callout-tip'
-            : 'blog-callout blog-callout-warning';
-        sectionsHtml += `<div class="${calloutClass}" data-blog-callout="${section.callout.type}">${section.callout.text}</div>`;
+            ? 'background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981;'
+            : 'background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b;';
+
+        const calloutIcon = section.callout.type === 'stat' ? '📊' : section.callout.type === 'tip' ? '💡' : '⚠️';
+
+        sectionsHtml += `<div class="blog-callout" style="${calloutStyle} padding: 1.2rem 1.5rem; border-radius: 0 8px 8px 0; margin: 2rem 0; font-style: italic; font-weight: 500; display: flex; gap: 1rem; align-items: flex-start;">
+          <span style="font-size: 1.5rem;">${calloutIcon}</span>
+          <div>${section.callout.text}</div>
+        </div>`;
       }
 
-      //Body image según image_position (1 = después de esta sección)
-      if (section.image_position === 1 && images.imagen_body1_url) {
-        sectionsHtml += `<figure class="blog-body-image">
-          <img src="${images.imagen_body1_url}" alt="${title || 'Imagen'}" loading="lazy" />
-        </figure>`;
-      } else if (section.image_position === 2 && images.imagen_body2_url) {
-        sectionsHtml += `<figure class="blog-body-image">
-          <img src="${images.imagen_body2_url}" alt="${title || 'Imagen'}" loading="lazy" />
-        </figure>`;
-      } else if (section.image_position === 3 && images.imagen_body3_url) {
-        sectionsHtml += `<figure class="blog-body-image">
-          <img src="${images.imagen_body3_url}" alt="${title || 'Imagen'}" loading="lazy" />
-        </figure>`;
-      } else if (section.image_position === 4 && images.imagen_body4_url) {
-        sectionsHtml += `<figure class="blog-body-image">
-          <img src="${images.imagen_body4_url}" alt="${title || 'Imagen'}" loading="lazy" />
+      // Inject Body image robustly
+      let imgUrl: string | null = null;
+      let imgPos = Number(section.image_position);
+
+      if (imgPos >= 1 && imgPos <= 4) {
+        if (imgPos === 1) imgUrl = images.imagen_body1_url;
+        else if (imgPos === 2) imgUrl = images.imagen_body2_url;
+        else if (imgPos === 3) imgUrl = images.imagen_body3_url;
+        else if (imgPos === 4) imgUrl = images.imagen_body4_url;
+        
+        // Remove from available images so we don't reuse it
+        const index = imgUrl ? availableImages.indexOf(imgUrl) : -1;
+        if (index > -1) availableImages.splice(index, 1);
+      } 
+      
+      // Fallback: If no valid explicit position or the image mapped wasn't found, 
+      // but we still have unused images in the pool, use the next available one.
+      if (!imgUrl && availableImages.length > 0) {
+        imgUrl = availableImages.shift() || null;
+      }
+
+      if (imgUrl) {
+        sectionsHtml += `<figure class="blog-body-image" style="margin: 3rem 0; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+          <img src="${imgUrl}" alt="${title || 'Imagen explicativa'}" loading="lazy" style="width: 100%; height: auto; display: block; object-fit: cover; max-height: 500px;" />
         </figure>`;
       }
 
       sectionsHtml += '</section>';
+
+      // Inject SEO Internal Linking block explicitly after Section #2
+      if (interlinkPosts.length > 0 && i === 1) {
+        sectionsHtml += `
+        <div class="blog-interlink-box" style="background: rgba(255, 92, 58, 0.05); border-left: 4px solid #FF5C3A; padding: 1.5rem; margin: 3rem 0; border-radius: 0 8px 8px 0;">
+          <h3 style="margin-top: 0; color: #FF5C3A; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
+            📚 Lectura Recomendada
+          </h3>
+          <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc;">
+            ${interlinkPosts.map(p => `<li style="margin-bottom: 0.8rem;"><a href="/blog/${p.slug}" style="color: #fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.3); text-underline-offset: 4px; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='#FF5C3A'; this.style.textDecorationColor='#FF5C3A'" onmouseout="this.style.color='#fff'; this.style.textDecorationColor='rgba(255,255,255,0.3)'">${p.title}</a></li>`).join('')}
+          </ul>
+        </div>`;
+      }
+
+      // CTA Intermedio #1 - Estilo Banner Neon
+      if (i === 3) {
+        sectionsHtml += `
+        <div class="blog-cta-inline" style="background: linear-gradient(135deg, #141414 0%, #1a1a1a 100%); border: 1px solid #333; padding: 2.5rem 2rem; border-radius: 16px; margin: 3rem 0; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);">
+          <div style="background: rgba(255,92,58,0.1); color: #FF5C3A; padding: 0.4rem 1rem; border-radius: 9999px; display: inline-block; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Destaca tu tienda</div>
+          <h3 style="color: #fff; margin-top: 0; margin-bottom: 1rem; font-size: 1.6rem; font-weight: 700;">¿Cansado de devoluciones por tallas incorrectas?</h3>
+          <p style="color: #bbb; margin-bottom: 2rem; line-height: 1.6; max-width: 90%; margin-left: auto; margin-right: auto; font-size: 1.05rem;">Integra el probador virtual con Inteligencia Artificial de Lookitry en tu e-commerce y permite a tus clientes verse con las prendas antes de comprar. ¡Aumenta tu conversión hasta un 35%!</p>
+          <a href="/register" style="display: inline-block; background: linear-gradient(to right, #FF5C3A, #ff7e63); color: #fff; padding: 1rem 2.5rem; border-radius: 9999px; font-weight: 700; font-size: 1.1rem; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(255,92,58,0.4);" onmouseover="this.style.transform='translateY(-2px) scale(1.02)'; this.style.boxShadow='0 8px 25px rgba(255,92,58,0.6)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 15px rgba(255,92,58,0.4)'">Implementar Probador Web Gratis</a>
+        </div>`;
+      }
+
+      // CTA Intermedio #2 - Estilo Texto Integrado
+      if (i === 6) {
+        sectionsHtml += `
+        <div style="border-top: 1px dashed #333; border-bottom: 1px dashed #333; padding: 1.5rem 0; margin: 2rem 0;">
+          <p style="margin: 0; font-size: 1.1rem; line-height: 1.6; text-align: center;">
+            <strong style="color: #FF5C3A;">¡No te quedes atrás en innovación!</strong> El futuro del retail online ya está aquí. Las marcas que implementaron <a href="/register" style="color: #fff; font-weight: bold; text-decoration: underline; text-decoration-color: #FF5C3A; text-underline-offset: 3px;">Lookitry.com</a> han visto cómo aumentan sus tickets promedio creando experiencias inolvidables. <a href="/planes" style="color: #FF5C3A; font-weight: 600; text-decoration: none;">Crear cuenta de demostración ahora →</a>
+          </p>
+        </div>`;
+      }
     }
   }
 
@@ -596,11 +703,13 @@ export const blogController = {
             updated_at: new Date().toISOString(),
           };
 
-          if (imageType === 'hero') updateField.imagen_hero_url = url;
-          else if (imageType === 'body1') updateField.imagen_body1_url = url;
-          else if (imageType === 'body2') updateField.imagen_body2_url = url;
-          else if (imageType === 'body3') updateField.imagen_body3_url = url;
-          else if (imageType === 'body4') updateField.imagen_body4_url = url;
+          const normalizedType = imageType.replace('_', '').toLowerCase();
+
+          if (normalizedType === 'hero') updateField.imagen_hero_url = url;
+          else if (normalizedType === 'body1') updateField.imagen_body1_url = url;
+          else if (normalizedType === 'body2') updateField.imagen_body2_url = url;
+          else if (normalizedType === 'body3') updateField.imagen_body3_url = url;
+          else if (normalizedType === 'body4') updateField.imagen_body4_url = url;
           updateField.status = 'completed';
 
           // Upsert: INSERT si no existe, UPDATE si existe
@@ -620,13 +729,14 @@ export const blogController = {
               .from('blog_topic_images')
               .insert({ topic_id: topicId, ...updateField });
           }
-          console.log(`[Blog Upload] Imagen ${imageType} guardada en blog_topic_images para topic ${topicId}: ${url}`);
+          console.log(`[Blog Upload] Imagen ${normalizedType} guardada en blog_topic_images para topic ${topicId}: ${url}`);
         }
 
         return res.status(200).json(result);
       }
 
-      const { image_base64, filename, asset_type, assetType } = req.body;
+      // NO es multipart (base64)
+      const { image_base64, filename, asset_type, assetType, topic_id, image_type } = req.body;
       if (!image_base64 || !filename) {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'image_base64 y filename requeridos' });
       }
@@ -638,6 +748,35 @@ export const blogController = {
         folder: 'web',
         assetType: resolveBlogAssetType(asset_type || assetType),
       });
+      
+      // Asegurarnos de enlazarla al DB si trae metadata
+      if (topic_id && image_type) {
+        const url = result.url as string;
+        const normalizedType = image_type.replace('_', '').toLowerCase();
+        const updateField: Record<string, string> = {
+          updated_at: new Date().toISOString(),
+          status: 'completed'
+        };
+
+        if (normalizedType === 'hero') updateField.imagen_hero_url = url;
+        else if (normalizedType === 'body1') updateField.imagen_body1_url = url;
+        else if (normalizedType === 'body2') updateField.imagen_body2_url = url;
+        else if (normalizedType === 'body3') updateField.imagen_body3_url = url;
+        else if (normalizedType === 'body4') updateField.imagen_body4_url = url;
+
+        const { data: existing } = await supabaseAdmin
+          .from('blog_topic_images')
+          .select('id')
+          .eq('topic_id', topic_id)
+          .maybeSingle();
+
+        if (existing) {
+          await supabaseAdmin.from('blog_topic_images').update(updateField).eq('topic_id', topic_id);
+        } else {
+          await supabaseAdmin.from('blog_topic_images').insert({ topic_id, ...updateField });
+        }
+        console.log(`[Blog Upload Base64] Imagen ${normalizedType} guardada para topic ${topic_id}: ${url}`);
+      }
 
       return res.status(200).json(result);
     } catch (error: any) {
@@ -840,11 +979,24 @@ export const blogController = {
       //4. Obtener CTA templates
       const ctaTemplates = await getCtaTemplates();
 
+      //4.5 Fetch Recent Posts for internal linking (SEO magic)
+      // Evita interconectar consigo mismo basándonos en title o topic
+      const { data: recentPostsData } = await supabaseAdmin
+        .from('blogs')
+        .select('title, slug')
+        .eq('status', 'published')
+        .neq('topic_id', topic_id)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      const recentPosts = (recentPostsData as InterlinkingPost[]) || [];
+
       //5. Generar HTML completo desde JSON estructurado
       const finalHtml = generateArticleHTML(
         draft as BlogDraftArticle,
         images as BlogTopicImages,
-        ctaTemplates
+        ctaTemplates,
+        recentPosts
       );
 
       //6. Obtener categoría

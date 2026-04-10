@@ -570,8 +570,12 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | **Descriptor IA (productos)** | `/webhook/descriptor` | `ZjVTV3QxoPEi60GX` | `N8N_DESCRIPTOR_URL` |
 | **Error Handling** | (Automático como errorWorkflow) | `PNri7NdZYkZhpPnm` | — |
 | **Enterprise Sync** | `/webhook/enterprise-sync` | — | `N8N_ENTERPRISE_SYNC_WEBHOOK_URL` |
+| **Blog Topic Generator** | `/webhook/trigger-topic-generator` | `ryoA7wq7WhXYUckC` | — |
+| **Blog Article Producer** | `/webhook/trigger-article-producer` | `VMAu93Zx4k5qgzdm` | — |
+| **Blog Image Generator** | `/webhook/lookitry-blog-images` | `l4Mb3wMfHUnsbEXH` | — |
 | **Blog Post Creation** | `/api/blog/webhook` (backend) | — | `N8N_BLOG_WEBHOOK_URL` |
 | **Blog Image Upload** | `/api/blog/upload` (backend) | — | — |
+| **Blog Assemble** | `/api/blog/assemble-article` (backend) | — | — |
 | **Feedback Embedding** | Asíncrono vía n8n | — | — |
 | **Project Knowledge RAG** | `/webhook/project-knowledge-rag` | — | — |
 | **NotebookLM Drive Sync** | `/webhook/notebooklm-sync` | — | — |
@@ -612,14 +616,116 @@ Motor de reglas de prompt por categoría de producto con 15+ categorías:
 3. Frontend hace **Polling** hasta que el estado sea `SUCCESS`.
 4. Usuario puede reportar error (feedback con embedding RAG).
 
-### 7.4 Scheduler (Cron Jobs)
+### 7.4 Sistema de Blog Automation (Arquitectura de 3 Workflows)
+
+El sistema de blog automatizado está refactorizado en **3 workflows independientes** en n8n:
+
+#### Arquitectura General
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    BLOG AUTOMATIZATION ARCHITECTURE                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────┐
+│   TOPIC GENERATOR            │  Workflow: ryoA7wq7WhXYUckC
+│   "Lookitry - Topic         │  Schedule: Lunes 8am
+│    Generator"               │  Webhook: trigger-topic-generator
+│                             │
+│  Google Noticias (RSS)        │
+│         ↓                    │
+│  AI Trend Hunter (LLM)       │→ Genera 3 temas únicos
+│         ↓                    │
+│  Deduplicar vs Supabase      │
+│         ↓                    │
+│  INSERT blog_topics          │→ status = 'pending'
+└──────────────────────────────┘
+              ↓ (cuando hay topics pending)
+┌──────────────────────────────┐
+│   ARTICLE PRODUCER           │  Workflow: VMAu93Zx4k5qgzdm
+│   "Lookitry - Article       │  Webhook: trigger-article-producer
+│    Producer"                │
+│                             │
+│  GET Topic Pending (1)       │
+│         ↓                   │
+│  Marcar 'processing'        │
+│         ↓                   │
+│  Jina Lector (source_url)   │→ Investigación del tema
+│         ↓                   │
+│  Redactor IA (Gemini)       │→ Genera artículo JSON
+│         ↓                   │
+│  POST Article Content        │→ Guarda draft en blog_draft_articles
+│         ↓                   │
+│  Llamar Image Generator     │→ Fire-and-forget (async)
+│         ↓                   │
+│  Marcar 'published'         │
+└──────────────────────────────┘
+              ↓ (async, no espera respuesta)
+┌──────────────────────────────┐
+│   IMAGE GENERATOR            │  Workflow: l4Mb3wMfHUnsbEXH
+│   "Lookitry Blog Images     │  Webhook: lookitry-blog-images
+│    - FIXED Native Polling"   │
+│                             │
+│  Preparar Prompts (4)        │→ hero, body1, body2, body3
+│         ↓                   │
+│  Loop × 4 imágenes          │
+│  ┌──────────────────────┐   │
+│  │ Replicate API (FLUX) │   │
+│  │ Esperar 15s          │   │
+│  │ Verificar/Listo?     │   │──→ [No] → Esperar más
+│  │ Descargar             │   │──→ [Sí] → Continuar
+│  │ POST /upload          │   │→ blog_topic_images
+│  └──────────────────────┘   │
+│         ↓                   │
+│  Ensamblar Artículo          │→ GET draft → Genera HTML → Publica en blogs
+└──────────────────────────────┘
+```
+
+#### Tabla: Workflows de Blog
+| Workflow | ID n8n | Trigger | Schedule | Webhook |
+|----------|---------|---------|----------|---------|
+| **Topic Generator** | `ryoA7wq7WhXYUckC` | Manual + Schedule | Lunes 8am | `trigger-topic-generator` |
+| **Article Producer** | `VMAu93Zx4k5qgzdm` | Manual | — | `trigger-article-producer` |
+| **Image Generator** | `l4Mb3wMfHUnsbEXH` | Por Article Producer | — | `lookitry-blog-images` |
+
+#### Flujo de Ejecución
+
+1. **Topic Generator** (automático Lunes 8am o manual):
+   - Google Noticias → AI Trend Hunter → Deduplicar → INSERT blog_topics
+   - Crea topics con `status = 'pending'`
+
+2. **Article Producer** (manual desde Admin):
+   - Obtiene 1 topic pending → Lo marca `processing`
+   - Investiga con Jina → Redacta con Gemini → Guarda draft
+   - Dispara Image Generator (fire-and-forget) → Marca `published`
+
+3. **Image Generator** (automático, llamado por Article Producer):
+   - Genera 4 imágenes con Replicate (FLUX Schnell)
+   - Sube a MinIO → Actualiza `blog_topic_images`
+   - Ensambla HTML → Publica en `blogs`
+
+#### Tablas DB Involucradas
+| Tabla | Uso |
+|-------|-----|
+| `blog_topics` | Topics pendientes/processing/published |
+| `blog_draft_articles` | Draft de artículos antes de publicar |
+| `blog_topic_images` | URLs de imágenes generadas (hero, body1-4) |
+| `blogs` | Artículos publicados en el blog |
+
+#### Endpoints Backend de Blog
+| Endpoint | Método | Función |
+|----------|--------|---------|
+| `/api/blog/article-content` | POST | Guarda draft de artículo |
+| `/api/blog/upload` | POST | Upload imagen a MinIO |
+| `/api/blog/assemble-article` | POST | Ensambla y publica artículo |
+
+### 7.5 Scheduler (Cron Jobs)
 | Job | Frecuencia | Función |
 |-----|------------|---------|
 | Subscription check | Diario 08:00 | Verifica suscripciones expiradas |
 | Usage alerts | Cada 6h | Alertas de uso al 80%/100% |
 | Temp cleanup | Diario 03:00 | Limpieza de selfies temporales |
 
-### 7.5 Servicios del Backend
+### 7.6 Servicios del Backend
 | Servicio | Función |
 |----------|---------|
 | `wompi.service` | Pagos Wompi (COP) |

@@ -261,5 +261,34 @@ export const blogSettingsController = {
       console.error('[BlogSettings] Error reporting execution status:', error);
       return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error al obtener configuración') });
     }
+  },
+
+  /**
+   * Notificar que no había topics pendientes para procesar
+   */
+  async notifyNoTopics(req: Request, res: Response) {
+    try {
+      const secret = String(req.headers['x-blog-secret'] || '');
+      const expectedSecret = await resolveExpectedBlogSecret();
+
+      if (!expectedSecret || secret !== expectedSecret) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Secreto de blog inválido' });
+      }
+
+      const message = String(req.body?.message || '').trim() || 'No había topics pendientes para procesar';
+
+      await createAdminNotification({
+        type: 'blog_success',
+        title: 'Article Producer: Sin topics pendientes',
+        message,
+        severity: 'info',
+        metadata: { source: 'article_producer', reason: 'no_pending_topics' },
+      });
+
+      return res.json({ ok: true });
+    } catch (error: any) {
+      console.error('[BlogSettings] Error notifying no topics:', error);
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error al notificar') });
+    }
   }
 };
