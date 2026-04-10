@@ -81,6 +81,36 @@ export function isDarkColor(color?: string | null): boolean {
   return luminance < 0.5;
 }
 
+export function getLuminance(color?: string | null): number {
+  if (!color) return 1;
+  const hex = color.replace('#', '').trim();
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) return 1;
+  
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+}
+
+export function getContrastColor(color?: string | null, darkColor = '#111111', lightColor = '#ffffff'): string {
+  return isDarkColor(color) ? lightColor : darkColor;
+}
+
+export function getSmartMutedColor(color?: string | null): string {
+  if (!color) return '#6b7280';
+  return isDarkColor(color) ? 'rgba(255,255,255,0.72)' : '#6b7280';
+}
+
+export function getSmartBorderColor(color?: string | null): string {
+  if (!color) return '#f3f4f6';
+  return isDarkColor(color) ? 'rgba(255,255,255,0.08)' : '#f3f4f6';
+}
+
+export function getSmartOverlayColor(color?: string | null): string {
+  if (!color) return 'rgba(255,255,255,0.02)';
+  return isDarkColor(color) ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
+}
+
 export function getVisibleSocialEntries(socialLinks?: Record<string, string>) {
   if (!socialLinks) return [];
 
