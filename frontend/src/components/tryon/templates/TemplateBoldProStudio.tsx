@@ -170,8 +170,16 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
 
             {/* Content Body */}
             <div className={`${isSmall ? 'p-4' : 'p-8'}`}>
-              <ErrorBanner error={error} isService={errorIsService} />
-              <NoticeBanner notice={notice} />
+              <ErrorBanner 
+                error={error} 
+                isService={errorIsService} 
+                onDismiss={props.onDismissError}
+                textColor={textPrimary}
+                mutedColor={textMuted}
+                cardBg={cardBg}
+                cardBorder={cardBorder}
+              />
+              <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
 
               {step === 'upload' && (
                 <div className="space-y-6">

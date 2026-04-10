@@ -102,8 +102,15 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
       />
 
       <div className="flex-1 w-full relative">
-        <ErrorBanner error={error} isService={errorIsService} />
-        <NoticeBanner notice={notice} />
+        <ErrorBanner 
+          error={error} 
+          isService={errorIsService} 
+          onDismiss={props.onDismissError}
+          textColor={textPrimary}
+          mutedColor={textMuted}
+          cardBg={cardBg}
+        />
+        <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
 
         {step === 'upload' && (
           <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 sm:px-6 md:px-8 lg:px-12 py-12">

@@ -24,6 +24,16 @@ export async function middleware(request: NextRequest) {
   const adminToken = request.cookies.get('admin_token')?.value;
   const allowDevBypass = process.env.ALLOW_DEV_AUTH_BYPASS === 'true';
   
+  // ── Ignorar archivos estáticos y assets comunes ──────────────────────────────
+  if (
+    pathname === '/favicon.ico' ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml' ||
+    pathname.includes('.') // Cualquier archivo con extensión
+  ) {
+    return NextResponse.next();
+  }
+  
   // ── Redirigir /pruebalo a /sitio ──────────────────────────────────────────
   if (pathname.startsWith('/pruebalo/')) {
     const slug = pathname.split('/pruebalo/')[1];
@@ -208,6 +218,15 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.svg|.*\\.png|.*\\.jpg).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - robots.txt, sitemap.xml
+     * - icons or common images
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.svg|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.webp|.*\\.ico).*)',
   ],
 };

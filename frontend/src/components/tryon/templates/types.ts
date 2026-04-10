@@ -41,6 +41,8 @@ export interface TryOnTemplateProps {
   onProceedToUpload?: () => void;
   onBack?: () => void;
   onGenerate: () => void;
+  onDismissError: () => void;
+  onDismissNotice: () => void;
 }
 
 

@@ -99,6 +99,8 @@ export function WidgetRealPreview({
     onSelfieUpload: handleSelfieUpload,
     onProductSelect: (p: any) => setSelectedProduct(p),
     onGenerate: () => setStep('generating'),
+    onDismissError: () => {},
+    onDismissNotice: () => {},
   };
 
   const renderTemplate = () => {
