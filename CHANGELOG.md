@@ -2,6 +2,13 @@
 
 ## [2026-04-10] - Slug Automático + Lenguaje Simplificado
 
+### Bug Fix - Theme Toggle No Guardaba Preferencia
+- **ThemeContext.tsx**: Cambiado storage key de `'lookitry-theme'` a `'theme'` para sincronizar con ThemeToggle
+- **ThemeToggle.tsx**: Ahora usa `useTheme()` del context en lugar de estado interno propio
+- Antes: Toggle guardaba en `'theme'`, Context leía de `'lookitry-theme'` → siempre dark
+- Ahora: Ambos usan `'theme'` y comparten estado via ThemeContext
+- Afecta: Dashboard usuario y Admin panel
+
 ### Frontend - Modal Pro Simplificado
 - **UpgradeModal.tsx**: Lenguaje simplificado
   - "400 generaciones por mes" → "400 fotos por mes"

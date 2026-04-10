@@ -1,39 +1,12 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
-
-function getInitialTheme(): boolean {
-  if (typeof window === 'undefined') return false;
-  const stored = localStorage.getItem('theme');
-  if (stored === 'dark') return true;
-  if (stored === 'light') return false;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
+import { useTheme } from '@/contexts/ThemeContext';
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(getInitialTheme);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      const stored = localStorage.getItem('theme');
-      if (!stored) {
-        setIsDark(e.matches);
-        document.documentElement.classList.toggle('dark', e.matches);
-      }
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  const toggle = useCallback(() => {
-    const next = !isDark;
-    setIsDark(next);
-    document.documentElement.classList.toggle('dark', next);
-    localStorage.setItem('theme', next ? 'dark' : 'light');
-  }, [isDark]);
+  const { isDark, toggle } = useTheme();
 
   return (
     <button

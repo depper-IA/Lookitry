@@ -21,7 +21,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-const THEME_STORAGE_KEY = 'lookitry-theme';
+const THEME_STORAGE_KEY = 'theme';
 
 const themes = {
   dark: {
