@@ -1,0 +1,43 @@
+# Dockerfile para IDM-VTON en RunPod
+# Basado en PyTorch + CUDA
+
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+
+# Evitar prompts interactivos durante apt-get
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Instalar Python y dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3.10-dev \
+    python3-pip \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear enlace simbolico para python
+RUN ln -sf /usr/bin/python3.10 /usr/bin/python
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos de la aplicacion
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar codigo de la aplicacion
+COPY ./app /app
+
+# Exponer puerto
+EXPOSE 8000
+
+# Variable de entorno para PyTorch
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9"
+
+# Comando de inicio
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

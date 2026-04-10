@@ -35,6 +35,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
     errorIsService,
     notice,
     generatedProducts,
+    lockProductSelection,
     onReset,
     onSelfieUpload,
     onProductSelect,
@@ -49,53 +50,59 @@ export function TemplateBare(props: TryOnTemplateProps) {
   const borderColor = bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)';
 
   const centerUploadInEmbed = isEmbed && step === 'upload';
-  const isMinilandingOrPlugin = pluginView || (isEmbed && step === 'upload');
+  const isMinilandingOrPlugin = lockProductSelection || pluginView || (isEmbed && step === 'upload');
 
   return (
     <div
-      className={`flex flex-col font-sans transition-all duration-700 ${isEmbed ? 'min-h-full' : 'h-full'}`}
-      style={{ backgroundColor: secondaryColor }}
+      className={`flex flex-col font-sans transition-all duration-700 min-h-screen min-h-[100dvh] ${
+        isEmbed ? '' : 'bg-[#0a0a0a]'
+      }`}
+      style={{ backgroundColor: isEmbed ? secondaryColor : undefined }}
     >
       {step === 'generating' && (
-        <div className={`flex-1 flex items-center justify-center ${pluginView ? 'min-h-[70vh] px-4 py-0' : 'py-8'}`}>
+        <div className="flex-1 flex items-center justify-center">
           <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
         </div>
       )}
       {step !== 'generating' && (
-        <div className={`flex-1 w-full px-4 ${centerUploadInEmbed ? 'flex items-center justify-center py-6 md:py-8' : 'py-4 md:py-6'}`}>
+        <div className="flex-1 flex items-center justify-center px-3 sm:px-4 py-4 sm:py-6 overflow-y-auto">
           <div className={`${centerUploadInEmbed ? 'w-full max-w-md sm:max-w-lg' : (pluginView && step === 'result' ? 'mx-auto w-full max-w-5xl sm:max-w-6xl' : 'max-w-sm sm:max-w-lg mx-auto w-full')}`}>
             <ErrorBanner error={error} isService={errorIsService} />
             <NoticeBanner notice={notice} />
 
             {/* Paso Upload: Solo se muestra si estamos en minilanding/plugin (que fuerza step='upload') */}
              {step === 'upload' && (
-               <div className="space-y-4">
+               <div className="space-y-3 sm:space-y-4">
                  {isMinilandingOrPlugin && selectedProduct && !pluginView && (
-                    <div className="rounded-[24px] border p-4 shadow-sm" style={{ backgroundColor: cardBg, borderColor }}>
-                      <p className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: textMuted }}>Producto seleccionado</p>
-                      <div className="mt-3 flex items-center gap-3">
-                        <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="h-16 w-16 rounded-2xl object-cover" style={{ borderColor }} />
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-black uppercase italic" style={{ color: textPrimary }}>{selectedProduct.name}</p>
-                          <p className="text-xs mt-1" style={{ color: textMuted }}>{selectedProduct.category}</p>
+                    <div className="rounded-2xl sm:rounded-[24px] border p-3 sm:p-4 shadow-sm" style={{ backgroundColor: cardBg, borderColor }}>
+                      <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.18em]" style={{ color: textMuted }}>
+                        {lockProductSelection ? 'Producto para probar' : 'Producto seleccionado'}
+                      </p>
+                      <div className="mt-2 sm:mt-3 flex items-center gap-2 sm:gap-3">
+                        <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl object-cover" style={{ borderColor }} />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs sm:text-sm font-black uppercase italic" style={{ color: textPrimary }}>{selectedProduct.name}</p>
+                          <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: textMuted }}>
+                            {lockProductSelection ? 'Elegido en el catálogo' : selectedProduct.category}
+                          </p>
                         </div>
                       </div>
                     </div>
                  )}
                  {pluginView && selectedProduct && (
-                    <div className="rounded-[24px] border p-4 shadow-sm" style={{ backgroundColor: cardBg, borderColor }}>
-                      <p className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: textMuted }}>Producto fijado</p>
-                      <div className="mt-3 flex items-center gap-3">
+                    <div className="rounded-2xl sm:rounded-[24px] border p-3 sm:p-4 shadow-sm" style={{ backgroundColor: cardBg, borderColor }}>
+                      <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.18em]" style={{ color: textMuted }}>Producto fijado</p>
+                      <div className="mt-2 sm:mt-3 flex items-center gap-2 sm:gap-3">
                         <img
                           src={selectedProduct.imageUrl}
                           alt={selectedProduct.name}
-                          className="h-16 w-16 rounded-2xl object-cover"
+                          className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl object-cover"
                           style={{ borderColor }}
                         />
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-black uppercase italic" style={{ color: textPrimary }}>{selectedProduct.name}</p>
-                          <p className="mt-1 text-xs" style={{ color: textMuted }}>
-                            Este producto ya fue seleccionado desde la pagina del producto en WooCommerce.
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs sm:text-sm font-black uppercase italic" style={{ color: textPrimary }}>{selectedProduct.name}</p>
+                          <p className="mt-0.5 text-[10px] sm:text-xs" style={{ color: textMuted }}>
+                            Este producto ya fue seleccionado desde la página del producto en WooCommerce.
                           </p>
                         </div>
                       </div>
@@ -115,7 +122,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
                     <div className="pt-2">
                       <button
                         onClick={onGenerate}
-                        className="w-full py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+                        className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-white text-xs sm:text-sm shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
                         style={{ backgroundColor: primaryColor }}
                       >
                         {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
@@ -125,14 +132,14 @@ export function TemplateBare(props: TryOnTemplateProps) {
                </div>
               )}
 
-            {/* Paso Select: Implementación "Opción B" (Selector y Uploader en la misma pantalla) */}
-            {step === 'select' && (
-              <div className="space-y-8 md:space-y-10 pb-10">
+            {/* Paso Select: Selector y Uploader en la misma pantalla */}
+            {step === 'select' && !lockProductSelection && (
+              <div className="space-y-6 sm:space-y-8 md:space-y-10 pb-10 sm:pb-12">
                 <SelfieThumb preview={selfiePreview} onReset={onReset} />
                 
                 {/* 1. Selector de Producto */}
                 <div>
-                  <h3 className="text-sm font-black uppercase tracking-widest mb-4" style={{ color: textPrimary }}>
+                  <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest mb-3 sm:mb-4" style={{ color: textPrimary }}>
                     1. Selecciona un producto
                   </h3>
                   <FriendlyProductSelector
@@ -144,12 +151,12 @@ export function TemplateBare(props: TryOnTemplateProps) {
                   />
                 </div>
 
-                {/* 2. Subida de Foto (Opción B: en la misma vista, pero deshabilitado si no hay producto) */}
+                {/* 2. Subida de Foto */}
                 <div className={`transition-opacity duration-300 ${!selectedProduct ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <h3 className="text-sm font-black uppercase tracking-widest mb-4 flex items-center gap-2" style={{ color: textPrimary }}>
+                  <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2" style={{ color: textPrimary }}>
                     2. Sube tu foto frontal
                     {!selectedProduct && (
-                      <span className="text-[10px] tracking-normal normal-case font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
+                      <span className="text-[10px] sm:text-xs tracking-normal normal-case font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
                         Requerido arriba
                       </span>
                     )}
@@ -168,15 +175,15 @@ export function TemplateBare(props: TryOnTemplateProps) {
                 
                 {/* 3. Acción */}
                 {selectedProduct && selfiePreview && (
-                  <div className="sticky bottom-4 pt-4 mt-6 z-10">
+                  <div className="sticky bottom-3 sm:bottom-4 pt-3 sm:pt-4 mt-4 sm:mt-6 z-10">
                     <button
                       onClick={onGenerate}
-                      className="w-full py-4 rounded-2xl font-black uppercase tracking-[0.1em] text-white text-sm shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+                      className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.1em] text-xs sm:text-sm shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
                       style={{ backgroundColor: primaryColor }}
                     >
                       {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
                     </button>
-                    <p className="text-center text-[10px] md:text-xs mt-3 font-medium" style={{ color: textMuted }}>
+                    <p className="text-center text-[10px] sm:text-xs mt-2 sm:mt-3 font-medium" style={{ color: textMuted }}>
                       {generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
                     </p>
                   </div>

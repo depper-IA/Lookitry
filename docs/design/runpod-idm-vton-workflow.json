@@ -1,0 +1,386 @@
+{
+  "name": "Virtual Try-On - IDM-VTON via RunPod (Testing)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tryon-runpod",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-runpod",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item.json;\nconst body = item.body || item;\n\nif (!body || typeof body !== 'object') {\n  throw new Error('No se recibio body valido');\n}\n\nconst required = ['brand_id', 'product_id', 'selfie_url', 'product_image_url'];\nconst missing = required.filter(f => !body[f]);\n\nif (missing.length > 0) {\n  throw new Error('Faltan campos: ' + missing.join(', '));\n}\n\nconst urlRegex = /^https?:\\/\\/.+/;\nif (!urlRegex.test(body.selfie_url)) {\n  throw new Error('selfie_url no es URL valida');\n}\nif (!urlRegex.test(body.product_image_url)) {\n  throw new Error('product_image_url no es URL valida');\n}\n\nreturn {\n  json: {\n    brand_id: body.brand_id,\n    product_id: body.product_id,\n    selfie_url: body.selfie_url,\n    product_image_url: body.product_image_url,\n    prompt: body.prompt || 'clothing item',\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "validate-input",
+      "name": "Validar Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.selfie_url }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "download-selfie",
+      "name": "Descargar Selfie",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 180]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.product_image_url }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "download-product",
+      "name": "Descargar Producto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 420]
+    },
+    {
+      "parameters": {
+        "jsCode": "const selfieBinary = $('Descargar Selfie').item.binary;\nconst productBinary = $('Descargar Producto').item.binary;\nconst data = $('Validar Input').item.json;\n\nif (!selfieBinary?.data || !productBinary?.data) {\n  throw new Error('No se pudieron descargar las imagenes');\n}\n\n// Convertir binary a base64 usando Buffer\nconst selfieBuffer = Buffer.from(selfieBinary.data, 'binary').toString('base64');\nconst productBuffer = Buffer.from(productBinary.data, 'binary').toString('base64');\n\n// Construir payload para RunPod\nconst payload = {\n  person_image: selfieBuffer,\n  garment_image: productBuffer,\n  garment_description: data.prompt,\n  seed: -1\n};\n\nreturn {\n  json: {\n    ...data,\n    payload,\n    runpod_url: $env.RUNPOD_API_URL || 'https://your-endpoint.runpod.io/v1/tryon'\n  }\n};"
+      },
+      "id": "prepare-payload",
+      "name": "Preparar Payload RunPod",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.runpod_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.RUNPOD_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.payload }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "call-runpod",
+      "name": "Llamar RunPod API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst data = $('Preparar Payload RunPod').item.json;\n\n// RunPod returns: { output_image: base64, mask_image: base64 }\nlet outputBase64 = null;\n\nif (response.output_image) {\n  outputBase64 = response.output_image;\n} else if (response.data?.output_image) {\n  outputBase64 = response.data.output_image;\n} else if (typeof response === 'string') {\n  outputBase64 = response;\n} else {\n  throw new Error('No se encontro output_image en respuesta: ' + JSON.stringify(Object.keys(response || {})).substring(0, 300));\n}\n\nreturn {\n  json: {\n    ...data,\n    output_base64: outputBase64,\n    full_response: response\n  }\n};"
+      },
+      "id": "extract-output",
+      "name": "Extraer Output Image",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1350, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base64String = $('Extraer Output Image').item.json.output_base64;\n\n// Convertir base64 a binary\nconst buffer = Buffer.from(base64String, 'base64');\n\nreturn {\n  json: {\n    binaryData: buffer.toString('base64')\n  },\n  binary: {\n    data: {\n      type: 'image/jpeg',\n      data: buffer.toString('base64')\n    }\n  }\n};"
+      },
+      "id": "base64-to-binary",
+      "name": "Convert Base64 to Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1570, 300]
+    },
+    {
+      "parameters": {
+        "operation": "toFile",
+        "fileName": "={{ $('Validar Input').item.json.product_id }}_vton.jpg",
+        "mimeType": "image/jpeg"
+      },
+      "id": "convert-to-file",
+      "name": "Convert to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [1790, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/upload/selfie",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.LOOKITRY_API_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "type": "file",
+              "data": "binaryData"
+            },
+            {
+              "name": "temporary",
+              "value": "false"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "upload-minio",
+      "name": "Subir a MinIO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2010, 300],
+      "credentials": [
+        {
+          "id": "lookitry-api-token",
+          "name": "Lookitry API Token"
+        }
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const uploadResponse = $('Subir a MinIO').item.json;\nconst data = $('Validar Input').item.json;\n\nconst imageUrl = uploadResponse?.url || uploadResponse?.data?.url || uploadResponse;\n\nreturn {\n  json: {\n    success: true,\n    image_url: imageUrl,\n    model: 'idm-vton-runpod',\n    brand_id: data.brand_id,\n    product_id: data.product_id,\n    execution_id: $execution.id,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "prepare-response",
+      "name": "Preparar Respuesta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2230, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-success",
+      "name": "Responder Exito",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validar Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Input": {
+      "main": [
+        [
+          {
+            "node": "Descargar Selfie",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Descargar Producto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Selfie": {
+      "main": [
+        [
+          {
+            "node": "Preparar Payload RunPod",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Producto": {
+      "main": [
+        [
+          {
+            "node": "Preparar Payload RunPod",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Payload RunPod": {
+      "main": [
+        [
+          {
+            "node": "Llamar RunPod API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Llamar RunPod API": {
+      "main": [
+        [
+          {
+            "node": "Extraer Output Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Output Image": {
+      "main": [
+        [
+          {
+            "node": "Convert Base64 to Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Base64 to Binary": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Subir a MinIO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir a MinIO": {
+      "main": [
+        [
+          {
+            "node": "Preparar Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Respuesta": {
+      "main": [
+        [
+          {
+            "node": "Responder Exito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true,
+    "errorWorkflow": "PNri7NdZYkZhpPnm"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "SaaS"
+    },
+    {
+      "name": "testing"
+    },
+    {
+      "name": "VTON"
+    },
+    {
+      "name": "RunPod"
+    }
+  ],
+  "meta": {
+    "templateCredsSetup": [
+      {
+        "name": "Lookitry API Token",
+        "id": "lookitry-api-token",
+        "type": "httpHeaderAuth"
+      }
+    ],
+    "templateVariables": [
+      {
+        "name": "RUNPOD_API_URL",
+        "value": ""
+      },
+      {
+        "name": "RUNPOD_API_KEY",
+        "value": ""
+      }
+    ]
+  }
+}

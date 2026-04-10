@@ -65,92 +65,105 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
   const cardBg = bgLuminance ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)';
   const cardBorder = bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)';
 
+  // Force dark background for non-light mode, brand color for light mode
+  const bgColor = bgLuminance ? secondaryColor : '#0a0a0a';
+
   return (
     <div 
       ref={containerRef}
-      className="font-sans h-full min-h-full relative overflow-hidden flex flex-col" 
-      style={{ backgroundColor: secondaryColor || '#050505', color: textPrimary }}
+      className="font-sans min-h-screen min-h-[100dvh] relative overflow-hidden flex flex-col" 
+      style={{ backgroundColor: bgColor, color: textPrimary }}
     >
-      {/* Ambient background */}
-      <div className="pointer-events-none absolute inset-0 opacity-100 overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full blur-3xl transition-all duration-1000" style={{ background: `${primaryColor}25` }} />
-        <div className="absolute -bottom-40 -right-40 w-[520px] h-[520px] rounded-full blur-3xl transition-all duration-1000" style={{ background: `${primaryColor}18` }} />
+      {/* Ambient background - responsive sizes */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-20 -left-20 md:-top-40 md:-left-40 w-64 h-64 md:w-[520px] md:h-[520px] rounded-full blur-3xl transition-all duration-1000" style={{ background: `${primaryColor}25` }} />
+        <div className="absolute -bottom-20 -right-20 md:-bottom-40 md:-right-40 w-64 h-64 md:w-[520px] md:h-[520px] rounded-full blur-3xl transition-all duration-1000" style={{ background: `${primaryColor}18` }} />
         {!bgLuminance && <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_55%)]" />}
       </div>
 
-      {/* Top bar (glass) */}
-      <div className="sticky top-0 z-30 backdrop-blur-xl border-b" style={{ backgroundColor: bgLuminance ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)', borderColor }}>
-        <div className={`w-full max-w-4xl mx-auto flex items-center justify-between gap-3 ${isSmall ? 'px-4 py-3' : 'px-6 py-4'}`}>
-          <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
-            {config.brand.logo ? (
-              <img
-                src={config.brand.logo}
-                alt={config.brand.name}
-                className={`${isSmall ? 'h-7' : 'h-10'} w-auto object-contain`}
-                onError={e => { e.currentTarget.style.display = 'none'; }}
-              />
-            ) : (
-              <span className={`font-black tracking-tight ${isSmall ? 'text-sm' : 'text-xl'}`} style={{ color: primaryColor }}>{config.brand.name}</span>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {step !== 'upload' && (
-              <button
-                onClick={onReset}
-                className={`uppercase tracking-widest font-black transition-all ${isSmall ? 'text-[9px] px-2 py-1' : 'text-[10px] px-3 py-1.5'} rounded-xl`}
-                style={{ color: textMuted }}
-                onMouseEnter={e => { e.currentTarget.style.color = textPrimary; e.currentTarget.style.backgroundColor = bgLuminance ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = textMuted; e.currentTarget.style.backgroundColor = 'transparent'; }}
-              >
-                Reset
-              </button>
-            )}
-            <div className={`rounded-xl border font-black uppercase tracking-widest ${isSmall ? 'text-[8px] px-2 py-1' : 'text-[10px] px-3 py-1.5'}`} style={{ backgroundColor: bgLuminance ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)', borderColor, color: textMuted }}>
-              {step === 'upload' && '1/3'}
-              {step === 'select' && '2/3'}
-              {(step === 'result' || step === 'generating') && '3/3'}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Main scrollable area */}
-      <div className="flex-1 overflow-y-auto relative z-10">
-        <div className={`w-full max-w-4xl mx-auto ${isSmall ? 'px-4 py-5' : 'px-6 py-10'}`}>
-          {/* Hero */}
-          <div className={`${isSmall ? 'mb-5' : 'mb-8'}`}>
-            <h2 className={`${isSmall ? 'text-2xl' : 'text-5xl'} font-black tracking-tighter leading-none italic uppercase`} style={{ color: primaryColor }}>
-              {welcomeMessage || 'Premium Try-On'}
-            </h2>
-            <p className={`mt-2 font-medium ${isSmall ? 'text-xs' : 'text-lg'} max-w-lg`} style={{ color: textMuted }}>
-              Sube tu foto y descubre cómo te queda nuestra colección en tiempo real.
-            </p>
+      <div className="flex-1 overflow-y-auto relative z-10 flex flex-col items-center justify-center">
+        <div className={`w-full max-w-4xl mx-auto ${isSmall ? 'px-4 py-8' : 'px-6 py-12'} flex-shrink-0 animate-in fade-in slide-in-from-bottom-4 duration-700`}>
+          {/* Hero / Welcome - Stacked Centered */}
+          <div className={`${isSmall ? 'mb-8' : 'mb-16'} flex flex-col items-center text-center`}>
+            {/* Logo Container with Glow */}
+            <div className={`relative group ${isSmall ? 'mb-6' : 'mb-8'} animate-in zoom-in duration-700`}>
+              <div 
+                className="absolute inset-0 blur-3xl opacity-30 group-hover:opacity-50 transition-opacity duration-700 scale-150"
+                style={{ background: primaryColor }}
+              />
+              <div className={`relative z-10 p-4 rounded-[2.5rem] bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-transform duration-700 group-hover:scale-105`}>
+                {config.brand.logo ? (
+                  <img
+                    src={config.brand.logo}
+                    alt={config.brand.name}
+                    className={`${isSmall ? 'h-16' : 'h-24'} w-auto object-contain`}
+                    onError={e => { e.currentTarget.style.display = 'none'; }}
+                  />
+                ) : (
+                  <div className={`${isSmall ? 'h-16 w-16' : 'h-24 w-24'} flex items-center justify-center`}>
+                    <span className="font-black text-4xl italic" style={{ color: primaryColor }}>
+                      {config.brand.name.charAt(0)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Brand Name & Title */}
+            <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
+              <h1 
+                className={`${isSmall ? 'text-2xl' : 'text-5xl'} font-black tracking-tighter uppercase italic leading-none`}
+                style={{ color: textPrimary }}
+              >
+                {config.brand.name}
+              </h1>
+              
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
+                <h2 
+                  className={`${isSmall ? 'text-sm' : 'text-xl'} font-bold tracking-[0.3em] uppercase opacity-70 italic max-w-2xl mx-auto`}
+                  style={{ color: textPrimary }}
+                >
+                  {welcomeMessage || `Catálogo de ${config.brand.name}`}
+                </h2>
+              </div>
+            </div>
           </div>
 
           {/* Flow card */}
           <div className={`rounded-3xl border backdrop-blur-2xl shadow-2xl transition-all duration-500`} style={{ backgroundColor: cardBg, borderColor }}>
-            {/* Step header */}
+            {/* Step header with integrated controls */}
             <div className={`${isSmall ? 'p-4' : 'p-6'} border-b`} style={{ borderBottomColor: borderColor }}>
-              <div className="flex items-end justify-between gap-4">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.3em] font-black italic" style={{ color: textSubtle }}>Fase Proceso</p>
-                  <p className={`mt-1 font-black tracking-tighter uppercase italic ${isSmall ? 'text-base' : 'text-2xl'}`}>
-                    {step === 'upload' && 'Captura tu Estilo'}
-                    {step === 'select' && 'Personaliza Look'}
-                    {step === 'generating' && 'Renderizando…'}
-                    {step === 'result' && 'Masterpiece'}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.3em] font-black italic opacity-50" style={{ color: textPrimary }}>Paso Actual</p>
+                  <p className={`mt-0.5 font-black tracking-tighter uppercase italic truncate ${isSmall ? 'text-base' : 'text-xl'}`}>
+                    {step === 'upload' && 'Sube tu foto'}
+                    {step === 'select' && 'Personaliza tu look'}
+                    {step === 'generating' && 'Procesando...'}
+                    {step === 'result' && 'Resultado'}
                   </p>
                 </div>
-                <div className={`${isSmall ? 'w-20' : 'w-32'} h-2 rounded-full overflow-hidden mb-1 flex-shrink-0`} style={{ backgroundColor: borderColor }}>
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: step === 'upload' ? '33.3%' : step === 'select' ? '66.6%' : '100%',
-                      backgroundColor: primaryColor,
-                      transition: 'width 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                    }}
-                  />
+                
+                <div className="flex items-center gap-3">
+                  {step !== 'upload' && (
+                    <button
+                      onClick={onReset}
+                      className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95"
+                      style={{ backgroundColor: cardBg, color: textMuted, border: `1px solid ${borderColor}` }}
+                    >
+                      Reset
+                    </button>
+                  )}
+                  <div className="px-3 py-1.5 rounded-xl border font-black uppercase tracking-widest text-[10px]" style={{ backgroundColor: `${primaryColor}15`, borderColor: `${primaryColor}30`, color: primaryColor }}>
+                    {props.lockProductSelection ? (
+                      <>{step === 'upload' ? '1/2' : '2/2'}</>
+                    ) : (
+                      <>{step === 'select' ? '1/3' : step === 'upload' ? '2/3' : '3/3'}</>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -161,15 +174,33 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
               <NoticeBanner notice={notice} />
 
               {step === 'upload' && (
-                <SelfieUploader
-                  onUpload={onSelfieUpload}
-                  primaryColor={primaryColor}
-                  welcomeMessage={welcomeMessage}
-                  textColor={textPrimary}
-                  mutedColor={textMuted}
-                  cardBg="transparent"
-                  cardBorder="transparent"
-                />
+                <div className="space-y-6">
+                  {/* Back Button (to selection) */}
+                  <div className="flex justify-start mb-2">
+                    <button
+                      onClick={props.onBack}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all hover:bg-white/5"
+                      style={{ color: textMuted }}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                      </svg>
+                      Volver al catálogo
+                    </button>
+                  </div>
+
+                  <SelfieThumb preview={selfiePreview} onReset={onReset} />
+                  
+                  <SelfieUploader
+                    onUpload={onSelfieUpload}
+                    primaryColor={primaryColor}
+                    welcomeMessage={welcomeMessage}
+                    textColor={textPrimary}
+                    mutedColor={textMuted}
+                    cardBg="transparent"
+                    cardBorder="transparent"
+                  />
+                </div>
               )}
 
               {step === 'select' && (
@@ -177,10 +208,10 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                   <SelfieThumb preview={selfiePreview} onReset={onReset} />
                   
                   <div className={`rounded-2xl border ${isSmall ? 'p-3' : 'p-5'}`} style={{ backgroundColor: 'rgba(0,0,0,0.1)', borderColor }}>
-                    <p className="text-[10px] uppercase tracking-[0.2em] font-black mb-4 italic" style={{ color: textSubtle }}>
+                    <p className="text-[10px] uppercase tracking-[0.2em] font-black mb-3 md:mb-4 italic" style={{ color: textSubtle }}>
                       Selecciona una prenda
                     </p>
-                    <div className="flex gap-3 overflow-x-auto pb-4 -mx-1 px-1 scrollbar-hide">
+                    <div className={`${isSmall ? 'grid grid-cols-3 gap-2' : 'flex gap-3 overflow-x-auto pb-4 -mx-1 px-1 scrollbar-hide'}`}>
                       {config.products.map(p => {
                         const sel = selectedProduct?.id === p.id;
                         const alreadyGenerated = generatedProducts.has(p.id);
@@ -188,31 +219,37 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                           <button
                             key={p.id}
                             onClick={() => onProductSelect(p)}
-                            className={`flex-shrink-0 ${isSmall ? 'w-24 sm:w-28' : 'w-32 sm:w-36'} rounded-2xl overflow-hidden border-2 transition-all duration-300 relative group`}
+                            className={`flex flex-col rounded-2xl overflow-hidden border-2 transition-all duration-300 relative group w-full`}
                             style={{
                               borderColor: sel ? primaryColor : borderColor,
                               backgroundColor: bgLuminance ? '#ffffff' : 'rgba(255,255,255,0.03)',
-                              transform: sel ? 'scale(1.05)' : 'scale(1)',
-                              boxShadow: sel ? `0 0 20px ${primaryColor}40` : 'none'
+                              transform: sel ? 'scale(1.02)' : 'scale(1)',
+                              boxShadow: sel ? `0 0 15px ${primaryColor}30` : 'none'
                             }}
                           >
-                            <div className="aspect-[4/5] sm:aspect-[4/5] bg-black/20 overflow-hidden">
+                            <div className="aspect-[1/1] bg-black/5 overflow-hidden relative">
                               <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                              
+                              {/* Visto badge dynamic */}
                               {alreadyGenerated && (
-                                <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-black text-white border border-white/20">
+                                <div 
+                                  className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest z-10 border"
+                                  style={{ backgroundColor: `${primaryColor}CC`, color: '#fff', borderColor: 'rgba(255,255,255,0.2)' }}
+                                >
                                   Visto
                                 </div>
                               )}
+                              
                               {sel && (
-                                <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke={primaryColor} strokeWidth={4}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                <div className="absolute inset-0 bg-white/5 flex items-center justify-center">
+                                  <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-lg">
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke={primaryColor} strokeWidth={4}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                                   </div>
                                 </div>
                               )}
                             </div>
-                            <div className="p-2 text-center">
-                              <p className="text-[10px] font-black uppercase italic truncate" style={{ color: textPrimary }}>{p.name}</p>
+                            <div className={`p-1.5 text-center flex-1 flex items-center justify-center ${isSmall ? 'min-h-[32px]' : ''}`}>
+                              <p className="text-[9px] font-black uppercase italic truncate max-w-full" style={{ color: textPrimary }}>{p.name}</p>
                             </div>
                           </button>
                         );
@@ -241,19 +278,27 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
               )}
             </div>
 
-            {/* Bottom action bar */}
+            {/* Bottom action bar with safe area */}
             {(step === 'select' || step === 'upload') && (
-              <div className={`${isSmall ? 'p-4' : 'p-8'} border-t mt-auto`} style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderTopColor: borderColor }}>
+              <div 
+                className={`${isSmall ? 'p-4' : 'p-8'} border-t mt-auto`} 
+                style={{ 
+                  backgroundColor: 'rgba(0,0,0,0.15)', 
+                  borderTopColor: borderColor,
+                  paddingBottom: isSmall ? 'max(env(safe-area-inset-bottom), 16px)' : undefined,
+                }}
+              >
                 {step === 'select' ? (
                   <>
                     <button
                       onClick={onProceedToUpload}
                       disabled={!selectedProduct}
-                      className="w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl active:scale-[0.98] transition-all disabled:opacity-30 flex items-center justify-center gap-3"
-                      style={{ backgroundColor: primaryColor, color: '#ffffff', boxShadow: `0 15px 35px ${primaryColor}60` }}
+                      className="w-full py-4 md:py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-2xl active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-3 relative overflow-hidden group"
+                      style={{ backgroundColor: primaryColor, color: '#ffffff', boxShadow: `0 15px 45px ${primaryColor}60` }}
                     >
-                      <span className="mb-0.5">Siguiente: Subir Foto</span>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                      <span className="relative z-10">{buttonText || 'Siguiente: Subir Foto'}</span>
+                      <svg className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                     </button>
                   </>
                 ) : (
@@ -261,13 +306,13 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                     <button
                       onClick={onGenerate}
                       disabled={!selfiePreview || !selectedProduct}
-                      className="w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl active:scale-[0.98] transition-all disabled:opacity-30 flex items-center justify-center gap-3"
+                      className="w-full py-4 md:py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-2xl active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-3"
                       style={{ backgroundColor: primaryColor, color: '#ffffff', boxShadow: `0 15px 35px ${primaryColor}60` }}
                     >
-                      <span className="mb-0.5">{selectedProduct && generatedProducts.has(selectedProduct.id) ? 'Recuperar Look' : buttonText}</span>
+                      <span>{selectedProduct && generatedProducts.has(selectedProduct.id) ? 'Recuperar Look' : buttonText}</span>
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </button>
-                    <p className="text-center text-[9px] mt-4 font-black uppercase tracking-widest opacity-50">
+                    <p className="text-center text-[10px] md:text-xs mt-3 font-medium" style={{ color: textMuted }}>
                       {selectedProduct && generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
                     </p>
                   </>

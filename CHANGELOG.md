@@ -1,5 +1,127 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-10] - UI/UX Widget Templates - Viewport & Scroll Fixes
+
+### Critical Fixes for Black Stripes & Scroll Issues
+
+**Root Causes Fixed:**
+1. `h-screen` doesn't work with mobile browsers that have dynamic toolbars
+2. `min-h-full` was sometimes used instead of proper viewport handling
+3. Excessive `pb-36 sm:pb-40` padding creating empty space at bottom
+4. Main container not properly filling viewport on all devices
+
+**TemplateBare.tsx:**
+- Changed from `h-full` to `min-h-screen min-h-[100dvh]`
+- Main container now fills viewport properly on all devices
+- Removed excessive padding that caused black stripes
+- Content scrolls internally when needed
+
+**TemplateShowcase.tsx:**
+- Changed from `h-screen min-h-screen` to `min-h-screen min-h-[100dvh]`
+- Removed `pb-36 sm:pb-40 md:pb-44 lg:pb-48` padding that created black stripes
+- Generating step also uses `min-h-screen min-h-[100dvh]`
+- Content scrolls internally with `overflow-y-auto`
+
+**TemplateBoldProStudio.tsx:**
+- Changed from `h-full min-h-full` to `min-h-screen min-h-[100dvh]`
+- Main container fills viewport properly
+
+**TemplateModernSidebar.tsx:**
+- Changed from `h-full min-h-full` to `min-h-screen min-h-[100dvh]`
+- Removed `pb-36 sm:pb-40` from step='select' section
+- Generating step uses `min-h-screen min-h-[100dvh]`
+- Main content area now uses `overflow-hidden` on container with `overflow-y-auto` on content
+
+### Key CSS Changes:
+- **Viewport Height:** `min-h-screen min-h-[100dvh]` instead of `h-screen` or `h-full`
+- **Mobile Chrome Support:** `100dvh` (dynamic viewport height) accounts for mobile browser toolbars
+- **No Black Stripes:** Removed excessive bottom padding
+- **Content Scrolling:** Content areas use `flex-1 overflow-y-auto` instead of container scrolling
+
+## [2026-04-10] - UI/UX Widget Templates - Responsive Fixes
+
+### TemplateBoldProStudio.tsx:
+- Fixed ambient glow blobs (520px) that overflowed on mobile → now responsive: 256px mobile, 384px tablet, 520px desktop
+- Fixed bottom action bar touch targets (py-4 on mobile, py-5 on desktop)
+- Fixed opacity-30 → opacity-40 for better disabled button visibility
+- Fixed hint text opacity (was 50% which was too low)
+- Fixed duplicate `aspect-[4/5] sm:aspect-[4/5]` → single `aspect-[4/5]`
+- Added `z-10` to "Visto" badge for proper layering
+
+### TemplateModernSidebar.tsx:
+- Fixed ambient glow size (w-96 h-96) → responsive: 48px mobile, 96px tablet/desktop
+- Replaced arrow character `↓` with lucide-react SVG icon (accessibility)
+- Fixed `pb-32` → `pb-36 sm:pb-40` for proper bottom CTA spacing
+- Fixed syntax error in transform property
+
+### TemplateBare.tsx:
+- Fixed outer padding `px-4` → `px-3 sm:px-4` for very small screens (320px)
+- Added responsive padding to all containers
+- Fixed `rounded-[24px]` on cards → `rounded-2xl sm:rounded-[24px]`
+- Fixed image sizes `h-16 w-16` → `h-14 w-14 sm:h-16 sm:w-16`
+- Fixed text sizes for accessibility (increased minimum)
+- Added proper bottom CTA safe area padding
+- Fixed product selected card spacing
+
+### TemplateShowcase.tsx:
+- Fixed bottom padding `pb-36 sm:pb-40 md:pb-44` → `pb-36 sm:pb-40 md:pb-44 lg:pb-48`
+- Added `paddingBottom: max(env(safe-area-inset-bottom), 12px)` for safe areas
+- Added responsive button padding `py-3 sm:py-4`
+
+### Shared Components Improvements:
+- ErrorBanner: dismissible with onDismiss prop, slide animation
+- NoticeBanner: dismissible with onDismiss prop, slide animation
+- New InfoBanner component with info/warning/error/success variants
+- All banners now have proper aria-label on close buttons
+- Framer-motion on StepBar and FriendlyProductSelector
+
+### Benefits:
+- All 4 templates automatically benefit from improvements
+- No horizontal overflow on screens as small as 320px
+- Proper touch targets (44px minimum, 48-60px for primary actions)
+- Safe area support for notched devices
+- Consistent spacing using Tailwind scale
+
+## [2026-04-10] - UI/UX Widget Shared Components
+
+**SelfieUploader.tsx:**
+- Added framer-motion animations (entrance, drag, tap, hover)
+- Motion-powered container with staggered child animations
+- Drop zone with animated scale/color transitions on drag
+- Camera button with better touch targets (min 44px, actual 60px min-height)
+- Camera/gallery buttons with press/tap animations
+- Error dismiss animation with AnimatePresence
+- Camera error fallback message for denied permissions
+- Responsive tips grid (3 columns on all sizes, but tighter on mobile)
+- Lucide-react icons replacing inline SVGs
+- `aria-label` for accessibility on all buttons
+
+**GenerationLoader.tsx:**
+- Added framer-motion for entrance and spinner animations
+- Smooth progress bar with CSS transitions (no jumping)
+- Progress percentage display
+- Smarter progress logic (slow start, medium middle, slow near end)
+- Text colors via props for dark/light mode adaptation
+- Pulsing center icon animation
+- Active indicator dot with pulse animation
+- Customizable messages array prop
+
+**shared.tsx (ErrorBanner + NoticeBanner):**
+- Added framer-motion for slide-in/out animations
+- ErrorBanner: dismissible with `onDismiss` prop, slide animation
+- NoticeBanner: dismissible with `onDismiss` prop, slide animation
+- New `InfoBanner` component with info/warning/error/success variants
+- All banners now have proper `aria-label` on close buttons
+- Stacking animations via AnimatePresence
+- Dark/light mode support via props
+
+**Benefits:**
+- All 4 templates automatically benefit from improvements:
+  - TemplateBare
+  - TemplateModernSidebar
+  - TemplateBoldProStudio
+  - TemplateShowcase
+
 ## [2026-04-10] - Slug Automático + Lenguaje Simplificado
 
 ### Bug Fix - Theme Toggle No Guardaba Preferencia

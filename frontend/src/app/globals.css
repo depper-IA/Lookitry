@@ -52,7 +52,7 @@
 }
 
 @media (max-width: 767px) {
-  body {
+  .has-mobile-nav {
     padding-bottom: 64px;
   }
 }

@@ -23,6 +23,15 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const adminToken = request.cookies.get('admin_token')?.value;
   const allowDevBypass = process.env.ALLOW_DEV_AUTH_BYPASS === 'true';
+  
+  // ── Redirigir /pruebalo a /sitio ──────────────────────────────────────────
+  if (pathname.startsWith('/pruebalo/')) {
+    const slug = pathname.split('/pruebalo/')[1];
+    if (slug) {
+      return NextResponse.redirect(new URL(`/sitio/${slug}`, request.url), 301);
+    }
+  }
+
 
   // ── Resolución de Dominios Personalizados ─────────────────────────────────────
   const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || '';
@@ -124,7 +133,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── Proteger rutas públicas del Widget (Iframe Whitelist Dinámica) ────────────
-  if (pathname.startsWith('/embed') || pathname.startsWith('/pruebalo')) {
+  if (
+    pathname.startsWith('/embed') || 
+    pathname.startsWith('/pruebalo') || 
+    pathname.startsWith('/sitio') || 
+    pathname.startsWith('/marca')
+  ) {
     const response = NextResponse.next();
     let allowedOrigins: string[] = [];
 
@@ -170,7 +184,7 @@ export async function middleware(request: NextRequest) {
       `script-src ${scriptSrc}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src * data: blob: 'self'",
-      "connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co https://accounts.google.com https://www.googleapis.com https://www.google.com",
+      `connect-src 'self' ${isProd ? '' : 'http://localhost:3001'} https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co https://accounts.google.com https://www.googleapis.com https://www.google.com`,
       "font-src 'self' https://fonts.gstatic.com",
       "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://accounts.google.com https://www.google.com https://*.wordpress.com https://*.wixsite.com https://*.shopify.com",
       "media-src 'self'"

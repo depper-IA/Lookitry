@@ -351,7 +351,13 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPrevi
             <h2 className="text-2xl md:text-4xl font-black text-white tracking-tighter uppercase italic">Experiencia Inteligente</h2>
           </div>
           <div className={isPreview ? 'overflow-hidden' : 'rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/5'}>
-            <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" />
+            <TryOnWidget 
+              brandSlug={brandSlug} 
+              isEmbed={true} 
+              initialProductId={selectedId} 
+              forceLayout="bare"
+              lockProductSelection={true}
+            />
           </div>
         </div>
       </section>
