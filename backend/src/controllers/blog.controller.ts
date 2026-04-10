@@ -1267,5 +1267,33 @@ export const blogController = {
       console.error('[BlogController] assembleArticle error:', error);
       return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error al ensamblar artículo') });
     }
+  },
+
+  /**
+   * Regenera el artículo para un topic (usa draft e imágenes existentes)
+   * POST /api/blog/regenerate/:topicId
+   */
+  async regenerateArticle(req: Request, res: Response) {
+    try {
+      const topicId = req.params.topicId;
+      const secret = String(req.headers['x-blog-secret'] || '');
+      const expectedSecret = await resolveExpectedBlogSecret();
+
+      if (!expectedSecret || secret !== expectedSecret) {
+        return res.status(401).json({ error: 'UNAUTHORIZED' });
+      }
+
+      // Llamar autoAssemble directamente
+      const result = await autoAssembleIfReady(topicId);
+
+      if (result.success) {
+        return res.json({ success: true, message: result.message, slug: result.slug });
+      } else {
+        return res.status(400).json({ success: false, message: result.message });
+      }
+    } catch (error: any) {
+      console.error('[BlogController] regenerateArticle error:', error);
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error) });
+    }
   }
 };
