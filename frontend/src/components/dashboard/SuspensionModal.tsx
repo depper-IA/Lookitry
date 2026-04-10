@@ -111,7 +111,7 @@ export function SuspensionModal({
             <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-left">
               <p className="text-[11px] text-[#555] uppercase tracking-wider font-bold mb-1.5">Informacion del plan</p>
               <div className="flex justify-between items-center gap-4">
-                <span className="text-[13px] text-[#888]">Plan actual</span>
+                <span className="text-[13px] text-[#888]">Tu plan actual</span>
                 <span className="text-[13px] text-white font-medium px-2 py-1 bg-white/10 rounded-lg">{plan}</span>
               </div>
               {shouldShowRecurringValue && (

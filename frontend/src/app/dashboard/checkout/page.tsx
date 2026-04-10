@@ -34,7 +34,7 @@ const PLAN_INFO_FALLBACK: Record<PlanType, { name: string; price: number; featur
     price: 150000,
     features: [
       'Hasta 5 productos activos',
-      '400 generaciones por mes',
+      '400 fotos por mes',
       'Branding básico (logo y colores)',
       'URL propia del probador',
       'Soporte por WhatsApp/email',
@@ -45,7 +45,7 @@ const PLAN_INFO_FALLBACK: Record<PlanType, { name: string; price: number; featur
     price: 250000,
     features: [
       'Hasta 15 productos activos',
-      '1.200 generaciones por mes',
+      '1.200 fotos por mes',
       'Branding avanzado y personalización completa',
       'Modificación del slug del probador',
       'Soporte prioritario',
@@ -115,7 +115,7 @@ function PaymentSection({
     >
       <div className="px-5 py-4 border-b flex items-center gap-2" style={{ borderColor: 'var(--border-color)' }}>
         <CreditCard className="w-4 h-4" style={{ color: '#FF5C3A' }} />
-        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Método de pago</p>
+        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Cómo pagaste</p>
       </div>
 
       <div className="px-5 py-4 space-y-4">

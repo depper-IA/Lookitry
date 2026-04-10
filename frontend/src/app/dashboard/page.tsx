@@ -344,14 +344,14 @@ export default function DashboardPage() {
                 href="/dashboard/subscription"
                 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF5C3A] transition-all hover:opacity-80"
               >
-                Abrir suscripción
+              Ver tu plan
               </Link>
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-3">
-              <SummaryBox label="Plan actual" value={planLabel} helper={isTrial ? 'Prueba habilitada' : 'Suscripción vigente'} />
+              <SummaryBox label="Tu plan actual" value={planLabel} helper={isTrial ? 'Prueba habilitada' : 'Suscripción vigente'} />
               <SummaryBox label="Estado" value={revenueView} helper={subscriptionInfo?.status === 'expiring_soon' ? 'Conviene renovar pronto' : 'Fuente oficial de cobro'} />
-              <SummaryBox label="Capacidad mensual" value={generationsLimit > 0 ? `${generationsLimit}` : 'Sin dato'} helper="Generaciones incluidas" />
+              <SummaryBox label="Fotos por mes" value={generationsLimit > 0 ? `${generationsLimit}` : 'Sin dato'} helper="fotos incluidas en tu plan" />
             </div>
           </div>
 
@@ -706,9 +706,9 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <SummaryBox label="Plan actual" value={planLabel} helper={isTrial ? 'Prueba habilitada' : 'Suscripción vigente'} />
+              <SummaryBox label="Tu plan actual" value={planLabel} helper={isTrial ? 'Prueba habilitada' : 'Suscripción vigente'} />
             <SummaryBox label="Estado" value={revenueView} helper={subscriptionInfo?.status === 'expiring_soon' ? 'Conviene renovar pronto' : 'Fuente oficial de cobro'} />
-            <SummaryBox label="Capacidad mensual" value={generationsLimit > 0 ? `${generationsLimit}` : 'Sin dato'} helper="Generaciones incluidas" />
+              <SummaryBox label="Fotos por mes" value={generationsLimit > 0 ? `${generationsLimit}` : 'Sin dato'} helper="fotos incluidas en tu plan" />
           </div>
         </div>
 

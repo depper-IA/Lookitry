@@ -4,10 +4,99 @@ import { authMiddleware } from '../middleware/auth';
 import { checkActiveSubscription } from '../middleware/checkSubscription';
 import { SubscriptionService } from '../services/subscription.service';
 import { getReferralInfo, validateReferralCode, claimReferralBonus } from '../controllers/referral.controller';
+import { asyncHandler } from '../middleware/errorHandler';
+import { publicRateLimiter } from '../middleware/rateLimiter';
+import { supabaseAdmin } from '../config/supabase';
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
 
 const router = Router();
 const brandsController = new BrandsController();
 const subscriptionService = new SubscriptionService();
+
+// POST /api/brands/check-availability — verifica disponibilidad de nombre y slug
+router.post('/check-availability', publicRateLimiter, asyncHandler(async (req, res) => {
+  const { brandName } = req.body;
+  
+  if (!brandName || typeof brandName !== 'string' || brandName.trim().length === 0) {
+    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El nombre de marca es requerido' });
+  }
+
+  const normalizedBrandName = brandName.trim();
+  const slug = slugify(normalizedBrandName);
+
+  if (!slug) {
+    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El nombre de marca no genera un slug válido. Usa al menos una letra o número.' });
+  }
+
+  // Validaciones del slug (consistentes con auth.routes.ts)
+  const RESERVED_SLUGS = [
+    'admin', 'api', 'dashboard', 'login', 'register', 'checkout', 'planes',
+    'blog', 'ayuda', 'sobre-nosotros', 'contacto', 'estado', 'terminos',
+    'politicas-privacidad', 'politica-de-uso', 'pruebalo', 'sitio', 'probador-virtual',
+    'auth', 'verify', 'reset', 'confirmar', 'wompi', 'paypal', 'subscription',
+    'brand', 'brands', 'product', 'products', 'generation', 'generations',
+    'payment', 'payments', 'invoice', 'receipt', 'success', 'cancel', 'error',
+    'www', 'mail', 'email', 'support', 'help', 'docs', 'documentation',
+    'app', 'panel', 'cms', 'manage', 'settings', 'config', '密', '的公司',
+    'lookitry', 'wwwlookitry', 'cdn', 'static', 'assets', 'images', 'css', 'js',
+    'robots', 'sitemap', 'humans', 'feed', 'rss', 'atom', 'xml', 'json',
+    'oauth', 'saml', 'ldap', 'ws', 'wss', 'ftp', 'sftp', 'ssh', 'telnet',
+    'smtp', 'pop', 'imap', 'dns', 'mx', 'txt', 'cname', 'a', 'aaaa',
+  ];
+
+  const normalizedSlug = slug.toLowerCase().trim();
+
+  if (normalizedSlug.length < 3 || normalizedSlug.length > 50) {
+    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El slug generado debe tener entre 3 y 50 caracteres' });
+  }
+
+  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(normalizedSlug)) {
+    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El slug solo puede contener letras minúsculas, números y guiones (no puede empezar ni terminar con guión)' });
+  }
+
+  if (normalizedSlug.startsWith('-') || normalizedSlug.endsWith('-')) {
+    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El slug no puede empezar ni terminar con guión' });
+  }
+
+  if (RESERVED_SLUGS.includes(normalizedSlug)) {
+    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Este URL no está disponible' });
+  }
+
+  // Verificar si el nombre de marca ya existe (case-insensitive)
+  const { data: existingBrandByName } = await supabaseAdmin
+    .from('brands')
+    .select('id, name')
+    .ilike('name', normalizedBrandName)
+    .maybeSingle();
+
+  // Verificar si el slug ya existe
+  const { data: existingBrandBySlug } = await supabaseAdmin
+    .from('brands')
+    .select('id, slug')
+    .eq('slug', normalizedSlug)
+    .maybeSingle();
+
+  const brandExists = !!existingBrandByName;
+  const slugExists = !!existingBrandBySlug;
+
+  const response = {
+    slug: normalizedSlug,
+    brandExists,
+    slugExists,
+    suggestedSuffix: ''
+  };
+
+  return res.json(response);
+}));
 
 // Todas las rutas de brands requieren autenticación
 router.use(authMiddleware);

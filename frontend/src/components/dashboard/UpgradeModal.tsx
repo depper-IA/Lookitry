@@ -10,20 +10,20 @@ interface UpgradeModalProps {
 }
 
 const BASIC_FEATURES = [
-  'Hasta 5 productos activos',
-  '400 generaciones por mes',
-  'Branding básico (logo y colores)',
-  'URL propia del probador',
-  'Soporte por WhatsApp/email',
+  'Hasta 5 productos',
+  '400 fotos por mes',
+  'Logo y colores de tu marca',
+  'Tu propia página de pruebas',
+  'Soporte por WhatsApp',
 ];
 
 const PRO_FEATURES = [
-  'Hasta 15 productos activos',
-  '1.200 generaciones por mes',
-  'Templates Minimal, Modern y Bold',
+  'Hasta 15 productos',
+  '1.200 fotos por mes',
+  'Diseños Minimal, Modern y Bold',
   'Texto del botón personalizado',
-  'Mensaje de bienvenida en widget',
-  'URL del widget personalizable',
+  'Mensaje de bienvenida',
+  'Tu propia URL para el probador',
   'Soporte prioritario',
 ];
 
@@ -96,8 +96,8 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div className="pr-8">
-                <h2 className="text-lg font-bold text-white leading-tight">Activa tu plan</h2>
-                <p className="text-white/75 text-[11px] md:text-sm uppercase font-black tracking-widest opacity-80">Elige tu potencia para Lookitry</p>
+                <h2 className="text-lg font-bold text-white leading-tight">Elige tu plan</h2>
+                <p className="text-white/75 text-[11px] md:text-sm uppercase font-black tracking-widest opacity-80">Haz que tu tienda brille</p>
               </div>
             </div>
           </div>
@@ -105,7 +105,7 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
           {/* Body */}
           <div className="px-5 py-6 overflow-y-auto custom-scrollbar">
             <p className="text-xs md:text-sm mb-6 font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              Tu período de prueba está activo. Selecciona un plan profesional para continuar transformando tu e-commerce con IA.
+              Tu período de prueba está activo. Elige un plan para seguir usando Lookitry.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -183,7 +183,7 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
               className="w-full mt-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer opacity-40 hover:opacity-100"
               style={{ color: 'var(--text-muted)' }}
             >
-              Cerrar y continuar trial
+              Cerrar y seguir probando
             </button>
           </div>
         </div>
@@ -221,7 +221,7 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
               <Zap className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white leading-tight">Actualiza a Plan Pro</h2>
+              <h2 className="text-lg font-bold text-white leading-tight">Actualiza tu plan</h2>
               <p className="text-white/75 text-sm">{formatCOP(proPrice)} COP / mes</p>
             </div>
           </div>
@@ -236,7 +236,7 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
         {/* Body */}
         <div className="px-5 py-5">
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Desbloquea todo el potencial de Lookitry con el Plan Pro:
+            Con el Plan Pro obtienes más fotos y más funcionalidades:
           </p>
 
           <ul className="space-y-2.5 mb-5">
@@ -270,7 +270,7 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
               onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
               onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
             >
-              <Zap className="w-4 h-4" /> Ir a pagar
+              <Zap className="w-4 h-4" /> Elegir Plan Pro
             </button>
           </div>
         </div>

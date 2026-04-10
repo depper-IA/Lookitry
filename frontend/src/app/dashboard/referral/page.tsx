@@ -101,8 +101,8 @@ export default function ReferralPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
       <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Programa de Referidos</h1>
-        <p className="mt-1 text-[var(--text-muted)]">Invita a otras tiendas y gana {rewardCredits} créditos extra por cada conversión válida.</p>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Recomienda y gana</h1>
+              <p className="mt-1 text-[var(--text-muted)]">Invita a otras tiendas y gana {rewardCredits} fotos extras por cada una que pague.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -139,7 +139,7 @@ export default function ReferralPage() {
             <div className="rounded-lg bg-emerald-500/10 p-2">
               <Users className="h-5 w-5 text-emerald-500" />
             </div>
-            <span className="text-sm text-[var(--text-muted)]">Total referidos</span>
+            <span className="text-sm text-[var(--text-muted)]">Personas invitadas</span>
           </div>
           <p className="text-3xl font-bold text-white">{data?.referralCount || 0}</p>
         </motion.div>
@@ -149,7 +149,7 @@ export default function ReferralPage() {
             <div className="rounded-lg bg-amber-500/10 p-2">
               <CheckCircle2 className="h-5 w-5 text-amber-500" />
             </div>
-            <span className="text-sm text-[var(--text-muted)]">Convertidos</span>
+            <span className="text-sm text-[var(--text-muted)]">Ya pagaron</span>
           </div>
           <p className="text-3xl font-bold text-white">{data?.successfulReferrals || 0}</p>
         </motion.div>
@@ -159,7 +159,7 @@ export default function ReferralPage() {
             <div className="rounded-lg bg-sky-500/10 p-2">
               <Gift className="h-5 w-5 text-sky-400" />
             </div>
-            <span className="text-sm text-[var(--text-muted)]">Créditos ganados</span>
+            <span className="text-sm text-[var(--text-muted)]">Fotos ganadas</span>
           </div>
           <p className="text-3xl font-bold text-white">{data?.totalCreditsEarned || 0}</p>
         </motion.div>
@@ -185,7 +185,7 @@ export default function ReferralPage() {
           <div className="flex gap-4">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">3</div>
             <div>
-              <p className="font-medium text-white">Tú ganas {rewardCredits} créditos extra</p>
+              <p className="font-medium text-white">Tú ganas {rewardCredits} fotos extras</p>
               <p className="text-sm text-[var(--text-muted)]">Se liberan automáticamente cuando ese referido paga por primera vez un plan mensual real.</p>
             </div>
           </div>
@@ -193,7 +193,7 @@ export default function ReferralPage() {
       </div>
 
       <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
-        <h2 className="mb-4 text-lg font-bold text-white">¿Tienes un código de referido?</h2>
+          <h2 className="mb-4 text-lg font-bold text-white">¿Tienes un link de referido?</h2>
         <p className="mb-4 text-sm text-[var(--text-muted)]">Ingresa el código que te compartieron. El beneficio se acredita al referente cuando completes tu primer pago mensual elegible.</p>
 
         {claimSuccess ? (
@@ -210,7 +210,7 @@ export default function ReferralPage() {
               value={claimCode}
               onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
               placeholder="Ej: ABC12345"
-              aria-label="Código de referido"
+              aria-label="Tu link de referido"
               className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-4 text-white placeholder:text-[var(--text-muted)] focus:border-[#FF5C3A] focus:outline-none min-h-[48px] text-base"
             />
             <button
@@ -228,7 +228,7 @@ export default function ReferralPage() {
 
       {data?.recentReferrals && data.recentReferrals.length > 0 && (
         <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
-          <h2 className="mb-4 text-lg font-bold text-white">Referidos recientes</h2>
+          <h2 className="mb-4 text-lg font-bold text-white">Personas que has invitado</h2>
           <div className="space-y-3">
             {data.recentReferrals.map(ref => (
               <div key={ref.id} className="flex items-center justify-between rounded-xl bg-[var(--bg-primary)] p-3">

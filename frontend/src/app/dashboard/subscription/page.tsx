@@ -269,7 +269,7 @@ export default function SubscriptionPage() {
   const planFeatures = {
     BASIC: [
       'Hasta 5 productos activos',
-      `${dynamicGenerations.BASIC} generaciones mensuales`,
+      `${dynamicGenerations.BASIC} fotos mensuales`,
       'Branding base (logo / colores)',
       'Plantillas: Minimal & Modern',
       'Soporte estándar WhatsApp',
@@ -277,7 +277,7 @@ export default function SubscriptionPage() {
     ],
     PRO: [
       'Hasta 15 productos activos',
-      `${dynamicGenerations.PRO} generaciones mensuales`,
+      `${dynamicGenerations.PRO} fotos mensuales`,
       'Control total de branding',
       'Todas las plantillas incl. Bold',
       'Textos de botón personalizados',
@@ -345,7 +345,7 @@ export default function SubscriptionPage() {
              <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-[#FF5C3A]" />
              </div>
-             <h1 className="text-4xl font-bold tracking-tight text-[var(--text-primary)] leading-none font-jakarta">Suscripción</h1>
+             <h1 className="text-4xl font-bold tracking-tight text-[var(--text-primary)] leading-none font-jakarta">Tu plan</h1>
           </div>
           <p className="text-[11px] font-bold tracking-wider text-[var(--text-muted)] uppercase opacity-60">Gestión de plan y pagos</p>
         </div>
@@ -384,9 +384,9 @@ export default function SubscriptionPage() {
             <div className="space-y-8">
                <div className="space-y-1">
                   <div className="flex items-center gap-2 mb-4">
-                     <span className="px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest text-[#FF5C3A] bg-[#FF5C3A]/10 border border-[#FF5C3A]/20">
-                        Plan actual
-                     </span>
+                      <span className="px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest text-[#FF5C3A] bg-[#FF5C3A]/10 border border-[#FF5C3A]/20">
+                         Tu plan actual
+                      </span>
                   </div>
                    <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tighter text-[var(--text-primary)] leading-none font-jakarta">
                      {currentDesign.name}
@@ -396,7 +396,7 @@ export default function SubscriptionPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
                   <div className="space-y-1">
                      <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                       {inTrial ? 'Fin del trial' : 'Próxima renovación'}
+                       {inTrial ? 'Fin del trial' : 'Se renueva'}
                      </p>
                      <p className="text-xl font-bold text-[var(--text-primary)]">
                        {formatDate(inTrial ? info?.trialEndDate : info?.brand?.subscriptionEndDate)}
@@ -485,9 +485,9 @@ export default function SubscriptionPage() {
                      className={`relative p-10 rounded-[3.5rem] border-2 transition-all duration-500 overflow-hidden ${isCurrent ? 'bg-[var(--bg-card)] border-[#FF5C3A] shadow-xl' : 'bg-[var(--bg-base)] border-[var(--border-color)] hover:border-[var(--text-muted)]'}`}
                   >
                      {isCurrent && (
-                        <div className="absolute top-0 right-0 px-8 py-3 bg-[#FF5C3A] text-white text-[9px] font-bold uppercase tracking-widest rounded-bl-[2.5rem]">
-                           Plan actual
-                        </div>
+                         <div className="absolute top-0 right-0 px-8 py-3 bg-[#FF5C3A] text-white text-[9px] font-bold uppercase tracking-widest rounded-bl-[2.5rem]">
+                            Tu plan actual
+                         </div>
                      )}
                      <div className="mb-10">
                         <h4 className={`text-4xl font-bold tracking-tighter uppercase ${isCurrent ? 'text-[#FF5C3A]' : 'text-[var(--text-primary)]'}`}>{pk}</h4>
@@ -659,14 +659,14 @@ export default function SubscriptionPage() {
                         <Cpu className="w-5 h-5 text-[#FF5C3A]" />
                      </div>
                      <div>
-                        <h4 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">Créditos extra</h4>
+                         <h4 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">Fotos extras compradas</h4>
                         <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-1">Capacidad adicional inmediata</p>
                      </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                      <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] p-4 relative overflow-hidden group/box">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover/box:text-[#FF5C3A] transition-colors">Suscripción (Mes)</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover/box:text-[#FF5C3A] transition-colors">Fotos del plan</p>
                         <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{usage?.currentMonth?.generationsRemaining ?? 0}</p>
                         <div className="mt-1 h-1 w-full bg-[var(--border-color)] rounded-full overflow-hidden">
                            <div 
@@ -676,7 +676,7 @@ export default function SubscriptionPage() {
                         </div>
                      </div>
                      <div className="rounded-2xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 p-4 relative overflow-hidden group/box">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">Créditos Extra</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">Fotos extras</p>
                         <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{usage?.extraCreditsBalance ?? 0}</p>
                         <p className="mt-1 text-[8px] font-bold uppercase tracking-tighter text-[var(--text-muted)] opacity-60">Sin vencimiento</p>
                      </div>
@@ -710,7 +710,7 @@ export default function SubscriptionPage() {
                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">Paquete sugerido</p>
                      <div className="mt-2 flex items-end justify-between gap-4">
                         <div>
-                           <p className="text-sm font-bold text-[var(--text-primary)]">500 generaciones extra</p>
+                           <p className="text-sm font-bold text-[var(--text-primary)]">500 fotos extras</p>
                            <p className="text-xs text-[var(--text-secondary)]">
                              {selectedAddonGateway === 'paypal'
                                ? 'Pago único con PayPal. El total se convierte automáticamente a USD usando la TRM actual.'
@@ -825,7 +825,7 @@ export default function SubscriptionPage() {
                     </div>
                     <h4 className="text-xl font-bold text-white tracking-tight">Potencia tu marca</h4>
                   </div>
-                  <p className="text-sm font-medium text-zinc-400 mb-10 leading-relaxed relative z-10">Accede a más productos, generaciones ilimitadas y personalización total con el plan pro.</p>
+                   <p className="text-sm font-medium text-zinc-400 mb-10 leading-relaxed relative z-10">Accede a más productos, fotos ilimitadas y personalización total con el plan pro.</p>
                   <button onClick={() => router.push('/dashboard/checkout?plan=PRO')} className="w-full flex items-center justify-center gap-3 py-5 bg-[#FF5C3A] text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:scale-[1.02] active:scale-95 transition-all relative z-10 shadow-lg shadow-[#FF5C3A]/20">
                     MEJORAR A PRO <ChevronRight size={14} />
                   </button>

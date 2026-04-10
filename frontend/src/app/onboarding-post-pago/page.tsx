@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Loader2, Store, Globe, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Loader2, Store, Globe, AlertCircle, CheckCircle2, XCircle, Check, Eye, EyeOff } from 'lucide-react';
 
 function slugify(value: string) {
   return value
@@ -14,6 +14,12 @@ function slugify(value: string) {
     .replace(/[^a-z0-9\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-');
+}
+
+interface AvailabilityResult {
+  brandExists: boolean;
+  slugExists: boolean;
+  suggestedSlug?: string;
 }
 
 function OnboardingContent() {
@@ -29,18 +35,23 @@ function OnboardingContent() {
 
   const [form, setForm] = useState({
     name: '',
-    slug: '',
+    slugSuffix: '',
     password: '',
     confirmPassword: '',
   });
+  const [slug, setSlug] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [slugSuggested, setSlugSuggested] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [resolvedRef, setResolvedRef] = useState(refFromQuery);
   const [confirmingPayment, setConfirmingPayment] = useState(paymentMethod === 'paypal' && Boolean(paypalOrderId));
   const [paymentChecked, setPaymentChecked] = useState(paymentMethod !== 'paypal' || !paypalOrderId);
+
+  // Availability states
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [availabilityResult, setAvailabilityResult] = useState<AvailabilityResult | null>(null);
+  const [slugError, setSlugError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -95,12 +106,67 @@ function OnboardingContent() {
     };
   }, [paymentMethod, paypalOrderId, refFromQuery]);
 
-  const suggestSlug = () => {
-    const base = form.name ? slugify(form.name) : 'mi-marca';
-    const suffix = Math.floor(100 + Math.random() * 900);
-    setForm(prev => ({ ...prev, slug: `${base}-${suffix}` }));
-    setSlugSuggested(true);
-    setError('');
+  const checkAvailability = useCallback(async (brandName: string) => {
+    if (!brandName.trim() || brandName.length < 2) {
+      setAvailabilityResult(null);
+      setSlug('');
+      return;
+    }
+
+    setCheckingAvailability(true);
+    setSlugError('');
+
+    try {
+      const response = await fetch('/api/brands/check-availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brandName }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al verificar disponibilidad');
+      }
+
+      setAvailabilityResult({
+        brandExists: data.brandExists,
+        slugExists: data.slugExists,
+        suggestedSlug: data.suggestedSlug,
+      });
+
+      // Generate slug based on result
+      const baseSlug = slugify(brandName);
+      if (data.brandExists && form.slugSuffix) {
+        setSlug(`${baseSlug}-${form.slugSuffix}`);
+      } else if (data.brandExists) {
+        setSlug(baseSlug);
+      } else {
+        setSlug(baseSlug);
+      }
+    } catch (err: any) {
+      console.error('Error verificando disponibilidad:', err);
+      setSlugError(err.message || 'No se pudo verificar');
+    } finally {
+      setCheckingAvailability(false);
+    }
+  }, [form.slugSuffix]);
+
+  const handleNameBlur = () => {
+    if (form.name.trim().length >= 2) {
+      checkAvailability(form.name);
+    }
+  };
+
+  const handleSuffixChange = (value: string) => {
+    setForm(prev => ({ ...prev, slugSuffix: value }));
+    const baseSlug = slugify(form.name);
+    if (availabilityResult?.brandExists && value) {
+      setSlug(`${baseSlug}-${value}`);
+      setSlugError('');
+    } else if (availabilityResult?.brandExists) {
+      setSlug(baseSlug);
+    }
   };
 
   const validatePassword = (pwd: string) => {
@@ -108,16 +174,17 @@ function OnboardingContent() {
     if (!/[A-Z]/.test(pwd)) return 'Debe tener al menos una mayúscula';
     if (!/[a-z]/.test(pwd)) return 'Debe tener al menos una minúscula';
     if (!/[0-9]/.test(pwd)) return 'Debe tener al menos un número';
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) return 'Debe tener al menos un carácter especial';
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) return 'Debe tener al menos un carácter especial';
     return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSlugError('');
 
     if (!paymentChecked || !resolvedRef) {
-      setError('Todavia no pudimos validar tu pago. Espera unos segundos o recarga la pagina.');
+      setError('Aún no pudimos validar tu pago. Espera unos segundos o recarga la página.');
       return;
     }
 
@@ -126,38 +193,21 @@ function OnboardingContent() {
       return;
     }
 
-    if (!form.slug.trim()) {
-      setError('La URL de tu probador es requerida');
+    if (!slug.trim()) {
+      setError('El nombre de tu marca es requerido');
       return;
     }
 
-    const slugRegex = /^[a-z0-9-]+$/;
-    if (!slugRegex.test(form.slug)) {
-      setError('La URL solo puede contener letras minúsculas, números y guiones');
-      return;
-    }
-
-    if (form.slug.length < 3 || form.slug.length > 50) {
-      setError('La URL debe tener entre 3 y 50 caracteres');
-      return;
-    }
-
-    const reservedSlugs = [
-      'admin', 'api', 'app', 'blog', 'checkout', 'dashboard', 'home', 'login',
-      'logout', 'register', 'signup', 'signin', 'password', 'reset', 'forgot',
-      'account', 'accounts', 'auth', 'authorize', 'callback', 'contact', 'docs',
-      'documentation', 'download', 'downloads', 'email', 'help', 'jobs', 'legal',
-      'market', 'markets', 'news', 'onboarding', 'payment', 'payments', 'plans',
-      'pricing', 'privacy', 'products', 'profile', 'public', 'root', 'secure',
-      'security', 'settings', 'shop', 'site', 'sites', 'static', 'support', 'terms',
-      'tools', 'trial', 'trial-checkout', 'upload', 'uploads', 'users', 'verify',
-      'webhook', 'webhooks', 'www', 'mail', 'superadmin', 'system', 'null', 'undefined',
-      'true', 'false', 'none', 'default', 'main', 'test', 'demo', 'dev', 'development',
-      'staging', 'stage', 'prod', 'production', 'lookitry', 'mobile', 'desktop'
-    ];
-    if (reservedSlugs.includes(form.slug.toLowerCase())) {
-      setError('Esta URL está reservada. Elige otra.');
-      return;
+    // Check slug availability one more time if brand exists
+    if (availabilityResult?.brandExists) {
+      if (availabilityResult.slugExists && !form.slugSuffix) {
+        setSlugError('Agrega algo extra al nombre para diferenciarlo');
+        return;
+      }
+      if (availabilityResult.slugExists && form.slugSuffix) {
+        setSlugError('Este nombre ya existe, intenta otro');
+        return;
+      }
     }
 
     if (!form.password.trim()) {
@@ -185,7 +235,8 @@ function OnboardingContent() {
         credentials: 'include',
         body: JSON.stringify({
           name: form.name.trim(),
-          slug: form.slug.trim(),
+          slug: slug.trim(),
+          customSuffix: form.slugSuffix.trim() || '',
           password: form.password,
           reference: resolvedRef,
           plan,
@@ -200,7 +251,7 @@ function OnboardingContent() {
 
       if (!res.ok) {
         if (data.error === 'SLUG_TAKEN') {
-          setError('Esta URL ya está en uso. Prueba con otra o usa "Sugerir".');
+          setSlugError('Esta URL ya está en uso. Agrega algo diferente al nombre.');
         } else if (data.error === 'REFERENCE_NOT_FOUND') {
           setError('No se encontró el pago asociado. Contacta a soporte.');
         } else {
@@ -228,6 +279,10 @@ function OnboardingContent() {
       setLoading(false);
     }
   };
+
+  const finalSlug = availabilityResult?.brandExists && form.slugSuffix
+    ? `${slugify(form.name)}-${form.slugSuffix}`
+    : slug;
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#050505]">
@@ -274,78 +329,171 @@ function OnboardingContent() {
                   </div>
                 </div>
               )}
+
+              {/* Nombre de marca */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
                   <Store className="w-3 h-3 text-[#FF5C3A]" /> Nombre de tu marca
                 </label>
                 <input
                   value={form.name}
-                  onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={e => {
+                    setForm(prev => ({ ...prev, name: e.target.value }));
+                    setAvailabilityResult(null);
+                    setSlug('');
+                  }}
+                  onBlur={handleNameBlur}
                   required
                   placeholder="Ej: Velvet Studio"
                   className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  <Globe className="w-3 h-3 text-[#FF5C3A]" /> URL del probador
-                </label>
-                <div className="flex items-center overflow-hidden rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-1 shadow-inner transition-all focus-within:border-[#FF5C3A]">
-                  <span className="select-none py-3 pl-3 text-xs font-medium text-[#666]">lookitry.com/sitio/</span>
-                  <input
-                    value={form.slug}
-                    onChange={e => setForm(prev => ({ ...prev, slug: slugify(e.target.value) }))}
-                    className="flex-1 bg-transparent px-1 py-3 text-sm text-white placeholder-[#666] focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={suggestSlug}
-                    className="mr-1 h-8 px-2.5 text-[9px] font-black text-[#FF5C3A] hover:text-[#ff7a5f] uppercase tracking-tighter transition-colors"
-                  >
-                    Sugerir
-                  </button>
-                </div>
-                <p className="ml-1 text-[11px] leading-relaxed text-[#999]">
-                  Esta URL identificará tu probador virtual. Puedes ajustarla cuando quieras.
-                </p>
-              </div>
+              {/* Preview del slug */}
+              {form.name.length >= 2 && (
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#050505]/50 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-3.5 h-3.5 text-[#666]" />
+                        <span className="text-xs text-[#999]">Así aparecerá en internet:</span>
+                      </div>
+                      {checkingAvailability ? (
+                        <Loader2 className="w-4 h-4 text-[#FF5C3A] animate-spin" />
+                      ) : availabilityResult ? (
+                        availabilityResult.slugExists ? (
+                          <XCircle className="w-4 h-4 text-red-500" />
+                        ) : (
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        )
+                      ) : null}
+                    </div>
+                    <p className="text-sm text-white font-medium mt-1.5 font-mono">
+                      lookitry.com/sitio/<span className="text-[#FF5C3A]">{finalSlug || slugify(form.name)}</span>
+                    </p>
+                  </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  Crear contraseña
-                </label>
-                <div className="relative">
+                  {/* Campo extra si el nombre ya existe */}
+                  {availabilityResult?.brandExists && (
+                    <div className="rounded-xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 px-4 py-3 space-y-3">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-[#FF5C3A] mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-xs text-[#bbb]">
+                            Este nombre ya existe en nuestra plataforma
+                          </p>
+                          <p className="text-[11px] text-[#999] mt-1">
+                            Agrega algo extra al final para diferenciarlo
+                          </p>
+                        </div>
+                      </div>
+                      <input
+                        value={form.slugSuffix}
+                        onChange={e => handleSuffixChange(e.target.value)}
+                        placeholder='Ej: "pro" o "store"'
+                        className="w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2.5 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                      />
+                      {form.slugSuffix && (
+                        <p className="text-[11px] text-[#999]">
+                          Así quedará: <span className="text-white font-mono">lookitry.com/sitio/{slugify(form.name)}-{form.slugSuffix}</span>
+                        </p>
+                      )}
+                      {!form.slugSuffix && availabilityResult?.slugExists && (
+                        <p className="text-[11px] text-[#FF5C3A]">
+                          Si lo dejas vacío, agregaremos un número aleatorio
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Error de slug */}
+              {slugError && (
+                <div className="bg-red-500/5 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="w-4 h-4 mt-0.5" />
+                  <p className="text-[11px] font-bold uppercase tracking-tight leading-normal">{slugError}</p>
+                </div>
+              )}
+
+              {/* Contraseña con checklist */}
+              <div className="space-y-2">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                    Crear contraseña
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={form.password}
+                      onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder="Mínimo 8 caracteres"
+                      className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 pr-10 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666] hover:text-white transition-colors"
+                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                    Confirmar contraseña
+                  </label>
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    value={form.password}
-                    onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="Mínimo 8 caracteres"
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 pr-20 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
+                    value={form.confirmPassword}
+                    onChange={e => setForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    placeholder="Repite tu contraseña"
+                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
+                    style={{ borderColor: form.confirmPassword && form.confirmPassword !== form.password ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#666] hover:text-[#FF5C3A] transition-colors"
-                  >
-                    {showPassword ? 'Ocultar' : 'Mostrar'}
-                  </button>
+                </div>
+
+                {/* Password requirements checklist */}
+                <div className="rounded-xl border border-[rgba(255,255,255,0.05)] bg-[#050505]/50 px-4 py-3 space-y-2">
+                  <p className="text-[10px] font-bold text-[#666] uppercase tracking-wider mb-2">Requisitos de la contraseña:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+                    {[
+                      { test: form.password.length >= 8, label: 'Mínimo 8 caracteres' },
+                      { test: /[A-Z]/.test(form.password), label: 'Al menos una letra mayúscula' },
+                      { test: /[a-z]/.test(form.password), label: 'Al menos una letra minúscula' },
+                      { test: /[0-9]/.test(form.password), label: 'Al menos un número' },
+                      { test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.password), label: 'Al menos un carácter especial (!@#$%^&*)' },
+                    ].map(({ test, label }) => (
+                      <div key={label} className={`flex items-center gap-2 text-[11px] transition-colors ${test ? 'text-green-500' : 'text-[#999]'}`}>
+                        {test ? (
+                          <Check className="w-3.5 h-3.5 flex-shrink-0" />
+                        ) : (
+                          <span className="w-3.5 h-3.5 flex items-center justify-center flex-shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#555]" />
+                          </span>
+                        )}
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+                  {form.confirmPassword && (
+                    <div className={`flex items-center gap-2 text-[11px] mt-2 pt-2 border-t border-[rgba(255,255,255,0.05)] transition-colors ${form.confirmPassword === form.password && form.password.length >= 8 ? 'text-green-500' : 'text-red-400'}`}>
+                      {form.confirmPassword === form.password && form.password.length >= 8 ? (
+                        <Check className="w-3.5 h-3.5 flex-shrink-0" />
+                      ) : (
+                        <span className="w-3.5 h-3.5 flex items-center justify-center flex-shrink-0">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                        </span>
+                      )}
+                      {form.confirmPassword === form.password && form.password.length >= 8 ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  Confirmar contraseña
-                </label>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={form.confirmPassword}
-                  onChange={e => setForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                  placeholder="Repite tu contraseña"
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
-                />
-              </div>
-
+              {/* Error general */}
               {error && (
                 <div className="bg-red-500/5 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-start gap-3">
                   <AlertCircle className="w-4 h-4 mt-0.5" />
@@ -355,7 +503,7 @@ function OnboardingContent() {
 
               <button
                 type="submit"
-                disabled={loading || success || confirmingPayment || !paymentChecked}
+                disabled={loading || success || confirmingPayment || !paymentChecked || checkingAvailability}
                 className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[#FF5C3A] font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all active:scale-95 hover:bg-[#ff6c4d] disabled:opacity-50"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-[#FF5C3A] to-[#ff7a5f] opacity-100 transition-opacity" />

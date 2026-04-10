@@ -1,5 +1,57 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-10] - Slug Automático + Lenguaje Simplificado
+
+### Frontend - Modal Pro Simplificado
+- **UpgradeModal.tsx**: Lenguaje simplificado
+  - "400 generaciones por mes" → "400 fotos por mes"
+  - "1.200 generaciones por mes" → "1.200 fotos por mes"
+  - "generaciones" → "fotos" en todas las features
+  - "Elige tu potencia para Lookitry" → "Haz que tu tienda brille"
+  - "Tu período de prueba está activo. Selecciona un plan profesional..." → simplificado
+  - "Desbloquea todo el potencial de Lookitry con el Plan Pro" → "Con el Plan Pro obtienes más fotos..."
+  - "Ir a pagar" → "Elegir Plan Pro"
+  - "Cerrar y continuar trial" → "Cerrar y seguir probando"
+  - Features simplificadas: "Branding básico" → "Logo y colores de tu marca", "URL propia del probador" → "Tu propia página de pruebas", etc.
+
+### Backend - Slug Automático Post-Compra
+- **brands.routes.ts**: Nuevo endpoint `POST /api/brands/check-availability`
+  - Recibe `{ brandName }` y retorna `{ slug, brandExists, slugExists, suggestedSuffix }`
+  - Genera slug base con `slugify()` (normalización NFD, remoción acentos)
+  - Verificación case-insensitive con ILIKE
+  - Rate limiting aplicado
+- **auth-post-payment.controller.ts**: Modificado `registerPostPayment`
+  - Recibe `customSuffix` opcional en body
+  - Nueva función `generateUniqueSlug()` que:
+    - Si `customSuffix` tiene valor → usa `base-suffix`
+    - Si `customSuffix` vacío → genera número aleatorio 100-999
+    - Verifica colisiones en BD y genera alternativas
+  - Manejo de errores robusto con `SLUG_GENERATION_ERROR`
+
+### Frontend - Formulario Post-Pago Simplificado
+- **onboarding-post-pago/page.tsx**: Slug automático
+  - Campo slug ya NO visible en formulario
+  - Al escribir nombre de marca → llama `check-availability` 
+  - Muestra preview: "lookitry.com/[slug]" con ✓ verde
+  - Si nombre existe → muestra campo para agregar sufijo adicional
+  - Preview actualiza dinámicamente con el sufijo
+- **api/brands/check-availability/route.ts**: Proxy nuevo para frontend
+- **RegisterForm.tsx + onboarding-post-pago**: Checklist visual de contraseña
+  - 5 requisitos mostrados como checklist con ✓ verde / ○ gris
+  - Validación en tiempo real (onChange)
+  - Confirmación de contraseña con mensaje claro
+
+### Frontend - Lenguaje Dashboard Simplificado
+- Reemplazado lenguaje técnico por versiones simples en 12 archivos:
+  - "Generaciones" → "Fotos creadas" / "Fotos usadas"
+  - "Suscripción" → "Tu plan"
+  - "Créditos utilizados" → "Fotos que has usado"
+  - "Referidos" → "Recomienda y gana"
+  - "Método de pago" → "Cómo pagaste"
+  - "Código de referido" → "Tu link de referido"
+  - etc.
+- Archivos afectados: DashboardLayout, subscription, referral, dashboard, analytics, pro-test, checkout, profile, usage, generations
+
 ## [2026-04-10] - CTA Intermedio en Blog + Corrección Terminología
 
 ### Backend - CTA Intermedio Rediseñado
