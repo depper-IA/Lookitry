@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Calendar, ChevronRight } from 'lucide-react';
@@ -19,6 +19,27 @@ interface BlogCardProps {
     category?: { name: string };
   };
   variant?: 'default' | 'featured';
+}
+
+function BlogImage({ src, alt, className }: { src: string; alt: string; className: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <div className={`flex items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] ${className}`}>
+        <span className="text-4xl font-bold text-white/10">Lookitry</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setHasError(true)}
+    />
+  );
 }
 
 export const BlogCard: React.FC<BlogCardProps> = ({ post, variant = 'default' }) => {
@@ -42,7 +63,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, variant = 'default' })
       >
         <div className="relative aspect-[16/10] overflow-hidden lg:aspect-[21/9]">
           {previewImage ? (
-            <img
+            <BlogImage
               src={previewImage}
               alt={post.title}
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -97,7 +118,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, variant = 'default' })
     >
       <div className="relative aspect-video overflow-hidden">
         {previewImage ? (
-          <img
+          <BlogImage
             src={previewImage}
             alt={post.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
