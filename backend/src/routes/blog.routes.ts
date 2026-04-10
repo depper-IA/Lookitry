@@ -18,6 +18,9 @@ router.post('/article-content', (req, res) => blogController.articleContent(req,
 // NUEVO: Ensamblar y publicar artículo con imágenes
 router.post('/assemble-article', (req, res) => blogController.assembleArticle(req, res));
 
+// Regenerar artículo (usa draft e imágenes existentes)
+router.post('/regenerate/:topicId', (req, res) => blogController.regenerateArticle(req, res));
+
 // Webhook de n8n para reportar status de ejecución
 router.post('/execution-status', (req, res) => blogSettingsController.reportExecutionStatus(req, res));
 
