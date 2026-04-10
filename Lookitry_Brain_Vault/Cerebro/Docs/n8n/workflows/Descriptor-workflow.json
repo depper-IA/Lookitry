@@ -1,0 +1,160 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "descriptor",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2.1,
+            "position": [928, 224],
+            "id": "88358e0b-3853-4c51-9e0c-cad7ab43ae8d",
+            "name": "Webhook",
+            "webhookId": "1a4b83de-9eae-4ee3-9e03-1ec83ad627f9"
+        },
+        {
+            "parameters": {
+                "jsCode": "const body = $input.first().json.body;\nconst imageUrl = (body?.image_url || '').trim();\nconst productName = (body?.product_name || '').trim();\nconst category = (body?.category || '').trim();\nif (!imageUrl) throw new Error('image_url es requerido');\nif (!imageUrl.startsWith('http')) throw new Error('image_url invalida: ' + imageUrl.substring(0, 80));\nreturn [{ json: { imageUrl, productName, category } }];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [1152, 224],
+            "id": "27784891-ebd4-4c19-9c0c-74bb1a7ae8ef",
+            "name": "Extraer parametros"
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "={{ $json.imageUrl }}",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "User-Agent",
+                            "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                        },
+                        {
+                            "name": "Accept",
+                            "value": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"
+                        },
+                        {
+                            "name": "Accept-Language",
+                            "value": "en-US,en;q=0.9"
+                        },
+                        {
+                            "name": "Sec-Fetch-Dest",
+                            "value": "image"
+                        },
+                        {
+                            "name": "Sec-Fetch-Mode",
+                            "value": "no-cors"
+                        },
+                        {
+                            "name": "Sec-Fetch-Site",
+                            "value": "cross-site"
+                        }
+                    ]
+                },
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "file"
+                        }
+                    },
+                    "timeout": 15000
+                }
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [1392, 224],
+            "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "name": "Descargar Imagen"
+        },
+        {
+            "parameters": {
+                "jsCode": "const params = $('Extraer parametros').first().json;\nconst binary = $input.first().binary?.data;\n\nif (!binary) throw new Error('No se pudo descargar la imagen desde: ' + params.imageUrl);\n\nconst binaryData = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst base64 = binaryData.toString('base64');\nconst mimeType = binary.mimeType || 'image/jpeg';\n\nreturn [{ json: {\n  imageUrl: params.imageUrl,\n  productName: params.productName,\n  category: params.category,\n  imageBase64: base64,\n  imageMimeType: mimeType\n}}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [1632, 224],
+            "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+            "name": "Preparar Imagen Base64"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{ $credentials.apiKey }}",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ JSON.stringify({ \"contents\": [{ \"parts\": [ { \"text\": \"Eres un sistema de visión especializado en moda. Analiza esta imagen del producto \\\"\" + $json.productName + \"\\\" (categoría: \" + $json.category + \") y responde ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto adicional, sin bloques de código markdown:\\n\\n{\\\"garment_type\\\": \\\"tipo de prenda\\\", \\\"silhouette\\\": \\\"silueta/corte\\\", \\\"primary_color\\\": \\\"color principal en nombre y hex aproximado\\\", \\\"secondary_colors\\\": [\\\"color1\\\", \\\"color2\\\"], \\\"patterns\\\": \\\"descripción de estampados, logos o gráficos visibles, o null si no hay\\\", \\\"materials\\\": \\\"materiales o texturas aparentes\\\", \\\"design_details\\\": {\\\"neckline\\\": \\\"tipo de cuello\\\", \\\"sleeves\\\": \\\"tipo de mangas\\\", \\\"closures\\\": \\\"cierres o botones\\\", \\\"pockets\\\": \\\"bolsillos visibles o null\\\", \\\"other\\\": \\\"otros detalles relevantes o null\\\"}, \\\"fit\\\": \\\"ajustado | regular | holgado | oversize\\\"}\\n\\nResponde solo con el JSON, sin explicaciones.\" }, { \"inline_data\": { \"mime_type\": \"\" + $json.imageMimeType + \"\", \"data\": \"\" + $json.imageBase64 + \"\" } } ] }] }) }}",
+                "options": {
+                    "timeout": 30000
+                }
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [1872, 224],
+            "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+            "name": "Analyze an image"
+        },
+        {
+            "parameters": {
+                "jsCode": "const response = $input.first().json;\n\n// Respuesta nativa de Gemini REST API\nlet rawText = response?.candidates?.[0]?.content?.parts?.[0]?.text || '';\n\nif (!rawText) throw new Error('Gemini no devolvio texto. Respuesta: ' + JSON.stringify(response).substring(0, 300));\n\nconst clean = rawText.replace(/```json|```/g, '').trim();\n\nlet desc;\ntry {\n  desc = JSON.parse(clean);\n} catch (e) {\n  throw new Error('Gemini no devolvio JSON valido: ' + e.message + ' | Raw: ' + clean.substring(0, 200));\n}\n\nconst { productName, category } = $('Extraer parametros').first().json;\n\nconst enrichedPrompt = [\n  'Photorealistic virtual try-on image.',\n  `Product: ${productName}${category ? ' (' + category + ')' : ''}.`,\n  `Garment type: ${desc.garment_type}, ${desc.silhouette} silhouette, ${desc.fit} fit.`,\n  `Primary color: ${desc.primary_color}.`,\n  desc.secondary_colors?.length ? `Secondary colors: ${desc.secondary_colors.join(', ')}.` : '',\n  desc.patterns ? `Patterns and graphics: ${desc.patterns}.` : '',\n  `Material/texture: ${desc.materials}.`,\n  `Design details - neckline: ${desc.design_details?.neckline || 'n/a'}, sleeves: ${desc.design_details?.sleeves || 'n/a'}, closures: ${desc.design_details?.closures || 'n/a'}${desc.design_details?.pockets ? ', pockets: ' + desc.design_details.pockets : ''}${desc.design_details?.other ? ', other: ' + desc.design_details.other : ''}.`,\n  'CRITICAL RULES:',\n  '1. Reproduce the product EXACTLY: same colors, patterns, textures, logos, cuts and design details. Do NOT alter any visual element.',\n  '2. Keep the persons face, skin tone, hair and body proportions identical to the selfie.',\n  '3. The product must fit naturally on the persons body, respecting their pose and lighting.',\n  '4. Maintain photorealistic quality with consistent lighting between person and product.',\n  '5. Output only the final try-on image.',\n].filter(Boolean).join(' ');\n\nreturn [{ json: { description: desc, enrichedPrompt } }];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [2112, 224],
+            "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+            "name": "Construir prompt enriquecido"
+        },
+        {
+            "parameters": {
+                "jsCode": "const { enrichedPrompt, description: d } = $input.first().json;\n\nconst parts = [];\nif (d.garment_type) parts.push(d.garment_type + (d.silhouette ? ' de silueta ' + d.silhouette : ''));\nif (d.primary_color) parts.push('Color principal: ' + d.primary_color);\nif (d.secondary_colors?.length) parts.push('Colores secundarios: ' + d.secondary_colors.join(', '));\nif (d.patterns) parts.push('Estampado: ' + d.patterns);\nif (d.materials) parts.push('Material: ' + d.materials);\nconst dd = d.design_details || {};\nconst details = [\n  dd.neckline && 'cuello ' + dd.neckline,\n  dd.sleeves && 'mangas ' + dd.sleeves,\n  dd.closures && 'cierre ' + dd.closures,\n  dd.pockets && 'bolsillos: ' + dd.pockets,\n  dd.other || null\n].filter(Boolean);\nif (details.length) parts.push('Detalles: ' + details.join(', '));\nif (d.fit) parts.push('Fit: ' + d.fit);\n\nconst CATEGORY_MAP = {\n  vestido: 'VESTIDO', dress: 'VESTIDO',\n  camisa: 'CAMISA', shirt: 'CAMISA', top: 'TOP', blusa: 'BLUSA', blouse: 'BLUSA',\n  pantalon: 'PANTALON', 'pantalón': 'PANTALON', pants: 'PANTS', jeans: 'JEANS',\n  falda: 'FALDA', skirt: 'FALDA',\n  zapatos: 'ZAPATOS', shoes: 'ZAPATOS', calzado: 'ZAPATOS', footwear: 'ZAPATOS',\n  conjunto: 'CONJUNTO', set: 'SET', outfit: 'CONJUNTO',\n  chaqueta: 'CHAQUETA', jacket: 'JACKET', abrigo: 'ABRIGO', coat: 'ABRIGO',\n  hoodie: 'HOODIE', sudadera: 'HOODIE',\n  accesorio: 'ACCESSORY', accessory: 'ACCESSORY', accessories: 'ACCESSORY',\n  casco: 'HELMET', helmet: 'HELMET',\n};\n\nconst rawType = (d.garment_type || '').toLowerCase().trim();\nconst category = CATEGORY_MAP[rawType] || d.garment_type?.toUpperCase() || null;\n\nreturn [{ json: { description: parts.join('. ') + '.', category, enrichedPrompt } }];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [2352, 224],
+            "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+            "name": "Formatear respuesta"
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.5,
+            "position": [2576, 224],
+            "id": "67e20b65-3b15-41ad-b017-eecbf4dfd04a",
+            "name": "Respond to Webhook"
+        }
+    ],
+        "connections": {
+        "Webhook": {
+            "main": [[{ "node": "Extraer parametros", "type": "main", "index": 0 }]]
+        },
+        "Extraer parametros": {
+            "main": [[{ "node": "Descargar Imagen", "type": "main", "index": 0 }]]
+        },
+        "Descargar Imagen": {
+            "main": [[{ "node": "Preparar Imagen Base64", "type": "main", "index": 0 }]]
+        },
+        "Preparar Imagen Base64": {
+            "main": [[{ "node": "Analyze an image", "type": "main", "index": 0 }]]
+        },
+        "Analyze an image": {
+            "main": [[{ "node": "Construir prompt enriquecido", "type": "main", "index": 0 }]]
+        },
+        "Construir prompt enriquecido": {
+            "main": [[{ "node": "Formatear respuesta", "type": "main", "index": 0 }]]
+        },
+        "Formatear respuesta": {
+            "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+        }
+    },
+    "pinData": { },
+    "meta": {
+        "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5319e0d30f"
+    }
+}

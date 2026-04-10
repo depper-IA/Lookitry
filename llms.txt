@@ -1,179 +1,53 @@
 # Lookitry - AI Virtual Try-On Platform for E-Commerce
 
-Lookitry is a B2B SaaS platform that enables brands to integrate an AI-powered virtual try-on widget into their online stores. Customers can upload a selfie and visualize how clothing, accessories, and footwear would look on them before making a purchase.
+Lookitry es una plataforma B2B SaaS que permite a las marcas de moda integrar un probador virtual inteligente en sus tiendas online. Los clientes pueden visualizar productos sobre su propio cuerpo mediante IA de ultima generacion.
 
 **Website:** https://lookitry.com  
 **API:** https://api.lookitry.com  
-**Project Location:** C:\Users\Matt\Lookitry
 
-## Technology Stack
+## Contexto Tecnico (Produccion)
 
-| Layer | Technology |
-|-------|------------|
+| Capa | Tecnologia |
+|------|------------|
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS |
-| Backend | Node.js + Express |
-| Database | Supabase (PostgreSQL) |
-| Storage | MinIO (S3-compatible) |
-| AI Orchestration | n8n |
-| AI Models | OpenRouter |
-| Payments | Wompi (COP), PayPal (USD) |
+| Backend | Node.js + Express, TypeScript |
+| Base de Datos | Supabase (PostgreSQL) |
+| Almacenamiento | MinIO (S3-Compatible) |
+| Automatizacion | n8n (Webhooks para IA) |
+| Pagos | Wompi (COP) |
+| IA Modelos | OpenRouter (Flujos estables) |
 
-## Core Features
+## Estandares de Diseño
 
-### Virtual Try-On System
-- Embeddable iframe widget for e-commerce integration
-- AI-generated images showing products on user's body
-- Selfie upload with real-time processing
-- Multiple widget templates (Bare, MinimalTopBar, ModernSidebar, BoldProStudio)
+- **Colores**: `#FF5C3A` (Lookitry Orange), `#0a0a0a` (Pure Black).
+- **Tipografia**: Plus Jakarta Sans y DM Sans.
+- **Iconografia**: Lucide React (Sin emojis en UI).
 
-### Product Catalog Management
-- Full CRUD operations for products
-- Image upload and compression
-- Category auto-mapping
-- External ID support for WooCommerce sync
+## Modelos de Negocio Estables
 
-### Subscription Plans
-| Plan | Price (COP/month) | Products | Generations/Month |
-|------|-------------------|----------|---------------------|
-| TRIAL | $20,000 (one-time) | 1 | 15 |
-| BASIC | $150,000 | 5 | 400 |
-| PRO | $250,000 | 15 | 1,200 |
-| ENTERPRISE | $800,000 | 50 | 2,000 |
+### 1. Planes de Suscripcion
+- **TRIAL**: Acceso inicial limitado por dias y generaciones.
+- **BASIC**: 5 productos activos, 400 generaciones/mes.
+- **PRO**: 15 productos activos, 1200 generaciones/mes.
+- **ENTERPRISE**: 50+ productos, 2000+ generaciones/mes. Sincronizacion masiva activada.
 
-### Payment Integration
-- Wompi for Colombian pesos (COP)
-- PayPal for international payments (USD) with dynamic TRM conversion
-- Automatic proration for plan upgrades
-- Additional credits purchase
+### 2. Add-ons Disponibles
+- **Mini-Landing**: Pagina propia de la marca bajo `/sitio/[slug]`.
+- **The Sync**: Motor de sincronizacion Enterprise para inventarios masivos.
 
-## Project Structure
+## Funcionalidades Core (Listas para usar)
 
-```
-LOOKITRY/
-├── frontend/                    # Next.js 14 App
-│   ├── src/app/                # Pages (App Router)
-│   │   ├── dashboard/         # User dashboard pages
-│   │   ├── admin/             # Admin dashboard pages
-│   │   ├── checkout/          # Checkout flows
-│   │   └── [slug]/           # Dynamic routes
-│   ├── src/components/        # React components
-│   │   ├── dashboard/         # Dashboard components
-│   │   ├── tryon/             # Try-on widget components
-│   │   └── ui/                # Shared UI components
-│   └── src/services/          # API clients
-├── backend/                     # Express API
-│   ├── src/controllers/       # Business logic
-│   ├── src/routes/            # API routes
-│   ├── src/services/         # External integrations
-│   ├── src/middleware/       # Auth, rate limiting
-│   └── src/config/           # Configuration
-├── lookitry-woocommerce/      # WordPress plugin
-├── supabase/migrations/       # Database migrations
-└── scripts/                   # Deployment scripts
-```
+### Probador Virtual (Widget)
+- Multiples plantillas: `Modern`, `Bold`, `Studio`.
+- Procesamiento en tiempo real via n8n.
+- Integracion via Iframe o Script directo.
 
-## API Endpoints
+### Motor de Leads y Referidos
+- Sistema de puntuacion comercial para leads.
+- Motor de referidos con recompensas automaticas tras conversion.
 
-### Authentication (`/api/auth`)
-- POST /register - Brand registration with Turnstile
-- POST /login - Login with JWT
-- POST /forgot-password - Password reset
-- GET /verify-email - Email verification
-- POST /resend-verification - Resend verification email
-
-### Brands (`/api/brands`)
-- GET /me - Get current brand
-- PUT /me - Update brand profile
-- POST /change-password - Change password
-
-### Products (`/api/products`)
-- GET / - List products
-- POST / - Create product
-- PUT /:id - Update product
-- DELETE /:id - Delete product
-
-### Generations (`/api/generations`)
-- POST / - Create try-on generation
-- GET / - List generations
-- GET /:id - Get generation status
-
-### Payments (`/api/payments`)
-- GET /wompi/config - Wompi configuration
-- POST /wompi/webhook - Wompi webhook handler
-- POST /paypal/create-order - PayPal order
-- POST /addon - Purchase additional credits
-
-### Subscriptions (`/api/subscription`)
-- GET /info - Get subscription info
-- POST /upgrade - Upgrade plan
-- POST /cancel - Cancel subscription
-
-## Database Schema
-
-### Core Tables
-- **brands**: Client brands with plan, subscription status, customization
-- **products**: Brand products with images and descriptions
-- **generations**: Try-on generation records with status tracking
-- **payments**: Payment history and transaction records
-- **promotions**: Marketing campaigns and coupons
-
-## Authentication
-
-- Custom JWT system (not Supabase Auth)
-- HTTP-only secure cookies (30-day expiration)
-- Cloudflare Turnstile for spam protection
-- Password requirements: 8+ chars, uppercase, lowercase, number, special
-
-## Admin Dashboard
-
-Available at `/admin`:
-- Brand management
-- Subscription management
-- Payment history and revenue analytics
-- Product catalog oversight
-- AI cost monitoring
-- Blog content management
-- Promotions and coupons
-
-## User Dashboard
-
-Available at `/dashboard`:
-- Products management
-- Generation history
-- Usage statistics
-- Subscription management
-- Mini-landing editor
-- Profile settings
-
-## Design System
-
-- Primary color: #FF5C3A (Lookitry Orange)
-- Background: #0a0a0a (dark), #f5f5ee (light)
-- Typography: Plus Jakarta Sans (titles), DM Sans (body)
-- Icons: lucide-react only (no emojis)
-
-## WooCommerce Integration
-
-WordPress plugin available in `lookitry-woocommerce/` with:
-- API key validation
-- Product synchronization
-- Modal with iframe integration
-- Button injection support
-
-## n8n Workflows
-
-| Function | Webhook |
-|----------|---------|
-| Try-On Generation | /webhook/tryon |
-| Product Descriptor | /webhook/descriptor |
-
-## Key Configuration
-
-- `backend/src/config/plans.ts` - Plan definitions
-- `backend/src/config/supabase.ts` - Database config
-- `frontend/tailwind.config.ts` - Styling config
-- Environment variables in `.env` files
+### Integracion E-Commerce
+- Plugin nativo para WooCommerce con sincronizacion de productos por ID externo.
 
 ---
-
-*For detailed API documentation, see backend route files in `backend/src/routes/`*
+*Para documentacion detallada de la API, consultar los archivos de rutas en el repositorio.*

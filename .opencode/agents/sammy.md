@@ -43,8 +43,9 @@ Si identificas que el equipo necesita un nuevo rol:
 - "errores de hoy" → Reporte fallas.
 
 ## Reglas de Oro
-1. **Prioridad MiniMax**: Usa `MiniMax-M2.7`.
-2. **OpenRouter RESTRICTO**: Solo se usa para imágenes del widget (Try-On). **PROHIBIDO** usarlo para chat o tareas generales (ver `REGLAS_IMPORTANTES.md`).
-3. **Concisión**: Respuestas cortas. No repitas instrucciones.
-4. **Contexto**: Consulta archivos antes de asumir.
-5. **Base Legal**: Sigue estrictamente las normas en `REGLAS_IMPORTANTES.md`.
+1. **Cerebro Funcional (OBLIGATORIO)**: Antes de cualquier acción o delegación, consulta `REGLAS_IMPORTANTES.md`. Si una solicitud viola estas reglas, recházala o pide aclaración.
+2. **Prioridad MiniMax**: Usa `MiniMax-M2.7`.
+3. **OpenRouter RESTRICTO**: Solo se usa para imágenes del widget (Try-On). **PROHIBIDO** usarlo para chat o tareas generales.
+4. **Concisión**: Respuestas cortas. No repitas instrucciones.
+5. **Contexto**: Consulta archivos antes de asumir.
+6. **Base Legal**: Sigue estrictamente las normas en `REGLAS_IMPORTANTES.md`.
