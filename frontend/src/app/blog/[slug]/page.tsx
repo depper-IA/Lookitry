@@ -5,7 +5,7 @@ import LandingNav from '@/components/landing/new-landing/LandingNav';
 import LandingFooter from '@/components/landing/new-landing/LandingFooter';
 import { BlogShareRail } from '@/components/blog/BlogShareRail';
 import { fetchBlogPostBySlug, fetchRecentBlogPosts, getBlogFeaturedImage, getBlogShareImage, getBlogTeaser } from '@/services/blog.service';
-import { Calendar, Tag, ChevronLeft, ArrowUpRight } from 'lucide-react';
+import { Calendar, Tag, ChevronLeft, ArrowUpRight, Zap, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import BlogArticle, { TableOfContents } from '@/components/blog/BlogArticle';
 import { BlogImageWithFallback } from '@/components/blog/BlogImageWithFallback';
@@ -202,35 +202,45 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
 
           </div>
-          <aside className="mx-auto w-full max-w-[320px] xl:mx-0 xl:w-[280px] xl:pt-8">
-            <div className="xl:sticky xl:top-24 space-y-6">
+          <aside className="mx-auto w-full max-w-[320px] xl:mx-0 xl:w-[280px]">
+            <div className="xl:sticky xl:top-24 flex flex-col gap-10">
               
               {post.toc_items && (
-                <TableOfContents items={parseTocItems(post.toc_items)} className="hidden xl:block" />
+                <div className="hidden xl:block">
+                  <TableOfContents items={parseTocItems(post.toc_items)} />
+                </div>
               )}
 
-              <section className="rounded-[1.75rem] border border-white/10 bg-[#111111] p-6">
-                <div className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Compartir</div>
-                <h2 className="mt-3 font-plus-jakarta text-2xl font-black tracking-tight text-white">Comparte este artículo</h2>
-                <p className="mt-3 text-sm leading-7 text-[#999]">
-                  Si este contenido te sirvió, compártelo con tu equipo comercial o con otras marcas que quieran mejorar su ecommerce.
+              <section className="rounded-[1.75rem] border border-white/10 bg-[#111111] p-6 shadow-sm overflow-hidden relative">
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF5C3A] mb-4">Compartir</div>
+                <h2 className="font-plus-jakarta text-xl md:text-2xl font-black tracking-tight text-white mb-4">
+                  ¿Te sirvió este artículo?
+                </h2>
+                <p className="text-sm leading-relaxed text-[#999] mb-6">
+                  Compártelo con tu equipo comercial o con otros fundadores que quieran mejorar su ecommerce de moda.
                 </p>
-                <div className="mt-4 hidden xl:block text-sm font-semibold text-[#FF5C3A]">
-                  Usa la barra lateral para compartirlo.
+                <div className="hidden xl:block pt-4 border-t border-white/5">
+                  <span className="text-xs font-semibold text-[#FF5C3A] flex items-center gap-2">
+                    <ArrowUpRight size={14} />
+                    Usa la barra lateral izquierda
+                  </span>
                 </div>
               </section>
 
-              <section className="rounded-[1.75rem] border border-white/10 bg-[#111111] p-6">
-                <div className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Navegación rápida</div>
-                <div className="mt-4 space-y-3">
-                  <Link href="/blog" className="block text-sm font-semibold text-[#FF5C3A] hover:text-[#ff7a5f]">
-                    Ver todos los artículos
+              <section className="rounded-[1.75rem] border border-white/10 bg-[#111111] p-6 shadow-sm">
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF5C3A] mb-4">Recursos</div>
+                <div className="space-y-4">
+                  <Link href="/blog" className="flex items-center justify-between group">
+                    <span className="text-sm font-semibold text-white group-hover:text-[#FF5C3A] transition-colors">Todos los artículos</span>
+                    <ChevronLeft size={14} className="text-[#FF5C3A] rotate-180" />
                   </Link>
-                  <Link href="/trial-checkout" className="block text-sm font-semibold text-[#FF5C3A] hover:text-[#ff7a5f]">
-                    Probar LOOKITRY
+                  <Link href="/trial-checkout" className="flex items-center justify-between group">
+                    <span className="text-sm font-semibold text-white group-hover:text-[#FF5C3A] transition-colors">Probar LOOKITRY</span>
+                    <Zap size={14} className="text-[#FF5C3A]" />
                   </Link>
-                  <Link href="/planes" className="block text-sm font-semibold text-[#FF5C3A] hover:text-[#ff7a5f]">
-                    Revisar planes y precios
+                  <Link href="/planes" className="flex items-center justify-between group">
+                    <span className="text-sm font-semibold text-white group-hover:text-[#FF5C3A] transition-colors">Planes y precios</span>
+                    <BarChart3 size={14} className="text-[#999]" />
                   </Link>
                 </div>
               </section>
