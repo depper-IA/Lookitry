@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,20 +15,11 @@ import {
   Layout,
   ShieldCheck,
   Zap,
-  MousePointer2,
-  Eye,
 } from 'lucide-react';
 import { LandingPreview } from './components/LandingPreview';
 import { Spinner } from '@/components/ui/Spinner';
 import { DesignTab } from './components/DesignTab';
 import { DomainTab } from './components/DomainTab';
-import { 
-  VisualEditorProvider,
-  VisualModeToggle,
-  VisualModeIndicator,
-  VisualEditField
-} from '@/components/wysiwyg/VisualEditor';
-import { VisualPreview } from './components/VisualPreview';
 
 const FRONTEND_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || '');
 
@@ -209,23 +200,6 @@ export default function MiPaginaPage() {
     loadData();
   }, []);
 
-  const handleVisualFieldChange = useCallback((field: VisualEditField, value: string) => {
-    switch (field) {
-      case 'slogan': setSlogan(value); break;
-      case 'brand_description': setDescription(value); break;
-      case 'ctaButtonText': setCtaButtonText(value); break;
-      case 'instagram': setInstagram(value); break;
-      case 'facebook': setFacebook(value); break;
-      case 'tiktok': setTiktok(value); break;
-      case 'youtube': setYoutube(value); break;
-      case 'x': setX(value); break;
-      case 'whatsapp': setWhatsapp(value); break;
-      case 'cityDisplay': setCityDisplay(value); break;
-      case 'primaryColor': setPrimaryColor(value); break;
-      case 'secondaryColor': setSecondaryColor(value); break;
-    }
-  }, []);
-
   const handleSave = async () => {
     setSaving(true);
     setError('');
@@ -329,29 +303,26 @@ export default function MiPaginaPage() {
   };
 
   return (
-    <VisualEditorProvider>
-      <VisualModeIndicator />
-      <motion.div 
-        initial="hidden" animate="visible" variants={containerVariants}
-        className="max-w-[1600px] mx-auto px-4 sm:px-6 xl:px-8 py-6 xl:py-8 pb-24"
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
-          
-          {/* PANEL DE EDICIÓN */}
-          <div className="lg:col-span-8 xl:col-span-7 space-y-6 xl:space-y-8 min-w-0">
-            <motion.header variants={itemVariants} className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-              <div className="space-y-2">
-                <h1 className="text-4xl font-bold text-[var(--text-primary)] tracking-tight font-jakarta">Editor de página</h1>
-                <p className="text-sm text-[var(--text-secondary)] font-bold tracking-wider opacity-60 uppercase">Personaliza tu mini-landing premium</p>
-              </div>
-              
-              <div className="flex items-center gap-4 flex-wrap">
-                 <VisualModeToggle />
-                 <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl text-xs font-bold uppercase tracking-widest text-[var(--text-primary)] hover:border-[#FF5C3A] hover:text-[#FF5C3A] transition-all shadow-xl group/link">
-                   Ver mi sitio <ExternalLink size={14} className="group-hover:rotate-12 transition-transform" />
-                 </a>
-              </div>
-            </motion.header>
+    <motion.div 
+      initial="hidden" animate="visible" variants={containerVariants}
+      className="max-w-[1600px] mx-auto px-4 sm:px-6 xl:px-8 py-6 xl:py-8 pb-24"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
+        
+        {/* PANEL DE EDICIÓN */}
+        <div className="lg:col-span-8 xl:col-span-7 space-y-6 xl:space-y-8 min-w-0">
+          <motion.header variants={itemVariants} className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold text-[var(--text-primary)] tracking-tight font-jakarta">Editor de página</h1>
+              <p className="text-sm text-[var(--text-secondary)] font-bold tracking-wider opacity-60 uppercase">Personaliza tu mini-landing premium</p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+               <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl text-xs font-bold uppercase tracking-widest text-[var(--text-primary)] hover:border-[#FF5C3A] hover:text-[#FF5C3A] transition-all shadow-xl group/link">
+                 Ver mi sitio <ExternalLink size={14} className="group-hover:rotate-12 transition-transform" />
+               </a>
+            </div>
+          </motion.header>
 
           {/* ══ BONUS MARKETING ══ */}
           <motion.div variants={itemVariants} className="p-5 xl:p-6 rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl shadow-black/5 relative overflow-hidden group/bonus">
@@ -541,12 +512,7 @@ export default function MiPaginaPage() {
 
                {/* Main Preview Area - Cubriendo todo de izquierda a derecha */}
                <div className="flex-1 bg-white overflow-y-auto custom-scrollbar relative">
-                  <VisualPreview 
-                    brandSlug={brandSlug} 
-                    brand={tempBrand} 
-                    products={products} 
-                    onFieldChange={handleVisualFieldChange}
-                  />
+                  <LandingPreview {...previewProps} brandSlug={brandSlug} isPreview={true} />
                </div>
 
                {/* Status Bar */}
@@ -560,7 +526,6 @@ export default function MiPaginaPage() {
          </div>
         </div>
       </motion.div>
-    </VisualEditorProvider>
   );
 }
 

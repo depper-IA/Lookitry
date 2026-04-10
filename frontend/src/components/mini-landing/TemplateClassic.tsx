@@ -12,6 +12,9 @@ import {
   CoverImage,
   getCoverPresentation,
   isDarkColor,
+  getContrastColor,
+  getSmartMutedColor,
+  getSmartBorderColor,
   getVisibleSocialEntries,
   YouTubeIcon,
   XIcon,
@@ -140,21 +143,34 @@ function ClassicHeader({ brand, primaryColor, onScrollDown }: { brand: BrandData
 function ClassicHero({ brand, primaryColor, onScrollDown, isPreview = false }: { brand: BrandData; primaryColor: string; onScrollDown: () => void; isPreview?: boolean }) {
   const hasCover = !!brand.cover_image_url;
   const { backgroundColor: coverBaseColor, imageOpacity: coverOpacity } = getCoverPresentation(brand, primaryColor + '10');
+  const bgColor = brand.cover_bg_color || '#f9f8f6';
+  const isBgDark = isDarkColor(bgColor);
+  const textColor = isBgDark ? '#ffffff' : '#111111';
+  const mutedColor = getSmartMutedColor(bgColor);
 
   return (
-    <section className={`relative w-full bg-[#f9f8f6] ${isPreview ? 'py-6 md:py-10' : 'py-10 md:py-20'} px-6 overflow-hidden`}>
+    <section 
+      className={`relative w-full ${isPreview ? 'py-6 md:py-10' : 'py-10 md:py-20'} px-6 overflow-hidden`}
+      style={{ backgroundColor: bgColor }}
+    >
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-10 md:gap-16">
         <div className="flex-1 text-center lg:text-left space-y-5 md:space-y-6 z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--secondary-05)] border border-[var(--secondary-10)] text-[var(--secondary)] text-[9px] font-bold uppercase tracking-[0.2em]">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-bold uppercase tracking-[0.2em]"
+            style={{ 
+              backgroundColor: isBgDark ? 'rgba(255,255,255,0.1)' : `${primaryColor}15`,
+              borderColor: isBgDark ? 'rgba(255,255,255,0.2)' : `${primaryColor}30`,
+              color: isBgDark ? '#ffffff' : primaryColor 
+            }}
+          >
             <SparklesIcon className="w-3.5 h-3.5" />
             Nueva tecnologia de probador
           </div>
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tighter uppercase italic">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black leading-[1.1] tracking-tighter uppercase italic" style={{ color: textColor }}>
             {brand.name}<br />
             <span style={{ color: primaryColor }}>{brand.slogan || 'Coleccion 2026'}</span>
           </h1>
           {brand.brand_description && (
-            <p className="text-[11px] md:text-sm text-gray-500 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">
+            <p className="text-[11px] md:text-sm max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium" style={{ color: mutedColor }}>
               {brand.brand_description}
             </p>
           )}
@@ -162,7 +178,7 @@ function ClassicHero({ brand, primaryColor, onScrollDown, isPreview = false }: {
             <button onClick={onScrollDown} className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:brightness-110 active:scale-95 transition-all" style={{ backgroundColor: primaryColor }}>Ver Productos</button>
             <div className="flex -space-x-2.5">
               {[1, 2, 3].map(i => <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-sm" />)}
-              <div className="w-8 h-8 rounded-full border-2 border-white bg-[#f0edea] flex items-center justify-center text-[9px] font-bold text-gray-400">+500</div>
+              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-bold" style={{ backgroundColor: isBgDark ? 'rgba(255,255,255,0.1)' : '#f0edea', color: mutedColor }}>+500</div>
             </div>
           </div>
         </div>
@@ -175,7 +191,9 @@ function ClassicHero({ brand, primaryColor, onScrollDown, isPreview = false }: {
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: coverBaseColor }}>
-              <SparklesIcon className="w-16 h-16 opacity-10" />
+              <span style={{ color: isBgDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.1)' }}>
+                <SparklesIcon className="w-16 h-16 opacity-10" />
+              </span>
             </div>
           )}
         </div>
@@ -184,21 +202,25 @@ function ClassicHero({ brand, primaryColor, onScrollDown, isPreview = false }: {
   );
 }
 
-function ClassicSteps({ primaryColor }: { primaryColor: string }) {
+function ClassicSteps({ primaryColor, secondaryColor, bgColor = '#ffffff' }: { primaryColor: string; secondaryColor?: string; bgColor?: string }) {
   const steps = [
     { n: '01', t: 'Selecciona', d: 'Elige cualquier prenda de nuestro catalogo curado para comenzar.' },
     { n: '02', t: 'Fotografia', d: 'Captura una selfie frontal. La iluminacion es clave para el realismo.' },
     { n: '03', t: 'Estrena', d: 'Nuestra IA renderiza la prenda sobre ti. Descarga y comparte.' },
   ];
+  const isBgDark = isDarkColor(bgColor);
+  const textColor = isBgDark ? '#ffffff' : '#111111';
+  const mutedColor = getSmartMutedColor(bgColor);
+  const accentColor = secondaryColor || primaryColor;
 
   return (
-    <section className="py-16 px-6 bg-white border-b border-gray-100">
+    <section className="py-16 px-6 border-b" style={{ backgroundColor: bgColor, borderColor: getSmartBorderColor(bgColor) }}>
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
         {steps.map(s => (
           <div key={s.n} className="flex flex-col items-center md:items-start text-center md:text-left space-y-3">
             <span className="text-4xl font-black italic opacity-10" style={{ color: primaryColor }}>{s.n}</span>
-            <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight italic">{s.t}</h3>
-            <p className="text-xs text-gray-500 leading-relaxed font-medium">{s.d}</p>
+            <h3 className="text-lg font-black uppercase tracking-tight italic" style={{ color: textColor }}>{s.t}</h3>
+            <p className="text-xs leading-relaxed font-medium" style={{ color: mutedColor }}>{s.d}</p>
           </div>
         ))}
       </div>
@@ -206,15 +228,19 @@ function ClassicSteps({ primaryColor }: { primaryColor: string }) {
   );
 }
 
-function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { products: ProductData[]; primaryColor: string; ctaText?: string | null; onProductClick: (id: string) => void }) {
+function ClassicProducts({ products, primaryColor, secondaryColor, ctaText, onProductClick }: { products: ProductData[]; primaryColor: string; secondaryColor?: string; ctaText?: string | null; onProductClick: (id: string) => void }) {
   if (!products.length) return null;
+  const bgColor = '#f9f8f6';
+  const isBgDark = isDarkColor(bgColor);
+  const textColor = isBgDark ? '#ffffff' : '#111111';
+  const mutedColor = getSmartMutedColor(bgColor);
 
   return (
-    <section id="productos" className="py-20 px-6 bg-[#f9f8f6]">
+    <section id="productos" className="py-20 px-6" style={{ backgroundColor: bgColor }}>
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12 space-y-3">
-          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--secondary)]">Coleccion de Temporada</span>
-          <h2 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">Nuestros Productos</h2>
+          <span className="text-[9px] font-black uppercase tracking-[0.3em]" style={{ color: secondaryColor || primaryColor }}>Coleccion de Temporada</span>
+          <h2 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic leading-none" style={{ color: textColor }}>Nuestros Productos</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {products.map(p => (
@@ -228,11 +254,11 @@ function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { 
               </div>
               <div className="p-6 text-left">
                 <div className="flex justify-between items-start mb-1">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-[var(--secondary)]">{p.category}</p>
-                  {p.price && <p className="text-xs font-black text-gray-900">${p.price.toLocaleString('es-CO')}</p>}
+                  <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: secondaryColor || primaryColor }}>{p.category}</p>
+                  {p.price && <p className="text-xs font-black" style={{ color: textColor }}>${p.price.toLocaleString('es-CO')}</p>}
                 </div>
-                <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight line-clamp-1">{p.name}</h3>
-                {p.description && <p className="text-[10px] text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">{p.description}</p>}
+                <h3 className="text-base font-bold uppercase tracking-tight line-clamp-1" style={{ color: textColor }}>{p.name}</h3>
+                {p.description && <p className="text-[10px] mt-1.5 line-clamp-2 leading-relaxed" style={{ color: mutedColor }}>{p.description}</p>}
               </div>
             </div>
           ))}
@@ -242,7 +268,7 @@ function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { 
   );
 }
 
-function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; primaryColor: string; footerUrl?: string }) {
+function ClassicFooter({ brand, primaryColor, secondaryColor, footerUrl }: { brand: BrandData; primaryColor: string; secondaryColor?: string; footerUrl?: string }) {
   const DAYS_ORDER = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
   let scheduleEntries: [string, string][] = [];
   try {
@@ -261,65 +287,68 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
   };
   const hasLocationBlock = !!brand.city_display || !!brand.national_shipping;
   const hasRatings = typeof brand.rating === 'number' || typeof brand.total_reviews === 'number';
+  const bgColor = '#ffffff';
+  const textColor = '#111111';
+  const mutedColor = '#6b7280';
 
   return (
-    <footer id="contacto" className="bg-white pt-24 pb-12 px-6 border-t border-gray-100">
+    <footer id="contacto" className="pt-24 pb-12 px-6 border-t" style={{ backgroundColor: bgColor, borderColor: '#f3f4f6' }}>
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20 mb-20">
           <div className="lg:col-span-5 space-y-8">
             <div className="flex items-center gap-3">
               {brand.logo ? <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-8 object-contain" /> : <span className="font-black text-2xl uppercase italic" style={{ color: primaryColor }}>{brand.name}</span>}
             </div>
-            <p className="text-sm text-gray-500 leading-relaxed font-medium italic max-w-sm text-left">&quot;{brand.brand_description || 'Moda y tecnologia unidas para ofrecerte la mejor experiencia de compra virtual.'}&quot;</p>
+            <p className="text-sm leading-relaxed font-medium italic max-w-sm text-left" style={{ color: mutedColor }}>&quot;{brand.brand_description || 'Moda y tecnologia unidas para ofrecerte la mejor experiencia de compra virtual.'}&quot;</p>
             <div className="flex gap-3 justify-start">
               {getVisibleSocialEntries(brand.social_links).map(([p, url]) => (
-                <a key={p} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Síguenos en ${p}`} className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2">
+                <a key={p} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Síguenos en ${p}`} className="w-12 h-12 rounded-xl flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2" style={{ backgroundColor: '#f9fafb', border: '1px solid #f3f4f6', color: mutedColor }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#111111'; e.currentTarget.style.color = '#ffffff'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#f9fafb'; e.currentTarget.style.color = mutedColor; }}>
                   {socialIcons[p.toLowerCase()] || p.slice(0, 1)}
                 </a>
               ))}
             </div>
             {hasLocationBlock && (
               <div className="space-y-2">
-                {brand.city_display && <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--secondary)]">{brand.city_display}</p>}
+                {brand.city_display && <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: secondaryColor || primaryColor }}>{brand.city_display}</p>}
                 {brand.national_shipping && <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Envios nacionales activos</p>}
               </div>
             )}
           </div>
 
           <div className="lg:col-span-4 space-y-8 text-left">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--secondary)]">Horarios de Atencion</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: secondaryColor || primaryColor }}>Horarios de Atencion</h4>
             {scheduleEntries.length > 0 ? (
               <div className="space-y-3">
                 {scheduleEntries.map(([d, h]) => (
-                  <div key={d} className="flex justify-between items-center text-xs font-bold border-b border-gray-50 pb-2">
-                    <span className="text-gray-400 uppercase">{d}</span>
-                    <span className="text-gray-900">{h}</span>
+                  <div key={d} className="flex justify-between items-center text-xs font-bold border-b pb-2" style={{ borderColor: '#f9fafb' }}>
+                    <span className="uppercase" style={{ color: mutedColor }}>{d}</span>
+                    <span style={{ color: textColor }}>{h}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-400 italic font-medium">No hay horarios registrados.</p>
+              <p className="text-xs italic font-medium" style={{ color: mutedColor }}>No hay horarios registrados.</p>
             )}
           </div>
 
           {hasRatings && (
             <div className="lg:col-span-3 space-y-8 text-left">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Valoraciones</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: mutedColor }}>Valoraciones</h4>
               <div className="space-y-2">
                 <div className="flex gap-1 text-yellow-400">
                   {[1, 2, 3, 4, 5].map(i => <StarIcon key={i} className="w-4 h-4" filled={i <= Math.round(brand.rating || 0)} />)}
                 </div>
-                {typeof brand.rating === 'number' && <p className="text-2xl font-black text-gray-900 tracking-tight">{brand.rating.toFixed(1)}</p>}
-                {typeof brand.total_reviews === 'number' && <p className="text-[10px] font-bold text-gray-400 uppercase">{brand.total_reviews.toLocaleString()} Resenas de clientes</p>}
+                {typeof brand.rating === 'number' && <p className="text-2xl font-black tracking-tight" style={{ color: textColor }}>{brand.rating.toFixed(1)}</p>}
+                {typeof brand.total_reviews === 'number' && <p className="text-[10px] font-bold uppercase" style={{ color: mutedColor }}>{brand.total_reviews.toLocaleString()} Resenas de clientes</p>}
               </div>
             </div>
           )}
         </div>
 
-        <div className="pt-8 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
-          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest text-center md:text-left">© 2026 {brand.name}</p>
-          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest text-center md:text-right">
-            Powered by <a href={footerUrl || 'https://lookitry.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-colors text-gray-900">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+        <div className="pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6" style={{ borderColor: '#f9fafb' }}>
+          <p className="text-[9px] font-black uppercase tracking-widest text-center md:text-left" style={{ color: '#d1d5db' }}>© 2026 {brand.name}</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-center md:text-right" style={{ color: '#d1d5db' }}>
+            Powered by <a href={footerUrl || 'https://lookitry.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-colors" style={{ color: textColor }}>Look<span className="text-[#FF5C3A]">itry</span> IA</a>
           </p>
         </div>
       </div>
@@ -341,13 +370,13 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPrevi
     <div className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500 ${isPreview ? 'p-0 h-auto' : ''}`} style={{ '--primary': primary, '--secondary': secondary, '--secondary-10': secondary + '1a', '--secondary-20': secondary + '33', '--secondary-05': secondary + '0d' } as React.CSSProperties}>
       <ClassicHeader brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
       <ClassicHero brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} isPreview={isPreview} />
-      <ClassicSteps primaryColor={primary} />
-      <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} />
+      <ClassicSteps primaryColor={primary} secondaryColor={secondary} bgColor={brand.cover_bg_color || '#ffffff'} />
+      <ClassicProducts products={products} primaryColor={primary} secondaryColor={secondary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} />
 
       <section id="probador" className="py-20 px-4 md:px-6" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
         <div className="max-w-4xl mx-auto space-y-12 text-center">
           <div className="space-y-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--secondary)]">Probador Virtual Premium</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: secondary }}>Probador Virtual Premium</span>
             <h2 className="text-2xl md:text-4xl font-black text-white tracking-tighter uppercase italic">Experiencia Inteligente</h2>
           </div>
           <div className={isPreview ? 'overflow-hidden' : 'rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/5'}>
@@ -362,7 +391,7 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPrevi
         </div>
       </section>
 
-      <ClassicFooter brand={brand} primaryColor={primary} footerUrl={footerUrl} />
+      <ClassicFooter brand={brand} primaryColor={primary} secondaryColor={secondary} footerUrl={footerUrl} />
       {brand.whatsapp_contact && !isPreview && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
   );

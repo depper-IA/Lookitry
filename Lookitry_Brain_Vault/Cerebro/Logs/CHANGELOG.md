@@ -1,41 +1,31 @@
 # Changelog - Lookitry (AI Assisted)
 
-## [2026-04-10] - WYSIWYG Visual Editor for Mini-Landing
+## [2026-04-10] - Smart Dynamic Colors for Mini-Landing Templates
 
-### New Feature: Visual WYSIWYG Editor
+### Refactor: Dynamic Smart Color System
 
 **Description:**
-Implemented a real visual editor (WYSIWYG) for the Mini-Landing module that allows brands to edit their landing page elements directly on the preview with real-time updates.
-
-**Files Created:**
-- `frontend/src/components/wysiwyg/WYSIWYGEditor.tsx` - Core WYSIWYG system with context, editable elements, and toolbar
-- `frontend/src/components/wysiwyg/VisualEditor.tsx` - Visual mode components (EditableText, EditableColor, VisualModeToggle, VisualModeIndicator)
-- `frontend/src/components/wysiwyg/index.ts` - Clean export barrel file
-- `frontend/src/app/dashboard/mi-pagina/components/VisualPreview.tsx` - Preview wrapper with clickable edit zones
+Removed the WYSIWYG visual editor approach and instead implemented smart dynamic colors throughout all mini-landing templates. The system now automatically detects light vs dark backgrounds and applies appropriate text colors for optimal readability.
 
 **Files Modified:**
-- `frontend/src/app/dashboard/mi-pagina/page.tsx` - Integrated VisualEditorProvider, VisualModeToggle, VisualPreview, and handleVisualFieldChange
+- `frontend/src/components/mini-landing/shared.tsx` - Added utility functions for smart colors
+- `frontend/src/components/mini-landing/TemplateClassic.tsx` - Smart dynamic colors in Hero, Steps, Products, Footer
+- `frontend/src/components/mini-landing/TemplateEditorial.tsx` - Smart dynamic colors in Hero, Info sections
+- `frontend/src/components/mini-landing/TemplateModerno.tsx` - Smart dynamic colors in TrustBar, Products, Info sections
 
-**Features:**
-- Toggle button to activate "Modo Editor Visual" in the dashboard header
-- Floating toolbar indicator when visual mode is active
-- Clickable zones over the preview for editing:
-  - Slogan
-  - Brand description
-  - CTA button text
-  - Primary and secondary colors (with color picker)
-  - Social networks (Instagram, Facebook, TikTok, YouTube, X)
-  - City/location display
-- Real-time sync between visual editor and form panel
-- Enter to save, Escape to cancel editing
-- Visual feedback with hover indicators and active states
+**New Utility Functions in shared.tsx:**
+- `getLuminance(color)` - Calculate relative luminance of a color
+- `getContrastColor(color, darkColor, lightColor)` - Get contrasting text color (black/white based on background)
+- `getSmartMutedColor(color)` - Get muted/secondary text color based on background
+- `getSmartBorderColor(color)` - Get appropriate border color based on background
+- `getSmartOverlayColor(color)` - Get overlay color based on background
 
-**Technical Details:**
-- Used React Context for state management (WYSIWYGProvider, VisualEditorProvider)
-- Framer Motion for smooth animations
-- Bidirectional sync: visual edits update form state, form changes reflect in preview
-- Support for both text inputs and color pickers
-- Proper z-index layering for edit overlays
+**How It Works:**
+- Uses WCAG luminance formula to detect if background is light or dark
+- Light backgrounds → dark text (#111111), muted text (#6b7280)
+- Dark backgrounds → light text (#ffffff), muted text (rgba(255,255,255,0.72))
+- All templates now respect `cover_bg_color`, `header_color`, and `widget_bg_color` settings
+- Text colors automatically adapt for proper contrast and readability
 
 ---
 

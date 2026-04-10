@@ -12,6 +12,10 @@ import {
   CoverImage, 
   getCoverPresentation,
   getVisibleSocialEntries,
+  isDarkColor,
+  getSmartMutedColor,
+  getSmartBorderColor,
+  getContrastColor,
   YouTubeIcon, 
   XIcon, 
   InstagramIcon, 
@@ -59,17 +63,21 @@ function EditorialHeader({ brand, entries, socialIcons }: { brand: BrandData; en
 
 function EditorialHero({ brand }: { brand: BrandData }) {
   const { backgroundColor: coverBaseColor, imageOpacity } = getCoverPresentation(brand, '#111111');
+  const isBgDark = isDarkColor(coverBaseColor);
+  const textColor = isBgDark ? '#ffffff' : '#111111';
+  const mutedColor = getSmartMutedColor(coverBaseColor);
+  
   return (
     <section className="relative w-full h-[35vh] md:h-[50vh] flex items-center justify-center overflow-hidden" style={{ backgroundColor: coverBaseColor }}>
       {brand.cover_image_url && (
         <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover scale-105" style={{ opacity: imageOpacity }} />
       )}
       <div className="relative z-10 text-center px-6 max-w-4xl">
-        <h1 className="text-4xl md:text-7xl font-black text-white italic uppercase tracking-tighter drop-shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <h1 className="text-4xl md:text-7xl font-black italic uppercase tracking-tighter drop-shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-1000" style={{ color: textColor }}>
           {brand.name}
         </h1>
         {brand.slogan && (
-          <p className="text-gray-300 text-[10px] md:text-sm font-black uppercase tracking-[0.4em] mt-4 animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-300">
+          <p className="text-[10px] md:text-sm font-black uppercase tracking-[0.4em] mt-4 animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-300" style={{ color: mutedColor }}>
             {brand.slogan}
           </p>
         )}
@@ -103,7 +111,7 @@ function EditorialProductCard({ product, selected, primaryColor, onClick }: { pr
   );
 }
 
-function EditorialInfo({ brand }: { brand: BrandData }) {
+function EditorialInfo({ brand, secondaryColor }: { brand: BrandData; secondaryColor?: string }) {
   const DAYS_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   let scheduleEntries: [string, string][] = [];
   try {
@@ -112,23 +120,28 @@ function EditorialInfo({ brand }: { brand: BrandData }) {
       scheduleEntries = DAYS_ORDER.filter(d => raw[d] || raw[d.toLowerCase()]).map(d => [d, (raw[d] || raw[d.toLowerCase()]) as string]);
     }
   } catch(e) {}
+  
+  const bgColor = '#ffffff';
+  const textColor = '#111111';
+  const mutedColor = '#6b7280';
+  const accentColor = secondaryColor || '#FF5C3A';
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full">
       {/* IZQUIERDA: Información */}
-      <div className="p-6 md:p-10 bg-white rounded-[2rem] md:rounded-[3.5rem] border border-gray-100 shadow-sm space-y-6 md:space-y-8">
-        <div className="flex items-center gap-4 border-b border-gray-50 pb-6">
+      <div className="p-6 md:p-10 rounded-[2rem] md:rounded-[3.5rem] border shadow-sm space-y-6 md:space-y-8" style={{ backgroundColor: bgColor, borderColor: '#f3f4f6' }}>
+        <div className="flex items-center gap-4 border-b pb-6" style={{ borderColor: '#f9fafb' }}>
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
             <MapPinIcon className="w-5 h-5 md:w-6 md:h-6" />
           </div>
           <div>
-            <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-[var(--secondary)]">Ubicación</h4>
-            <p className="text-xs md:text-sm font-black text-gray-900 uppercase italic">Presencia Física</p>
+            <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em]" style={{ color: accentColor }}>Ubicación</h4>
+            <p className="text-xs md:text-sm font-black uppercase italic" style={{ color: textColor }}>Presencia Física</p>
           </div>
         </div>
         <div className="space-y-6">
           {brand.city_display && (
-            <p className="text-lg md:text-2xl font-black text-gray-900 uppercase italic tracking-tighter leading-none">{brand.city_display}</p>
+            <p className="text-lg md:text-2xl font-black uppercase italic tracking-tighter leading-none" style={{ color: textColor }}>{brand.city_display}</p>
           )}
           {brand.rating && (
             <div className="flex flex-col gap-2">
@@ -136,40 +149,40 @@ function EditorialInfo({ brand }: { brand: BrandData }) {
                 {[1,2,3,4,5].map(i => <StarIcon key={i} className="w-3.5 h-3.5 md:w-4 md:h-4" filled={i <= Math.round(brand.rating!)} />)}
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl md:text-3xl font-black text-gray-900 tracking-tighter">{brand.rating.toFixed(1)}</span>
-                <span className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest">/ {brand.total_reviews} reviews</span>
+                <span className="text-2xl md:text-3xl font-black tracking-tighter" style={{ color: textColor }}>{brand.rating.toFixed(1)}</span>
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest" style={{ color: mutedColor }}>/ {brand.total_reviews} reviews</span>
               </div>
             </div>
           )}
           {brand.national_shipping && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-gray-100">
-              <TruckIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-[var(--secondary)]" /> Envíos Nacionales
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest border" style={{ backgroundColor: '#f9fafb', color: textColor, borderColor: '#f3f4f6' }}>
+              <span style={{ color: accentColor }}><TruckIcon className="w-3.5 h-3.5 md:w-4 md:h-4" /></span> Envíos Nacionales
             </div>
           )}
         </div>
       </div>
 
       {/* DERECHA: Horarios */}
-      <div className="p-6 md:p-10 bg-white rounded-[2rem] md:rounded-[3.5rem] border border-gray-100 shadow-sm space-y-6 md:space-y-8">
-        <div className="flex items-center gap-4 border-b border-gray-50 pb-6">
+      <div className="p-6 md:p-10 rounded-[2rem] md:rounded-[3.5rem] border shadow-sm space-y-6 md:space-y-8" style={{ backgroundColor: bgColor, borderColor: '#f3f4f6' }}>
+        <div className="flex items-center gap-4 border-b pb-6" style={{ borderColor: '#f9fafb' }}>
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
             <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-12 0 9 9 0 0112 0z" /></svg>
           </div>
           <div>
-            <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-[var(--secondary)]">Disponibilidad</h4>
-            <p className="text-xs md:text-sm font-black text-gray-900 uppercase italic">Nuestros Horarios</p>
+            <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em]" style={{ color: accentColor }}>Disponibilidad</h4>
+            <p className="text-xs md:text-sm font-black uppercase italic" style={{ color: textColor }}>Nuestros Horarios</p>
           </div>
         </div>
         <div className="space-y-2 md:space-y-3">
           {scheduleEntries.length > 0 ? (
             scheduleEntries.map(([d, h]) => (
-              <div key={d} className="flex justify-between items-center text-[10px] md:text-xs border-b border-gray-50 pb-2 last:border-0 last:pb-0">
-                <span className="text-gray-400 font-black uppercase tracking-widest">{d}</span>
-                <span className={`font-black uppercase ${h.toLowerCase().includes('cerrado') ? 'text-red-500 italic' : 'text-gray-900'}`}>{h}</span>
+              <div key={d} className="flex justify-between items-center text-[10px] md:text-xs border-b pb-2 last:border-0 last:pb-0" style={{ borderColor: '#f9fafb' }}>
+                <span className="font-black uppercase tracking-widest" style={{ color: mutedColor }}>{d}</span>
+                <span className={`font-black uppercase ${h.toLowerCase().includes('cerrado') ? 'text-red-500 italic' : ''}`} style={{ color: h.toLowerCase().includes('cerrado') ? undefined : textColor }}>{h}</span>
               </div>
             ))
           ) : (
-            <p className="text-[10px] md:text-xs text-gray-400 italic font-medium uppercase tracking-widest">No hay horarios registrados.</p>
+            <p className="text-[10px] md:text-xs italic font-medium uppercase tracking-widest" style={{ color: mutedColor }}>No hay horarios registrados.</p>
           )}
         </div>
       </div>
@@ -258,7 +271,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
         </div>
 
         {/* Información y Horarios */}
-        <EditorialInfo brand={brand} />
+        <EditorialInfo brand={brand} secondaryColor={secondary} />
 
         {/* Descripción de marca */}
         <EditorialAbout brand={brand} primaryColor={primary} />
