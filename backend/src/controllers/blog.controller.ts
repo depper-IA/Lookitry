@@ -484,15 +484,27 @@ async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean;
       return { success: false, message: 'Hero image aún no está lista' };
     }
 
-    // 4. Si ya está publicado, no hacer nada
+    // 4. Si ya está publicado, verificar si necesita actualización (si llegaron más imágenes body)
     const { data: existingBlog } = await supabaseAdmin
       .from('blogs')
-      .select('slug')
+      .select('slug, content')
       .eq('topic_id', topicId)
       .maybeSingle();
 
     if (existingBlog) {
-      return { success: true, message: 'Ya publicado', slug: existingBlog.slug };
+      // Verificar si el HTML actual ya tiene imágenes body (si no, re-generar)
+      const currentContent = existingBlog.content || '';
+      const hasBodyImagesInHtml = (images.imagen_body1_url && currentContent.includes(images.imagen_body1_url)) ||
+                                 (images.imagen_body2_url && currentContent.includes(images.imagen_body2_url)) ||
+                                 (images.imagen_body3_url && currentContent.includes(images.imagen_body3_url)) ||
+                                 (images.imagen_body4_url && currentContent.includes(images.imagen_body4_url));
+
+      if (hasBodyImagesInHtml) {
+        return { success: true, message: 'Ya publicado con body images', slug: existingBlog.slug };
+      }
+
+      // Re-generar HTML con las nuevas imágenes body
+      console.log(`[Blog AutoAssemble] Artículo existe pero faltan body images. Re-generando...`);
     }
 
     // 5. Obtener CTA templates
