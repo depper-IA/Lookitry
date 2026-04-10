@@ -757,10 +757,33 @@ export const blogController = {
         return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación' });
       }
 
-      const { topic_id } = req.body;
+      let { topic_id } = req.body;
 
       if (!topic_id) {
         return res.status(400).json({ error: 'BAD_REQUEST', message: 'topic_id es requerido' });
+      }
+
+      // Limpiar topic_id por si llega con espacios o caracteres raros
+      topic_id = String(topic_id).trim();
+      console.log(`[Blog] Intentando ensamblar artículo para topic_id: "${topic_id}"`);
+
+
+      //0. Verificar idempotencia: Si ya está publicado, devolver 200 y no procesar de nuevo
+      const { data: alreadyPublished } = await supabaseAdmin
+        .from('blogs')
+        .select('*')
+        .eq('topic_id', topic_id)
+        .maybeSingle();
+
+      if (alreadyPublished) {
+         console.log(`[Blog] Reintento de ensamblaje ignorado. El topic_id ${topic_id} ya estaba publicado.`);
+         return res.status(200).json({
+           success: true,
+           message: 'El artículo ya se encontraba ensamblado y publicado previamente',
+           post: alreadyPublished,
+           slug: alreadyPublished.slug,
+           url: `https://lookitry.com/blog/${alreadyPublished.slug}`
+         });
       }
 
       //1. Obtener draft article (con campos estructurados)
@@ -771,6 +794,24 @@ export const blogController = {
         .maybeSingle();
 
       if (draftError || !draft) {
+        // Antes de dar 404, verificar si el topic existe. Si existe pero no hay draft, es que aún se está generando.
+        const { data: topicObj, error: topicFindError } = await supabaseAdmin
+          .from('blog_topics')
+          .select('id, status')
+          .eq('id', topic_id)
+          .maybeSingle();
+
+        console.log(`[Blog] Búsqueda de topic fallback para "${topic_id}":`, { found: !!topicObj, status: topicObj?.status, error: topicFindError });
+
+        if (topicObj) {
+           return res.status(425).json({ 
+             error: 'TOPIC_NOT_READY', 
+             message: 'El borrador del artículo aún no ha sido generado por la IA. Reintentar en unos segundos.',
+             topic_status: topicObj.status
+           });
+        }
+
+
         return res.status(404).json({ error: 'NOT_FOUND', message: 'Draft no encontrado para este topic_id' });
       }
 
@@ -819,41 +860,45 @@ export const blogController = {
       //7. Crear slug único
       const slug = await buildUniqueBlogSlug((draft as BlogDraftArticle).title || `article-${topic_id}`);
 
-      //8. Verificar duplicado por topic_id
-      const { data: existingPost } = await supabaseAdmin
-        .from('blogs')
-        .select('id')
-        .eq('topic_id', topic_id)
-        .maybeSingle();
+      //9. Insertar artículo final (usando UPSERT para máxima resiliencia)
+      const insertData = {
+        title: (draft as BlogDraftArticle).title,
+        content: finalHtml,
+        excerpt: (draft as BlogDraftArticle).excerpt,
+        meta_description: (draft as BlogDraftArticle).meta_description || (draft as BlogDraftArticle).excerpt,
+        featured_image: images.imagen_hero_url,
+        category_id: categoryId,
+        tags: (draft as BlogDraftArticle).tags,
+        toc_items: (draft as BlogDraftArticle).toc_items,
+        status: 'published',
+        slug,
+        topic_id: topic_id,
+        published_at: new Date().toISOString(),
+      };
 
-      if (existingPost) {
-        return res.status(409).json({
-          error: 'ALREADY_PUBLISHED',
-          message: 'Este topic_id ya fue publicado'
-        });
-      }
-
-      //9. Insertar artículo final
       const { data: publishedPost, error: publishError } = await supabaseAdmin
         .from('blogs')
-        .insert({
-          title: (draft as BlogDraftArticle).title,
-          content: finalHtml,
-          excerpt: (draft as BlogDraftArticle).excerpt,
-          meta_description: (draft as BlogDraftArticle).meta_description || (draft as BlogDraftArticle).excerpt,
-          featured_image: images.imagen_hero_url,
-          category_id: categoryId,
-          tags: (draft as BlogDraftArticle).tags,
-          toc_items: (draft as BlogDraftArticle).toc_items,
-          status: 'published',
-          slug,
-          topic_id: topic_id,
-          published_at: new Date().toISOString(),
-        })
+        .upsert(insertData, { onConflict: 'topic_id' })
         .select()
         .maybeSingle();
 
-      if (publishError) throw publishError;
+      if (publishError) {
+        // Fallback por si el slug choca pero el topic_id es nuevo (colisión de slug real)
+        if (publishError.code === '23505' && publishError.message?.includes('blogs_slug_key')) {
+           console.warn(`[Blog] Colisión de slug detectada. Reintentando con slug aleatorio.`);
+           insertData.slug = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
+           const { data: retryPost, error: retryError } = await supabaseAdmin
+             .from('blogs')
+             .upsert(insertData, { onConflict: 'topic_id' })
+             .select()
+             .maybeSingle();
+
+           if (retryError) throw retryError;
+           (publishedPost as any) = retryPost;
+        } else {
+           throw publishError;
+        }
+      }
 
       //10. Marcar topic como published
       await supabaseAdmin
