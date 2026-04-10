@@ -194,7 +194,7 @@ export default function UsagePage() {
                 Expandir tu capacidad?
               </h3>
               <p className="max-w-md text-xs font-bold uppercase leading-relaxed tracking-tight text-[var(--text-muted)]">
-                Estas al limite de tu capacidad operativa. Evoluciona a <span className="text-[var(--text-primary)]">Plan PRO</span> para obtener <span className="text-[#FF5C3A]">1,200 generaciones</span> y <span className="text-[var(--text-primary)]">15 productos</span>.
+                Estas al limite de tu capacidad operativa. Evoluciona a <span className="text-[var(--text-primary)]">Plan PRO</span> para obtener <span className="text-[#FF5C3A]">1,200 fotos</span> y <span className="text-[var(--text-primary)]">15 productos</span>.
               </p>
             </div>
             <button

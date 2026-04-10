@@ -412,7 +412,7 @@ export default function GenerationsPage() {
           <div className="w-28 h-28 bg-[var(--bg-hover)] rounded-full flex items-center justify-center mx-auto mb-10 relative border border-[var(--border-color)]">
             <Shirt size={48} className="text-[var(--text-muted)] opacity-20" />
           </div>
-          <h3 className="text-3xl font-[950] uppercase italic text-[var(--text-primary)] mb-4 tracking-tighter">Sin Generaciones</h3>
+          <h3 className="text-3xl font-[950] uppercase italic text-[var(--text-primary)] mb-4 tracking-tighter">Sin fotos</h3>
           <p className="text-[12px] text-[var(--text-muted)] font-black uppercase tracking-[0.3em] opacity-40 max-w-xs mx-auto leading-relaxed">Aún no has realizado pruebas con IA. Los resultados aparecerán aquí.</p>
         </div>
       ) : (
@@ -453,10 +453,10 @@ export default function GenerationsPage() {
         isOpen={confirmDelete.isOpen}
         onClose={() => setConfirmDelete({ isOpen: false })}
         onConfirm={confirmDelete.bulk ? handleConfirmDeleteBulk : handleConfirmDeleteOne}
-        title={confirmDelete.bulk ? 'Eliminar Generaciones' : 'Eliminar Generación'}
+        title={confirmDelete.bulk ? 'Eliminar fotos' : 'Eliminar foto'}
         message={confirmDelete.bulk
-          ? `¿Estás seguro de que deseas eliminar permanentemente estas ${selected.size} generaciones? Esta acción no se puede deshacer.`
-          : '¿Estás seguro de que deseas eliminar permanentemente esta generación? Esta acción no se puede deshacer.'
+          ? `¿Estás seguro de que deseas eliminar permanentemente estas ${selected.size} fotos? Esta acción no se puede deshacer.`
+          : '¿Estás seguro de que deseas eliminar permanentemente esta foto? Esta acción no se puede deshacer.'
         }
         confirmLabel={deleting ? 'Eliminando...' : 'Eliminar permanentemente'}
         isLoading={deleting}

@@ -31,9 +31,9 @@ const navigation = [
   { name: 'Probador y diseño', href: '/dashboard/settings', icon: SettingsIcon },
   { name: 'Conectar tienda', href: '/dashboard/integrations', icon: EmbedIcon },
   { name: 'Consumo', href: '/dashboard/usage', icon: UsageIcon },
-  { name: 'Suscripción', href: '/dashboard/subscription', icon: SubscriptionIcon },
+  { name: 'Tu plan', href: '/dashboard/subscription', icon: SubscriptionIcon },
   { name: 'Resultados', href: '/dashboard/analytics', icon: AnalyticsIcon },
-  { name: 'Referidos', href: '/dashboard/referral', icon: GiftIcon },
+  { name: 'Recomienda y gana', href: '/dashboard/referral', icon: GiftIcon },
   { name: 'Soporte', href: '/dashboard/support', icon: SupportIcon },
   { name: 'Perfil', href: '/dashboard/profile', icon: ProfileIcon },
 ];

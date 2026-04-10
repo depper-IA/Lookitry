@@ -128,7 +128,7 @@ export default function AnalyticsPage() {
       {/* ══ KPI GRID ══ */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {[
-          { label: 'Generaciones', value: analytics.totalGenerations, sub: 'Pruebas totales', icon: Zap, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
+          { label: 'Fotos creadas', value: analytics.totalGenerations, sub: 'fotos totales', icon: Zap, color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
           { label: 'Exitosas', value: analytics.successfulGenerations, sub: 'Renderizado OK', icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
           { label: 'Fallidas', value: analytics.failedGenerations, sub: 'Revisión técnica', icon: XCircle, color: 'text-rose-400', bg: 'bg-rose-400/10' },
           { label: 'Éxito IA', value: `${analytics.successRate.toFixed(1)}%`, sub: 'Precisión media', icon: Sparkles, color: 'text-[#FF5C3A]', bg: 'bg-[#FF5C3A]/10' },

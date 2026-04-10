@@ -267,7 +267,7 @@ export default function CheckoutLandingPage() {
 
           {/* SECCIÓN 3: Pago */}
           <div className="p-6 rounded-3xl border space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-            <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Paso {isTrial ? '3' : '2'}: Método de pago</h3>
+            <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Paso {isTrial ? '3' : '2'}: Cómo pagaste</h3>
             <div className="flex gap-3">
               <button
                 onClick={() => setPaymentMethod('wompi')}

@@ -48,7 +48,7 @@ function isVisitorRegistrationReference(reference: string): boolean {
  */
 export async function registerPostPayment(req: AuthRequest, res: Response) {
   try {
-    const { contact_name, name, slug, password, ref: bodyRef, reference, fingerprint, method, orderId } = req.body;
+    const { contact_name, name, slug, password, ref: bodyRef, reference, fingerprint, method, orderId, customSuffix } = req.body;
     const ref = bodyRef || reference;
 
     // 1. Validar que ref esté presente
@@ -199,13 +199,22 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
     } else {
       // 5.2 Si no hay sesión, crear la cuenta (vía registerPostPayment del servicio que es más robusto)
       // SECURITY: Always use the email from pending_registrations — never allow override.
-      // The email was set during checkout and must match the payment.
+      // The email was set durante checkout and must match the payment.
       const emailToUse = pending.email;
+
+      // Generar slug único con sufijo personalizado si se proporciona
+      let finalSlug: string;
+      try {
+        finalSlug = await generateUniqueSlug(slug, customSuffix);
+      } catch (error: any) {
+        console.error('[PostPayment] Error generando slug único:', error);
+        return res.status(400).json({ error: 'SLUG_GENERATION_ERROR', message: error.message || 'Error al generar el slug único' });
+      }
 
       result = await authService.registerPostPayment({
         contact_name: contact_name || name,
         name,
-        slug,
+        slug: finalSlug,
         email: emailToUse,
         password,
         ref,
@@ -295,6 +304,84 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
     console.error('[PostPayment] Error en registro:', error);
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al crear la cuenta') });
   }
+}
+
+function normalizeSlugPart(part: string): string {
+  return part
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function ensureSlugLength(slug: string, maxLength: number = 50): string {
+  if (slug.length <= maxLength) return slug;
+  // Truncar manteniendo la parte más importante (inicio) y eliminando desde el final
+  // Pero también debemos asegurar que no termine con guion
+  let truncated = slug.substring(0, maxLength);
+  // Si el último carácter es guion, eliminarlo
+  if (truncated.endsWith('-')) {
+    truncated = truncated.substring(0, truncated.length - 1);
+  }
+  return truncated;
+}
+
+async function generateUniqueSlug(baseSlug: string, customSuffix?: string): Promise<string> {
+  // Normalizar baseSlug y limitar longitud base para dejar espacio para sufijos
+  let normalizedBase = normalizeSlugPart(baseSlug);
+  if (!normalizedBase) {
+    throw new Error('Slug base inválido');
+  }
+  // Truncar base a 30 caracteres para dejar espacio para sufijos (max total 50)
+  normalizedBase = ensureSlugLength(normalizedBase, 30);
+
+  let candidate = normalizedBase;
+  
+  // Aplicar sufijo personalizado si existe
+  if (customSuffix && customSuffix.trim() !== '') {
+    let normalizedSuffix = normalizeSlugPart(customSuffix.trim());
+    if (normalizedSuffix) {
+      // Limitar sufijo a 15 caracteres
+      normalizedSuffix = ensureSlugLength(normalizedSuffix, 15);
+      candidate = `${normalizedBase}-${normalizedSuffix}`;
+    }
+  }
+
+  // Asegurar longitud máxima total de 50 antes de verificar existencia
+  candidate = ensureSlugLength(candidate, 50);
+
+  // Función auxiliar para verificar existencia de slug
+  async function slugExists(slug: string): Promise<boolean> {
+    const { data } = await supabaseAdmin
+      .from('brands')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle();
+    return !!data;
+  }
+
+  // Verificar si el candidato ya existe
+  if (!(await slugExists(candidate))) {
+    return candidate;
+  }
+
+  // Si existe, agregar número aleatorio 100-999
+  const randomSuffix = Math.floor(100 + Math.random() * 900);
+  let candidateWithRandom = `${candidate}-${randomSuffix}`;
+  candidateWithRandom = ensureSlugLength(candidateWithRandom, 50);
+  
+  if (!(await slugExists(candidateWithRandom))) {
+    return candidateWithRandom;
+  }
+
+  // Si aún existe (colisión extrema), agregar timestamp de 6 dígitos
+  const timestamp = Date.now().toString().slice(-6);
+  let candidateWithTimestamp = `${candidateWithRandom}-${timestamp}`;
+  candidateWithTimestamp = ensureSlugLength(candidateWithTimestamp, 50);
+  
+  // Si después del timestamp sigue existiendo (casi imposible), devolver con timestamp único
+  return candidateWithTimestamp;
 }
 
 /**

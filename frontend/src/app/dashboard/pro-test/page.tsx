@@ -124,9 +124,9 @@ export default function DashboardProTest() {
 
       {/* ———— BUSINESS STATS ———— */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-         <StatCard title="Total Generaciones" value={analytics?.totalGenerations || 0} unit="Pruebas" icon={Zap} />
+          <StatCard title="Total de fotos" value={analytics?.totalGenerations || 0} unit="fotos" icon={Zap} />
          <StatCard title="Tasa Conversión" value="2.4" unit="%" icon={TrendingUp} color="#10b981" />
-         <StatCard title="Créditos Extra" value={subscriptionInfo?.brand?.extraCreditsBalance || 0} unit="Disponibles" icon={CreditCard} color="#3b82f6" />
+          <StatCard title="Fotos extras" value={subscriptionInfo?.brand?.extraCreditsBalance || 0} unit="disponibles" icon={CreditCard} color="#3b82f6" />
          <StatCard title="Productos Activos" value={brand?.plan === 'PRO' ? '15' : '5'} unit="Max" icon={Package} color="#f59e0b" />
       </div>
 
@@ -179,7 +179,7 @@ export default function DashboardProTest() {
                  <span className="text-[10px] font-black uppercase tracking-widest">Plan Vigente</span>
               </div>
               <h3 className="text-4xl font-black tracking-tighter mb-2 uppercase font-jakarta">{brand?.plan || 'Básico'}</h3>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-10">Suscripción Activa</p>
+               <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-10">Plan activo</p>
               
               <div className="p-6 rounded-2xl bg-black/20 backdrop-blur-md mb-8">
                  <p className="text-[9px] font-black uppercase tracking-widest text-white/50 mb-1">Próximo Cobro</p>
