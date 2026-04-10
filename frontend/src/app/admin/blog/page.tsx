@@ -49,7 +49,9 @@ function sanitizeExecutionMessage(message: string | null | undefined, status: 'e
   }
 
   if (status === 'success') {
-    return 'La ejecución terminó correctamente. El panel ya refleja el resultado más reciente del flujo editorial.';
+    return (normalized && !looksTechnical) 
+      ? normalized 
+      : 'La ejecución terminó correctamente. El panel ya refleja el resultado más reciente del flujo editorial.';
   }
 
   if (status === 'running') {
@@ -262,19 +264,9 @@ export default function AdminBlogPage() {
         return;
       }
 
-      const newPost = latestPosts.find((post) => {
-        const createdAtMs = new Date(post.created_at).getTime();
-        return !baselinePostIds.has(post.id) && createdAtMs >= startedAtMs;
-      });
-
-      if (newPost) {
-        setExecutionNotice('');
-        setError('');
-        setTriggerMessage(`Artículo generado correctamente: ${newPost.title}`);
-        setIsMonitoringRun(false);
-        setPendingExecutionStartedAt(null);
-        return;
-      }
+      // Ya no cortamos la ejecución si detectamos un post nuevo aquí,
+      // porque n8n continúa con la generación de imágenes y queremos 
+      // esperar al `success` final para mostrar el "Generado".
     }
 
     setError('');
@@ -339,23 +331,34 @@ export default function AdminBlogPage() {
 
   const getStepStatus = (stepSearch: string) => {
     const msg = executionMessage.toLowerCase();
+    
+    // Si la ejecución terminó con éxito, todos los pasos previos están completados
+    if (executionStatus === 'success') return 'completed';
+    
     if (executionStatus === 'error' && msg.includes(stepSearch)) return 'error';
-    if (msg.includes('finalizado') || msg.includes('terminado') || msg.includes('completado')) return 'completed';
-    if (msg.includes(stepSearch)) return 'current';
+    
+    // Detección de paso actual o completado
+    if (msg.includes(stepSearch)) {
+      if (msg.includes('finalizado') || msg.includes('terminado') || msg.includes('completado')) {
+        return 'completed';
+      }
+      return 'current';
+    }
     
     // Si ya pasamos este paso basado en mensajes posteriores
     const steps = ['investigando', 'redactando', 'generando imágenes'];
     const currentIdx = steps.findIndex(s => msg.includes(s));
     const stepIdx = steps.indexOf(stepSearch);
+    
     if (currentIdx > stepIdx && currentIdx !== -1) return 'completed';
     
     return 'pending';
   };
 
   const editorialSteps = [
-    { key: 'investigando', label: 'Investigando', icon: Search },
-    { key: 'redactando', label: 'Redactando', icon: FileText },
-    { key: 'generando imágenes', label: 'Imágenes IA', icon: ImageIcon },
+    { key: 'investigando', label: 'Investigando', icon: Search, color: 'text-indigo-500', bg: 'bg-indigo-500/5', border: 'border-indigo-500/20' },
+    { key: 'redactando', label: 'Redactando', icon: FileText, color: 'text-amber-500', bg: 'bg-amber-500/5', border: 'border-amber-500/20' },
+    { key: 'generando imágenes', label: 'Imágenes IA', icon: ImageIcon, color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/5', border: 'border-fuchsia-500/20' },
   ];
 
   const postsPerPage = 6;
@@ -439,22 +442,29 @@ export default function AdminBlogPage() {
                       key={step.key}
                       className={`relative flex items-center gap-3 p-4 rounded-2xl border transition-all duration-500 ${
                         status === 'completed' ? 'bg-emerald-500/5 border-emerald-500/20 opacity-100 scale-100' :
-                        status === 'current' ? 'bg-[var(--accent)]/5 border-[var(--accent)]/40 shadow-lg shadow-[var(--accent)]/5 scale-[1.02]' :
+                        status === 'error' ? 'bg-red-500/5 border-red-500/20 opacity-100' :
+                        status === 'current' ? `${step.bg} ${step.border} shadow-lg shadow-black/5 scale-[1.02] active-pulse` :
                         'bg-black/5 dark:bg-white/5 border-transparent opacity-30 scale-100'
                       }`}
                     >
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
                         status === 'completed' ? 'text-emerald-500' :
-                        status === 'current' ? 'text-[var(--accent)]' :
+                        status === 'error' ? 'text-red-500' :
+                        status === 'current' ? step.color :
                         'text-zinc-500'
                       }`}>
                         {status === 'current' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Icon className="w-5 h-5" />}
                       </div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${
+                        status === 'current' ? step.color : 'text-[var(--text-primary)]'
+                      }`}>
                         {step.label}
                       </span>
                       {status === 'completed' && (
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 absolute top-2 right-2" />
+                      )}
+                      {status === 'error' && (
+                        <AlertCircle className="w-3.5 h-3.5 text-red-500 absolute top-2 right-2" />
                       )}
                     </div>
                   );
