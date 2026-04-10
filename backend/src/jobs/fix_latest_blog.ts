@@ -1,3 +1,25 @@
+/**
+ * ⚠️ DEPRECATED/OBSOLETE SCRIPT ⚠️
+ * 
+ * ESTE SCRIPT NO DEBE EJECUTARSE SOBRE ARTÍCULOS GENERADOS POR generateArticleHTML().
+ * 
+ * RAZÓN: Este script fue diseñado para modernizar artículos HTML antiguos (pre-2026).
+ * Los artículos nuevos generados por blog.controller.ts → generateArticleHTML() YA tienen:
+ *   - Drop-caps correctos (solo en el primer párrafo del artículo)
+ *   - CTAs inline en las posiciones correctas
+ *   - Interlinking blocks correctos
+ * 
+ * Si se ejecuta sobre artículos nuevos, CAUSA:
+ *   - Drop-caps duplicados (el regex de drop-cap captura TODOS los section[0] paragraphs)
+ *   - CTAs fragmentados/huerfanos (por conflicto de inserciones)
+ *   - HTML inválido con elementos huérfanos
+ * 
+ * ÚNICO USO VÁLIDO: Ejecutar UNA SOLA VEZ sobre artículos muy antiguos que NO fueron
+ * generados por generateArticleHTML() y que necesitan modernización de estilos.
+ * 
+ * Para limpiar artículos duplicados en producción, usar script de cleanup específico.
+ */
+
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -6,6 +28,15 @@ import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!);
+
+// Early exit if run accidentally - prevents data corruption
+const LEGACY_MODE_ONLY = false; // Set to true ONLY when specifically cleaning old pre-2026 articles
+if (!LEGACY_MODE_ONLY) {
+  console.error('❌ fix_latest_blog.ts is DEPRECATED and should not be run.');
+  console.error('   This script is kept for historical reference only.');
+  console.error('   For cleaning articles, use a targeted cleanup script instead.');
+  process.exit(1);
+}
 
 async function main() {
   const { data: blogs, error } = await supabase

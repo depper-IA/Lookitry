@@ -1,5 +1,50 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-10] - Fix Blog: Imágenes Body + Emojis + Categorías
+
+### Base de Datos - Limpieza Blog
+- **Eliminados artículos duplicados**: Limpiados todos los registros de `blogs`, `blog_topic_images`, `blog_draft_articles`
+- **Topics reseteados**: Los 34 topics están en estado `pending` para reprocesamiento
+- **Categorías deduplicadas**: Eliminadas categorías duplicadas por mayúsculas/minúsculas:
+  - "Moda y Estilo" (duplicado) → solo "Moda y estilo"
+  - "Negocios y SaaS" (duplicado) → solo "Negocios y saas"
+
+### Backend - blog.controller.ts
+
+### Backend - blog.controller.ts
+- **Fix normalización image_position**: Ahora soporta tanto números (1, 2, 3, 4) como strings (`body_1`, `body1`, `body_2`, etc.) para la posición de imágenes en secciones.
+- **Regex de parseo**: Usa expresión regular `/^body_?(\d+)$/i` para extraer el número de `body_1`, `body_2`, etc.
+- **Interfaz Section actualizada**: `image_position` ahora acepta `number | string`.
+- **Eliminación de emojis en HTML generado**: Reemplazados todos los emojis (✦, 📊, 💡, ⚠️, 📚) por SVGs inline siguiendo la regla `REGLAS_IMPORTANTES.md`:
+  - Bullets de lista: ✦ → SVG diamante
+  - Callout icons: 📊/💡/⚠️ → SVGs de lucide (bar-chart, lightbulb, alert-triangle)
+  - Interlinking header: 📚 → SVG book
+
+## [2026-04-10] - Fix Blog: Prevención de Duplicación y Cleanup de HTML
+
+### Backend - blog.controller.ts
+- **Fix drop-cap duplicado**: La función `generateArticleHTML()` ahora usa un flag `dropCapApplied` para asegurar que SOLO el primer párrafo del artículo completo reciba el drop-cap. Antes se aplicaba a `i === 0 && pIdx === 0` pero si había mayúsculas en párrafos siguientes de la sección 1, el script `fix_latest_blog.ts` podía duplicarlo.
+- **Mejora validación drop-cap**: Ahora verifica que el primer caracter sea una letra válida antes de aplicar el drop-cap, y fuerza mayúscula con `toUpperCase()`.
+- **Defensa contra ejecución doble**: Si `generateArticleHTML()` se llama dos veces sobre el mismo artículo, el flag previene duplicación.
+
+### Backend - fix_latest_blog.ts (DEPRECATED)
+- **Script marcado como OBSOLETO**: El script `fix_latest_blog.ts` ahora tiene un header de advertencia y un `early exit (process.exit(1))` que evita que se ejecute accidentalmente sobre artículos nuevos.
+- **Razón**: Este script fue diseñado para modernizar artículos HTML antiguos (pre-2026). Si se ejecuta sobre artículos generados por `generateArticleHTML()` causa drop-caps duplicados y CTAs huérfanos.
+
+### Backend - cleanup_blog_html.ts (NUEVO)
+- **Script de cleanup creado**: Nuevo script en `backend/src/jobs/cleanup_blog_html.ts` para limpiar artículos existentes con HTML duplicado.
+- **Funcionalidades**:
+  - Detecta y remueve drop-caps duplicados (solo mantiene el primero)
+  - Detecta y remueve CTAs huérfanos (elementos h3+p+a sin div contenedor)
+  - Verifica estado antes y después del cleanup
+- **Uso**: Artículos pre-existentes que fueron procesados por `fix_latest_blog.ts` y quedó HTML corrupto.
+
+### Producción - Artículos Limpiados
+- `estrategias-clave-para-impulsar-las-ventas-en-moda-digital-colombiana-2`: 
+  - Drop-caps reducidos de 3 a 1
+  - CTAs huérfanos (3) removidos
+  - Tamaño de HTML reducido de 32,055 a 29,621 bytes
+
 ## [2026-04-09] - Fix Blog: Duplicación de Contenido y Manejo de Imágenes
 
 ### Backend - blog.controller.ts

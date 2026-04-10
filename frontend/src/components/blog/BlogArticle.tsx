@@ -153,7 +153,7 @@ export function TableOfContents({ items, className }: { items: TocItem[]; classN
   if (!items || items.length === 0) return null;
 
   return (
-    <nav className={cn("xl:sticky xl:top-24", className)}>
+    <nav className={cn(className)}>
       {/* Mobile Toggle */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
@@ -1055,39 +1055,7 @@ export default function BlogArticle({
           object-fit: cover;
         }
 
-        /* Table of Contents (sidebar) */
-        .blog-toc {
-          position: sticky;
-          top: 100px;
-          padding: 20px;
-          background: #141414;
-          border-radius: 12px;
-          border: 1px solid rgba(255,255,255,0.05);
-        }
-        .blog-toc h4 {
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: #666;
-          margin: 0 0 16px 0;
-        }
-        .blog-toc ul {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
-        .blog-toc li {
-          margin-bottom: 8px;
-        }
-        .blog-toc a {
-          color: #999;
-          text-decoration: none;
-          font-size: 14px;
-          transition: color 0.2s;
-        }
-        .blog-toc a:hover {
-          color: #FF5C3A;
-        }
+
         
         /* Responsive adjustments */
         @media (max-width: 768px) {

@@ -85,7 +85,7 @@ interface Section {
   title: string;
   paragraphs: string[];
   callout: { type: 'stat' | 'tip' | 'warning'; text: string } | null;
-  image_position?: number;
+  image_position?: number | string; // number (1-4) or string ("body_1", "body1", "hero")
 }
 
 interface Faq {
@@ -183,6 +183,9 @@ function generateArticleHTML(
     images.imagen_body4_url
   ].filter(Boolean) as string[];
 
+  // Track state across the entire article generation to prevent duplication
+  let dropCapApplied = false;
+
   //Generar sections HTML
   let sectionsHtml = '';
   if (sections && sections.length > 0) {
@@ -223,7 +226,11 @@ function generateArticleHTML(
                 const content = isBullet ? trimmed.substring(2) : trimmed.replace(/^\d+\.\s/, '');
                 if (listType === 'ul') {
                   listHtml += `<li style="margin-bottom: 0.8rem; position: relative; padding-left: 1.5rem;">
-                    <span style="position: absolute; left: 0; color: #FF5C3A;">✦</span>
+                    <span style="position: absolute; left: 0; color: #FF5C3A; display: flex; align-items: center;">
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 0L6.5 3.5L10 5L6.5 6.5L5 10L3.5 6.5L0 5L3.5 3.5L5 0Z" fill="currentColor"/>
+                      </svg>
+                    </span>
                     ${content}
                   </li>`;
                 } else {
@@ -245,11 +252,16 @@ function generateArticleHTML(
           // 2. Parse bold text
           para = para.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #fff; font-size: 1.05em;">$1</strong>');
 
-          // 3. Drop Cap for the VERY first paragraph of the article
-          if (i === 0 && pIdx === 0 && !para.startsWith('<')) {
+          // 3. Drop Cap ONLY for the first paragraph of the ENTIRE article (never duplicated)
+          // Use dropCapApplied flag to ensure it only happens once, even if function is called twice
+          if (!dropCapApplied && !para.startsWith('<') && para.length > 0) {
             const firstLetter = para.charAt(0);
-            const rest = para.slice(1);
-            para = `<span class="drop-cap" style="float: left; font-size: 4rem; line-height: 0.8; font-weight: 800; color: #FF5C3A; margin-right: 0.8rem; margin-top: 0.5rem; text-shadow: 2px 2px 0px rgba(255,92,58,0.2);">${firstLetter}</span>${rest}`;
+            // Only apply drop-cap if the first character is a letter (will be capitalized anyway)
+            if (/[a-zA-ZáéíóúñÁÉÍÓÚÑ]/.test(firstLetter)) {
+              const rest = para.slice(1);
+              para = `<span class="drop-cap" style="float: left; font-size: 4rem; line-height: 0.8; font-weight: 800; color: #FF5C3A; margin-right: 0.8rem; margin-top: 0.5rem; text-shadow: 2px 2px 0px rgba(255,92,58,0.2);">${firstLetter.toUpperCase()}</span>${rest}`;
+              dropCapApplied = true;
+            }
           }
 
           // Render paragraph (if not already wrapped in block tags)
@@ -269,19 +281,39 @@ function generateArticleHTML(
             ? 'background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981;'
             : 'background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b;';
 
-        const calloutIcon = section.callout.type === 'stat' ? '📊' : section.callout.type === 'tip' ? '💡' : '⚠️';
+        const calloutIcons: Record<string, string> = {
+          stat: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`,
+          tip: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`,
+          warning: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`
+        };
+        const calloutIcon = calloutIcons[section.callout.type] || calloutIcons.tip;
 
         sectionsHtml += `<div class="blog-callout" style="${calloutStyle} padding: 1.2rem 1.5rem; border-radius: 0 8px 8px 0; margin: 2rem 0; font-style: italic; font-weight: 500; display: flex; gap: 1rem; align-items: flex-start;">
-          <span style="font-size: 1.5rem;">${calloutIcon}</span>
+          <span style="font-size: 1.5rem; display: flex; align-items: center;">${calloutIcon}</span>
           <div>${section.callout.text}</div>
         </div>`;
       }
 
       // Inject Body image robustly
       let imgUrl: string | null = null;
-      const imgPos = Number(section.image_position);
+      
+      // Normalize image_position: "body_1" -> 1, "body_2" -> 2, "1" -> 1, etc.
+      let imgPos: number | null = null;
+      if (section.image_position !== undefined) {
+        if (typeof section.image_position === 'number') {
+          imgPos = section.image_position;
+        } else if (typeof section.image_position === 'string') {
+          // Handle "body_1", "body_2", "hero", etc.
+          const match = section.image_position.match(/^body_?(\d+)$/i);
+          if (match) {
+            imgPos = parseInt(match[1], 10);
+          } else if (/^\d+$/.test(section.image_position)) {
+            imgPos = parseInt(section.image_position, 10);
+          }
+        }
+      }
 
-      if (imgPos >= 1 && imgPos <= 4) {
+      if (imgPos !== null && imgPos >= 1 && imgPos <= 4) {
         if (imgPos === 1) imgUrl = images.imagen_body1_url;
         else if (imgPos === 2) imgUrl = images.imagen_body2_url;
         else if (imgPos === 3) imgUrl = images.imagen_body3_url;
@@ -308,10 +340,11 @@ function generateArticleHTML(
 
       // SEO Interlinking block after Section #2
       if (interlinkPosts.length > 0 && i === 1) {
+        const bookIconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`;
         sectionsHtml += `
         <div class="blog-interlink-box" style="background: rgba(255, 92, 58, 0.05); border-left: 4px solid #FF5C3A; padding: 1.5rem; margin: 3rem 0; border-radius: 0 8px 8px 0;">
           <h3 style="margin-top: 0; color: #FF5C3A; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
-            📚 Lectura Recomendada
+            ${bookIconSvg} Lectura Recomendada
           </h3>
           <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc;">
             ${interlinkPosts.map(p => `<li style="margin-bottom: 0.8rem;"><a href="/blog/${p.slug}" style="color: #fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.3); text-underline-offset: 4px; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='#FF5C3A'; this.style.textDecorationColor='#FF5C3A'" onmouseout="this.style.color='#fff'; this.style.textDecorationColor='rgba(255,255,255,0.3)'">${p.title}</a></li>`).join('')}
