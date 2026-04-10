@@ -21,6 +21,9 @@ router.post('/assemble-article', (req, res) => blogController.assembleArticle(re
 // Webhook de n8n para reportar status de ejecución
 router.post('/execution-status', (req, res) => blogSettingsController.reportExecutionStatus(req, res));
 
+// Webhook de n8n para notificar que no había topics pendientes
+router.post('/settings/notify-no-topics', (req, res) => blogSettingsController.notifyNoTopics(req, res));
+
 // Rutas de administración (requieren JWT de admin)
 router.use('/admin', adminAuthMiddleware);
 

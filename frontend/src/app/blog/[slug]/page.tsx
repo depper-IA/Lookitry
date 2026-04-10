@@ -7,7 +7,7 @@ import { BlogShareRail } from '@/components/blog/BlogShareRail';
 import { fetchBlogPostBySlug, fetchRecentBlogPosts, getBlogFeaturedImage, getBlogShareImage, getBlogTeaser } from '@/services/blog.service';
 import { Calendar, Tag, ChevronLeft, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
-import BlogArticle from '@/components/blog/BlogArticle';
+import BlogArticle, { TableOfContents } from '@/components/blog/BlogArticle';
 
 interface BlogPostPageProps {
   params: {
@@ -163,18 +163,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
             )}
 
+            {/* Responsive Table of Contents (Mobile/Tablet) */}
+            {post.toc_items && (
+              <TableOfContents items={parseTocItems(post.toc_items)} className="xl:hidden mb-8" />
+            )}
+
             {/* Contenido (renderizado con BlogArticle para componentes ricos) */}
             <BlogArticle 
               title={post.title}
               content={post.content}
-              featuredImage={heroImage ?? undefined}
-              excerpt={post.excerpt}
-              author="Lookitry Editorial"
-              publishedAt={post.published_at || post.created_at}
-              category={post.category?.name}
               tags={post.tags}
+              publishedAt={post.published_at || post.created_at}
               readingTime={post.reading_time}
-              tocItems={parseTocItems(post.toc_items)}
             />
 
             <section className="mt-10 rounded-[2rem] border border-white/10 bg-[#111111] p-8 md:p-10 shadow-[0_24px_70px_rgba(0,0,0,0.22)]">
@@ -203,6 +203,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
           <aside className="mx-auto w-full max-w-[320px] xl:mx-0 xl:w-[280px] xl:pt-8">
             <div className="xl:sticky xl:top-24 space-y-6">
+              
+              {post.toc_items && (
+                <TableOfContents items={parseTocItems(post.toc_items)} className="hidden xl:block" />
+              )}
+
               <section className="rounded-[1.75rem] border border-white/10 bg-[#111111] p-6">
                 <div className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Compartir</div>
                 <h2 className="mt-3 font-plus-jakarta text-2xl font-black tracking-tight text-white">Comparte este artículo</h2>

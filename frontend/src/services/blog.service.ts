@@ -117,6 +117,7 @@ async function frontendFetch<T>(path: string): Promise<T> {
   const url = `${FRONTEND_URL}/api${path}`;
   const response = await fetch(url, {
     credentials: 'include',
+    cache: 'no-store', // Prevent Next.js from aggressively caching the API response
   });
   if (!response.ok) {
     throw new Error(`Frontend API ${response.status}`);
