@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { sanitizeError } from '../utils/sanitizeError';
 import { supabaseAdmin } from '../config/supabase';
 import { UploadService, type UploadAssetType } from '../services/upload.service';
-import { v4 as uuidv4 } from 'uuid';
 
 const uploadService = new UploadService();
 
@@ -155,7 +154,7 @@ function generateArticleHTML(
   ctaTemplates: Record<string, CtaTemplate>,
   interlinkPosts: InterlinkingPost[] = []
 ): string {
-  const { title, excerpt, meta_description, tags, sections, faqs, cta_context, image_prompts, reading_time_minutes } = draft;
+  const { title, excerpt, tags, sections, faqs, cta_context, image_prompts, reading_time_minutes } = draft;
 
   //Construir Table of Contents desde sections
   let tocHtml = '';
@@ -170,7 +169,6 @@ function generateArticleHTML(
 
   //Hero image (del primer image_prompt con position=hero)
   let heroImageHtml = '';
-  const heroPrompt = image_prompts?.find((p) => p.position === 'hero');
   if (images.imagen_hero_url) {
     heroImageHtml = `<div class="blog-hero">
       <img src="${images.imagen_hero_url}" alt="${title || 'Artículo'}" />
@@ -199,47 +197,65 @@ function generateArticleHTML(
         for (let pIdx = 0; pIdx < section.paragraphs.length; pIdx++) {
           let para = section.paragraphs[pIdx];
 
-          // 1. Detectar y formatear listas con viñetas si Gemini las devolvió en el párrafo
-          if (para.includes('\n- ') || para.includes('\n* ') || para.trim().startsWith('- ') || para.trim().startsWith('* ')) {
+          // 1. Detect and format lists (both bullet and numbered)
+          if (para.includes('\n- ') || para.includes('\n* ') || para.includes('\n1. ') || para.trim().startsWith('- ') || para.trim().startsWith('* ') || para.trim().startsWith('1. ')) {
             const lines = para.split('\n');
-            let listHtml = '<ul style="margin: 1.5rem 0; padding-left: 1.5rem; list-style-type: none;">';
-            let hasList = false;
-            
+            let listHtml = '';
+            let currentListType: 'ul' | 'ol' | null = null;
+            let inList = false;
+
             for (const line of lines) {
               const trimmed = line.trim();
-              if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-                hasList = true;
-                // Aplicar viñeta pro con color de acento
-                listHtml += `<li style="margin-bottom: 0.8rem; position: relative; padding-left: 1.5rem;">
-                  <span style="position: absolute; left: 0; color: #FF5C3A;">✦</span>
-                  ${trimmed.substring(2)}
-                </li>`;
+              const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
+              const isNumber = /^\d+\.\s/.test(trimmed);
+
+              if (isBullet || isNumber) {
+                const listType = isBullet ? 'ul' : 'ol';
+                if (!inList || currentListType !== listType) {
+                  if (inList) listHtml += currentListType === 'ul' ? '</ul>' : '</ol>';
+                  listHtml += listType === 'ul' 
+                    ? '<ul style="margin: 1.5rem 0; padding-left: 1.5rem; list-style-type: none;">'
+                    : '<ol style="margin: 1.5rem 0; padding-left: 1.5rem; list-style: decimal; color: #ccc;">';
+                  inList = true;
+                  currentListType = listType;
+                }
+                
+                const content = isBullet ? trimmed.substring(2) : trimmed.replace(/^\d+\.\s/, '');
+                if (listType === 'ul') {
+                  listHtml += `<li style="margin-bottom: 0.8rem; position: relative; padding-left: 1.5rem;">
+                    <span style="position: absolute; left: 0; color: #FF5C3A;">✦</span>
+                    ${content}
+                  </li>`;
+                } else {
+                  listHtml += `<li style="margin-bottom: 0.8rem; padding-left: 0.5rem;">${content}</li>`;
+                }
               } else if (trimmed !== '') {
-                 listHtml += `</ul><p style="text-align: justify; line-height: 1.8; margin-bottom: 1.5rem;">${trimmed}</p><ul style="margin: 1.5rem 0; padding-left: 1.5rem; list-style-type: none;">`;
+                if (inList) {
+                  listHtml += currentListType === 'ul' ? '</ul>' : '</ol>';
+                  inList = false;
+                  currentListType = null;
+                }
+                listHtml += `<p style="text-align: justify; line-height: 1.8; margin-bottom: 1.5rem;">${trimmed}</p>`;
               }
             }
-            listHtml += '</ul>';
-            // Limpiar listas vacías
-            listHtml = listHtml.replace('<ul style="margin: 1.5rem 0; padding-left: 1.5rem; list-style-type: none;"></ul>', '');
-            if (hasList) para = listHtml;
+            if (inList) listHtml += currentListType === 'ul' ? '</ul>' : '</ol>';
+            para = listHtml;
           }
 
-          // 2. Parseo seguro de negritas Markdown (**texto**) para evitar corromper atributos HTML CSS
+          // 2. Parse bold text
           para = para.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #fff; font-size: 1.05em;">$1</strong>');
 
-
-          // 3. Letra Capital (Drop Cap) para el mismísimo PRIMER párrafo de todo el artículo
+          // 3. Drop Cap for the VERY first paragraph of the article
           if (i === 0 && pIdx === 0 && !para.startsWith('<')) {
             const firstLetter = para.charAt(0);
             const rest = para.slice(1);
             para = `<span class="drop-cap" style="float: left; font-size: 4rem; line-height: 0.8; font-weight: 800; color: #FF5C3A; margin-right: 0.8rem; margin-top: 0.5rem; text-shadow: 2px 2px 0px rgba(255,92,58,0.2);">${firstLetter}</span>${rest}`;
           }
 
-          // Renderizar
-          if (para.startsWith('<ul') || para.startsWith('<p')) {
+          // Render paragraph (if not already wrapped in block tags)
+          if (para.startsWith('<ul') || para.startsWith('<ol') || para.startsWith('<p') || para.startsWith('<div')) {
              sectionsHtml += para;
           } else {
-             // Texto justificado
              sectionsHtml += `<p style="text-align: justify; line-height: 1.8; margin-bottom: 1.5rem;">${para}</p>`;
           }
         }
@@ -263,7 +279,7 @@ function generateArticleHTML(
 
       // Inject Body image robustly
       let imgUrl: string | null = null;
-      let imgPos = Number(section.image_position);
+      const imgPos = Number(section.image_position);
 
       if (imgPos >= 1 && imgPos <= 4) {
         if (imgPos === 1) imgUrl = images.imagen_body1_url;
@@ -290,7 +306,7 @@ function generateArticleHTML(
 
       sectionsHtml += '</section>';
 
-      // Inject SEO Internal Linking block explicitly after Section #2
+      // SEO Interlinking block after Section #2
       if (interlinkPosts.length > 0 && i === 1) {
         sectionsHtml += `
         <div class="blog-interlink-box" style="background: rgba(255, 92, 58, 0.05); border-left: 4px solid #FF5C3A; padding: 1.5rem; margin: 3rem 0; border-radius: 0 8px 8px 0;">
@@ -303,7 +319,7 @@ function generateArticleHTML(
         </div>`;
       }
 
-      // CTA Intermedio #1 - Estilo Banner Neon
+      // CTA Intermedio #1 - After Section #4
       if (i === 3) {
         sectionsHtml += `
         <div class="blog-cta-inline" style="background: linear-gradient(135deg, #141414 0%, #1a1a1a 100%); border: 1px solid #333; padding: 2.5rem 2rem; border-radius: 16px; margin: 3rem 0; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);">
@@ -314,7 +330,7 @@ function generateArticleHTML(
         </div>`;
       }
 
-      // CTA Intermedio #2 - Estilo Texto Integrado
+      // CTA Intermedio #2 - After Section #7
       if (i === 6) {
         sectionsHtml += `
         <div style="border-top: 1px dashed #333; border-bottom: 1px dashed #333; padding: 1.5rem 0; margin: 2rem 0;">
@@ -350,7 +366,7 @@ function generateArticleHTML(
   }
 
   //Meta tags
-  const tagsHtml = tags && tags.length > 0 ? tags.map((t) => `<span class="blog-tag">${t}</span>`).join('') : '';
+  const tagsHtml = tags && tags.length > 0 ? (tags as string[]).map((t: string) => `<span class="blog-tag">${t}</span>`).join('') : '';
   const readingTime = reading_time_minutes ? `<span class="blog-reading-time">${reading_time_minutes} min de lectura</span>` : '';
 
   //Armar HTML completo

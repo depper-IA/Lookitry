@@ -8,6 +8,7 @@ import { fetchBlogPostBySlug, fetchRecentBlogPosts, getBlogFeaturedImage, getBlo
 import { Calendar, Tag, ChevronLeft, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import BlogArticle, { TableOfContents } from '@/components/blog/BlogArticle';
+import { BlogImageWithFallback } from '@/components/blog/BlogImageWithFallback';
 
 interface BlogPostPageProps {
   params: {
@@ -154,8 +155,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </div>
 
             {heroImage && (
-              <div className="relative aspect-[21/9] rounded-2xl overflow-hidden mb-12 border border-white/5">
-                <img
+              <div className="relative aspect-[21/9] rounded-2xl overflow-hidden mb-12 border border-white/5 bg-[#141414]">
+                <BlogImageWithFallback
                   src={heroImage}
                   alt={post.title}
                   className="w-full h-full object-cover"
@@ -261,13 +262,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     className="group overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#111111] transition-all hover:-translate-y-1 hover:border-[#FF5C3A]/30 hover:shadow-[0_22px_60px_rgba(0,0,0,0.22)]"
                   >
                     <div className="relative aspect-[16/10] overflow-hidden bg-[#171717]">
-                      {recentImage ? (
-                        <img
-                          src={recentImage}
-                          alt={recentPost.title}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                      ) : (
+{recentImage ? (
+                          <BlogImageWithFallback
+                            src={recentImage}
+                            alt={recentPost.title}
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            iconFallback
+                          />
+                        ) : (
                         <div className="flex h-full w-full items-center justify-center text-2xl font-black text-[#FF5C3A]/40">
                           LOOKITRY
                         </div>

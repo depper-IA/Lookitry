@@ -1,5 +1,56 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-09] - Fix Blog: Duplicación de Contenido y Manejo de Imágenes
+
+### Backend - blog.controller.ts
+- **Fix duplicación bloques CTA e Interlinking**: Los bloques "📚 Lectura Recomendada" y CTAs intermedios se injectaban DENTRO de los `<section>` y también FUERA, causando duplicación visual. Ahora se injectan SOLO FUERA del loop de secciones, después de que todas las secciones han sido procesadas.
+- **Condiciones de renderizado corregidas**: Los CTAs ahora verifican `sections.length` para asegurar que solo se renderizan si hay suficientes secciones (antes dependían del índice `i` lo que causaba que se renderizaran múltiples veces si habían 7+ secciones).
+
+### Frontend - BlogArticle.tsx
+- **Mejora regex de limpieza**: El regex para remover `<header class="blog-header">` del contenido HTML ahora también remueve `<article class="blog-article">`, `<div class="blog-layout">`, y el wrapper div del content para evitar estructuras HTML inválidas y estilos duplicados.
+
+### Frontend - Manejo de Errores de Imágenes
+- **BlogCard.tsx**: Nuevo componente `BlogImage` con estado `hasError` para manejar imágenes rotas. Si una imagen falla en cargar, muestra un placeholder con el logo "Lookitry" en lugar de un icono de imagen rota.
+- **blog/[slug]/page.tsx**: 
+  - Hero image: Añadido `onError` para ocultar la imagen y mostrar un fallback con gradiente si la URL está rota.
+  - Recent posts images: Añadido `onError` para manejar errores de carga de imágenes.
+
+### Notas sobre Body Images (Pendiente Investigación)
+- Las imágenes `imagen_body1_url` a `imagen_body4_url` están todas NULL en `blog_topic_images` para artículos recientes (post Abril 2026).
+- El hero image SÍ se sube correctamente, pero las body images no.
+- Esto es un issue del flujo n8n/backend, no del frontend. El workflow de n8n genera las imágenes pero parece que la subida de body images falla silenciosamente.
+- **Acción requerida**: Revisar los logs del workflow "Lookitry Blog Images" en n8n para determinar si las requests de upload para body images están fallando o si hay un problema de timing (assemble llamado antes de que todas las imágenes estén subidas).
+
+## [2026-04-09] - Presentación Blog Mejorada con Formato Rico y CTAs
+
+### Blog Article - Rediseño Visual Completo
+- **Reading Progress Bar**: Barra de progreso animada en la parte superior que muestra el avance de lectura del artículo
+- **Tabla de Contenidos Interactiva**: Números circulares, animaciones de hover, indicador visual del ítem activo
+- **ShareButtons Mejorados**: Iconos con efectos hover (escala, elevación), feedback visual de "copiado"
+
+### Tipografía y Formato
+- **Drop Cap (Capital)**: Primera letra del artículo en tamaño grande con color acento
+- **Texto Justificado**: Líneas de texto perfectamente alineadas
+- **Listas Numeradas**: Estilo custom con círculos numerados estilo "timeline" con gradiente
+- **Listas con Viñetas**: Bullets custom con puntos naranja que brillan
+- **Enlaces Enriquecidos**: Hover con background, transición suave, borde inferior
+- **Blockquotes Estilizados**: Comilla decorativa grande, fondo con gradiente sutil
+- **Headers con Underline**: Línea gradient debajo de h2
+
+### Componentes Interactivos Nuevos
+- **InlineCTA**: CTAs insertados en el flujo del artículo (minimal y highlight)
+- **StatBox**: Cajas de estadísticas con valores destacados
+- **StepBox**: Pasos numerados estilo timeline
+- **PullQuote**: Citas destacadas con diseño editorial
+- **InfoBox**: Tipos (tip, warning, stat, note) con iconos y colores distintivos
+- **NewsletterCTA**: Formulario de suscripción inline
+- **FinalCTA**: Sección CTA final con CTA principal y secundario
+
+### Animaciones
+- **Framer Motion**: Transiciones suaves en todos los componentes nuevos
+- **Scroll Animations**: Elementos aparecen con fade + slide al entrar al viewport
+- **Hover Effects**: Scale, elevation, color transitions en botones y cards
+
 ## [2026-04-09] - Social Proof y Reseñas Dinámicas en Landing
 
 ### Landing Page - Dynamic Reviews

@@ -1,0 +1,459 @@
+{
+  "name": "Lookitry Blog Images",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lookitry-blog-images",
+        "options": {}
+      },
+      "id": "b541d0b2-0a9c-4b50-a5c0-a24412ff8d45",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [14416, 7120],
+      "webhookId": "1c508720-8bcf-4a26-a904-6fb797ab468f"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json?.body || $input.first().json || {};\nconst topic_id = String(body.topic_id || '');\nconst title = body.title || 'Fashion Article';\nconst category = body.category_slug || 'moda-y-estilo';\n\n// Normalizar tipo: body_1 -> body1, body_2 -> body2, etc.\nconst normalizeTipo = (tipo) => {\n  if (!tipo) return 'imagen';\n  return tipo.replace(/^body_(\\d+)$/, 'body$1');\n};\n\n// Si el Article Producer envió image_prompts, usarlos\nif (body.image_prompts && Array.isArray(body.image_prompts) && body.image_prompts.length > 0) {\n  return body.image_prompts.map(ip => ({\n    json: {\n      tipo: normalizeTipo(ip.position),\n      prompt: ip.prompt,\n      topic_id: topic_id,\n      title: title\n    }\n  }));\n}\n\n// Prompts por defecto\nconst ctxMap = {\n  'ecommerce': 'Colombian ecommerce fashion',\n  'ia': 'AI technology and fashion innovation',\n  'moda-y-estilo': 'Colombian fashion and lifestyle',\n  'negocios-y-saas': 'business technology SaaS'\n};\nconst ctx = ctxMap[category] || ctxMap['moda-y-estilo'];\n\nreturn [\n  { json: { tipo: 'hero', prompt: `Cinematic editorial fashion photo: ${title}. ${ctx}. Studio lighting, professional model, ultra-realistic.`, topic_id, title } },\n  { json: { tipo: 'body1', prompt: `Lifestyle photo: person using smartphone app to try on clothes virtually. ${ctx}. Boutique setting, natural light.`, topic_id, title } },\n  { json: { tipo: 'body2', prompt: `Close-up fabric texture and fashion detail. ${ctx}. Luxury feel, macro shot, sharp focus.`, topic_id, title } },\n  { json: { tipo: 'body3', prompt: `Colombian fashion boutique interior. Warm ambient lighting, clothing display, elegant atmosphere.`, topic_id, title } }\n];"
+      },
+      "id": "8203b722-56cd-4cd5-b41f-7023cb71daad",
+      "name": "Preparar Imágenes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [14640, 7120]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "35437b68-de50-4ede-af36-e5951a637401",
+      "name": "Loop Imágenes",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [14864, 7120]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***REMOVED-SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "respond-async"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({\n  input: {\n    prompt: $json.prompt,\n    aspect_ratio: \"16:9\",\n    output_format: \"webp\",\n    output_quality: 85,\n    num_inference_steps: 4,\n    go_fast: true,\n    megapixels: \"1\"\n  }\n}) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "b61fbe9e-8f9c-4fdf-bb4a-e210675b7a08",
+      "name": "Replicate: Iniciar Generación",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [15120, 7136]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst loopItem = $('Loop Imágenes').item.json;\n\nconst pollUrl = response?.urls?.get;\nconst predId = response?.id;\n\nif (!pollUrl) {\n  throw new Error(`Replicate no devolvió poll URL. Response: ${JSON.stringify(response).substring(0, 300)}`);\n}\n\nreturn [{ json: { ...loopItem, pollUrl, predictionId: predId } }];"
+      },
+      "id": "f055e9d0-e32c-4a08-9773-a93421596f8d",
+      "name": "Guardar Poll URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [15344, 7136]
+    },
+    {
+      "parameters": {
+        "amount": 15,
+        "unit": "seconds"
+      },
+      "id": "d3d72b1e-f0c3-4e86-8773-900dd2543b87",
+      "name": "Esperar 15s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [15536, 7136],
+      "webhookId": "6e8e453a-34ea-4420-9283-091dd0a02185"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.pollUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ***REMOVED-SECRET***"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "b4c86339-e8e5-4623-8036-e77b366a396b",
+      "name": "Verificar Estado Replicate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [15760, 7136]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "status-check",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "succeeded",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6e52a624-a88e-486e-9a97-48cf969c978c",
+      "name": "IF: Imagen lista?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [15968, 7136]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pasar la data completa al siguiente ciclo de espera\nconst statusResponse = $input.item.json;\nconst loopItem = $('Guardar Poll URL').item.json;\n\n// Preservar pollUrl y tipo para el siguiente poll\nreturn [{ json: { ...loopItem, _lastStatus: statusResponse.status } }];"
+      },
+      "id": "65629631-bfab-4e8d-8500-2c1cac9f8fb4",
+      "name": "Mantener datos para espera",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [15984, 7360]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.output?.[0] || $json.output }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "3909b469-7110-47f6-b8fa-8b6d458b07c9",
+      "name": "Descargar Imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [16160, 7120]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst tipo = $('Guardar Poll URL').item.json.tipo || 'imagen';\nconst topic_id = $('Guardar Poll URL').item.json.topic_id;\n\nif (item.binary?.data) {\n  item.binary.data.fileName = `${tipo}.webp`;\n  item.binary.data.mimeType = 'image/webp';\n}\n\nreturn { json: { ...item.json, tipo, topic_id }, binary: item.binary };"
+      },
+      "id": "cb41bbf2-b1dd-4e68-9fbd-6007bd235ecc",
+      "name": "Renombrar Archivo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [16400, 7120]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-blog-secret",
+              "value": "Travis2305**_blog_n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "filename",
+              "value": "={{ $('Renombrar Archivo').item.binary.data.fileName }}"
+            },
+            {
+              "name": "topic_id",
+              "value": "={{ $('Guardar Poll URL').item.json.topic_id }}"
+            },
+            {
+              "name": "image_type",
+              "value": "={{ $('Guardar Poll URL').item.json.tipo }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "de5fbc1b-e892-4281-8704-4d6f7499f39e",
+      "name": "Subir al Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [16576, 7120]
+    },
+    {
+      "parameters": {},
+      "id": "23a2e375-9301-4b3f-ae8c-c1c02ad3ac8c",
+      "name": "Volver al Loop",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [16576, 7312]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/assemble-article",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-blog-secret",
+              "value": "Travis2305**_blog_n8n"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { topic_id: $('Preparar Imágenes').first().json.topic_id } }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "12a1573f-2f82-4803-ac44-192671117531",
+      "name": "Ensamblar Artículo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [14928, 7328],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, topic_id: $('Preparar Imágenes').first().json.topic_id, message: 'Imagenes generadas y articulo publicado' } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "c2046166-1561-414e-a0fa-8b40859345be",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [15200, 7328]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Preparar Imágenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Imágenes": {
+      "main": [
+        [
+          {
+            "node": "Loop Imágenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Imágenes": {
+      "main": [
+        [
+          {
+            "node": "Replicate: Iniciar Generación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ensamblar Artículo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replicate: Iniciar Generación": {
+      "main": [
+        [
+          {
+            "node": "Guardar Poll URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Poll URL": {
+      "main": [
+        [
+          {
+            "node": "Esperar 15s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar 15s": {
+      "main": [
+        [
+          {
+            "node": "Verificar Estado Replicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Estado Replicate": {
+      "main": [
+        [
+          {
+            "node": "IF: Imagen lista?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Imagen lista?": {
+      "main": [
+        [
+          {
+            "node": "Descargar Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mantener datos para espera",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mantener datos para espera": {
+      "main": [
+        [
+          {
+            "node": "Esperar 15s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Imagen": {
+      "main": [
+        [
+          {
+            "node": "Renombrar Archivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Renombrar Archivo": {
+      "main": [
+        [
+          {
+            "node": "Subir al Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir al Backend": {
+      "main": [
+        [
+          {
+            "node": "Volver al Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Volver al Loop": {
+      "main": [
+        [
+          {
+            "node": "Loop Imágenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensamblar Artículo": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  }
+}
