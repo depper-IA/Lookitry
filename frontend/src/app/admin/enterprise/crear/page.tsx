@@ -189,7 +189,7 @@ export default function CreateEnterpriseClientPage() {
               <div className="flex justify-between items-center">
                 <span className="text-slate-400 text-sm">Widget</span>
                 <a
-                  href={`https://lookitry.com/pruebalo/${success.brand.slug}`}
+                  href={`https://lookitry.com/marca/${success.brand.slug}`}
                   target="_blank"
                   className="text-indigo-400 text-sm hover:text-indigo-300"
                 >
@@ -301,7 +301,7 @@ export default function CreateEnterpriseClientPage() {
                 <label className="block text-sm text-slate-400 mb-1.5">Slug (URL del widget) *</label>
                 <div className="flex items-center">
                   <span className="bg-[#0a0a0f] border border-r-0 border-white/10 rounded-l-xl px-3 py-2.5 text-slate-500 text-sm">
-                    /pruebalo/
+                    /marca/
                   </span>
                   <input
                     type="text"

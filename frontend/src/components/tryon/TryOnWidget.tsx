@@ -16,6 +16,7 @@ interface TryOnWidgetProps {
   externalId?: string | null; // ID de plataforma externa
   forceLayout?: 'top-bar' | 'sidebar' | 'centered' | 'bare';
   pluginView?: boolean;
+  lockProductSelection?: boolean;
 }
 
 function templateToLayout(template?: string): Layout {
@@ -36,8 +37,17 @@ function templateToLayout(template?: string): Layout {
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
-export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = null, externalId = null, forceLayout, pluginView = false }: TryOnWidgetProps) {
-  const hasLockedPluginProduct = pluginView && !!(initialProductId || externalId);
+export function TryOnWidget({ 
+  brandSlug, 
+  isEmbed = false, 
+  initialProductId = null, 
+  externalId = null, 
+  forceLayout, 
+  pluginView = false,
+  lockProductSelection = false 
+}: TryOnWidgetProps) {
+  const isLocked = lockProductSelection || pluginView;
+  const hasLockedProduct = isLocked && !!(initialProductId || externalId);
   // Nuevo flujo: Comenzamos en 'select' para que el usuario elija primero el producto.
   const [step, setStep] = useState<Step>('select');
   const [config, setConfig] = useState<TryOnConfigResponse | null>(null);
@@ -129,13 +139,13 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     });
 
     setSelfieFile(null);
-    setSelectedProduct(prev => (hasLockedPluginProduct ? prev : null));
+    setSelectedProduct(prev => (hasLockedProduct ? prev : null));
     setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
     setNotice(null);
     setGeneratedProducts(new Map());
     // Nuevo flujo: Reset vuelve a select, a menos que el producto esté bloqueado, entonces vuelve a upload
-    setStep(hasLockedPluginProduct ? 'upload' : 'select');
-  }, [brandSlug, hasLockedPluginProduct]);
+    setStep(hasLockedProduct ? 'upload' : 'select');
+  }, [brandSlug, hasLockedProduct]);
 
   const handleSelfieUpload = (file: File, preview: string) => {
     setSelfiePreview(prev => {
@@ -238,7 +248,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: secondaryColor }}>
+      <div className="min-h-screen min-h-[100dvh] flex items-center justify-center bg-[#0a0a0a]">
         <div className="text-center px-6">
           <div className="w-14 h-14 border-4 border-gray-200 rounded-full animate-spin mx-auto" style={{ borderTopColor: primaryColor }} />
           <p className="mt-4 text-gray-500 text-sm font-medium">Cargando el probador...</p>
@@ -249,15 +259,15 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
 
   if (!config) {
     return (
-      <div className="flex items-center justify-center py-16 bg-gray-50">
+      <div className="min-h-screen min-h-[100dvh] flex items-center justify-center bg-[#0a0a0a]">
         <div className="text-center p-8 max-w-sm">
-          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-800">No encontramos esta tienda</h2>
-          <p className="mt-2 text-gray-500 text-sm">{error || 'Verifica el enlace e intenta de nuevo'}</p>
+          <h2 className="text-xl font-bold text-white">No encontramos esta tienda</h2>
+          <p className="mt-2 text-white/60 text-sm">{error || 'Verifica el enlace e intenta de nuevo'}</p>
           <button onClick={loadConfig} className="mt-5 px-5 py-2.5 rounded-xl text-white text-sm font-semibold" style={{ backgroundColor: primaryColor }}>
             Reintentar
           </button>
@@ -284,10 +294,12 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     errorIsService,
     notice,
     generatedProducts,
+    lockProductSelection: isLocked,
     onReset: handleReset,
     onSelfieUpload: handleSelfieUpload,
     onProductSelect: handleProductSelect,
     onProceedToUpload: () => setStep('upload'),
+    onBack: () => setStep('select'),
     onGenerate: () => handleGenerate(),
   } as const;
 

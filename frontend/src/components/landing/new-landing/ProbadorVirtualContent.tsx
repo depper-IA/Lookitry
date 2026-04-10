@@ -56,7 +56,7 @@ export default function ProbadorVirtualContent() {
               Elimina la incertidumbre del &quot;me quedara bien&quot; con nuestro probador virtual potenciado por IA generativa de alta fidelidad.
             </p>
             <div className="flex flex-wrap justify-center gap-6">
-              <Link href="/pruebalo/demo" className="rounded-2xl bg-[#FF5C3A] px-12 py-6 text-sm font-bold text-white shadow-xl shadow-[#FF5C3A]/30 transition-all hover:scale-105">
+              <Link href="/marca/demo" className="rounded-2xl bg-[#FF5C3A] px-12 py-6 text-sm font-bold text-white shadow-xl shadow-[#FF5C3A]/30 transition-all hover:scale-105">
                 Prueba Premium
               </Link>
               <Link href="/checkout?plan=TRIAL" className="rounded-2xl border border-white/10 bg-white/5 px-12 py-6 text-sm font-bold text-white transition-all hover:bg-white/10">

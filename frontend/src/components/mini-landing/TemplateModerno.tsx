@@ -232,7 +232,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl, isPrevi
             <p className="text-gray-500 text-xs md:text-sm font-medium">Sube tu foto y procesa el producto seleccionado con IA</p>
           </div>
           <div className={isPreview ? "overflow-hidden" : "rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/50 border border-white/5"}>
-            <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" />
+            <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" lockProductSelection={true} />
           </div>
         </div>
       </section>

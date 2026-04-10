@@ -12,7 +12,6 @@ export function RouteChrome() {
     pathname.startsWith('/admin') ||
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/embed/') ||
-    pathname.startsWith('/pruebalo/') ||
     pathname.startsWith('/sitio/') ||
     pathname.startsWith('/marca/')
   ) {

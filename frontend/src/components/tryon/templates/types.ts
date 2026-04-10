@@ -17,6 +17,7 @@ export interface TryOnTemplateProps {
   brandSlug: string;
   isEmbed: boolean;
   pluginView: boolean;
+  lockProductSelection?: boolean;
 
   primaryColor: string;
   secondaryColor: string;
@@ -38,6 +39,7 @@ export interface TryOnTemplateProps {
   onSelfieUpload: (file: File, preview: string) => void;
   onProductSelect: (p: Product) => void;
   onProceedToUpload?: () => void;
+  onBack?: () => void;
   onGenerate: () => void;
 }
 

@@ -249,7 +249,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
                   <span className="text-[8px] font-black opacity-60">AI POWERED</span>
                 </div>
                 <div className="bg-white">
-                  <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" />
+                  <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" lockProductSelection={true} />
                 </div>
               </div>
               <p className="text-center mt-6 text-[9px] font-black uppercase tracking-[0.3em] text-gray-300">Desarrollado por Lookitry AI</p>
