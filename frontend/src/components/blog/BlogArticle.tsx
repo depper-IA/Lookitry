@@ -898,7 +898,7 @@ export default function BlogArticle({
         .blog-content h3 {
           position: relative;
         }
-        .blog-content h3::before {
+        .blog-content h3:not([data-blog-cta] h3):not(.blog-cta-inline h3):not(.blog-interlink-box h3)::before {
           content: '#';
           position: absolute;
           left: -1.5rem;
