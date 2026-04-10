@@ -134,6 +134,8 @@ interface BlogTopicImages {
   imagen_hero_url: string | null;
   imagen_body1_url: string | null;
   imagen_body2_url: string | null;
+  imagen_body3_url: string | null;
+  imagen_body4_url: string | null;
   status: string;
 }
 
@@ -202,6 +204,14 @@ function generateArticleHTML(
       } else if (section.image_position === 2 && images.imagen_body2_url) {
         sectionsHtml += `<figure class="blog-body-image">
           <img src="${images.imagen_body2_url}" alt="${title || 'Imagen'}" loading="lazy" />
+        </figure>`;
+      } else if (section.image_position === 3 && images.imagen_body3_url) {
+        sectionsHtml += `<figure class="blog-body-image">
+          <img src="${images.imagen_body3_url}" alt="${title || 'Imagen'}" loading="lazy" />
+        </figure>`;
+      } else if (section.image_position === 4 && images.imagen_body4_url) {
+        sectionsHtml += `<figure class="blog-body-image">
+          <img src="${images.imagen_body4_url}" alt="${title || 'Imagen'}" loading="lazy" />
         </figure>`;
       }
 
@@ -589,6 +599,8 @@ export const blogController = {
           if (imageType === 'hero') updateField.imagen_hero_url = url;
           else if (imageType === 'body1') updateField.imagen_body1_url = url;
           else if (imageType === 'body2') updateField.imagen_body2_url = url;
+          else if (imageType === 'body3') updateField.imagen_body3_url = url;
+          else if (imageType === 'body4') updateField.imagen_body4_url = url;
           updateField.status = 'completed';
 
           // Upsert: INSERT si no existe, UPDATE si existe
@@ -682,6 +694,9 @@ export const blogController = {
 
       console.log(`[Blog] articleContent recibido para topic ${topic_id}: title="${title}", sections=${sections?.length || 0}, faqs=${faqs?.length || 0}`);
 
+      //Asegurar que html_content NUNCA sea nulo o undefined
+      const finalHtmlContent = html_content ? String(html_content) : '<p>Contenido generado por IA</p>';
+
       //Guardar contenido estructurado en blog_draft_articles
       const { data, error } = await supabaseAdmin
         .from('blog_draft_articles')
@@ -689,7 +704,7 @@ export const blogController = {
           topic_id: topic_id,
           title: title,
           slug: slug || null,
-          html_content: html_content || null, //legacy
+          html_content: finalHtmlContent,
           excerpt: excerpt || null,
           meta_description: meta_description || null,
           tags: normalizeTags(tags),
@@ -702,7 +717,7 @@ export const blogController = {
           image_prompts: image_prompts || [],
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        })
+        }, { onConflict: 'topic_id' })
         .select()
         .maybeSingle();
 
@@ -762,7 +777,7 @@ export const blogController = {
       //2. Obtener imágenes de blog_topic_images
       const { data: images, error: imagesError } = await supabaseAdmin
         .from('blog_topic_images')
-        .select('imagen_hero_url, imagen_body1_url, imagen_body2_url, status')
+        .select('imagen_hero_url, imagen_body1_url, imagen_body2_url, imagen_body3_url, imagen_body4_url, status')
         .eq('topic_id', topic_id)
         .maybeSingle();
 
@@ -861,7 +876,9 @@ export const blogController = {
         images_used: {
           hero: images.imagen_hero_url,
           body1: images.imagen_body1_url,
-          body2: images.imagen_body2_url
+          body2: images.imagen_body2_url,
+          body3: images.imagen_body3_url,
+          body4: images.imagen_body4_url
         }
       });
     } catch (error: any) {
