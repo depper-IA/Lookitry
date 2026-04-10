@@ -1,5 +1,32 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-10] - Sistema de Theme Toggle Light/Dark para Blog
+
+### Frontend - Nuevos archivos
+- **ThemeContext.tsx**: Provider que maneja el estado del tema (dark/light) con persistencia en localStorage
+- **ThemeToggle.tsx**: Componente de botón para cambiar entre modo oscuro y claro (usa Sun/Moon de lucide-react)
+- **BlogThemeWrapper.tsx**: Wrapper que combina ThemeProvider y BlogHeader con el toggle
+
+### Frontend - Archivos modificados
+- **blog/page.tsx**: Añadido BlogThemeWrapper y BlogHeader con toggle en header del blog
+- **blog/[slug]/page.tsx**: Envuelto con BlogThemeWrapper para soportar theme toggle
+- **BlogHero.tsx**: Estilos dinámicos basados en tema (colores de texto, fondos de glow effects)
+- **BlogList.tsx**: Integración con useTheme para colores dinámicos de categorías
+- **BlogCard.tsx**: Estilos condicionales para variant="featured" y variant="default"
+
+### Paleta de colores implementada
+**Dark mode (default):**
+- Fondo: `#0a0a0a`, Cards: `#141414`, Texto: `#ffffff`, Secundario: `#999999`, Acento: `#FF5C3A`
+
+**Light mode:**
+- Fondo: `#fafafa`, Cards: `#ffffff`, Texto: `#0a0a0a`, Secundario: `#666666`, Acento: `#FF5C3A`
+
+### Reglas aplicadas
+- Toggle activo: `#FF5C3A`
+- Iconos: lucide-react (Sun, Moon) - SIN emojis
+- Dark mode es el default
+- Preferencia guardada en localStorage key: `lookitry-blog-theme`
+
 ## [2026-04-10] - Fix Blog: Imágenes Body + Emojis + Categorías
 
 ### Base de Datos - Limpieza Blog

@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BlogCard } from './BlogCard';
 import { fetchBlogCategories, fetchBlogPosts, BlogCategory, BlogPost, BlogPagination } from '@/services/blog.service';
 import { Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 const POSTS_PER_PAGE = 5;
 
 export const BlogList: React.FC = () => {
+  const { isDark, colors } = useTheme();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -112,10 +114,10 @@ export const BlogList: React.FC = () => {
             <button
               onClick={() => { setSelectedCategory(null); setCurrentPage(1); }}
               className={`shrink-0 px-4 py-2.5 rounded-full text-sm font-bold transition-all border ${
-                selectedCategory === null
-                  ? 'bg-[#FF5C3A] text-white border-[#FF5C3A] shadow-lg shadow-[#FF5C3A]/20'
-                  : 'bg-[#141414] text-[#b8b8b8] hover:bg-[#1a1a1a] hover:text-white border-white/10'
-              }`}
+                  selectedCategory === null
+                    ? 'bg-[#FF5C3A] text-white border-[#FF5C3A] shadow-lg shadow-[#FF5C3A]/20'
+                    : `${colors.card} hover:bg-[#1a1a1a] hover:text-white border-white/10`
+                }`}
             >
               Todos {totalCount > 0 && <span className="ml-1.5 opacity-70">({totalCount})</span>}
             </button>
