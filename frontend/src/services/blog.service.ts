@@ -77,7 +77,9 @@ export function getBlogFeaturedImage(
   } | null,
 ): string | null {
   if (!post) return null;
-  return post.featured_image || extractFirstImageFromContent(post.content);
+  // IMPORTANTE: Solo devolver featured_image explícito para evitar duplicación con imágenes del HTML
+  // El hero se maneja 100% desde featured_image; el contenido HTML tiene sus propias imágenes body
+  return post.featured_image || null;
 }
 
 export function getBlogShareImage(

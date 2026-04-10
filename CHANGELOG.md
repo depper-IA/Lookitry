@@ -1,5 +1,80 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-10] - CTA Intermedio en Blog + Corrección Terminología
+
+### Backend - CTA Intermedio Rediseñado
+- **blog.controller.ts**: Nuevo CTA "callout box" después de sección 3 (punto medio del artículo)
+- Estilo: fondo #141414, borde sutil rgba(255,92,58,0.25), bordes redondeados 16px
+- Contenido: headline corto + descripción + botón "Ver planes"
+- Decorative corner accent con radial gradient
+- Posicionado antes del CTA #2 existente (sección 6)
+- **CORREGIDO**: Eliminado texto "Prueba gratis 7 días" - reemplazado por "Ver planes"
+
+### Reglas - Prohibición de "Prueba Gratis"
+- **REGLAS_IMPORTANTES.md**: Agregada sección 5.7 "Prohibición de Prueba Gratis"
+- Términos PROHIBIDOS: "prueba gratis", "free trial", "7 días gratis", etc.
+- Términos PERMITIDOS: "Comenzar trial", "Prueba el servicio", "Ver planes", "Agendar demo"
+- Motivo: Lookitry NO ofrece funcionalidad gratuita - trial requiere pago según `trial_campaigns`
+
+### Backend - Reposicionamiento de CTAs
+- CTA Intermedio #1: ahora en `i === 2` (después de sección 3, punto medio)
+- CTA Intermedio #2: movido a `i === 5` (después de sección 6)
+
+### Frontend - Estilos para blog-cta-mid
+- **BlogArticle.tsx**: Añadidos estilos CSS para `.blog-cta-mid` con soporte dark/light theme
+- Hover effects con transición de borde y transformaciones en botones
+- Responsive en móvil (padding reducido, font-size ajustado)
+
+### Interlinks Mantenidos
+- Los interlinks siguen apareciendo después de sección 2 (`i === 1`)
+- Estilos consistentes con el resto del contenido
+
+## [2026-04-10] - Fix Fotos Repetidas en Blog + SEO Schema Markup
+
+### Backend - Fix Hero Duplicado en generateArticleHTML
+- **blog.controller.ts**: `generateArticleHTML` ya no incluye el hero image en el `<header>` del article HTML
+- El hero se maneja 100% desde `featured_image` en el frontend para evitar duplicación visual
+- El header ahora solo contiene metadatos (título, excerpt, tags, reading time) con clase `blog-header-only-meta`
+
+### Backend - Fix Requisito de Body Images
+- **blog.controller.ts**: `autoAssembleIfReady` ya no requiere body images para publicar
+- Solo el hero image es obligatorio; body images son opcionales
+- Esto permite publicar artículos incluso si las imágenes de cuerpo fallan en generarse
+
+### Frontend - Mejoras en ArticleContent
+- **BlogArticle.tsx**: Mejorado regex para limpiar headers de ambos formatos:
+  - Formato legacy: `<header class="blog-header">` (con hero)
+  - Formato nuevo: `<header class="blog-header-only-meta">` (solo meta)
+- Usa flag `gi` para caso insensitive y global matching
+
+### Frontend - Schema Markup SEO Mejorado
+- **BlogPostContent.tsx**: Schema.org BlogPosting completo con:
+  - headline, description, image, datePublished, dateModified
+  - author (Organization), publisher (Organization con logo)
+  - mainEntityOfPage, articleSection, keywords, wordCount
+- Añadido BreadcrumbList schema para mejor SEO
+
+### Frontend - Fix getBlogFeaturedImage
+- **blog.service.ts**: `getBlogFeaturedImage` ya no hace fallback a `extractFirstImageFromContent`
+- Esto evita que se muestre duplicado el hero cuando el HTML legacy contiene la imagen
+- Ahora retorna solo `featured_image` explícito o null
+
+## [2026-04-10] - Modernización y Consistencia de Temas (Blog & Admin)
+
+### Frontend - Componentes de Blog Refactorizados
+- **BlogCard.tsx**: Refactorizado para soportar temas Light/Dark. Mejora de contrastes en bordes, sombras y tipografía zinc-based para un look premium en ambos modos.
+- **BlogHero.tsx**: Implementados efectos de ambient glow adaptativos y jerarquía tipográfica optimizada para lectura diurna.
+- **BlogList.tsx**: Adaptación de filtros, inputs de búsqueda y paginación para responder al tema activo sin colores hardcodeados.
+- **BlogShareRail.tsx**: Rediseño del riel de compartir con bordes y fondos dinámicos.
+- **BlogImageWithFallback.tsx**: placeholders de imagen con gradientes y branding adaptativo al tema.
+- **BlogArticle.tsx**: Refuerzo de estilos Prose para asegurar legibilidad crítica en fondo claro.
+
+### Frontend - Admin Panel Polish
+- **admin/blog/page.tsx**: Actualización de tablas, modales de confirmación y acciones rápidas para usar variables de CSS (`--bg-card`, `--border-color`, etc.), eliminando restos de estilos oscuros forzados.
+
+### Frontend - Mejoras de Infraestructura UI
+- **Consistencia de Tokens**: Migración masiva de colores `black/5`, `black/10` y `white/5`, `white/10` con selectores `dark:` para mantener la profundidad visual sin sacrificar la claridad en modo light.
+
 ## [2026-04-10] - Sistema de Theme Toggle Light/Dark para Blog
 
 ### Frontend - Nuevos archivos

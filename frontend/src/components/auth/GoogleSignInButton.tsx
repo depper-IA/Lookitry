@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface GoogleSignInButtonProps {
   onSuccess?: (data?: any) => void;
@@ -29,6 +30,7 @@ export default function GoogleSignInButton({
   months,
   className = 'w-full',
 }: GoogleSignInButtonProps) {
+  const { isDark } = useTheme();
   const [googleReady, setGoogleReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -292,10 +294,14 @@ export default function GoogleSignInButton({
         type="button"
         onClick={handleClick}
         disabled={loading || !googleReady}
-        className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+        className={`flex w-full items-center justify-center gap-3 rounded-2xl border transition-all px-6 py-3 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed ${
+          isDark 
+            ? "border-white/10 bg-white/5 text-white hover:bg-white/10" 
+            : "border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
+        }`}
       >
         {loading ? (
-          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <div className={`w-5 h-5 border-2 rounded-full animate-spin ${isDark ? "border-white/30 border-t-white" : "border-gray-300 border-t-[#FF5C3A]"}`} />
         ) : (
           <>
             <svg className="h-5 w-5" viewBox="0 0 24 24">

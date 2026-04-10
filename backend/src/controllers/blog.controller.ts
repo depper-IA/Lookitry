@@ -352,19 +352,34 @@ function generateArticleHTML(
         </div>`;
       }
 
-      // CTA Intermedio #1 - After Section #4
-      if (i === 3) {
+      // CTA Intermedio - Punto medio del artículo (After Section #3)
+      // Callout box elegante con borde sutil #FF5C3A
+      if (i === 2) {
         sectionsHtml += `
-        <div class="blog-cta-inline" style="background: linear-gradient(135deg, #141414 0%, #1a1a1a 100%); border: 1px solid #333; padding: 2.5rem 2rem; border-radius: 16px; margin: 3rem 0; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);">
-          <div style="background: rgba(255,92,58,0.1); color: #FF5C3A; padding: 0.4rem 1rem; border-radius: 9999px; display: inline-block; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Destaca tu tienda</div>
-          <h3 style="color: #fff; margin-top: 0; margin-bottom: 1rem; font-size: 1.6rem; font-weight: 700;">¿Cansado de devoluciones por tallas incorrectas?</h3>
-          <p style="color: #bbb; margin-bottom: 2rem; line-height: 1.6; max-width: 90%; margin-left: auto; margin-right: auto; font-size: 1.05rem;">Integra el probador virtual con Inteligencia Artificial de Lookitry en tu e-commerce y permite a tus clientes verse con las prendas antes de comprar. ¡Aumenta tu conversión hasta un 35%!</p>
-          <a href="/register" style="display: inline-block; background: linear-gradient(to right, #FF5C3A, #ff7e63); color: #fff; padding: 1rem 2.5rem; border-radius: 9999px; font-weight: 700; font-size: 1.1rem; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(255,92,58,0.4);" onmouseover="this.style.transform='translateY(-2px) scale(1.02)'; this.style.boxShadow='0 8px 25px rgba(255,92,58,0.6)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 15px rgba(255,92,58,0.4)'">Implementar Probador Web Gratis</a>
+        <div class="blog-cta-mid" style="background: #141414; border: 1px solid rgba(255, 92, 58, 0.25); border-radius: 16px; padding: 2rem 2.5rem; margin: 3rem 0; position: relative; overflow: hidden;">
+          <!-- decorative corner accent -->
+          <div style="position: absolute; top: 0; right: 0; width: 120px; height: 120px; background: radial-gradient(circle at top right, rgba(255,92,58,0.15), transparent 70%); pointer-events: none;"></div>
+          <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(255,92,58,0.15); display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5C3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              </div>
+              <span style="color: #FF5C3A; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px;">Herramienta recomendada</span>
+            </div>
+            <div>
+              <h3 style="color: #ffffff; margin: 0 0 0.5rem 0; font-size: 1.4rem; font-weight: 700; line-height: 1.3;">¿Listo para reducir devoluciones en tu ecommerce?</h3>
+              <p style="color: #999999; margin: 0; font-size: 0.95rem; line-height: 1.6; max-width: 85%;">Permite que tus clientes se prueben virtualmente las prendas antes de comprar. <strong style="color: #ccc;">Hasta 35% más conversión</strong> y <strong style="color: #ccc;">devoluciones reducidas</strong> en tiendas que ya usan Lookitry.</p>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
+              <a href="/planes" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #FF5C3A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255,92,58,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255,92,58,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(255,92,58,0.3)'">Ver planes <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+              <a href="/planes" style="display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; color: #999; padding: 0.75rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.25)'; this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='#999'">Ver planes</a>
+            </div>
+          </div>
         </div>`;
       }
 
-      // CTA Intermedio #2 - After Section #7
-      if (i === 6) {
+      // CTA Intermedio #2 - After Section #6 (antes del último tercio)
+      if (i === 5) {
         sectionsHtml += `
         <div style="border-top: 1px dashed #333; border-bottom: 1px dashed #333; padding: 1.5rem 0; margin: 2rem 0;">
           <p style="margin: 0; font-size: 1.1rem; line-height: 1.6; text-align: center;">
@@ -403,10 +418,11 @@ function generateArticleHTML(
   const readingTime = reading_time_minutes ? `<span class="blog-reading-time">${reading_time_minutes} min de lectura</span>` : '';
 
   //Armar HTML completo
+  // NOTA: El hero image NO se incluye aquí - el frontend lo maneja con featured_image
+  // para evitar duplicación. El header solo tiene metadatos.
   const articleHtml = `<article class="blog-article">
-  <header class="blog-header">
-    ${heroImageHtml}
-    <h1>${title || ''}</h1>
+  <header class="blog-header-only-meta">
+    <h1 class="blog-title-only">${title || ''}</h1>
     ${excerpt ? `<p class="blog-excerpt">${excerpt}</p>` : ''}
     <div class="blog-meta">${tagsHtml}${readingTime}</div>
   </header>
@@ -479,16 +495,13 @@ async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean;
       return { success: false, message: 'No hay imágenes para ensamblar' };
     }
 
-    // 3. Verificar hero Y al menos 1 body image
+    // 3. Verificar hero (body images son opcionales para publicar)
     if (!images.imagen_hero_url) {
       return { success: false, message: 'Hero image aún no está lista' };
     }
 
-    // Verificar si hay body images (si no hay, no hacer nada todavía)
-    const hasBodyImages = images.imagen_body1_url || images.imagen_body2_url || images.imagen_body3_url || images.imagen_body4_url;
-    if (!hasBodyImages) {
-      return { success: false, message: 'Body images aún no están listas' };
-    }
+    // Body images son opcionales - publicamos con las que haya disponibles
+    // (generateArticleHTML tiene fallback si no hay body images)
 
     // 4. Si ya existe blog para este topic, verificar si tiene body images
     const { data: existingBlog } = await supabaseAdmin

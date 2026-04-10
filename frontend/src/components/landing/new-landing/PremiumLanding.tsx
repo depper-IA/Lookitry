@@ -15,7 +15,7 @@ import { PromoBanner } from './PromoBanner';
 import { PromoModal } from './PromoModal';
 import { ReviewsSlider } from './ReviewsSlider';
 import ActiveCouponsBanner from './ActiveCouponsBanner';
-import { PromoBannerProvider } from '@/context/PromoBannerContext';
+import { PromoBannerProvider } from '@/contexts/PromoBannerContext';
 
 import { PricingConfig } from '@/lib/pricing';
 import { PublicReview } from '@/types';

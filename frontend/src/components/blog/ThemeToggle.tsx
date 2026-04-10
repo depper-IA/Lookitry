@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export function ThemeToggle({ className = '' }: { className?: string }) {
   const { theme, toggleTheme, isDark } = useTheme();

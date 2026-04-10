@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 
-export const dynamic = 'force-dynamic';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AdminLoginPage() {
+  const { isDark } = useTheme();
   const router = useRouter();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -59,12 +61,12 @@ export default function AdminLoginPage() {
         className="w-full max-w-md"
       >
         <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative h-11 w-11 shrink-0">
-                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
-                <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative h-12 w-12 shrink-0">
+                <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" priority />
               </div>
-              <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
+              <span className="font-jakarta font-extrabold text-2xl tracking-tight transition-colors" 
+                    style={{ color: isDark ? '#ffffff' : '#0a0a0a' }}>
                 Look<span style={{ color: 'var(--accent)' }}>itry</span>
               </span>
           </Link>
@@ -150,18 +152,12 @@ export default function AdminLoginPage() {
                 </label>
                 <input
                   id="email"
-                  name="email"
                   type="email"
                   required
                   value={formData.email}
-                  onChange={e => setFormData({ ...formData, email: e.target.value })}
-                  className="block w-full px-4 py-3 rounded-xl border text-[13px] outline-none transition-colors"
-                  style={{
-                    backgroundColor: 'var(--bg-input)',
-                    borderColor: 'var(--border-color)',
-                    color: 'var(--text-primary)',
-                  }}
-                  placeholder="admin@ejemplo.com"
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] transition-all"
+                  placeholder="admin@lookitry.com"
                 />
               </div>
 
@@ -177,18 +173,12 @@ export default function AdminLoginPage() {
                 <div className="relative">
                   <input
                     id="password"
-                    name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={formData.password}
-                    onChange={e => setFormData({ ...formData, password: e.target.value })}
-                    className="block w-full px-4 py-3 pr-12 rounded-xl border text-[13px] outline-none transition-colors"
-                    style={{
-                      backgroundColor: 'var(--bg-input)',
-                      borderColor: 'var(--border-color)',
-                      color: 'var(--text-primary)',
-                    }}
-                    placeholder="Contraseña"
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] transition-all"
+                    placeholder="••••••••"
                   />
                   <button
                     type="button"
@@ -212,22 +202,20 @@ export default function AdminLoginPage() {
                 </div>
               </div>
 
-              <motion.button
+              <button
                 type="submit"
                 disabled={loading}
-                whileHover={{ scale: loading ? 1 : 1.01 }}
-                whileTap={{ scale: loading ? 1 : 0.98 }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
-                style={{ backgroundColor: 'var(--accent)', color: 'white' }}
+                className="w-full bg-[#FF5C3A] hover:bg-[#ff451f] text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#FF5C3A]/20 disabled:opacity-50 flex items-center justify-center gap-2 group"
               >
-                {loading && (
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span>Ingresar al Panel</span>
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </>
                 )}
-                {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-              </motion.button>
+              </button>
             </form>
 
             <p className="text-center text-[12px] mt-6" style={{ color: 'var(--text-muted)' }}>

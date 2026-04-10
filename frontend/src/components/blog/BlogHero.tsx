@@ -2,26 +2,31 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const BlogHero: React.FC = () => {
   const { isDark, colors } = useTheme();
 
   return (
-    <div className="relative overflow-hidden pt-32 pb-20">
+    <div className="relative overflow-hidden pt-32 pb-20 transition-colors duration-500">
       {/* Ambient glow effects - solo en dark mode */}
-      {isDark && (
+      {isDark ? (
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none">
           <div className="absolute top-[-20%] left-[-15%] w-[50%] h-[60%] bg-[#FF5C3A]/8 blur-[150px] rounded-full" />
           <div className="absolute top-[10%] right-[-10%] w-[40%] h-[50%] bg-[#FF5C3A]/5 blur-[120px] rounded-full" />
           <div className="absolute bottom-[-30%] left-[20%] w-[60%] h-[40%] bg-[#FF5C3A]/3 blur-[180px] rounded-full opacity-50" />
         </div>
+      ) : (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none">
+          <div className="absolute top-[-20%] left-[-15%] w-[50%] h-[60%] bg-[#FF5C3A]/5 blur-[120px] rounded-full opacity-30" />
+          <div className="absolute top-[10%] right-[-10%] w-[40%] h-[50%] bg-indigo-500/5 blur-[100px] rounded-full opacity-20" />
+        </div>
       )}
 
       {/* Decorative lines */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute top-40 left-0 w-32 h-px bg-gradient-to-r from-transparent ${isDark ? 'via-white/10' : 'via-black/10'} to-transparent`} />
-        <div className={`absolute top-40 right-0 w-32 h-px bg-gradient-to-r from-transparent ${isDark ? 'via-white/10' : 'via-black/10'} to-transparent`} />
+        <div className={`absolute top-40 left-0 w-32 h-px bg-gradient-to-r from-transparent ${isDark ? 'via-white/10' : 'via-black/5'} to-transparent`} />
+        <div className={`absolute top-40 right-0 w-32 h-px bg-gradient-to-r from-transparent ${isDark ? 'via-white/10' : 'via-black/5'} to-transparent`} />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
@@ -44,10 +49,10 @@ export const BlogHero: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className={`text-5xl md:text-7xl lg:text-8xl font-black mb-6 font-plus-jakarta tracking-tight leading-none ${isDark ? 'text-white' : 'text-[#0a0a0a]'}`}
+          className={`text-5xl md:text-7xl lg:text-8xl font-black mb-6 font-plus-jakarta tracking-tight leading-none ${isDark ? 'text-white' : 'text-zinc-900'}`}
         >
           Look<span className="text-[#FF5C3A]">itry</span>
-          <span className={`block mt-2 text-3xl md:text-5xl lg:text-6xl font-light tracking-wide ${isDark ? 'text-white/80' : 'text-black/60'}`}>
+          <span className={`block mt-2 text-3xl md:text-5xl lg:text-6xl font-light tracking-wide ${isDark ? 'text-white/80' : 'text-zinc-400'}`}>
             Editorial
           </span>
         </motion.h1>

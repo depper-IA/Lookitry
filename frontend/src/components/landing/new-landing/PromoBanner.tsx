@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePromoBanner } from '@/context/PromoBannerContext';
+import { usePromoBanner } from '@/contexts/PromoBannerContext';
 
 interface PromoBannerConfig {
   text: string;

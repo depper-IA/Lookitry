@@ -1,14 +1,16 @@
 'use client';
 
 import React from 'react';
-import ThemeProvider from '@/context/ThemeContext';
 import { ThemeToggle } from './ThemeToggle';
+export { useTheme } from '@/contexts/ThemeContext';
 
 export function BlogThemeWrapper({ children }: { children: React.ReactNode }) {
+  // We no longer need to provide a new ThemeProvider here as it's in the root layout.
+  // This component now just serves as a logical wrapper for blog specific layout needs if any.
   return (
-    <ThemeProvider>
+    <>
       {children}
-    </ThemeProvider>
+    </>
   );
 }
 
@@ -21,4 +23,3 @@ export function BlogHeader({ showToggle = true }: { showToggle?: boolean }) {
 }
 
 export { ThemeToggle };
-export { useTheme } from '@/context/ThemeContext';

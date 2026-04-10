@@ -148,6 +148,29 @@ Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 50
 - **OpenRouter**: Exclusivo para GENERACIÓN DE IMÁGENES del WIDGET (Try-On). PROHIBIDO usar sus créditos para otras tareas sin consentimiento explícito del usuario
 - Esta regla debe respetarse en todo momento: cualquier uso de OpenRouter debe ser únicamente para generación de imágenes del widget
 
+### 5.7 Prohibición de "Prueba Gratis"
+
+**REGLA ABSOLUTA:** En TODO el proyecto Lookitry QUEDA PROHIBIDO usar el término "prueba gratis" o similares.
+
+**Motivo:** Lookitry NO ofrece ninguna funcionalidad gratuita. El sistema tiene:
+- **Trial con pago:** El trial requiere un pago mínimo (según `trial_campaigns`)
+- **Planes de pago:** BASIC ($99 USD), PRO ($199 USD)
+- **Créditos extra:** Comprables via addon packages
+
+**Términos permitidos:**
+- ✅ "Comenzar trial" / "Iniciar trial"
+- ✅ "Prueba el servicio" / "Pruébalo"
+- ✅ "Ver planes" / "Comenzar"
+- ✅ "Agendar demo"
+
+**Términos PROHIBIDOS:**
+- ❌ "Prueba gratis" / "Free trial"
+- ❌ "7 días gratis"
+- ❌ "Trial gratuito"
+- ❌ Cualquier variante que implique gratuidad
+
+**Aplica a:** TODO el codebase (frontend, backend, blog, emails, n8n, documentación, prompts de IA)
+
 ---
 
 ## 6. Reglas de Proxy y Multimedia

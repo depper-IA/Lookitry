@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Calendar, ChevronRight } from 'lucide-react';
 import { getBlogFeaturedImage, getBlogTeaser } from '@/services/blog.service';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface BlogCardProps {
   post: {
@@ -62,7 +62,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, variant = 'default' })
     return (
       <Link
         href={`/blog/${post.slug}`}
-        className={`group relative col-span-2 row-span-2 flex flex-col overflow-hidden rounded-2xl border border-[#FF5C3A]/30 ${colors.card} transition-all duration-500 hover:border-[#FF5C3A]/60 hover:shadow-2xl hover:shadow-[#FF5C3A]/20 lg:col-span-2`}
+        className={`group relative col-span-2 row-span-2 flex flex-col overflow-hidden rounded-2xl border ${isDark ? 'border-[#FF5C3A]/30' : 'border-[#FF5C3A]/20'} ${colors.card} transition-all duration-500 hover:border-[#FF5C3A]/60 hover:shadow-2xl hover:shadow-[#FF5C3A]/20 lg:col-span-2`}
       >
         <div className="relative aspect-[16/10] overflow-hidden lg:aspect-[21/9]">
           {previewImage ? (
@@ -76,7 +76,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, variant = 'default' })
               <span className={`text-6xl font-bold ${isDark ? 'text-white/10' : 'text-black/10'}`}>Lookitry</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className={`absolute inset-0 bg-gradient-to-t ${isDark ? 'from-black/80' : 'from-black/60'} via-black/20 to-transparent`} />
           <div className="absolute left-4 top-4">
             <span className="rounded-full bg-[#FF5C3A] px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-[#FF5C3A]/30">
               Artículo destacado
@@ -84,7 +84,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, variant = 'default' })
           </div>
           {post.category && (
             <div className="absolute right-4 top-4">
-              <span className={`rounded-full bg-black/50 backdrop-blur-md px-3 py-1 text-xs font-bold uppercase tracking-wider border border-white/10 ${isDark ? 'text-white/90' : 'text-white'}`}>
+              <span className={`rounded-full bg-black/40 backdrop-blur-md px-3 py-1 text-xs font-bold uppercase tracking-wider border border-white/10 text-white`}>
                 {post.category.name}
               </span>
             </div>
@@ -97,11 +97,11 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, variant = 'default' })
             <span>{formatDate(postDate)}</span>
           </div>
 
-          <h2 className={`mb-4 font-plus-jakarta text-3xl font-black leading-tight transition-colors group-hover:text-[#FF5C3A] lg:text-4xl ${isDark ? 'text-white' : 'text-[#0a0a0a]'}`}>
+          <h2 className={`mb-4 font-plus-jakarta text-3xl font-black leading-tight transition-colors group-hover:text-[#FF5C3A] lg:text-4xl ${isDark ? 'text-white' : 'text-zinc-900'}`}>
             {post.title}
           </h2>
 
-          <p className={`mb-8 flex-grow text-base leading-relaxed lg:text-lg ${isDark ? 'text-[#b5b5b5]' : 'text-gray-600'}`}>
+          <p className={`mb-8 flex-grow text-base leading-relaxed lg:text-lg ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
             {teaser}
           </p>
 
@@ -117,7 +117,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, variant = 'default' })
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className={`group flex flex-col overflow-hidden rounded-2xl border ${isDark ? 'border-white/5' : 'border-black/5'} ${colors.card} transition-all duration-300 hover:border-[#FF5C3A]/50 hover:shadow-2xl hover:shadow-[#FF5C3A]/10`}
+      className={`group flex flex-col overflow-hidden rounded-2xl border ${isDark ? 'border-zinc-800' : 'border-zinc-100'} ${colors.card} transition-all duration-300 hover:border-[#FF5C3A]/50 hover:shadow-2xl hover:shadow-[#FF5C3A]/10`}
     >
       <div className="relative aspect-video overflow-hidden">
         {previewImage ? (
@@ -133,7 +133,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, variant = 'default' })
         )}
         {post.category && (
           <div className="absolute left-4 top-4">
-            <span className="rounded-full bg-[#FF5C3A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+            <span className="rounded-full bg-[#FF5C3A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg shadow-[#FF5C3A]/20">
               {post.category.name}
             </span>
           </div>
@@ -146,11 +146,11 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, variant = 'default' })
           <span>{formatDate(postDate)}</span>
         </div>
 
-        <h3 className={`mb-3 line-clamp-2 font-plus-jakarta text-xl font-bold leading-tight transition-colors group-hover:text-[#FF5C3A] ${isDark ? 'text-white' : 'text-[#0a0a0a]'}`}>
+        <h3 className={`mb-3 line-clamp-2 font-plus-jakarta text-xl font-bold leading-tight transition-colors group-hover:text-[#FF5C3A] ${isDark ? 'text-white' : 'text-zinc-900'}`}>
           {post.title}
         </h3>
 
-        <p className={`mb-6 flex-grow line-clamp-3 text-sm leading-relaxed ${isDark ? 'text-[#b5b5b5]' : 'text-gray-600'}`}>
+        <p className={`mb-6 flex-grow line-clamp-3 text-sm leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
           {teaser}
         </p>
 
