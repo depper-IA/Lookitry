@@ -484,7 +484,7 @@ async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean;
       return { success: false, message: 'Hero image aún no está lista' };
     }
 
-    // 4. Si ya está publicado, verificar si necesita actualización (si llegaron más imágenes body)
+    // 4. Si ya está publicado, verificar si necesita actualización
     const { data: existingBlog } = await supabaseAdmin
       .from('blogs')
       .select('slug, content')
@@ -492,19 +492,29 @@ async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean;
       .maybeSingle();
 
     if (existingBlog) {
-      // Verificar si el HTML actual ya tiene imágenes body (si no, re-generar)
+      // Contar cuántas body images tiene el HTML actual
       const currentContent = existingBlog.content || '';
-      const hasBodyImagesInHtml = (images.imagen_body1_url && currentContent.includes(images.imagen_body1_url)) ||
-                                 (images.imagen_body2_url && currentContent.includes(images.imagen_body2_url)) ||
-                                 (images.imagen_body3_url && currentContent.includes(images.imagen_body3_url)) ||
-                                 (images.imagen_body4_url && currentContent.includes(images.imagen_body4_url));
+      let bodyImagesInHtml = 0;
+      if (images.imagen_body1_url && currentContent.includes(images.imagen_body1_url)) bodyImagesInHtml++;
+      if (images.imagen_body2_url && currentContent.includes(images.imagen_body2_url)) bodyImagesInHtml++;
+      if (images.imagen_body3_url && currentContent.includes(images.imagen_body3_url)) bodyImagesInHtml++;
+      if (images.imagen_body4_url && currentContent.includes(images.imagen_body4_url)) bodyImagesInHtml++;
 
-      if (hasBodyImagesInHtml) {
-        return { success: true, message: 'Ya publicado con body images', slug: existingBlog.slug };
+      // Contar cuántas body images están disponibles en DB
+      let bodyImagesAvailable = 0;
+      if (images.imagen_body1_url) bodyImagesAvailable++;
+      if (images.imagen_body2_url) bodyImagesAvailable++;
+      if (images.imagen_body3_url) bodyImagesAvailable++;
+      if (images.imagen_body4_url) bodyImagesAvailable++;
+
+      // Si hay más imágenes disponibles que en el HTML, re-generar
+      if (bodyImagesInHtml < bodyImagesAvailable) {
+        console.log(`[Blog AutoAssemble] Artículo existe con ${bodyImagesInHtml} body images pero hay ${bodyImagesAvailable} disponibles. Re-generando...`);
+        // Delete existing article so it gets recreated with all images
+        await supabaseAdmin.from('blogs').delete().eq('topic_id', topicId);
+      } else {
+        return { success: true, message: 'Ya publicado con todas las body images', slug: existingBlog.slug };
       }
-
-      // Re-generar HTML con las nuevas imágenes body
-      console.log(`[Blog AutoAssemble] Artículo existe pero faltan body images. Re-generando...`);
     }
 
     // 5. Obtener CTA templates
