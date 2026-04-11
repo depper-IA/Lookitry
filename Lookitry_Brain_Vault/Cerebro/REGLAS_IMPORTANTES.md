@@ -80,6 +80,7 @@ Para evitar corrupciones de codigo y caidas del sistema:
 ### 5.2 Programacion Defensiva (Frontend)
 - **Optional Chaining (?.)**: Obligatorio en TODOS los accesos a datos de API o Supabase
 - **Fallbacks de Renderizado**: Siempre proveer valores por defecto en componentes de UI.
+- **Precios dinámicos obligatorios**: Los precios de planes NUNCA deben estar hardcodeados en componentes de UI. Usar siempre `getPricingConfig()` de `@/lib/pricing` que lee de Supabase `pricing_config`.
 
 ### 5.3 Robustez de Backend
 - Usar bloques try-catch granulares

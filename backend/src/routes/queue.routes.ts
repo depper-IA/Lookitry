@@ -91,6 +91,16 @@ async function processNextJob(): Promise<void> {
 }
 
 setInterval(() => {
+  // Solo procesar si Redis está conectado
+  if ((generationQueueService as any).isReady && !(generationQueueService as any).isReady()) {
+    return;
+  }
+  
+  // Como generationQueueService usa el singleton de redis, podemos chequear el status directamente
+  if (require('../config/redis').redis.status !== 'ready') {
+    return;
+  }
+
   processNextJob().catch(err => {
     console.error('[Queue Worker] Error processing job:', err.message);
   });
