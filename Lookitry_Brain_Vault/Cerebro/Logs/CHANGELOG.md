@@ -1,4 +1,21 @@
-# Changelog - Lookitry (AI Assisted)
+## [2026-04-10] - Redis Queue Implementation & Production Fix
+
+### Fix: Redis Connection in Production
+- **Backend Config**: Actualizada la conexión a Redis para usar `REDIS_URL` desde variables de entorno.
+- **Entorno VPS**: Configurado `REDIS_URL=redis://root-redis-1:6379` en el VPS (contenedor interno en red `proxy`).
+- **Resolución**: Corregido error "Connection is closed" que ocurría al intentar conectar a `localhost:6379` dentro del contenedor de backend.
+
+### Feature: Asynchronous Try-On Queue
+- **Background Worker**: Activado el procesamiento asíncrono en `queue.routes.ts` mediante `setInterval` (cada 2 segundos).
+- **Architecture**: El backend ahora encola las peticiones de generación y el worker las consume de forma ordenada, gestionando la concurrencia por marca.
+- **Workflow n8n**: El worker dispara el webhook `wPLypk7KhBcFLicX` de forma asíncrona.
+
+### Documentation: Brain Vault Sync
+- **TECH_STACK.md**: Actualizado con el rol de Redis como "Job Queue" y nuevos servicios de cola.
+- **PRD.md**: Reflejado el flujo asíncrono en la arquitectura de Try-On.
+
+---
+
 
 ## [2026-04-10] - Smart Dynamic Colors for Mini-Landing Templates
 

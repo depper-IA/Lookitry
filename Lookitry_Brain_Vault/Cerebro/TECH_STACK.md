@@ -16,7 +16,7 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | **IA / Try-On** | n8n + OpenRouter | — | Orquestación de IA |
 | **Styling** | Tailwind CSS | 3.4.0 | Diseño y UI |
 | **Almacenamiento** | MinIO (S3 compatible) | — | Assets e imágenes generadas |
-| **Cache** | Redis (ioredis) | — | Brand config cache, sesiones |
+| **Cache & Queue** | Redis (ioredis) | 5.10.1 | Brand config cache y Job Queue (Try-On) |
 | **Reverse Proxy** | Traefik | — | Routing Docker |
 | **Anti-spam** | Cloudflare Turnstile | — | Protección de formularios |
 | **Analytics** | Google Analytics (GA4) | — | Métricas de tráfico |
@@ -610,11 +610,14 @@ Motor de reglas de prompt por categoría de producto con 15+ categorías:
 - **Cupones:** Pueden cubrir 100% (free upgrade directo).
 - **Add-on credits:** Compra de generaciones extra.
 
-### 7.3 Flujo de Generación (Try-On)
-1. Usuario sube selfie -> Backend -> Webhook n8n.
-2. n8n procesa con IA usando reglas de prompt por categoría.
-3. Frontend hace **Polling** hasta que el estado sea `SUCCESS`.
-4. Usuario puede reportar error (feedback con embedding RAG).
+### 7.3 Flujo de Generación (Try-On Asíncrono)
+1. Usuario sube selfie en el widget -> `POST /api/pruebalo/:slug/generate`.
+2. Backend valida créditos y **encola el trabajo** en Redis usando `generation-queue.service`.
+3. El **Queue Worker** (`setInterval` en `queue.routes.ts`) procesa el siguiente trabajo disponible.
+4. El Worker adquiere un slot de concurrencia (`generation-concurrency.service`) y llama al Webhook n8n.
+5. n8n procesa con IA y actualiza Supabase con el resultado.
+6. Frontend hace **Polling** a `/api/generations/:id` hasta que `status = SUCCESS`.
+7. Usuario puede reportar error (feedback con embedding RAG).
 
 ### 7.4 Sistema de Blog Automation (Arquitectura de 3 Workflows)
 
@@ -747,6 +750,8 @@ El sistema de blog automatizado está refactorizado en **3 workflows independien
 | `trm.ts` | Fetch de tasa de cambio COP |
 | `wooTelemetry.ts` | Telemetría de WooCommerce |
 | `cleanup.service` | Limpieza de archivos temporales |
+| `generation-queue.service` | Gestión de cola de trabajos Redis |
+| `generation-concurrency.service` | Control de concurrencia por marca |
 | `enterprise.service` | Sync de productos enterprise |
 | `coupon.service` | Validación y redención de cupones |
 | `referral.service` | Conversión automática de referidos y acreditación de 500 créditos extra al referente |
@@ -902,6 +907,17 @@ LOOKITRY/
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth |
 | `GOOGLE_PLACES_API_KEY` | API key Google Places (Lead Generation) |
 | `BREVO_API_KEY` | API key Brevo SMTP |
+
+---
+
+## 11. Seguridad Reforzada (Abril 2026)
+
+| Área | Cambio | Estado |
+|------|--------|--------|
+| Docker Compose | Secretos en variables de entorno | ✅ Implementado |
+| JWT Logout | Blacklist en Redis | ⚠️ Pendiente |
+| CSRF Protection | Tokens en formularios | ⚠️ Pendiente |
+| HSTS Frontend | Header Strict-Transport-Security | ⚠️ Pendiente |
 
 ---
 

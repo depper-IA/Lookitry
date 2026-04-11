@@ -123,11 +123,12 @@
 
 ### 4.3 Flujo de Try-On (IA)
 1. Usuario sube selfie en el widget.
-2. Backend dispara Webhook `/webhook/tryon` en n8n (ID: `wPLypk7KhBcFLicX`).
-3. n8n procesa con IA usando reglas de prompt por categoría (`prompt-rules.ts`).
-4. n8n actualiza Supabase con resultado.
-5. Frontend hace polling hasta que `status = SUCCESS`.
-6. Usuario puede reportar error (feedback con embedding pgvector para RAG).
+2. Backend valida la solicitud y encola el trabajo en una **cola de Redis**.
+3. Un **Worker de segundo plano** procesa la cola, gestiona la concurrencia y dispara el Webhook `/webhook/tryon` en n8n (ID: `wPLypk7KhBcFLicX`).
+4. n8n procesa con IA usando reglas de prompt por categoría (`prompt-rules.ts`).
+5. n8n actualiza Supabase con el resultado.
+6. Frontend hace **polling** hasta que `status = SUCCESS`.
+7. Usuario puede reportar error (feedback con embedding pgvector para RAG).
 
 ### 4.4 Flujo de Pago (Wompi)
 1. Usuario selecciona plan en checkout.
@@ -308,5 +309,18 @@
 ---
 
 ##不走
+
+## Issues Conocidos (Abril 2026)
+
+| Issue | Severidad | Estado |
+|-------|-----------|--------|
+| Secretos en docker-compose | CRÍTICO | ✅ Arreglado |
+| Precios inconsistentes /terminos vs /planes | CRÍTICO | ✅ Arreglado |
+| URLs 404 en sitemap | ALTO | ✅ Arreglado (redirecciones) |
+| Trial confundidor ($20.000 vs gratis) | ALTO | ✅ Arreglado |
+| Sin skeleton loaders | MEDIO | ⚠️ Pendiente |
+| Testimoniales mock | MEDIO | ⚠️ Pendiente |
+
+---
 
 **Última actualización:** Abril 2026.
