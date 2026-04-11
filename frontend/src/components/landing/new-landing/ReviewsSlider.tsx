@@ -116,7 +116,14 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
 
                           <div className="mt-4 sm:mt-6 flex items-center gap-2.5 sm:gap-3 border-t border-[#f0ebe5] dark:border-white/5 pt-4 sm:pt-5">
                             {review.avatar_url ? (
-                              <Image src={review.avatar_url} alt={review.reviewer_name} width={40} height={40} className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shrink-0" />
+                              <Image 
+                                src={review.avatar_url} 
+                                alt={review.reviewer_name} 
+                                width={40} 
+                                height={40} 
+                                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shrink-0" 
+                                unoptimized={review.avatar_url.toLowerCase().endsWith('.svg')}
+                              />
                             ) : (
                               <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-[#FF5C3A] text-xs sm:text-sm font-bold text-white shrink-0">
                                 {getInitials(review.reviewer_name)}
