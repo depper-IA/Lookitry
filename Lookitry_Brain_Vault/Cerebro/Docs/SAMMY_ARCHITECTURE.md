@@ -612,6 +612,22 @@ Buscar en los logs:
 2. Editar `sammy/.env` en local (para desarrollo).
 3. Correr `python scripts/_deploy_now.py --backend` para subir al VPS.
 
+### Bug conocido: MiniMax reasoning_content en lugar de content
+**Síntoma:** Sammy recibe mensajes pero se queda colgado, haciendo retry infinito de MiniMax.
+
+**Causa:** MiniMax-M2.7 a veces devuelve `reasoning_content` en lugar de `content` cuando el `max_tokens` es bajo o hay razonamiento interno. El código original solo leía `message.content`, que venía vacío.
+
+**Solución:** En `sammy/src/llm/index.ts`, el `MiniMaxProvider` ahora hace fallback a `reasoning_content` si `content` está vacío:
+
+```typescript
+let finalContent = message.content ?? '';
+if (!finalContent && message.reasoning_content) {
+  finalContent = message.reasoning_content;
+}
+```
+
+**Verificado:** 2026-04-11 — commit `dd2a5c0`
+
 ---
 
 *Documento mantenido por DocsWriter. Actualizar cada vez que se agregue un agente, se cambie el LLM manager, o se modifiquen las variables de entorno.*

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Star } from 'lucide-react';
+import Image from 'next/image';
 import { PublicReview } from '@/types';
 
 interface LandingReviewsProps {
@@ -60,9 +61,20 @@ export default function LandingReviews({ reviews }: LandingReviewsProps) {
               </p>
 
               <div className="flex items-center gap-3 sm:gap-4 border-t border-[#e8e4df] dark:border-white/5 pt-4 sm:pt-6 relative z-10">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#FF5C3A] flex items-center justify-center font-jakarta font-bold text-base sm:text-lg text-white shadow-lg shadow-[#FF5C3A]/20 transition-transform group-hover:scale-110 shrink-0">
-                  {rev.reviewer_name.charAt(0)}
-                </div>
+                {rev.avatar_url ? (
+                  <Image 
+                    src={rev.avatar_url} 
+                    alt={rev.reviewer_name} 
+                    width={48} 
+                    height={48}
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl object-cover shadow-lg shadow-[#FF5C3A]/10 transition-transform group-hover:scale-110 shrink-0"
+                    unoptimized={rev.avatar_url.toLowerCase().endsWith('.svg')}
+                  />
+                ) : (
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#FF5C3A] flex items-center justify-center font-jakarta font-bold text-base sm:text-lg text-white shadow-lg shadow-[#FF5C3A]/20 transition-transform group-hover:scale-110 shrink-0">
+                    {rev.reviewer_name.charAt(0)}
+                  </div>
+                )}
                 <div>
                   <h4 className="font-jakarta font-bold text-xs sm:text-sm text-black dark:text-white group-hover:text-[#FF5C3A] transition-colors">{rev.reviewer_name}</h4>
                   <p className="text-[9px] sm:text-[10px] text-[#666] dark:text-white/40 uppercase tracking-[0.15em] sm:tracking-[0.2em] font-bold">{rev.reviewer_plan}</p>

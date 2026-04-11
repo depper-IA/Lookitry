@@ -1,3 +1,29 @@
+## [2026-04-11] - Sammy MiniMax reasoning_content Fix
+
+### Fix: Sammy se quedaba colgado al recibir mensajes
+
+**Síntoma:** Sammy recibía mensajes por Telegram pero no respondía, entrando en retry infinito hacia MiniMax.
+
+**Causa:** MiniMax-M2.7 a veces devuelve la respuesta en el campo `reasoning_content` en lugar de `content`, especialmente con prompts de razonamiento. El código original solo leía `message.content ?? ''` que venía vacío.
+
+**Solución:** Actualizado `sammy/src/llm/index.ts` para hacer fallback a `reasoning_content` cuando `content` está vacío:
+
+```typescript
+let finalContent = message.content ?? '';
+if (!finalContent && message.reasoning_content) {
+  finalContent = message.reasoning_content;
+}
+```
+
+**Commit:** `dd2a5c0` — "fix(sammy): handle MiniMax reasoning_content when content is empty"
+
+**Archivos modificados:**
+- `sammy/src/llm/index.ts` — MiniMaxProvider ahora soporta reasoning_content
+
+**Documentación:** Actualizado `SAMMY_ARCHITECTURE.md` con la sección "Bug conocido"
+
+---
+
 ## [2026-04-10] - Redis Queue Implementation & Production Fix
 
 ### Fix: Redis Connection in Production
