@@ -122,6 +122,7 @@ export class MiniMaxProvider implements LLMProvider {
         choices: Array<{
           message: {
             content: string | null;
+            reasoning_content?: string;
             tool_calls?: Array<{
               id: string;
               function: { name: string; arguments: string };
@@ -137,8 +138,13 @@ export class MiniMaxProvider implements LLMProvider {
       const choice = data.choices[0];
       const message = choice.message;
 
+      let finalContent = message.content ?? '';
+      if (!finalContent && message.reasoning_content) {
+        finalContent = message.reasoning_content;
+      }
+
       return {
-        content: message.content ?? '',
+        content: finalContent,
         toolCalls: message.tool_calls?.map((tc) => ({
           id: tc.id,
           name: tc.function.name,
