@@ -161,6 +161,7 @@ export interface BrandContextValue {
   products: ProductData[];
   updateBrand: (patch: Partial<BrandData>) => void;
   updateProduct: (id: string, patch: Partial<ProductData>) => void;
+  children?: React.ReactNode;
 }
 const BrandContext = createContext<BrandContextValue | null>(null);
 export function BrandProvider({ brand, products, children, updateBrand, updateProduct }: BrandContextValue) {

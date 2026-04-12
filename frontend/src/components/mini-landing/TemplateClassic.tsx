@@ -208,7 +208,6 @@ function ClassicSteps({ brand, primaryColor, secondaryColor }: { brand: BrandDat
   const steps = [
     {
       n: '01',
-,
       t: stepsDef?.select_label || 'Selecciona',
       d: stepsDef?.select_desc || 'Elige cualquier prenda de nuestro catalogo curado para comenzar.',
     },
