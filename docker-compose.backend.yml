@@ -8,7 +8,6 @@ services:
     env_file:
       - /root/virtual-tryon/backend/.env.production
     environment:
-      - ENTERPRISE_SYNC_TOKEN=lookitry_enterprise_sync_2026_03_27_WilkieSecure
       - NODE_OPTIONS=--max-old-space-size=512
     networks:
       - proxy
