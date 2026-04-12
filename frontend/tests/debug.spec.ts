@@ -59,8 +59,9 @@ test('Debug widget loading', async ({ page }) => {
     try {
       await loadingLocator.waitFor({ state: 'hidden', timeout: 30000 });
       console.log('Loading disappeared!');
-    } catch (e) {
-      console.log('Loading never disappeared:', e.message);
+    } catch (e: unknown) {
+      const error = e instanceof Error ? e.message : String(e);
+      console.log('Loading never disappeared:', error);
       console.log('Console errors:', consoleErrors);
       console.log('Failed responses:', failedResponses);
       console.log('All relevant requests:', allRequests);

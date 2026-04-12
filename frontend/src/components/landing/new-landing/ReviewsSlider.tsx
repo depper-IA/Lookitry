@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import type { PublicReview } from '@/types';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 
 interface ReviewsSliderProps {
   reviews: PublicReview[];
@@ -28,8 +29,16 @@ function getInitials(name: string): string {
 export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: ReviewsSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const intervalRef = useRef<number | null>(null);
   const slides = useMemo(() => reviews, [reviews]);
+
+  // Set loading to false when reviews are provided
+  useEffect(() => {
+    if (reviews && reviews.length > 0) {
+      setIsLoading(false);
+    }
+  }, [reviews]);
 
   useEffect(() => {
     if (slides.length <= 1 || paused) return;
@@ -42,6 +51,24 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
       if (intervalRef.current) window.clearInterval(intervalRef.current);
     };
   }, [slides.length, paused]);
+
+  if (isLoading) {
+    return (
+      <section className="bg-white dark:bg-[#0d0d0d] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20" aria-label="Loading reviews">
+        <div className="mx-auto max-w-5xl sm:max-w-[1180px]">
+          <div className="mb-8 sm:mb-10 text-center">
+            <p className="mb-2 sm:mb-3 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.12em] text-[#FF5C3A]">Reviews</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0a0a0a] dark:text-white md:text-4xl">Lo que dicen nuestras marcas</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <SkeletonCard key={i} avatar lines={3} />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (!slides.length) return null;
 
