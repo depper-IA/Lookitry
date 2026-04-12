@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import { TemplateClassic } from './TemplateClassic';
 import { TemplateEditorial } from './TemplateEditorial';
 import { TemplateModerno } from './TemplateModerno';
@@ -133,6 +134,34 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
 
   return (
     <div className="relative">
+      <Head>
+        <title>{brand.name} — Pruébatelo con IA | Lookitry</title>
+        <meta name="description" content={brand.brand_description || `Pruébate virtualmente la ropa de ${brand.name}. Sin devoluciones, sin dudas.`} />
+        <meta property="og:title" content={`${brand.name} — Pruébatelo con IA`} />
+        <meta property="og:description" content={brand.brand_description || 'Sin devoluciones, sin dudas.'} />
+        <meta property="og:image" content={brand.cover_image_url || brand.logo || ''} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${process.env.NEXT_PUBLIC_BASE_URL || 'https://lookitry.com'}/sitio/${brand.slug}`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": brand.name,
+              "description": brand.brand_description,
+              "image": brand.cover_image_url,
+              "brand": { "@type": "Brand", "name": brand.name },
+              "offers": {
+                "@type": "Offer",
+                "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://lookitry.com'}/sitio/${brand.slug}`,
+                "priceCurrency": "COP"
+              }
+            })
+          }}
+        />
+      </Head>
       <DynamicFontStyles />
       {/* Timer flotante discreto (Datos dinámicos) */}
       {!brand.has_landing_page && timeLeft !== null && timeLeft > 0 && !isBlocked && (

@@ -91,7 +91,7 @@ function EditorialProductCard({ product, selected, primaryColor, onClick }: { pr
   return (
     <button onClick={onClick} className="group text-left w-full space-y-3 transition-all">
       <div className={`relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-gray-50 border-2 transition-all duration-500 ${selected ? 'shadow-2xl shadow-[var(--secondary-20)] scale-[1.02]' : 'hover:shadow-xl'}`} style={{ borderColor: selected ? primaryColor : 'transparent' }}>
-        <ProductImage src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <ProductImage src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
         {product.badge && <div className="absolute top-2 left-2 md:top-3 md:left-3 scale-90 origin-top-left"><ProductBadge badge={product.badge} /></div>}
         {selected && (
           <div className="absolute inset-0 bg-[var(--secondary-10)] flex items-center justify-center backdrop-blur-[1px]">

@@ -1,0 +1,55 @@
+/* ── Mission Control Dark Theme ────────────────────────────────────────────── */
+:root {
+  --mc-bg-primary: #030712;
+  --mc-bg-secondary: #0f172a;
+  --mc-bg-tertiary: #1e293b;
+  --mc-bg-card: #1a2332;
+  --mc-accent-cyan: #06b6d4;
+  --mc-accent-emerald: #10b981;
+  --mc-accent-amber: #f59e0b;
+  --mc-accent-rose: #f43f5e;
+  --mc-accent-violet: #8b5cf6;
+  --mc-accent-blue: #3b82f6;
+  --mc-text-primary: #f8fafc;
+  --mc-text-secondary: #94a3b8;
+  --mc-text-muted: #64748b;
+  --mc-border-color: #334155;
+  --mc-glow-cyan: 0 0 40px rgba(6, 182, 212, 0.15);
+  --mc-glow-emerald: 0 0 40px rgba(16, 185, 129, 0.15);
+
+  /* Light mode overrides */
+  --mc-bg-primary: #030712;
+  --mc-bg-card: #1a2332;
+  --mc-text-primary: #f8fafc;
+  --mc-text-secondary: #94a3b8;
+  --mc-border-color: #334155;
+}
+
+.mc-bg-grid {
+  background-image:
+    linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.mc-glow-1 {
+  background: var(--mc-accent-cyan);
+  opacity: 0.15;
+  filter: blur(150px);
+}
+
+.mc-glow-2 {
+  background: var(--mc-accent-violet);
+  opacity: 0.1;
+  filter: blur(150px);
+}
+
+/* Status pulse animation */
+@keyframes mc-status-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+
+.mc-status-dot {
+  animation: mc-status-pulse 2s ease-in-out infinite;
+}

@@ -55,9 +55,9 @@
       "prompt": "Sammy es el orquestador maestro de Lookitry. Su cerebro funcional es Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Recibe tareas y delega al agente especialista indicado. PROHIBIDO ejecutar o delegar sin validar primero que la tarea cumple con las directivas de REGLAS_IMPORTANTES. NO edita codigo directamente.",
       "permissions": {
         "read": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "bash": "deny"
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
       }
     },
     "webwizard": {
@@ -150,15 +150,24 @@
       }
     },
     "supabase": {
-      "type": "remote",
-      "url": "https://mcp.supabase.com/mcp?project_ref=vkdooutklowctuudjnkl&features=docs%2Caccount%2Cdatabase%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage%2Cdebugging",
-      "enabled": true
+      "type": "local",
+      "command": [
+        "npx",
+        "tsx",
+        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/supabase-mcp/src/index.ts"
+      ],
+      "enabled": true,
+      "environment": {
+        "SUPABASE_URL": "https://vkdooutklowctuudjnkl.supabase.co",
+        "SUPABASE_SERVICE_KEY": "***REMOVED-SECRET***"
+      }
     },
     "n8n": {
       "type": "local",
       "command": [
-        "node",
-        "C:\\Users\\Matt\\Lookitry\\.opencode\\mcp-servers\\n8n-mcp-server\\dist\\index.js"
+        "npx",
+        "tsx",
+        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/n8n-mcp-server/src/index.ts"
       ],
       "enabled": true,
       "environment": {
