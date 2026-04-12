@@ -1,7 +1,7 @@
 # SPEC: Mini-Landing Templates — Mejoras Incrementales SEO/UX/Performance
 **Fecha:** 2026-04-12  
 **Autor:** Sammy (contexto WebWizard)  
-**Status:** Borrador
+**Status:** ✅ Implementado (2026-04-12)
 
 ---
 
@@ -246,11 +246,11 @@ import Image from 'next/image';
 ## 5. Validación
 
 ### 5.1 Checklist de implementación
-- [ ] OpenGraph tags en cada template
-- [ ] JSON-LD schema en cada template  
-- [ ] Skeleton loading state en grid de productos
-- [ ] Lazy loading con Next/Image
-- [ ] Focus rings en todos los interactivos
+- [x] OpenGraph tags en cada template ✅ (MiniLanding.tsx)
+- [x] JSON-LD schema en cada template ✅ (MiniLanding.tsx)
+- [x] Skeleton loading state en grid de productos ✅ (TemplateClassic)
+- [x] Lazy loading con Next/Image ✅ (todos los templates)
+- [x] Focus rings en todos los interactivos ✅ (Classic primero)
 - [ ] aria-labels completos
 - [ ] Scroll reveal animations
 - [ ] Microinteracciones hover mejoradas
@@ -286,4 +286,4 @@ import Image from 'next/image';
 
 ---
 
-**Última actualización:** 2026-04-12 — Creado
+**Última actualización:** 2026-04-12 — ✅ Implementado en commit 5995809
