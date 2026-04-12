@@ -691,6 +691,108 @@ export const referralBonusCreditedEmail = (brand: BrandInfo, credits: number): s
   return baseTemplate(content);
 };
 
+export const trialEndingSoonEmail = (brand: BrandInfo, daysRemaining: number): string => {
+  const content = `
+    <h2 style="color: #c0392b; margin-top: 0; font-size: 20px;">Tu período de prueba termina pronto</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Tu trial en LOOKITRY termina en <strong style="color: #c0392b;">${daysRemaining} día${daysRemaining > 1 ? 's' : ''}</strong>.
+      Asegúrate de tener todo listo para continuar sin interrupciones.
+    </p>
+    <div style="background-color: #fff5f5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #c0392b;">
+      <h3 style="color: #c0392b; margin-top: 0; font-size: 15px;">¿Qué hacer ahora?</h3>
+      <ul style="color: #555; margin: 10px 0 0 0; padding-left: 20px; font-size: 14px;">
+        <li>Verifica que tus productos estén cargados</li>
+        <li>Revisa la configuración de tu probador virtual</li>
+        <li>Confirma que tu mini-landing esté lista</li>
+      </ul>
+    </div>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Cuando termine tu trial, podrás elegir el plan que mejor se adapte a tu negocio.
+    </p>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${APP_URL}/dashboard"
+         style="background-color: ${ACCENT_COLOR}; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Revisar mi cuenta
+      </a>
+    </div>
+  `;
+  return baseTemplate(content);
+};
+
+/**
+ * Email de nudge para que el usuario complete el setup durante el trial.
+ * Se envía cuando el trial está por terminar Y el usuario no ha subido productos o no ha configurado landing.
+ */
+export const trialNudgeSetupEmail = (brand: BrandInfo, daysRemaining: number): string => {
+  const content = `
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Casi termina tu trial — ¡No te quedes sin verlo!</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Tu trial en LOOKITRY termina en <strong style="color: #c0392b;">${daysRemaining} día${daysRemaining > 1 ? 's' : ''}</strong>.
+      ¿Ya conociste lo que puedes hacer con tu probador virtual?
+    </p>
+    <div style="background-color: #fff8f6; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${ACCENT_COLOR};">
+      <h3 style="color: #0a0a0a; margin-top: 0; font-size: 15px;">🚀 Empieza en minutos:</h3>
+      <ol style="color: #555; margin: 10px 0 0 0; padding-left: 20px; font-size: 14px; line-height: 1.8;">
+        <li>Sube tu primer producto con fotos reales</li>
+        <li>Activa tu mini-landing para recibir visitas</li>
+        <li>Prueba cómo queda tu ropa en el probador virtual</li>
+      </ol>
+    </div>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Este es el mejor momento para validar que LOOKITRY funciona para tu marca.
+    </p>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${APP_URL}/dashboard"
+         style="background-color: ${ACCENT_COLOR}; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Empezar ahora
+      </a>
+    </div>
+  `;
+  return baseTemplate(content);
+};
+
+/**
+ * Email de recordatorio post-registro para completar el perfil.
+ * Se envía 24h después de verificar el email, si no ha subido productos.
+ */
+export const onboardingProductReminderEmail = (brand: BrandInfo): string => {
+  const content = `
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Bienvenido(a) — El siguiente paso es clave</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Tu cuenta en LOOKITRY está activa y tu email ha sido confirmado.
+      El siguiente paso para activar tu probador virtual es <strong>subir tu primer producto</strong>.
+    </p>
+    <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+      <h3 style="color: #065f46; margin-top: 0; font-size: 15px;">¿Qué sube un producto?</h3>
+      <p style="color: #065f46; margin: 6px 0; font-size: 14px;">
+        Una foto de tu prenda (femenina o masculina) y algunas variantes. Con eso, el probador virtual puede mostrar cómo queda en diferentes cuerpos y estilos.
+      </p>
+    </div>
+    <div style="background-color: #fff8f6; padding: 16px 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${ACCENT_COLOR};">
+      <p style="color: #555; margin: 0; font-size: 14px; line-height: 1.6;">
+        <strong>¿Qué incluye tu mini-landing?</strong><br/>
+        Tu página personalizada con tu logo, colores y los productos que subas. Comienza con uno y ve cómo se ve.
+      </p>
+    </div>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${APP_URL}/dashboard"
+         style="background-color: ${ACCENT_COLOR}; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Subir mi primer producto
+      </a>
+    </div>
+  `;
+  return baseTemplate(content);
+};
+
 export const referralConvertedNotifierEmail = (referrer: BrandInfo, referredName: string): string => {
   const content = `
     <div style="text-align: center; margin-bottom: 20px;">

@@ -67,6 +67,132 @@ async function sendExpirationNotifications(days: number): Promise<number> {
 }
 
 /**
+ * Envía notificaciones de trial por vencer a marcas con plan TRIAL.
+ * Solo para trials que vencen en 2 o 3 días.
+ */
+async function sendTrialEndingNotifications(): Promise<number> {
+  try {
+    console.log('\n📧 Enviando notificaciones de trial por vencer...');
+    const { supabaseAdmin } = await import('../config/supabase');
+    const now = new Date();
+    const twoDaysFromNow = new Date();
+    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+    const fourDaysFromNow = new Date();
+    fourDaysFromNow.setDate(fourDaysFromNow.getDate() + 4);
+
+    const { data: trialBrands, error } = await supabaseAdmin
+      .from('brands')
+      .select('*')
+      .eq('plan', 'TRIAL')
+      .eq('trial_payment_status', 'active')
+      .not('trial_end_date', 'is', null)
+      .gte('trial_end_date', now.toISOString())
+      .lte('trial_end_date', fourDaysFromNow.toISOString());
+
+    if (error) throw new Error('Error al obtener trials: ' + error.message);
+    if (!trialBrands || trialBrands.length === 0) {
+      console.log('   ℹ️  No hay trials por vencer');
+      return 0;
+    }
+
+    // Filtrar solo los que vencen en 2 o 3 días
+    const targetStart = new Date();
+    targetStart.setDate(targetStart.getDate() + 2);
+    targetStart.setHours(0, 0, 0, 0);
+    const targetEnd = new Date();
+    targetEnd.setDate(targetEnd.getDate() + 4);
+    targetEnd.setHours(0, 0, 0, 0);
+
+    let sentCount = 0;
+    for (const brand of trialBrands) {
+      const endDate = new Date(brand.trial_end_date);
+      endDate.setHours(0, 0, 0, 0);
+      if (endDate >= targetStart && endDate < targetEnd) {
+        const diffMs = endDate.getTime() - now.getTime();
+        const daysRemaining = Math.round(diffMs / (1000 * 60 * 60 * 24));
+        if (daysRemaining >= 2 && daysRemaining <= 3) {
+          try {
+            await notificationService.sendTrialEndingSoon(brand as Brand, daysRemaining);
+            sentCount++;
+          } catch (err) {
+            console.error(`   ❌ Error al enviar trial ending a ${brand.email}:`, err);
+          }
+        }
+      }
+    }
+    console.log(`   ✅ ${sentCount} notificación(es) de trial por vencer enviada(s)`);
+    return sentCount;
+  } catch (error) {
+    console.error('   ❌ Error enviando notificaciones de trial por vencer:', error);
+    return 0;
+  }
+}
+
+/**
+ * Envía email de nudge a trials que no han completado setup (sin productos o sin landing).
+ * Solo para trials que vencen en 2 o 3 días Y no han subido productos o no tienen landing.
+ */
+async function sendTrialNudgeSetupNotifications(): Promise<number> {
+  try {
+    console.log('\n📧 Enviando notificaciones de nudge de setup a trials...');
+    const { supabaseAdmin } = await import('../config/supabase');
+    const now = new Date();
+    const fourDaysFromNow = new Date();
+    fourDaysFromNow.setDate(fourDaysFromNow.getDate() + 4);
+
+    const { data: trialBrands, error } = await supabaseAdmin
+      .from('brands')
+      .select('*, products:products(count)')
+      .eq('plan', 'TRIAL')
+      .eq('trial_payment_status', 'active')
+      .not('trial_end_date', 'is', null)
+      .gte('trial_end_date', now.toISOString())
+      .lte('trial_end_date', fourDaysFromNow.toISOString());
+
+    if (error) throw new Error('Error al obtener trials para nudge: ' + error.message);
+    if (!trialBrands || trialBrands.length === 0) {
+      console.log('   ℹ️  No hay trials para nudge de setup');
+      return 0;
+    }
+
+    const targetStart = new Date();
+    targetStart.setDate(targetStart.getDate() + 2);
+    targetStart.setHours(0, 0, 0, 0);
+    const targetEnd = new Date();
+    targetEnd.setDate(targetEnd.getDate() + 4);
+    targetEnd.setHours(0, 0, 0, 0);
+
+    let sentCount = 0;
+    for (const brand of trialBrands) {
+      const endDate = new Date(brand.trial_end_date);
+      endDate.setHours(0, 0, 0, 0);
+      if (endDate >= targetStart && endDate < targetEnd) {
+        const diffMs = endDate.getTime() - now.getTime();
+        const daysRemaining = Math.round(diffMs / (1000 * 60 * 60 * 24));
+        if (daysRemaining >= 2 && daysRemaining <= 3) {
+          const productsCount = (brand as any).products?.[0]?.count ?? 0;
+          const hasProducts = productsCount > 0;
+          const hasLanding = brand.has_landing_page === true;
+          if (!hasProducts || !hasLanding) {
+            try {
+              await notificationService.sendTrialNudgeSetup(brand as Brand, daysRemaining);
+              sentCount++;
+            } catch (err) {
+              console.error(`   ❌ Error al enviar nudge setup a ${brand.email}:`, err);
+            }
+          }
+        }
+      }
+    }
+    console.log(`   ✅ ${sentCount} notificación(es) de nudge setup enviada(s)`);
+    return sentCount;
+  } catch (error) {
+    console.error('   ❌ Error enviando notificaciones de nudge setup:', error);
+    return 0;
+  }
+}
+
+/**
  * Envía notificaciones de suspensión a marcas suspendidas
  * Solo envía a marcas suspendidas en las últimas 24 horas para evitar spam.
  */
@@ -146,6 +272,12 @@ export async function runDailySubscriptionCheck() {
     // Enviar notificaciones de suspensión a marcas suspendidas
     const suspensionNotifications = await sendSuspensionNotifications();
 
+    // Enviar notificaciones de trial por vencer (2-3 días)
+    const trialEndingNotifications = await sendTrialEndingNotifications();
+
+    // Enviar nudge de setup a trials sin productos o sin landing
+    const trialNudgeSetupNotifications = await sendTrialNudgeSetupNotifications();
+
     // Resumen final
     console.log('\n=================================================');
     console.log('✅ Verificación completada exitosamente\n');
@@ -159,8 +291,10 @@ export async function runDailySubscriptionCheck() {
     console.log(`   - Recordatorios 3 días: ${notifications3Days}`);
     console.log(`   - Notificaciones vencimiento hoy: ${notificationsToday}`);
     console.log(`   - Notificaciones de suspensión: ${suspensionNotifications}`);
+    console.log(`   - Notificaciones trial por vencer: ${trialEndingNotifications}`);
+    console.log(`   - Nudge setup trials: ${trialNudgeSetupNotifications}`);
     
-    const totalNotifications = notifications7Days + notifications3Days + notificationsToday + suspensionNotifications;
+    const totalNotifications = notifications7Days + notifications3Days + notificationsToday + suspensionNotifications + trialEndingNotifications + trialNudgeSetupNotifications;
     console.log(`\n   📧 Total de notificaciones enviadas: ${totalNotifications}`);
 
     // Detalles adicionales
@@ -191,6 +325,8 @@ export async function runDailySubscriptionCheck() {
         reminder3Days: notifications3Days,
         expirationToday: notificationsToday,
         suspension: suspensionNotifications,
+        trialEnding: trialEndingNotifications,
+        trialNudgeSetup: trialNudgeSetupNotifications,
         total: totalNotifications,
       },
     };

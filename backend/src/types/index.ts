@@ -27,6 +27,8 @@ export interface Brand {
   trial_payment_status?: 'pending_payment' | 'completed' | 'active' | 'failed' | null;
   email_verified?: boolean;
   email_verification_token?: string | null;
+  email_verified_at?: string | null;
+  has_landing_page?: boolean;
   extra_credits_balance?: number;
   review_prompt_shown_at?: string | null;
   created_at: string;

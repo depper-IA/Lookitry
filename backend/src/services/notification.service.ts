@@ -20,6 +20,9 @@ import {
   landingDeletedNoticeEmail,
   referralBonusCreditedEmail,
   referralConvertedNotifierEmail,
+  trialEndingSoonEmail,
+  trialNudgeSetupEmail,
+  onboardingProductReminderEmail,
 } from '../templates/email-templates';
 
 /**
@@ -630,6 +633,75 @@ export class NotificationService {
       console.log(`[Notification] Email de referido convertido enviado a ${referrer.email}`);
     } catch (error) {
       console.error(`[Notification] Error enviando email de referido convertido a ${referrer.email}:`, error);
+    }
+  }
+
+  /**
+   * Envía email de trial por vencer (2-3 días antes del vencimiento del trial).
+   * Solo para marcas con plan TRIAL activo.
+   */
+  async sendTrialEndingSoon(brand: Brand, daysRemaining: number): Promise<void> {
+    try {
+      const emailEnabled = await notificationPreferencesService.isNotificationEnabled(brand.id, 'email');
+      if (!emailEnabled) {
+        console.log(`⏭️  Trial ending soon omitido para ${brand.email} (email deshabilitado)`);
+        return;
+      }
+      const html = trialEndingSoonEmail({ name: brand.name, email: brand.email }, daysRemaining);
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: `⏰ Tu trial en LOOKITRY termina en ${daysRemaining} día${daysRemaining > 1 ? 's' : ''}`,
+        html,
+      });
+      console.log(`✅ Trial ending soon enviado a ${brand.email} (${daysRemaining} días)`);
+    } catch (error) {
+      console.error(`❌ Error enviando trial ending soon a ${brand.email}:`, error);
+    }
+  }
+
+  /**
+   * Envía email de nudge para completar setup durante trial.
+   * Condición: trial_activo AND (no ha subido productos OR no ha configurado landing).
+   */
+  async sendTrialNudgeSetup(brand: Brand, daysRemaining: number): Promise<void> {
+    try {
+      const emailEnabled = await notificationPreferencesService.isNotificationEnabled(brand.id, 'email');
+      if (!emailEnabled) {
+        console.log(`⏭️  Trial nudge setup omitido para ${brand.email} (email deshabilitado)`);
+        return;
+      }
+      const html = trialNudgeSetupEmail({ name: brand.name, email: brand.email }, daysRemaining);
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: `⚡ Tu trial está por terminar — ¡Sube tu primer producto!`,
+        html,
+      });
+      console.log(`✅ Trial nudge setup enviado a ${brand.email} (${daysRemaining} días)`);
+    } catch (error) {
+      console.error(`❌ Error enviando trial nudge setup a ${brand.email}:`, error);
+    }
+  }
+
+  /**
+   * Envía email de recordatorio post-registro para subir productos.
+   * Se llama 24h después de verificar email si no ha subido productos.
+   */
+  async sendOnboardingProductReminder(brand: Brand): Promise<void> {
+    try {
+      const emailEnabled = await notificationPreferencesService.isNotificationEnabled(brand.id, 'email');
+      if (!emailEnabled) {
+        console.log(`⏭️  Onboarding product reminder omitido para ${brand.email} (email deshabilitado)`);
+        return;
+      }
+      const html = onboardingProductReminderEmail({ name: brand.name, email: brand.email });
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: '🎯 Bienvenido(a) — Sube tu primer producto y activa tu probador',
+        html,
+      });
+      console.log(`✅ Onboarding product reminder enviado a ${brand.email}`);
+    } catch (error) {
+      console.error(`❌ Error enviando onboarding product reminder a ${brand.email}:`, error);
     }
   }
 }

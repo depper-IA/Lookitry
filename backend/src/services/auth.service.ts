@@ -504,7 +504,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
     await supabaseAdmin
       .from('brands')
-      .update({ email_verified: true, email_verification_token: null })
+      .update({ email_verified: true, email_verification_token: null, email_verified_at: new Date().toISOString() })
       .eq('id', brand.id);
 
     const verifiedBrand = await this.getBrandById(brand.id);
