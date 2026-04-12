@@ -12,6 +12,7 @@ import {
   CoverImage,
   ProductSkeleton,
   getCoverPresentation,
+  useScrollReveal,
   isDarkColor,
   getContrastColor,
   getSmartMutedColor,
@@ -92,9 +93,9 @@ function ClassicHeader({ brand, primaryColor, onScrollDown }: { brand: BrandData
         </div>
 
         <nav className="hidden md:flex items-center gap-8">
-          <button onClick={onScrollDown} className="text-[10px] font-bold uppercase tracking-widest transition-colors" style={{ color: headerMutedColor }}>Catalogo</button>
-          <button onClick={() => document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' })} className="text-[10px] font-bold uppercase tracking-widest transition-colors" style={{ color: headerMutedColor }}>Probador IA</button>
-          <button onClick={() => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' })} className="text-[10px] font-bold uppercase tracking-widest transition-colors" style={{ color: headerMutedColor }}>Horarios</button>
+          <button onClick={onScrollDown} aria-label="Ir a productos" className="text-[10px] font-bold uppercase tracking-widest transition-colors" style={{ color: headerMutedColor }}>Catalogo</button>
+          <button onClick={() => document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' })} aria-label="Ir a probador IA" className="text-[10px] font-bold uppercase tracking-widest transition-colors" style={{ color: headerMutedColor }}>Probador IA</button>
+          <button onClick={() => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' })} aria-label="Ir a horarios y contacto" className="text-[10px] font-bold uppercase tracking-widest transition-colors" style={{ color: headerMutedColor }}>Horarios</button>
         </nav>
 
         <div className="flex items-center gap-3 md:gap-0">
@@ -126,15 +127,9 @@ function ClassicHeader({ brand, primaryColor, onScrollDown }: { brand: BrandData
           }}
         >
           <nav className="flex flex-col p-6 gap-4">
-            <button onClick={() => { onScrollDown(); setMobileMenuOpen(false); }} className="text-xs font-black uppercase tracking-widest text-left py-2 border-b" style={{ color: headerTextColor, borderColor: headerIsDark ? 'rgba(255,255,255,0.08)' : '#f9fafb' }}>
-              Catalogo
-            </button>
-            <button onClick={() => { document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' }); setMobileMenuOpen(false); }} className="text-xs font-black uppercase tracking-widest text-left py-2 border-b" style={{ color: headerTextColor, borderColor: headerIsDark ? 'rgba(255,255,255,0.08)' : '#f9fafb' }}>
-              Probador IA
-            </button>
-            <button onClick={() => { document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }); setMobileMenuOpen(false); }} className="text-xs font-black uppercase tracking-widest text-left py-2" style={{ color: headerTextColor }}>
-              Horarios y Contacto
-            </button>
+            <button onClick={() => { onScrollDown(); setMobileMenuOpen(false); }} aria-label="Ir a productos" className="text-xs font-black uppercase tracking-widest text-left py-2 border-b" style={{ color: headerTextColor, borderColor: headerIsDark ? 'rgba(255,255,255,0.08)' : '#f9fafb' }}>Catalogo</button>
+            <button onClick={() => { document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' }); setMobileMenuOpen(false); }} aria-label="Ir a probador IA" className="text-xs font-black uppercase tracking-widest text-left py-2 border-b" style={{ color: headerTextColor, borderColor: headerIsDark ? 'rgba(255,255,255,0.08)' : '#f9fafb' }}>Probador IA</button>
+            <button onClick={() => { document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }); setMobileMenuOpen(false); }} aria-label="Ir a horarios y contacto" className="text-xs font-black uppercase tracking-widest text-left py-2" style={{ color: headerTextColor }}>Horarios y Contacto</button>
           </nav>
         </div>
       )}
@@ -242,14 +237,13 @@ function ClassicSteps({ brand, primaryColor, secondaryColor }: { brand: BrandDat
 
 function ClassicProducts({ products, primaryColor, secondaryColor, ctaText, onProductClick }: { products: ProductData[]; primaryColor: string; secondaryColor?: string; ctaText?: string | null; onProductClick: (id: string) => void }) {
   const [isLoading, setIsLoading] = useState(true);
-
+  const { ref: sectionRef, isVisible } = useScrollReveal();
 
   useEffect(() => {
     if (products && products.length > 0) {
       setIsLoading(false);
     }
   }, [products]);
-
 
   if (!products.length) return null;
   const bgColor = '#f9f8f6';
@@ -258,7 +252,7 @@ function ClassicProducts({ products, primaryColor, secondaryColor, ctaText, onPr
   const mutedColor = getSmartMutedColor(bgColor);
 
   return (
-    <section id="productos" className="py-20 px-6" style={{ backgroundColor: bgColor }}>
+    <section ref={sectionRef} id="productos" className={`py-20 px-6 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ backgroundColor: bgColor }}>
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12 space-y-3">
           <span className="text-[9px] font-black uppercase tracking-[0.3em]" style={{ color: secondaryColor || primaryColor }}>Coleccion de Temporada</span>
@@ -275,7 +269,7 @@ function ClassicProducts({ products, primaryColor, secondaryColor, ctaText, onPr
               <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
                 <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                 {p.badge && <div className="absolute top-4 left-4"><ProductBadge badge={p.badge} /></div>}
-                <button onClick={() => onProductClick(p.id)} className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[85%] py-3 bg-white text-black rounded-lg font-black text-[9px] uppercase tracking-widest shadow-xl opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2">
+                <button onClick={() => onProductClick(p.id)} aria-label={`Probar ${p.name} con IA`} className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[85%] py-3 bg-white text-black rounded-lg font-black text-[9px] uppercase tracking-widest shadow-xl opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2">
                   {ctaText || 'Probar con IA'}
                 </button>
               </div>
