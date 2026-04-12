@@ -15,6 +15,7 @@ import {
   isDarkColor,
   getSmartMutedColor,
   getSmartBorderColor,
+  useContrastTheme,
   YouTubeIcon, 
   XIcon, 
   InstagramIcon, 
@@ -112,17 +113,14 @@ function ProbadorTrustBar({ brand }: { brand: BrandData }) {
     { value: '~12s', label: 'tiempo' },
     { value: 'IA', label: 'tech' },
   ];
-  const bgColor = '#ffffff';
-  const textColor = '#111111';
-  const mutedColor = '#9ca3af';
-  const borderColor = '#f3f4f6';
-  
+  const theme = useContrastTheme('#ffffff');
+
   return (
-    <div className="flex border-b overflow-x-auto no-scrollbar" style={{ backgroundColor: bgColor, borderColor }}>
+    <div className="flex border-b overflow-x-auto no-scrollbar" style={{ backgroundColor: theme.bg, borderColor: theme.border }}>
       {items.map((item, i) => (
-        <div key={i} className="flex-1 min-w-[80px] flex flex-col items-center justify-center py-4 md:py-6 text-center border-r last:border-r-0" style={{ borderColor }}>
-          <span className="text-sm md:text-xl font-black" style={{ color: textColor }}>{item.value}</span>
-          <span className="text-[8px] md:text-[10px] mt-0.5 font-bold uppercase tracking-widest" style={{ color: mutedColor }}>{item.label}</span>
+        <div key={i} className="flex-1 min-w-[80px] flex flex-col items-center justify-center py-4 md:py-6 text-center border-r last:border-r-0" style={{ borderColor: theme.border }}>
+          <span className="text-sm md:text-xl font-black" style={{ color: theme.text }}>{item.value}</span>
+          <span className="text-[8px] md:text-[10px] mt-0.5 font-bold uppercase tracking-widest" style={{ color: theme.muted }}>{item.label}</span>
         </div>
       ))}
     </div>
@@ -130,23 +128,21 @@ function ProbadorTrustBar({ brand }: { brand: BrandData }) {
 }
 
 function ProbadorProducts({ products, primaryColor, secondaryColor, ctaText, onProductClick, selectedId }: { products: ProductData[]; primaryColor: string; secondaryColor?: string; ctaText?: string | null; onProductClick: (id: string) => void; selectedId: string | null }) {
+  const theme = useContrastTheme('#f9fafb');
   if (!products || !products.length) return null;
-  const bgColor = '#f9fafb';
-  const textColor = '#111111';
-  const mutedColor = '#9ca3af';
   const accentColor = secondaryColor || primaryColor;
-  
+
   return (
-    <section id="probador-products" className="py-16 px-4 md:px-6" style={{ backgroundColor: bgColor }}>
+    <section id="probador-products" className="py-16 px-4 md:px-6" style={{ backgroundColor: theme.bg }}>
       <div className="max-w-5xl mx-auto text-center">
         <p className="text-[9px] font-black uppercase tracking-[0.3em] mb-3" style={{ color: accentColor }}>Catálogo Curado</p>
-        <h2 className="text-2xl md:text-5xl font-black mb-12 tracking-tighter italic uppercase leading-none" style={{ color: textColor }}>Nuestros productos</h2>
+        <h2 className="text-2xl md:text-5xl font-black mb-12 tracking-tighter italic uppercase leading-none" style={{ color: theme.text }}>Nuestros productos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {products.map(p => (
             <button key={p.id} onClick={() => onProductClick(p.id)}
               className="text-left group relative rounded-3xl overflow-hidden border transition-all duration-300 hover:shadow-2xl"
               style={{ backgroundColor: '#ffffff', borderColor: selectedId === p.id ? primaryColor : '#e5e7eb', borderWidth: selectedId === p.id ? 2 : 1 }}>
-              <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: '#f3f4f6' }}>
+              <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: theme.surface }}>
                 <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                 {p.badge && <div className="absolute top-3 left-3 scale-90 origin-top-left"><ProductBadge badge={p.badge} /></div>}
                 <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${selectedId === p.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
@@ -156,9 +152,9 @@ function ProbadorProducts({ products, primaryColor, secondaryColor, ctaText, onP
                  </div>
               </div>
               <div className="p-5">
-                <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: mutedColor }}>{p.category}</p>
-                <h3 className="text-sm font-black uppercase tracking-tight line-clamp-1 transition-colors" style={{ color: textColor }}>{p.name}</h3>
-                {p.price != null && <p className="text-base font-black mt-2" style={{ color: textColor }}>${p.price.toLocaleString('es-CO')}</p>}
+                <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: theme.muted }}>{p.category}</p>
+                <h3 className="text-sm font-black uppercase tracking-tight line-clamp-1 transition-colors" style={{ color: theme.text }}>{p.name}</h3>
+                {p.price != null && <p className="text-base font-black mt-2" style={{ color: theme.text }}>${p.price.toLocaleString('es-CO')}</p>}
               </div>
             </button>
           ))}
@@ -180,21 +176,17 @@ function ProbadorInfo({ brand, secondaryColor }: { brand: BrandData; secondaryCo
     }
   } catch (e) { console.error(e); }
 
+  const theme = useContrastTheme('#ffffff');
+  const accentColor = secondaryColor || '#FF5C3A';
   if (scheduleEntries.length === 0 && !brand.city_display) return null;
 
-  const bgColor = '#ffffff';
-  const textColor = '#111111';
-  const mutedColor = '#6b7280';
-  const accentColor = secondaryColor || '#FF5C3A';
-  const borderColor = '#f9fafb';
-
   return (
-    <section className="py-16 px-6 border-t" style={{ backgroundColor: bgColor, borderColor }}>
+    <section className="py-16 px-6 border-t" style={{ backgroundColor: theme.bg, borderColor: theme.border }}>
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
         {brand.city_display && (
           <div className="space-y-4">
             <span className="text-[9px] font-black uppercase tracking-[0.3em]" style={{ color: accentColor }}>Encuéntranos</span>
-            <h3 className="text-2xl font-black uppercase italic tracking-tight" style={{ color: textColor }}>{brand.city_display}</h3>
+            <h3 className="text-2xl font-black uppercase italic tracking-tight" style={{ color: theme.text }}>{brand.city_display}</h3>
             {brand.national_shipping && (
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl w-fit" style={{ backgroundColor: '#ecfdf5', color: '#059669' }}>
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: '#10b981' }} />
@@ -208,9 +200,9 @@ function ProbadorInfo({ brand, secondaryColor }: { brand: BrandData; secondaryCo
             <span className="text-[9px] font-black uppercase tracking-[0.3em]" style={{ color: accentColor }}>Horarios</span>
             <div className="grid grid-cols-1 gap-2">
               {scheduleEntries.map(([day, hours]) => (
-                <div key={day} className="flex justify-between items-center py-2 border-b last:border-0" style={{ borderColor }}>
-                  <span className="text-[10px] font-bold uppercase" style={{ color: mutedColor }}>{day}</span>
-                  <span className={`text-[11px] font-black tracking-tight ${hours.toLowerCase().includes('cerrado') ? 'italic' : ''}`} style={{ color: hours.toLowerCase().includes('cerrado') ? '#f87171' : textColor }}>{hours}</span>
+                <div key={day} className="flex justify-between items-center py-2 border-b last:border-0" style={{ borderColor: theme.border }}>
+                  <span className="text-[10px] font-bold uppercase" style={{ color: theme.muted }}>{day}</span>
+                  <span className={`text-[11px] font-black tracking-tight ${hours.toLowerCase().includes('cerrado') ? 'italic' : ''}`} style={{ color: hours.toLowerCase().includes('cerrado') ? '#f87171' : theme.text }}>{hours}</span>
                 </div>
               ))}
             </div>
