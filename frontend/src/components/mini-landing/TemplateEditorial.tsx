@@ -190,9 +190,9 @@ function EditorialInfo({ brand, secondaryColor }: { brand: BrandData; secondaryC
 }
 
 function EditorialAbout({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
-  if (!brand.brand_description) return null;
   const bgColor = brand.widget_bg_color || '#0a0a0a';
   const theme = useContrastTheme(bgColor);
+  if (!brand.brand_description) return null;
   return (
     <section className="py-6 md:py-16">
       <div className="p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden shadow-2xl" style={{ backgroundColor: bgColor }}>

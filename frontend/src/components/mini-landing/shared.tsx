@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, createContext, useContext } from 'react';
 import Image from 'next/image';
 
 // ── Tipos compartidos ─────────────────────────────────────────────────────────
@@ -36,6 +36,14 @@ export interface BrandData {
   cover_overlay_opacity?: number | null;
   show_brand_name?: boolean | null;
   header_color?: string | null;
+  landing_steps?: {
+    select_label?: string | null;
+    select_desc?: string | null;
+    photo_label?: string | null;
+    photo_desc?: string | null;
+    result_label?: string | null;
+    result_desc?: string | null;
+  } | null;
   // Metadata extendida del servidor
   is_preview_expired?: boolean;
   preview_timer_seconds?: number;
@@ -109,6 +117,61 @@ export function getSmartBorderColor(color?: string | null): string {
 export function getSmartOverlayColor(color?: string | null): string {
   if (!color) return 'rgba(255,255,255,0.02)';
   return isDarkColor(color) ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
+}
+
+// ── Sistema de contraste inteligente (Theme Context) ────────────────────────
+export interface ContrastTheme {
+  bg: string;
+  isDark: boolean;
+  text: string;
+  muted: string;
+  border: string;
+  surface: string;       // for cards, elevated surfaces
+  surfaceHover: string; // for hover states
+  ctaBg: string;        // CTA button background (brand primary)
+  ctaText: string;      // CTA button text (auto contrast)
+  overlay: string;
+}
+
+export function getContrastTheme(bg: string, primaryColor?: string): ContrastTheme {
+  const isDark = isDarkColor(bg);
+  const text = isDark ? '#ffffff' : '#111111';
+  const muted = isDark ? 'rgba(255,255,255,0.72)' : '#6b7280';
+  const border = isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6';
+  const surface = isDark ? 'rgba(255,255,255,0.05)' : '#ffffff';
+  const surfaceHover = isDark ? 'rgba(255,255,255,0.10)' : '#f9fafb';
+  const ctaBg = primaryColor || '#FF5C3A';
+  const ctaText = isDarkColor(ctaBg) ? '#ffffff' : '#ffffff';
+  const overlay = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
+  return { bg, isDark, text, muted, border, surface, surfaceHover, ctaBg, ctaText, overlay };
+}
+
+// ── useContrastTheme Hook ───────────────────────────────────────────────────
+// Usage: const theme = useContrastTheme(brand.cover_bg_color, brand.primary_color);
+// Then use: theme.text, theme.muted, theme.border, theme.surface, etc.
+export function useContrastTheme(bgColor?: string | null, primaryColor?: string | null) {
+  return useMemo(() => {
+    return getContrastTheme(bgColor || '#ffffff', primaryColor || undefined);
+  }, [bgColor, primaryColor]);
+}
+
+// ── Brand context for real-time preview updates ───────────────────────────────
+export interface BrandContextValue {
+  brand: BrandData;
+  products: ProductData[];
+  updateBrand: (patch: Partial<BrandData>) => void;
+  updateProduct: (id: string, patch: Partial<ProductData>) => void;
+}
+const BrandContext = createContext<BrandContextValue | null>(null);
+export function BrandProvider({ brand, products, children, updateBrand, updateProduct }: BrandContextValue) {
+  return (
+    <BrandContext.Provider value={{ brand, products, updateBrand, updateProduct }}>
+      {children}
+    </BrandContext.Provider>
+  );
+}
+export function useBrandContext() {
+  return useContext(BrandContext);
 }
 
 export function getVisibleSocialEntries(socialLinks?: Record<string, string>) {
