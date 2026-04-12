@@ -16,6 +16,7 @@ import {
   getSmartMutedColor,
   getSmartBorderColor,
   getVisibleSocialEntries,
+  useContrastTheme,
   YouTubeIcon,
   XIcon,
   InstagramIcon,
@@ -202,25 +203,36 @@ function ClassicHero({ brand, primaryColor, onScrollDown, isPreview = false }: {
   );
 }
 
-function ClassicSteps({ primaryColor, secondaryColor, bgColor = '#ffffff' }: { primaryColor: string; secondaryColor?: string; bgColor?: string }) {
+function ClassicSteps({ brand, primaryColor, secondaryColor }: { brand: BrandData; primaryColor: string; secondaryColor?: string }) {
+  const stepsDef = brand.landing_steps;
   const steps = [
-    { n: '01', t: 'Selecciona', d: 'Elige cualquier prenda de nuestro catalogo curado para comenzar.' },
-    { n: '02', t: 'Fotografia', d: 'Captura una selfie frontal. La iluminacion es clave para el realismo.' },
-    { n: '03', t: 'Estrena', d: 'Nuestra IA renderiza la prenda sobre ti. Descarga y comparte.' },
+    {
+      n: '01',
+,
+      t: stepsDef?.select_label || 'Selecciona',
+      d: stepsDef?.select_desc || 'Elige cualquier prenda de nuestro catalogo curado para comenzar.',
+    },
+    {
+      n: '02',
+      t: stepsDef?.photo_label || 'Fotografia',
+      d: stepsDef?.photo_desc || 'Captura una selfie frontal. La iluminacion es clave para el realismo.',
+    },
+    {
+      n: '03',
+      t: stepsDef?.result_label || 'Estrena',
+      d: stepsDef?.result_desc || 'Nuestra IA renderiza la prenda sobre ti. Descarga y comparte.',
+    },
   ];
-  const isBgDark = isDarkColor(bgColor);
-  const textColor = isBgDark ? '#ffffff' : '#111111';
-  const mutedColor = getSmartMutedColor(bgColor);
-  const accentColor = secondaryColor || primaryColor;
+  const theme = useContrastTheme(brand.cover_bg_color);
 
   return (
-    <section className="py-16 px-6 border-b" style={{ backgroundColor: bgColor, borderColor: getSmartBorderColor(bgColor) }}>
+    <section className="py-16 px-6 border-b" style={{ backgroundColor: theme.bg, borderColor: theme.border }}>
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
         {steps.map(s => (
           <div key={s.n} className="flex flex-col items-center md:items-start text-center md:text-left space-y-3">
             <span className="text-4xl font-black italic opacity-10" style={{ color: primaryColor }}>{s.n}</span>
-            <h3 className="text-lg font-black uppercase tracking-tight italic" style={{ color: textColor }}>{s.t}</h3>
-            <p className="text-xs leading-relaxed font-medium" style={{ color: mutedColor }}>{s.d}</p>
+            <h3 className="text-lg font-black uppercase tracking-tight italic" style={{ color: theme.text }}>{s.t}</h3>
+            <p className="text-xs leading-relaxed font-medium" style={{ color: theme.muted }}>{s.d}</p>
           </div>
         ))}
       </div>
@@ -370,7 +382,7 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPrevi
     <div className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500 ${isPreview ? 'p-0 h-auto' : ''}`} style={{ '--primary': primary, '--secondary': secondary, '--secondary-10': secondary + '1a', '--secondary-20': secondary + '33', '--secondary-05': secondary + '0d' } as React.CSSProperties}>
       <ClassicHeader brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
       <ClassicHero brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} isPreview={isPreview} />
-      <ClassicSteps primaryColor={primary} secondaryColor={secondary} bgColor={brand.cover_bg_color || '#ffffff'} />
+      <ClassicSteps brand={brand} primaryColor={primary} secondaryColor={secondary} />
       <ClassicProducts products={products} primaryColor={primary} secondaryColor={secondary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} />
 
       <section id="probador" className="py-20 px-4 md:px-6" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
