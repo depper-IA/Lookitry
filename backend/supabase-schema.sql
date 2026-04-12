@@ -82,7 +82,7 @@ CREATE TABLE blog_settings (
   next_run timestamptz NOT NULL DEFAULT now(),
   last_run timestamptz,
   webhook_url text,
-  webhook_secret text NOT NULL DEFAULT 'Travis2305**_blog_n8n',
+  webhook_secret text NOT NULL DEFAULT 'CHANGE_ME_IN_ENV',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   openrouter_article_model text,

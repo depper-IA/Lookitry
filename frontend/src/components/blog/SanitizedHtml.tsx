@@ -17,11 +17,11 @@ export default function SanitizedHtml({ html, className }: Props) {
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre',
         'img', 'figure', 'figcaption', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
         'span', 'div', 'hr', 'abbr', 'sub', 'sup', 'del', 'ins', 'mark',
-        'video', 'audio', 'source', 'iframe',
+        'video', 'audio', 'source',
       ],
       ALLOWED_ATTR: [
         'href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height',
-        'class', 'id', 'style', 'loading', 'referrerpolicy', 'allow', 'allowfullscreen',
+        'class', 'id', 'style', 'loading', 'referrerpolicy',
         'controls', 'autoplay', 'loop', 'muted', 'playsinline',
       ],
       ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.]+(?:[^a-z+.]+|$))/i,
