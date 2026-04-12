@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
 import { 
   BrandData, 
@@ -10,8 +10,10 @@ import {
   ProductImage, 
   ProductBadge, 
   CoverImage, 
+  ProductSkeleton,
   getCoverPresentation,
   getVisibleSocialEntries,
+  useScrollReveal,
   isDarkColor,
   getSmartMutedColor,
   getSmartBorderColor,
@@ -89,7 +91,7 @@ function EditorialHero({ brand }: { brand: BrandData }) {
 
 function EditorialProductCard({ product, selected, primaryColor, onClick }: { product: ProductData; selected: boolean; primaryColor: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="group text-left w-full space-y-3 transition-all">
+    <button onClick={onClick} aria-label={`Seleccionar ${product.name}`} className="group text-left w-full space-y-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2">
       <div className={`relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-gray-50 border-2 transition-all duration-500 ${selected ? 'shadow-2xl shadow-[var(--secondary-20)] scale-[1.02]' : 'hover:shadow-xl'}`} style={{ borderColor: selected ? primaryColor : 'transparent' }}>
         <ProductImage src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
         {product.badge && <div className="absolute top-2 left-2 md:top-3 md:left-3 scale-90 origin-top-left"><ProductBadge badge={product.badge} /></div>}
@@ -211,9 +213,19 @@ function EditorialAbout({ brand, primaryColor }: { brand: BrandData; primaryColo
 }
 
 export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPreview = false }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string; isPreview?: boolean }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { ref: productsRef, isVisible } = useScrollReveal();
+
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setSelectedId(products[0].id);
+      setIsLoading(false);
+    }
+  }, [products]);
+
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
   const secondary = brand.social_links?._landing_secondary || primary;
-  const [selectedId, setSelectedId] = useState<string | null>(products && products.length > 0 ? products[0].id : null);
 
   const socialLinks = brand.social_links || {};
   const entries = getVisibleSocialEntries(socialLinks);
@@ -245,10 +257,16 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
               <span className="text-[10px] font-black bg-black text-white px-3 py-1 uppercase">{products?.length || 0} Items</span>
             </div>
             
-            <div className="grid grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
-              {products && Array.isArray(products) && products.map(p => (
-                <EditorialProductCard key={p.id} product={p} selected={selectedId === p.id} primaryColor={primary} onClick={() => handleProductClick(p.id)} />
-              ))}
+            <div ref={productsRef} className={`grid grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+              {isLoading ? (
+                <>
+                  {[0,1,2].map(i => <ProductSkeleton key={i} primaryColor={primary} />)}
+                </>
+              ) : (
+                products && Array.isArray(products) && products.map(p => (
+                  <EditorialProductCard key={p.id} product={p} selected={selectedId === p.id} primaryColor={primary} onClick={() => handleProductClick(p.id)} />
+                ))
+              )}
             </div>
           </div>
 

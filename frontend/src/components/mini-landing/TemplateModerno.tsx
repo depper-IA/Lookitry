@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
 import { 
   BrandData, 
@@ -10,8 +10,10 @@ import {
   ProductImage, 
   ProductBadge, 
   CoverImage, 
+  ProductSkeleton,
   getCoverPresentation,
   getVisibleSocialEntries,
+  useScrollReveal,
   isDarkColor,
   getSmartMutedColor,
   getSmartBorderColor,
@@ -129,18 +131,34 @@ function ProbadorTrustBar({ brand }: { brand: BrandData }) {
 
 function ProbadorProducts({ products, primaryColor, secondaryColor, ctaText, onProductClick, selectedId }: { products: ProductData[]; primaryColor: string; secondaryColor?: string; ctaText?: string | null; onProductClick: (id: string) => void; selectedId: string | null }) {
   const theme = useContrastTheme('#f9fafb');
+  const [isLoading, setIsLoading] = useState(true);
+  const { ref: sectionRef, isVisible } = useScrollReveal();
+
+
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setIsLoading(false);
+    }
+  }, [products]);
+
+
   if (!products || !products.length) return null;
   const accentColor = secondaryColor || primaryColor;
 
   return (
-    <section id="probador-products" className="py-16 px-4 md:px-6" style={{ backgroundColor: theme.bg }}>
+    <section ref={sectionRef} id="probador-products" className={`py-16 px-4 md:px-6 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ backgroundColor: theme.bg }}>
       <div className="max-w-5xl mx-auto text-center">
         <p className="text-[9px] font-black uppercase tracking-[0.3em] mb-3" style={{ color: accentColor }}>Catálogo Curado</p>
         <h2 className="text-2xl md:text-5xl font-black mb-12 tracking-tighter italic uppercase leading-none" style={{ color: theme.text }}>Nuestros productos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {products.map(p => (
-            <button key={p.id} onClick={() => onProductClick(p.id)}
-              className="text-left group relative rounded-3xl overflow-hidden border transition-all duration-300 hover:shadow-2xl"
+          {isLoading ? (
+            <>
+              {[0,1,2,3].map(i => <ProductSkeleton key={i} primaryColor={primaryColor} />)}
+            </>
+          ) : (
+            products.map(p => (
+              <button key={p.id} onClick={() => onProductClick(p.id)} aria-label={`Seleccionar ${p.name}`}
+                className="text-left group relative rounded-3xl overflow-hidden border transition-all duration-300 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2"
               style={{ backgroundColor: '#ffffff', borderColor: selectedId === p.id ? primaryColor : '#e5e7eb', borderWidth: selectedId === p.id ? 2 : 1 }}>
               <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: theme.surface }}>
                 <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
@@ -157,7 +175,7 @@ function ProbadorProducts({ products, primaryColor, secondaryColor, ctaText, onP
                 {p.price != null && <p className="text-base font-black mt-2" style={{ color: theme.text }}>${p.price.toLocaleString('es-CO')}</p>}
               </div>
             </button>
-          ))}
+          )))}
         </div>
       </div>
     </section>
