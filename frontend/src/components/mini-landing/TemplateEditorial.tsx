@@ -16,6 +16,7 @@ import {
   getSmartMutedColor,
   getSmartBorderColor,
   getContrastColor,
+  useContrastTheme,
   YouTubeIcon, 
   XIcon, 
   InstagramIcon, 
@@ -120,28 +121,26 @@ function EditorialInfo({ brand, secondaryColor }: { brand: BrandData; secondaryC
       scheduleEntries = DAYS_ORDER.filter(d => raw[d] || raw[d.toLowerCase()]).map(d => [d, (raw[d] || raw[d.toLowerCase()]) as string]);
     }
   } catch(e) {}
-  
-  const bgColor = '#ffffff';
-  const textColor = '#111111';
-  const mutedColor = '#6b7280';
+
+  const theme = useContrastTheme('#ffffff');
   const accentColor = secondaryColor || '#FF5C3A';
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full">
       {/* IZQUIERDA: Información */}
-      <div className="p-6 md:p-10 rounded-[2rem] md:rounded-[3.5rem] border shadow-sm space-y-6 md:space-y-8" style={{ backgroundColor: bgColor, borderColor: '#f3f4f6' }}>
-        <div className="flex items-center gap-4 border-b pb-6" style={{ borderColor: '#f9fafb' }}>
+      <div className="p-6 md:p-10 rounded-[2rem] md:rounded-[3.5rem] border shadow-sm space-y-6 md:space-y-8" style={{ backgroundColor: theme.bg, borderColor: theme.border }}>
+        <div className="flex items-center gap-4 border-b pb-6" style={{ borderColor: theme.border }}>
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
             <MapPinIcon className="w-5 h-5 md:w-6 md:h-6" />
           </div>
           <div>
             <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em]" style={{ color: accentColor }}>Ubicación</h4>
-            <p className="text-xs md:text-sm font-black uppercase italic" style={{ color: textColor }}>Presencia Física</p>
+            <p className="text-xs md:text-sm font-black uppercase italic" style={{ color: theme.text }}>Presencia Física</p>
           </div>
         </div>
         <div className="space-y-6">
           {brand.city_display && (
-            <p className="text-lg md:text-2xl font-black uppercase italic tracking-tighter leading-none" style={{ color: textColor }}>{brand.city_display}</p>
+            <p className="text-lg md:text-2xl font-black uppercase italic tracking-tighter leading-none" style={{ color: theme.text }}>{brand.city_display}</p>
           )}
           {brand.rating && (
             <div className="flex flex-col gap-2">
@@ -149,13 +148,13 @@ function EditorialInfo({ brand, secondaryColor }: { brand: BrandData; secondaryC
                 {[1,2,3,4,5].map(i => <StarIcon key={i} className="w-3.5 h-3.5 md:w-4 md:h-4" filled={i <= Math.round(brand.rating!)} />)}
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl md:text-3xl font-black tracking-tighter" style={{ color: textColor }}>{brand.rating.toFixed(1)}</span>
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest" style={{ color: mutedColor }}>/ {brand.total_reviews} reviews</span>
+                <span className="text-2xl md:text-3xl font-black tracking-tighter" style={{ color: theme.text }}>{brand.rating.toFixed(1)}</span>
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest" style={{ color: theme.muted }}>/ {brand.total_reviews} reviews</span>
               </div>
             </div>
           )}
           {brand.national_shipping && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest border" style={{ backgroundColor: '#f9fafb', color: textColor, borderColor: '#f3f4f6' }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest border" style={{ backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }}>
               <span style={{ color: accentColor }}><TruckIcon className="w-3.5 h-3.5 md:w-4 md:h-4" /></span> Envíos Nacionales
             </div>
           )}
@@ -163,26 +162,26 @@ function EditorialInfo({ brand, secondaryColor }: { brand: BrandData; secondaryC
       </div>
 
       {/* DERECHA: Horarios */}
-      <div className="p-6 md:p-10 rounded-[2rem] md:rounded-[3.5rem] border shadow-sm space-y-6 md:space-y-8" style={{ backgroundColor: bgColor, borderColor: '#f3f4f6' }}>
-        <div className="flex items-center gap-4 border-b pb-6" style={{ borderColor: '#f9fafb' }}>
+      <div className="p-6 md:p-10 rounded-[2rem] md:rounded-[3.5rem] border shadow-sm space-y-6 md:space-y-8" style={{ backgroundColor: theme.bg, borderColor: theme.border }}>
+        <div className="flex items-center gap-4 border-b pb-6" style={{ borderColor: theme.border }}>
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
             <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-12 0 9 9 0 0112 0z" /></svg>
           </div>
           <div>
             <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em]" style={{ color: accentColor }}>Disponibilidad</h4>
-            <p className="text-xs md:text-sm font-black uppercase italic" style={{ color: textColor }}>Nuestros Horarios</p>
+            <p className="text-xs md:text-sm font-black uppercase italic" style={{ color: theme.text }}>Nuestros Horarios</p>
           </div>
         </div>
         <div className="space-y-2 md:space-y-3">
           {scheduleEntries.length > 0 ? (
             scheduleEntries.map(([d, h]) => (
-              <div key={d} className="flex justify-between items-center text-[10px] md:text-xs border-b pb-2 last:border-0 last:pb-0" style={{ borderColor: '#f9fafb' }}>
-                <span className="font-black uppercase tracking-widest" style={{ color: mutedColor }}>{d}</span>
-                <span className={`font-black uppercase ${h.toLowerCase().includes('cerrado') ? 'text-red-500 italic' : ''}`} style={{ color: h.toLowerCase().includes('cerrado') ? undefined : textColor }}>{h}</span>
+              <div key={d} className="flex justify-between items-center text-[10px] md:text-xs border-b pb-2 last:border-0 last:pb-0" style={{ borderColor: theme.border }}>
+                <span className="font-black uppercase tracking-widest" style={{ color: theme.muted }}>{d}</span>
+                <span className={`font-black uppercase ${h.toLowerCase().includes('cerrado') ? 'text-red-500 italic' : ''}`} style={{ color: h.toLowerCase().includes('cerrado') ? undefined : theme.text }}>{h}</span>
               </div>
             ))
           ) : (
-            <p className="text-[10px] md:text-xs italic font-medium uppercase tracking-widest" style={{ color: mutedColor }}>No hay horarios registrados.</p>
+            <p className="text-[10px] md:text-xs italic font-medium uppercase tracking-widest" style={{ color: theme.muted }}>No hay horarios registrados.</p>
           )}
         </div>
       </div>
@@ -192,15 +191,17 @@ function EditorialInfo({ brand, secondaryColor }: { brand: BrandData; secondaryC
 
 function EditorialAbout({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
   if (!brand.brand_description) return null;
+  const bgColor = brand.widget_bg_color || '#0a0a0a';
+  const theme = useContrastTheme(bgColor);
   return (
     <section className="py-6 md:py-16">
-      <div className="p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden shadow-2xl" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
+      <div className="p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden shadow-2xl" style={{ backgroundColor: bgColor }}>
         <div className="absolute top-0 right-0 p-12 opacity-10">
           <SparklesIcon className="w-32 h-32 md:w-48 md:h-48" />
         </div>
         <div className="relative z-10 space-y-4 md:space-y-6 text-center md:text-left">
-          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.5em] text-gray-400">Nuestra Historia</span>
-          <p className="text-base md:text-3xl text-white leading-tight font-black italic uppercase tracking-tighter max-w-4xl">
+          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.5em]" style={{ color: theme.muted }}>Nuestra Historia</span>
+          <p className="text-base md:text-3xl leading-tight font-black italic uppercase tracking-tighter max-w-4xl" style={{ color: theme.text }}>
             &quot;{brand.brand_description}&quot;
           </p>
         </div>
