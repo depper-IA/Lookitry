@@ -251,9 +251,9 @@ import Image from 'next/image';
 - [x] Skeleton loading state en grid de productos ✅ (TemplateClassic)
 - [x] Lazy loading con Next/Image ✅ (todos los templates)
 - [x] Focus rings en todos los interactivos ✅ (Classic primero)
-- [ ] aria-labels completos
-- [ ] Scroll reveal animations
-- [ ] Microinteracciones hover mejoradas
+- [x] aria-labels completos ✅ (Classic: navegación, botones, productos)
+- [x] Scroll reveal animations ✅ (ClassicProducts con useScrollReveal)
+- [x] Microinteracciones hover mejoradas ✅ (ya existían en código original)
 
 ### 5.2 Testing
 - Lighthouse SEO score > 90
@@ -286,4 +286,4 @@ import Image from 'next/image';
 
 ---
 
-**Última actualización:** 2026-04-12 — ✅ Implementado en commit 5995809
+**Última actualización:** 2026-04-12 — ✅ Implementación completa (commit 74686ad)
