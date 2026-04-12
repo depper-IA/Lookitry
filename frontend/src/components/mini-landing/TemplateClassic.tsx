@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
 import {
   BrandData,
@@ -10,6 +10,7 @@ import {
   ProductImage,
   ProductBadge,
   CoverImage,
+  ProductSkeleton,
   getCoverPresentation,
   isDarkColor,
   getContrastColor,
@@ -240,6 +241,16 @@ function ClassicSteps({ brand, primaryColor, secondaryColor }: { brand: BrandDat
 }
 
 function ClassicProducts({ products, primaryColor, secondaryColor, ctaText, onProductClick }: { products: ProductData[]; primaryColor: string; secondaryColor?: string; ctaText?: string | null; onProductClick: (id: string) => void }) {
+  const [isLoading, setIsLoading] = useState(true);
+
+
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setIsLoading(false);
+    }
+  }, [products]);
+
+
   if (!products.length) return null;
   const bgColor = '#f9f8f6';
   const isBgDark = isDarkColor(bgColor);
@@ -254,12 +265,17 @@ function ClassicProducts({ products, primaryColor, secondaryColor, ctaText, onPr
           <h2 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic leading-none" style={{ color: textColor }}>Nuestros Productos</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {products.map(p => (
-            <div key={p.id} className="group bg-white rounded-[2rem] border border-gray-100 overflow-hidden transition-all duration-500 hover:shadow-xl">
+          {isLoading ? (
+            <>
+              {[0,1,2].map(i => <ProductSkeleton key={i} primaryColor={primaryColor} />)}
+            </>
+          ) : (
+            products.map(p => (
+              <div key={p.id} className="group bg-white rounded-[2rem] border border-gray-100 overflow-hidden transition-all duration-500 hover:shadow-xl">
               <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
-                <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                 {p.badge && <div className="absolute top-4 left-4"><ProductBadge badge={p.badge} /></div>}
-                <button onClick={() => onProductClick(p.id)} className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[85%] py-3 bg-white text-black rounded-lg font-black text-[9px] uppercase tracking-widest shadow-xl opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 hover:bg-gray-900 hover:text-white">
+                <button onClick={() => onProductClick(p.id)} className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[85%] py-3 bg-white text-black rounded-lg font-black text-[9px] uppercase tracking-widest shadow-xl opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2">
                   {ctaText || 'Probar con IA'}
                 </button>
               </div>
@@ -272,7 +288,7 @@ function ClassicProducts({ products, primaryColor, secondaryColor, ctaText, onPr
                 {p.description && <p className="text-[10px] mt-1.5 line-clamp-2 leading-relaxed" style={{ color: mutedColor }}>{p.description}</p>}
               </div>
             </div>
-          ))}
+          )))}
         </div>
       </div>
     </section>

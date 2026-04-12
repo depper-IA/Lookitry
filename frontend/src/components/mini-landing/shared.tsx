@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, createContext, useContext } from 'react';
+import { useState, useEffect, useMemo, createContext, useContext, useRef } from 'react';
 import Image from 'next/image';
 
 // ── Tipos compartidos ─────────────────────────────────────────────────────────
@@ -180,6 +180,34 @@ export function getVisibleSocialEntries(socialLinks?: Record<string, string>) {
 
   const allowed = new Set(['instagram', 'facebook', 'tiktok', 'youtube', 'x']);
   return Object.entries(socialLinks).filter(([key, url]) => allowed.has(key.toLowerCase()) && !!String(url || '').trim());
+}
+
+// ── Scroll Reveal Hook ────────────────────────────────────────────────────────
+export function useScrollReveal() {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
+      { threshold: 0.1 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  return { ref, isVisible };
+}
+
+// ── Product Skeleton ─────────────────────────────────────────────────────────
+export function ProductSkeleton({ primaryColor = '#FF5C3A' }: { primaryColor?: string }) {
+  return (
+    <div className="rounded-3xl overflow-hidden border border-gray-100 dark:border-white/5 p-3 animate-pulse">
+      <div className="aspect-[3/4] rounded-2xl bg-gray-200 dark:bg-white/10" />
+      <div className="mt-3 space-y-2">
+        <div className="h-3 bg-gray-200 dark:bg-white/10 rounded w-3/4" />
+        <div className="h-2 bg-gray-100 dark:bg-white/5 rounded w-1/3" />
+      </div>
+    </div>
+  );
 }
 
 /**

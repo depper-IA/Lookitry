@@ -143,7 +143,7 @@ function ProbadorProducts({ products, primaryColor, secondaryColor, ctaText, onP
               className="text-left group relative rounded-3xl overflow-hidden border transition-all duration-300 hover:shadow-2xl"
               style={{ backgroundColor: '#ffffff', borderColor: selectedId === p.id ? primaryColor : '#e5e7eb', borderWidth: selectedId === p.id ? 2 : 1 }}>
               <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: theme.surface }}>
-                <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                 {p.badge && <div className="absolute top-3 left-3 scale-90 origin-top-left"><ProductBadge badge={p.badge} /></div>}
                 <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${selectedId === p.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
                    <div className="px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
