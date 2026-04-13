@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { authService } from '@/services/auth.service';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import GoogleSignInButton from './GoogleSignInButton';
+import { loadTurnstileWidget } from '@/lib/turnstile';
 
 function EyeIcon() {
   return (
@@ -35,7 +36,29 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
   const [resending, setResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState<string | null>(null);
   const [showResendBtn, setShowResendBtn] = useState(false);
+
   const [googleError, setGoogleError] = useState<string | null>(null);
+
+  // ── Turnstile state ────────────────────────────────────────────────────
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const turnstileInstanceRef = useRef<Awaited<ReturnType<typeof loadTurnstileWidget>>>(null);
+
+  // Cargar widget Turnstile al montar
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) return;
+    if (!turnstileRef.current) return;
+
+    loadTurnstileWidget(turnstileRef.current, (token) => {
+      setTurnstileToken(token);
+    }).then((instance) => {
+      turnstileInstanceRef.current = instance;
+    });
+
+    return () => {
+      turnstileInstanceRef.current?.remove();
+    };
+  }, []);
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -55,11 +78,17 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
     setResendSuccess(null);
     setShowResendBtn(false);
     try {
-      await login(formData, redirectTo);
+      await login({ ...formData, turnstileToken: turnstileToken || undefined }, redirectTo);
     } catch (err: any) {
       const msg = err.message || '';
       if (msg.includes('verificar') || msg.includes('EMAIL_NOT_VERIFIED')) {
         setShowResendBtn(true);
+      }
+      // Manejar errores de Turnstile
+      const data = (err as any)?.response?.data;
+      if (data?.error === 'CAPTCHA_REQUIRED' || data?.error === 'CAPTCHA_FAILED') {
+        setTurnstileToken(null);
+        turnstileInstanceRef.current?.reset();
       }
     }
   };
@@ -144,9 +173,6 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
               mode="login"
               onError={(msg) => setGoogleError(msg)}
             />
-            {googleError && (
-              <p className="mt-2 text-xs text-red-400 text-center">{googleError}</p>
-            )}
 
             {/* Divider */}
             <div className="flex items-center gap-4 my-5">
@@ -261,6 +287,12 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                   <p className="mt-1 text-[11px] text-red-500">{validationErrors.password}</p>
                 )}
               </div>
+
+              {/* Cloudflare Turnstile widget */}
+              <div
+                ref={turnstileRef}
+                className="flex justify-center [&>div]:w-full"
+              />
 
               <motion.button
                 type="submit"

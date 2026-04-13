@@ -256,6 +256,31 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email y contraseña son requeridos' });
       }
 
+      // Verificar Turnstile si está habilitado (protege contra bots y brute-force)
+      const turnstileEnabled = process.env.TURNSTILE_ENABLED === 'true';
+      if (turnstileEnabled) {
+        const token = req.body.turnstileToken;
+        if (!token) {
+          return res.status(400).json({ error: 'CAPTCHA_REQUIRED', message: 'Verificación de seguridad requerida' });
+        }
+        const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || '';
+        const formData = new URLSearchParams();
+        formData.append('secret', process.env.TURNSTILE_SECRET_KEY || '');
+        formData.append('response', token);
+        if (ip) formData.append('remoteip', ip);
+
+        const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData.toString(),
+        });
+        const verifyData = await verifyRes.json() as { success: boolean; 'error-codes'?: string[] };
+        if (!verifyData.success) {
+          console.error('[Turnstile] Login - Verificación fallida:', verifyData['error-codes']);
+          return res.status(400).json({ error: 'CAPTCHA_FAILED', message: 'Verificación de seguridad fallida. Intenta de nuevo.' });
+        }
+      }
+
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(data.email)) {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Formato de email inválido' });

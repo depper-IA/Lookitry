@@ -173,6 +173,20 @@ function ProbadorProducts({ products, primaryColor, secondaryColor, ctaText, onP
               <div className="p-5">
                 <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: theme.muted }}>{p.category}</p>
                 <h3 className="text-sm font-black uppercase tracking-tight line-clamp-1 transition-colors" style={{ color: theme.text }}>{p.name}</h3>
+                {p.short_description && <p className="text-[10px] mt-1 line-clamp-2 leading-relaxed" style={{ color: theme.muted }}>{p.short_description}</p>}
+                {p.attributes && Object.keys(p.attributes).length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {Object.entries(p.attributes).slice(0, 2).map(([key, value]) => {
+                      if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                      const displayValue = Array.isArray(value) ? value.slice(0, 2).join(', ') : String(value);
+                      return (
+                        <span key={key} className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
+                          {displayValue}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
                 {p.price != null && <p className="text-base font-black mt-2" style={{ color: theme.text }}>${p.price.toLocaleString('es-CO')}</p>}
               </div>
             </button>

@@ -22,6 +22,9 @@ router.post('/describe-ai', (req, res) => productsController.describeProductWith
 // GET /api/products - Listar productos de marca autenticada
 router.get('/', (req, res) => productsController.getProducts(req, res));
 
+// GET /api/products/:id - Obtener un producto específico (para admin - incluye descripción IA)
+router.get('/:id', (req, res) => productsController.getProduct(req, res));
+
 // POST /api/products - Crear producto con validación de límite
 router.post('/', (req, res) => productsController.createProduct(req, res));
 

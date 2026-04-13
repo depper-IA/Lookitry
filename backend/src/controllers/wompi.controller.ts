@@ -203,6 +203,27 @@ export class WompiController {
         return;
       }
 
+      // ── BLOQUE DE IDEMPOTENCIA ──────────────────────────────────────────────
+      // Check temprano: si ya procesamos este pago, responder 200 sin re-procesar.
+      // Cubre: subscription_payments completadas, TRIAL activo, plan_changes completados.
+      const idempotency = await wompiService.checkIdempotency(reference, brandId);
+      if (idempotency.alreadyProcessed) {
+        console.log(`[Wompi] Idempotencia: pago ya procesado (${idempotency.reason}). Ref=${reference}`);
+        await this.insertPaymentLog({
+          eventType: 'idempotency_detected',
+          reference,
+          transactionId: transaction.id,
+          amountCents: amountInCents,
+          brandId,
+          status: 'ignored',
+          payload: { reason: idempotency.reason, existingPaymentId: idempotency.existingPaymentId },
+          ipAddress,
+        });
+        res.status(200).json({ received: true });
+        return;
+      }
+      // ── FIN BLOQUE IDEMPOTENCIA ──────────────────────────────────────────────
+
       if (brandId.startsWith('visitor_') || brandId.startsWith('GUEST') || brandId.startsWith('FREE')) {
         const { data: pendingRegistration } = await supabaseAdmin
           .from('pending_registrations')

@@ -9,22 +9,26 @@ const n8nClient = new N8nClient();
 
 export interface CreateProductDto {
   name: string;
-  description?: string;
+  description?: string; // IA description - NOT visible to customers, used internally
+  short_description?: string; // Visible to customers - new field
   image_url: string;
   category: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
   external_id?: string | null;
+  attributes?: Record<string, any>; // Dynamic attributes by category - new field
 }
 
 export interface UpdateProductDto {
   name?: string;
   description?: string;
+  short_description?: string;
   image_url?: string;
   category?: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
   external_id?: string | null;
+  attributes?: Record<string, any>;
 }
 
 export class ProductsService {
@@ -44,16 +48,19 @@ export class ProductsService {
     }
 
     // Mapear snake_case a camelCase para el frontend
+    // NOTA: description (IA) NO se incluye en la respuesta para clientes
     return (data || []).map(product => ({
       id: product.id,
       brandId: product.brand_id,
       name: product.name,
-      description: product.description,
+      // description: product.description, // OCULTO - solo para uso interno de IA
+      shortDescription: product.short_description ?? null,
       imageUrl: product.image_url,
       category: product.category,
       price: product.price ?? null,
       badge: product.badge ?? null,
       externalId: product.external_id ?? null,
+      attributes: product.attributes ?? {},
       isActive: product.is_active,
       createdAt: product.created_at,
       updatedAt: product.updated_at
@@ -61,9 +68,9 @@ export class ProductsService {
   }
 
   /**
-   * Obtener un producto por ID
+   * Obtener un producto por ID (para admin - incluye descripción IA)
    */
-  async getProductById(productId: string): Promise<Product | null> {
+  async getProductById(productId: string): Promise<any | null> {
     const { data, error } = await supabaseAdmin
       .from('products')
       .select('*')
@@ -74,13 +81,29 @@ export class ProductsService {
       return null;
     }
 
-    return data as Product;
+    // Admin view - incluye todos los campos
+    return {
+      id: data.id,
+      brandId: data.brand_id,
+      name: data.name,
+      description: data.description ?? null, // Incluido para admin
+      shortDescription: data.short_description ?? null,
+      imageUrl: data.image_url,
+      category: data.category,
+      price: data.price ?? null,
+      badge: data.badge ?? null,
+      externalId: data.external_id ?? null,
+      attributes: data.attributes ?? {},
+      isActive: data.is_active,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    };
   }
 
   /**
    * Obtener un producto por su ID externo (WordPress, Shopify, etc.)
    */
-  async getProductByExternalId(brandId: string, externalId: string): Promise<Product | null> {
+  async getProductByExternalId(brandId: string, externalId: string): Promise<any | null> {
     const { data, error } = await supabaseAdmin
       .from('products')
       .select('*')
@@ -94,7 +117,21 @@ export class ProductsService {
       return null;
     }
 
-    return data as Product;
+    return {
+      id: data.id,
+      brandId: data.brand_id,
+      name: data.name,
+      shortDescription: data.short_description ?? null,
+      imageUrl: data.image_url,
+      category: data.category,
+      price: data.price ?? null,
+      badge: data.badge ?? null,
+      externalId: data.external_id ?? null,
+      attributes: data.attributes ?? {},
+      isActive: data.is_active,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    };
   }
 
   /**
@@ -172,34 +209,20 @@ export class ProductsService {
       throw new Error('La categoría es requerida');
     }
 
-    // Si existe, lo actualizamos y nos aseguramos que esté activo
-    const { error: updateError } = await supabaseAdmin
-      .from('products')
-      .update({
-        name: productData.name.trim(),
-        description: productData.description?.trim() || null,
-        image_url: productData.image_url.trim(),
-        category: productData.category.trim(),
-        price: productData.price ?? null,
-        badge: productData.badge ?? null,
-        is_active: true, // Por si acaso hubiera quedado alguno inactivo de antes
-        updated_at: new Date().toISOString()
-      })
-      .eq('brand_id', brandId)
-      .eq('external_id', String(productData.external_id));
-
-    // Crear el producto
+    // Crear el producto con todos los campos nuevos
     const { data, error } = await supabaseAdmin
       .from('products')
       .insert({
         brand_id: brandId,
         name: productData.name.trim(),
-        description: productData.description?.trim() || null,
+        description: productData.description?.trim() || null, // IA description - interno
+        short_description: productData.short_description?.trim() || null, // Visible para clientes
         image_url: productData.image_url.trim(),
         category: productData.category.trim(),
         price: productData.price ?? null,
         badge: productData.badge ?? null,
         external_id: productData.external_id || null,
+        attributes: productData.attributes || {}, // Atributos dinámicos
         is_active: true
       })
       .select()
@@ -217,16 +240,18 @@ export class ProductsService {
     }
 
     // Mapear snake_case a camelCase para el frontend
+    // NOTA: description (IA) NO se devuelve al cliente
     return {
       id: data.id,
       brandId: data.brand_id,
       name: data.name,
-      description: data.description,
+      shortDescription: data.short_description ?? null,
       imageUrl: data.image_url,
       category: data.category,
       price: data.price ?? null,
       badge: data.badge ?? null,
       externalId: data.external_id ?? null,
+      attributes: data.attributes ?? {},
       isActive: data.is_active,
       createdAt: data.created_at,
       updatedAt: data.updated_at
@@ -244,7 +269,7 @@ export class ProductsService {
       throw new Error('Producto no encontrado');
     }
 
-    if (product.brand_id !== brandId) {
+    if (product.brandId !== brandId) {
       throw new Error('No tienes permiso para editar este producto');
     }
 
@@ -265,11 +290,13 @@ export class ProductsService {
     const updateData: any = {};
     if (updates.name !== undefined) updateData.name = updates.name.trim();
     if (updates.description !== undefined) updateData.description = updates.description?.trim() || null;
+    if (updates.short_description !== undefined) updateData.short_description = updates.short_description?.trim() || null;
     if (updates.image_url !== undefined) updateData.image_url = updates.image_url.trim();
     if (updates.category !== undefined) updateData.category = updates.category.trim();
     if (updates.price !== undefined) updateData.price = updates.price ?? null;
     if (updates.badge !== undefined) updateData.badge = updates.badge ?? null;
     if (updates.external_id !== undefined) updateData.external_id = updates.external_id || null;
+    if (updates.attributes !== undefined) updateData.attributes = updates.attributes || {};
 
     // Actualizar el producto
     const { data, error } = await supabaseAdmin
@@ -283,17 +310,19 @@ export class ProductsService {
       throw new Error('Error al actualizar el producto: ' + error?.message);
     }
 
-    // Mapear snake_case a camelCase para el frontend (updateProduct)
+    // Mapear snake_case a camelCase para el frontend
+    // NOTA: description (IA) NO se devuelve al cliente
     return {
       id: data.id,
       brandId: data.brand_id,
       name: data.name,
-      description: data.description,
+      shortDescription: data.short_description ?? null,
       imageUrl: data.image_url,
       category: data.category,
       price: data.price ?? null,
       badge: data.badge ?? null,
       externalId: data.external_id ?? null,
+      attributes: data.attributes ?? {},
       isActive: data.is_active,
       createdAt: data.created_at,
       updatedAt: data.updated_at
@@ -301,7 +330,7 @@ export class ProductsService {
   }
 
   /**
-   * Eliminar un producto (soft delete)
+   * Eliminar un producto (hard delete)
    * Las generaciones históricas se mantienen
    */
   async deleteProduct(productId: string, brandId: string): Promise<void> {
@@ -312,7 +341,7 @@ export class ProductsService {
       throw new Error('Producto no encontrado');
     }
 
-    if (product.brand_id !== brandId) {
+    if (product.brandId !== brandId) {
       throw new Error('No tienes permiso para eliminar este producto');
     }
 
@@ -451,9 +480,11 @@ export class ProductsService {
         external_id: extId,
         name: item.name?.trim() || 'Producto sin nombre',
         description: item.description?.trim() || null,
+        short_description: item.short_description?.trim() || null,
         image_url: item.image_url?.trim() || '',
-        category: item.category?.trim() || 'General',
+        category: item.category?.trim() || 'general',
         price: item.price ? parseInt(String(item.price)) : null,
+        attributes: item.attributes || {},
         is_active: isActive,
         updated_at: new Date().toISOString()
       };

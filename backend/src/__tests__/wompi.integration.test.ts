@@ -27,6 +27,7 @@ jest.mock('../services/wompi.service', () => {
       extractMetaFromReference: jest.fn(),
       getWidgetConfig: jest.fn(),
       generateIntegritySignature: jest.fn(),
+      checkIdempotency: jest.fn().mockResolvedValue({ alreadyProcessed: false }),
       enabled: true,
     },
   };
@@ -470,6 +471,80 @@ describe('WompiController.handleWebhook', () => {
 
       await controller.handleWebhook(req, res);
 
+      expect(renewMock).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+  });
+
+  describe('Idempotencia de webhook', () => {
+    it('NO llama renewSubscription si checkIdempotency indica ya procesado (subscription_payments)', async () => {
+      mockedWompi.checkIdempotency.mockResolvedValueOnce({
+        alreadyProcessed: true,
+        existingPaymentId: 'pay-123',
+        reason: 'subscription_payments: pago completado (id=pay-123)',
+      });
+      const controller = new WompiController();
+      const event = buildTransactionEvent('APPROVED', buildReference(BRAND_ID));
+      const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
+
+      await controller.handleWebhook(req, res);
+
+      expect(mockedWompi.checkIdempotency).toHaveBeenCalledWith(
+        expect.any(String),
+        BRAND_ID
+      );
+      expect(renewMock).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ received: true });
+    });
+
+    it('SÍ llama renewSubscription cuando checkIdempotency indica no procesado', async () => {
+      mockedWompi.checkIdempotency.mockResolvedValueOnce({ alreadyProcessed: false });
+      const controller = new WompiController();
+      const event = buildTransactionEvent('APPROVED', buildReference(BRAND_ID));
+      const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
+
+      await controller.handleWebhook(req, res);
+
+      expect(mockedWompi.checkIdempotency).toHaveBeenCalledWith(
+        expect.any(String),
+        BRAND_ID
+      );
+      expect(renewMock).toHaveBeenCalledTimes(1);
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('registra evento idempotency_detected cuando ya fue procesado', async () => {
+      mockedWompi.checkIdempotency.mockResolvedValueOnce({
+        alreadyProcessed: true,
+        existingPaymentId: 'pay-duplicate-456',
+        reason: 'subscription_payments: pago completado (id=pay-duplicate-456)',
+      });
+      const controller = new WompiController();
+      const reference = buildReference(BRAND_ID);
+      const event = buildTransactionEvent('APPROVED', reference);
+      const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
+
+      await controller.handleWebhook(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      // idempotency check pasó → early return → renewSubscription NO llamado
+      expect(renewMock).not.toHaveBeenCalled();
+    });
+
+    it('NO procesa doble webhook si TRIAL ya está activo (trial_payment_status check)', async () => {
+      mockedWompi.checkIdempotency.mockResolvedValueOnce({
+        alreadyProcessed: true,
+        reason: "TRIAL: trial_payment_status ya es 'active' para brand=existing-brand",
+      });
+      const controller = new WompiController();
+      const trialRef = `TRIAL-existing-brand-${Date.now()}`;
+      const event = buildTransactionEvent('APPROVED', trialRef);
+      const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
+
+      await controller.handleWebhook(req, res);
+
+      // No se intentó hacer update de brands porque el trial ya estaba activo
       expect(renewMock).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
     });

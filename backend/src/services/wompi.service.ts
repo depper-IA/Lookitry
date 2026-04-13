@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { PaymentSettingsService } from './paymentSettings.service';
+import { supabaseAdmin } from '../config/supabase';
 
 /**
  * WompiService
@@ -296,6 +297,72 @@ export class WompiService {
     }
 
     return `https://checkout.wompi.co/p/?${params.join('&')}`;
+  }
+
+  /**
+   * Verifica si un pago de suscripción ya fue procesado exitosamente.
+   * Esta es la base de la idempotencia para webhooks de Wompi.
+   *
+   * Retorna { alreadyProcessed: true } si ya existe un registro 'completed' en
+   * subscription_payments para la referencia dada.
+   *
+   * También detecta si la suscripción ya fue activada para TRIAL.
+   */
+  async checkIdempotency(reference: string, brandId: string): Promise<{
+    alreadyProcessed: boolean;
+    existingPaymentId?: string;
+    reason?: string;
+  }> {
+    // 1. Check subscription_payments por referencia + status 'completed'
+    const { data: existingPayment } = await supabaseAdmin
+      .from('subscription_payments')
+      .select('id, status, brand_id, plan')
+      .eq('reference', reference)
+      .eq('status', 'completed')
+      .maybeSingle();
+
+    if (existingPayment) {
+      return {
+        alreadyProcessed: true,
+        existingPaymentId: existingPayment.id,
+        reason: `subscription_payments: pago completado (id=${existingPayment.id})`,
+      };
+    }
+
+    // 2. Para TRIAL: check si la brand ya tiene trial_payment_status='active'
+    // Si la referencia empieza con TRIAL-, verificamos si el trial ya está activo
+    if (reference.startsWith('TRIAL-')) {
+      const { data: brand } = await supabaseAdmin
+        .from('brands')
+        .select('id, trial_payment_status')
+        .eq('id', brandId)
+        .maybeSingle();
+
+      if (brand?.trial_payment_status === 'active') {
+        return {
+          alreadyProcessed: true,
+          reason: `TRIAL: trial_payment_status ya es 'active' para brand=${brandId}`,
+        };
+      }
+    }
+
+    // 3. Check pendiente de plan_change para evitar re-procesar upgrades
+    const { data: planChange } = await supabaseAdmin
+      .from('plan_changes')
+      .select('id, status')
+      .eq('reference', reference)
+      .eq('status', 'completed')
+      .maybeSingle();
+
+    if (planChange) {
+      return {
+        alreadyProcessed: true,
+        existingPaymentId: planChange.id,
+        reason: `plan_changes: cambio de plan completado (id=${planChange.id})`,
+      };
+    }
+
+    return { alreadyProcessed: false };
   }
 }
 

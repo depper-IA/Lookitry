@@ -277,7 +277,20 @@ function ClassicProducts({ products, brand, primaryColor, secondaryColor, ctaTex
                   {p.price && <p className="text-xs font-black" style={{ color: theme.text }}>${p.price.toLocaleString('es-CO')}</p>}
                 </div>
                 <h3 className="text-base font-bold uppercase tracking-tight line-clamp-1" style={{ color: theme.text }}>{p.name}</h3>
-                {p.description && <p className="text-[10px] mt-1.5 line-clamp-2 leading-relaxed" style={{ color: theme.muted }}>{p.description}</p>}
+                {p.short_description && <p className="text-[10px] mt-1.5 line-clamp-2 leading-relaxed font-medium" style={{ color: theme.muted }}>{p.short_description}</p>}
+                {p.attributes && Object.keys(p.attributes).length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {Object.entries(p.attributes).slice(0, 3).map(([key, value]) => {
+                      if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                      const displayValue = Array.isArray(value) ? value.slice(0, 3).join(', ') : String(value);
+                      return (
+                        <span key={key} className="text-[9px] px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
+                          {displayValue}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           )))}
