@@ -24,6 +24,18 @@
   --shadow-header: 0 1px 3px rgba(0,0,0,0.08);
   --bg-hover: #ede9e4;
   --bg-input: #ffffff;
+  
+  /* Product Card Light */
+  --card-bg: #ffffff;
+  --card-bg-elevated: #f8f8f8;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --pill-bg: rgba(0, 0, 0, 0.05);
+  --pill-text: rgba(0, 0, 0, 0.7);
+  --pill-border: rgba(0, 0, 0, 0.08);
+  --overlay-dark: rgba(0, 0, 0, 0.7);
+  --skeleton-bg: #e8e8e8;
+  --btn-bg: rgba(0, 0, 0, 0.05);
+  --table-header-bg: rgba(0, 0, 0, 0.02);
 }
 
 .dark {
@@ -41,6 +53,18 @@
   --shadow-header: 0 1px 3px rgba(0,0,0,0.4);
   --bg-hover: #1a1a1a;
   --bg-input: #0f0f0f;
+  
+  /* Product Card Dark */
+  --card-bg: #141414;
+  --card-bg-elevated: #1c1c1f;
+  --card-border: rgba(255, 255, 255, 0.06);
+  --pill-bg: rgba(255, 255, 255, 0.06);
+  --pill-text: rgba(255, 255, 255, 0.7);
+  --pill-border: rgba(255, 255, 255, 0.08);
+  --overlay-dark: rgba(10, 10, 11, 0.85);
+  --skeleton-bg: #2a2a2a;
+  --btn-bg: rgba(255, 255, 255, 0.06);
+  --table-header-bg: rgba(0, 0, 0, 0.3);
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
