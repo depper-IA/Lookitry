@@ -111,11 +111,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    if (!supabase) throw new Error('Supabase not configured');
+    if (!supabase) {
+      return staticRoutes;
+    }
     const { data: posts } = await supabase
       .from('blogs')
       .select('slug, updated_at')
-      .eq('status', 'published');
+      .eq('status', 'published') as { data: { slug: string; updated_at: string }[] | null };
 
     if (posts && posts.length > 0) {
       const blogRoutes = posts.map((post) => ({
