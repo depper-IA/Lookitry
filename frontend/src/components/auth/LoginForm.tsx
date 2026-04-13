@@ -295,10 +295,9 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
               </div>
 
               {/* Cloudflare Turnstile widget */}
-              <div
-                ref={turnstileRef}
-                className="flex justify-center [&>div]:w-full"
-              />
+              <div className="flex justify-center my-4">
+                <div ref={turnstileRef} className="[&>div]:!mx-auto [&>iframe]:mx-auto" />
+              </div>
 
               <motion.button
                 type="submit"
