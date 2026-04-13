@@ -127,8 +127,6 @@ function AttributeDisplay({ attributes, category }: { attributes: Record<string,
     displayItems.push({ label: ATTRIBUTE_LABELS.peso || 'Peso', value: attributes.peso + ' kg' });
   }
   
-  }
-  
   // Manga para camisas
   if (attributes.manga) {
     displayItems.push({ label: ATTRIBUTE_LABELS.manga || 'Manga', value: attributes.manga });
