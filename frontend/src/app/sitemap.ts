@@ -5,9 +5,12 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Only initialize supabase if env vars are available (runtime, not build time)
+  let supabase: ReturnType<typeof createClient> | null = null;
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: BASE_URL,
@@ -108,6 +111,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
+    if (!supabase) throw new Error('Supabase not configured');
     const { data: posts } = await supabase
       .from('blogs')
       .select('slug, updated_at')
