@@ -72,6 +72,40 @@ function EmptyState() {
   );
 }
 
+// ── Atributos Tags ────────────────────────────────────────────────────────────
+
+function AttributeTags({ attributes, category }: { attributes: Record<string, any>; category: string }) {
+  if (!attributes || Object.keys(attributes).length === 0) return null;
+  
+  // Solo mostrar atributos relevantes como tags
+  const displayAttrs: { key: string; value: any }[] = [];
+  
+  if (attributes.finish) displayAttrs.push({ key: 'finish', value: attributes.finish });
+  if (attributes.medida_pulgadas) displayAttrs.push({ key: 'medida', value: attributes.medida_pulgadas + '"' });
+  if (attributes.material) displayAttrs.push({ key: 'material', value: attributes.material });
+  if (attributes.tipo_tela) displayAttrs.push({ key: 'tela', value: attributes.tipo_tela });
+  if (attributes.marca) displayAttrs.push({ key: 'marca', value: attributes.marca });
+  if (attributes.color) displayAttrs.push({ key: 'color', value: attributes.color });
+  
+  // Mostrar tallas si existen
+  if (attributes.tallas && Array.isArray(attributes.tallas) && attributes.tallas.length > 0) {
+    const tallasStr = attributes.tallas.slice(0, 4).join(', ');
+    displayAttrs.push({ key: 'tallas', value: tallasStr + (attributes.tallas.length > 4 ? '...' : '') });
+  }
+  
+  if (displayAttrs.length === 0) return null;
+  
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {displayAttrs.map(({ key, value }) => (
+        <span key={key} className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-semibold bg-[var(--bg-input)] text-[var(--text-secondary)] border border-[var(--border-color)]/50">
+          {value}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // ── GRID VIEW ─────────────────────────────────────────────────────────────
 
 // ── GRID VIEW ─────────────────────────────────────────────────────────────
@@ -125,7 +159,18 @@ function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
               <div className="flex justify-between items-start gap-4">
                 <div className="min-w-0 flex-1">
                    <h3 className="text-sm md:text-base font-[950] italic uppercase tracking-tighter text-[var(--text-primary)] leading-[1.1] transition-all">{product.name}</h3>
-                  <div className="flex items-center gap-2 mt-2">
+                  
+                  {/* Descripción Corta */}
+                  {product.shortDescription && (
+                    <p className="text-[10px] md:text-[11px] text-[var(--text-secondary)] mt-2 line-clamp-2 leading-relaxed">
+                      {product.shortDescription}
+                    </p>
+                  )}
+                  
+                  {/* Atributos Dinámicos */}
+                  <AttributeTags attributes={product.attributes || {}} category={product.category} />
+                  
+                  <div className="flex items-center gap-2 mt-3">
                     <span className="text-[9px] md:text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest leading-none">{product.category}</span>
                     <span className="w-1 h-1 rounded-full bg-[var(--border-color)]" />
                     <span className="text-[9px] md:text-[10px] font-black uppercase text-[#FF5C3A] tracking-widest leading-none">Activo</span>
@@ -180,6 +225,9 @@ function ThumbnailsView({ products, onEdit, onDelete }: Omit<ProductListProps, '
             </div>
             <div className="p-3 md:p-4 text-center">
                <p className="text-[9px] md:text-[10px] font-black uppercase tracking-tighter text-[var(--text-primary)] leading-tight line-clamp-1">{product.name}</p>
+               {product.shortDescription && (
+                 <p className="text-[8px] text-[var(--text-muted)] mt-1 line-clamp-1 hidden sm:block">{product.shortDescription}</p>
+               )}
                {product.price && <p className="text-[9px] font-black text-[#FF5C3A] italic mt-1">${product.price.toLocaleString('es-CO')}</p>}
             </div>
           </motion.div>
@@ -224,6 +272,10 @@ function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
                        </div>
                        <div className="min-w-0 flex-1">
                          <h4 className="text-sm font-black italic uppercase italic tracking-tighter text-[var(--text-primary)] leading-tight">{product.name}</h4>
+                         {product.shortDescription && (
+                           <p className="text-[10px] text-[var(--text-secondary)] mt-1 line-clamp-1 max-w-xs">{product.shortDescription}</p>
+                         )}
+                         <AttributeTags attributes={product.attributes || {}} category={product.category} />
                          <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-widest mt-1 leading-none">{product.category}</p>
                        </div>
                     </div>
