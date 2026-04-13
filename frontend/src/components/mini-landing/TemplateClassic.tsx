@@ -19,6 +19,7 @@ import {
   getSmartBorderColor,
   getVisibleSocialEntries,
   useContrastTheme,
+  useLandingTheme,
   YouTubeIcon,
   XIcon,
   InstagramIcon,
@@ -235,9 +236,10 @@ function ClassicSteps({ brand, primaryColor, secondaryColor }: { brand: BrandDat
   );
 }
 
-function ClassicProducts({ products, primaryColor, secondaryColor, ctaText, onProductClick }: { products: ProductData[]; primaryColor: string; secondaryColor?: string; ctaText?: string | null; onProductClick: (id: string) => void }) {
+function ClassicProducts({ products, brand, primaryColor, secondaryColor, ctaText, onProductClick }: { products: ProductData[]; brand: BrandData; primaryColor: string; secondaryColor?: string; ctaText?: string | null; onProductClick: (id: string) => void }) {
   const [isLoading, setIsLoading] = useState(true);
   const { ref: sectionRef, isVisible } = useScrollReveal();
+  const theme = useLandingTheme(brand);
 
   useEffect(() => {
     if (products && products.length > 0) {
@@ -246,17 +248,13 @@ function ClassicProducts({ products, primaryColor, secondaryColor, ctaText, onPr
   }, [products]);
 
   if (!products.length) return null;
-  const bgColor = '#f9f8f6';
-  const isBgDark = isDarkColor(bgColor);
-  const textColor = isBgDark ? '#ffffff' : '#111111';
-  const mutedColor = getSmartMutedColor(bgColor);
 
   return (
-    <section ref={sectionRef} id="productos" className={`py-20 px-6 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ backgroundColor: bgColor }}>
+    <section ref={sectionRef} id="productos" className={`py-20 px-6 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ backgroundColor: theme.productsBg }}>
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12 space-y-3">
           <span className="text-[9px] font-black uppercase tracking-[0.3em]" style={{ color: secondaryColor || primaryColor }}>Coleccion de Temporada</span>
-          <h2 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic leading-none" style={{ color: textColor }}>Nuestros Productos</h2>
+          <h2 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic leading-none" style={{ color: theme.text }}>Nuestros Productos</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {isLoading ? (
@@ -276,10 +274,10 @@ function ClassicProducts({ products, primaryColor, secondaryColor, ctaText, onPr
               <div className="p-6 text-left">
                 <div className="flex justify-between items-start mb-1">
                   <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: secondaryColor || primaryColor }}>{p.category}</p>
-                  {p.price && <p className="text-xs font-black" style={{ color: textColor }}>${p.price.toLocaleString('es-CO')}</p>}
+                  {p.price && <p className="text-xs font-black" style={{ color: theme.text }}>${p.price.toLocaleString('es-CO')}</p>}
                 </div>
-                <h3 className="text-base font-bold uppercase tracking-tight line-clamp-1" style={{ color: textColor }}>{p.name}</h3>
-                {p.description && <p className="text-[10px] mt-1.5 line-clamp-2 leading-relaxed" style={{ color: mutedColor }}>{p.description}</p>}
+                <h3 className="text-base font-bold uppercase tracking-tight line-clamp-1" style={{ color: theme.text }}>{p.name}</h3>
+                {p.description && <p className="text-[10px] mt-1.5 line-clamp-2 leading-relaxed" style={{ color: theme.muted }}>{p.description}</p>}
               </div>
             </div>
           )))}
@@ -308,22 +306,20 @@ function ClassicFooter({ brand, primaryColor, secondaryColor, footerUrl }: { bra
   };
   const hasLocationBlock = !!brand.city_display || !!brand.national_shipping;
   const hasRatings = typeof brand.rating === 'number' || typeof brand.total_reviews === 'number';
-  const bgColor = '#ffffff';
-  const textColor = '#111111';
-  const mutedColor = '#6b7280';
+  const theme = useLandingTheme(brand);
 
   return (
-    <footer id="contacto" className="pt-24 pb-12 px-6 border-t" style={{ backgroundColor: bgColor, borderColor: '#f3f4f6' }}>
+    <footer id="contacto" className="pt-24 pb-12 px-6 border-t" style={{ backgroundColor: theme.footerBg, borderColor: theme.border }}>
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20 mb-20">
           <div className="lg:col-span-5 space-y-8">
             <div className="flex items-center gap-3">
               {brand.logo ? <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-8 object-contain" /> : <span className="font-black text-2xl uppercase italic" style={{ color: primaryColor }}>{brand.name}</span>}
             </div>
-            <p className="text-sm leading-relaxed font-medium italic max-w-sm text-left" style={{ color: mutedColor }}>&quot;{brand.brand_description || 'Moda y tecnologia unidas para ofrecerte la mejor experiencia de compra virtual.'}&quot;</p>
+            <p className="text-sm leading-relaxed font-medium italic max-w-sm text-left" style={{ color: theme.muted }}>&quot;{brand.brand_description || 'Moda y tecnologia unidas para ofrecerte la mejor experiencia de compra virtual.'}&quot;</p>
             <div className="flex gap-3 justify-start">
               {getVisibleSocialEntries(brand.social_links).map(([p, url]) => (
-                <a key={p} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Síguenos en ${p}`} className="w-12 h-12 rounded-xl flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2" style={{ backgroundColor: '#f9fafb', border: '1px solid #f3f4f6', color: mutedColor }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#111111'; e.currentTarget.style.color = '#ffffff'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#f9fafb'; e.currentTarget.style.color = mutedColor; }}>
+                <a key={p} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Síguenos en ${p}`} className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:bg-[#111111] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2" style={{ backgroundColor: theme.surface, border: `1px solid ${theme.border}`, color: theme.muted }}>
                   {socialIcons[p.toLowerCase()] || p.slice(0, 1)}
                 </a>
               ))}
@@ -341,35 +337,35 @@ function ClassicFooter({ brand, primaryColor, secondaryColor, footerUrl }: { bra
             {scheduleEntries.length > 0 ? (
               <div className="space-y-3">
                 {scheduleEntries.map(([d, h]) => (
-                  <div key={d} className="flex justify-between items-center text-xs font-bold border-b pb-2" style={{ borderColor: '#f9fafb' }}>
-                    <span className="uppercase" style={{ color: mutedColor }}>{d}</span>
-                    <span style={{ color: textColor }}>{h}</span>
+                  <div key={d} className="flex justify-between items-center text-xs font-bold border-b pb-2" style={{ borderColor: theme.borderLight }}>
+                    <span className="uppercase" style={{ color: theme.muted }}>{d}</span>
+                    <span style={{ color: theme.text }}>{h}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs italic font-medium" style={{ color: mutedColor }}>No hay horarios registrados.</p>
+              <p className="text-xs italic font-medium" style={{ color: theme.muted }}>No hay horarios registrados.</p>
             )}
           </div>
 
           {hasRatings && (
             <div className="lg:col-span-3 space-y-8 text-left">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: mutedColor }}>Valoraciones</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: theme.muted }}>Valoraciones</h4>
               <div className="space-y-2">
                 <div className="flex gap-1 text-yellow-400">
                   {[1, 2, 3, 4, 5].map(i => <StarIcon key={i} className="w-4 h-4" filled={i <= Math.round(brand.rating || 0)} />)}
                 </div>
-                {typeof brand.rating === 'number' && <p className="text-2xl font-black tracking-tight" style={{ color: textColor }}>{brand.rating.toFixed(1)}</p>}
-                {typeof brand.total_reviews === 'number' && <p className="text-[10px] font-bold uppercase" style={{ color: mutedColor }}>{brand.total_reviews.toLocaleString()} Resenas de clientes</p>}
+                {typeof brand.rating === 'number' && <p className="text-2xl font-black tracking-tight" style={{ color: theme.text }}>{brand.rating.toFixed(1)}</p>}
+                {typeof brand.total_reviews === 'number' && <p className="text-[10px] font-bold uppercase" style={{ color: theme.muted }}>{brand.total_reviews.toLocaleString()} Resenas de clientes</p>}
               </div>
             </div>
           )}
         </div>
 
-        <div className="pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6" style={{ borderColor: '#f9fafb' }}>
-          <p className="text-[9px] font-black uppercase tracking-widest text-center md:text-left" style={{ color: '#d1d5db' }}>© 2026 {brand.name}</p>
-          <p className="text-[9px] font-black uppercase tracking-widest text-center md:text-right" style={{ color: '#d1d5db' }}>
-            Powered by <a href={footerUrl || 'https://lookitry.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-colors" style={{ color: textColor }}>Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+        <div className="pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6" style={{ borderColor: theme.borderLight }}>
+          <p className="text-[9px] font-black uppercase tracking-widest text-center md:text-left" style={{ color: theme.mutedLight }}>© 2026 {brand.name}</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-center md:text-right" style={{ color: theme.mutedLight }}>
+            Powered by <a href={footerUrl || 'https://lookitry.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-colors" style={{ color: theme.text }}>Look<span className="text-[#FF5C3A]">itry</span> IA</a>
           </p>
         </div>
       </div>
@@ -380,6 +376,7 @@ function ClassicFooter({ brand, primaryColor, secondaryColor, footerUrl }: { bra
 export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPreview = false }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string; isPreview?: boolean }) {
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
   const secondary = brand.social_links?._landing_secondary || primary;
+  const theme = useLandingTheme(brand);
   const [selectedId, setSelectedId] = useState<string | null>(products?.[0]?.id || null);
 
   const handleProductClick = (id: string) => {
@@ -392,7 +389,7 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPrevi
       <ClassicHeader brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
       <ClassicHero brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} isPreview={isPreview} />
       <ClassicSteps brand={brand} primaryColor={primary} secondaryColor={secondary} />
-      <ClassicProducts products={products} primaryColor={primary} secondaryColor={secondary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} />
+      <ClassicProducts products={products} brand={brand} primaryColor={primary} secondaryColor={secondary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} />
 
       <section id="probador" className="py-20 px-4 md:px-6" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
         <div className="max-w-4xl mx-auto space-y-12 text-center">
