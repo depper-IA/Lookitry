@@ -136,11 +136,14 @@ export default function RegisterForm() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const turnstileInstanceRef = useRef<Awaited<ReturnType<typeof loadTurnstileWidget>>>(null);
+  const turnstileLoadedRef = useRef(false);
 
   // Cargar widget Turnstile al montar
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) return;
     if (!turnstileRef.current) return;
+    if (turnstileLoadedRef.current) return;
+    turnstileLoadedRef.current = true;
 
     loadTurnstileWidget(turnstileRef.current, (token) => {
       setTurnstileToken(token);
