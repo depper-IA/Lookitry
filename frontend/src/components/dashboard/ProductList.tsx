@@ -127,9 +127,6 @@ function AttributeDisplay({ attributes, category }: { attributes: Record<string,
     displayItems.push({ label: ATTRIBUTE_LABELS.peso || 'Peso', value: attributes.peso + ' kg' });
   }
   
-  // Agujeros para rines
-  if (attributes.agujeros) {
-    displayItems.push({ label: 'Agujeros', value: attributes.agujeros });
   }
   
   // Manga para camisas
