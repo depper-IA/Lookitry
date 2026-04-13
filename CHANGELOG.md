@@ -1,5 +1,30 @@
 # CHANGELOG — Lookitry
 
+## 13 de Abril 2026
+
+### Fix: Jobs Atascados en Cola Try-On
+
+**Problema identificado:** Un job quedó atascado en `queue:tryon:processing` por ~26 minutos (timeout de n8n) porque:
+1. El queue worker no tenía mecanismo para recuperar jobs "huérfanos" (sin timeout real)
+2. No había validación de que el webhook de n8n estuviera activo antes de procesar
+3. El workflow de n8n puede tardar más de lo esperado en responder
+
+**Soluciones implementadas:**
+
+| # | Componente | Cambio |
+|---|-----------|--------|
+| 1 | `generation-queue.service.ts` | Nuevo método `recoverStaleJobs()` - recupera jobs en processing > 5 min |
+| 2 | `queue.routes.ts` | `recoverStaleJobs()` se ejecuta cada 10s en el interval del queue worker |
+| 3 | `queue.routes.ts` | Validación `isWebhookRegistered()` antes de llamar a n8n |
+| 4 | `queue.routes.ts` | Interval ajustado de 2s a 10s para evitar sobrecarga |
+| 5 | `n8n.client.ts` | Nuevo método `isWebhookRegistered()` - verifica si n8n responde con 404 |
+
+**Parámetros configurados:**
+- `STALE_JOB_TIMEOUT_MS`: 300000 (5 minutos)
+- Queue worker interval: 10000ms (10 segundos)
+
+---
+
 ## 10 de Abril 2026
 
 ### Auditoría Web Completa

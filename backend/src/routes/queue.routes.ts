@@ -39,6 +39,10 @@ async function processNextJob(): Promise<void> {
   const startTime = Date.now();
 
   try {
+    if (!(await n8nClient.isWebhookRegistered())) {
+      throw new Error('n8n workflow no está activo o el webhook no está registrado. Activa el workflow en n8n.');
+    }
+
     const n8nResult = await n8nClient.callTryOnWebhook({
       brand_id: job.brand_id,
       product_id: job.product_id,
@@ -90,21 +94,21 @@ async function processNextJob(): Promise<void> {
   }
 }
 
-setInterval(() => {
-  // Solo procesar si Redis está conectado
-  if ((generationQueueService as any).isReady && !(generationQueueService as any).isReady()) {
-    return;
-  }
-  
-  // Como generationQueueService usa el singleton de redis, podemos chequear el status directamente
+setInterval(async () => {
   if (require('../config/redis').redis.status !== 'ready') {
     return;
+  }
+
+  try {
+    await generationQueueService.recoverStaleJobs();
+  } catch (err: any) {
+    console.error('[Queue Worker] Error recovering stale jobs:', err.message);
   }
 
   processNextJob().catch(err => {
     console.error('[Queue Worker] Error processing job:', err.message);
   });
-}, 2000);
+}, 10000);
 
 router.get('/stats', asyncHandler(async (req, res) => {
   const stats = await generationQueueService.getStats();
