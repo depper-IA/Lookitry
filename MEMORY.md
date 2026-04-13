@@ -32,3 +32,6 @@
 
 ## ÚLTIMA ACTUALIZACIÓN
 - 2026-04-12: Consolidación de workspaces en .openclaw/workspaces/
+
+## Features Pendientes Post-Release
+- **Edge Computing** - Cloudflare Workers para velocidad <1s (PENDIENTE)

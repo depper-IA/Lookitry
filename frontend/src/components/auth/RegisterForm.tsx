@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,6 +22,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import GoogleSignInButton from './GoogleSignInButton';
+import { loadTurnstileWidget } from '@/lib/turnstile';
 
 function formatCOP(amount: number): string {
   return new Intl.NumberFormat('es-CO', {
@@ -118,7 +119,6 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [googleError, setGoogleError] = useState<string | null>(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptDataAuth, setAcceptDataAuth] = useState(false);
   
@@ -129,6 +129,27 @@ export default function RegisterForm() {
   const [planParam, setPlanParam] = useState<keyof typeof PLANS_PREVIEW_BASE | null>(null);
   const [monthsParam, setMonthsParam] = useState(1);
   const [dynamicPrices, setDynamicPrices] = useState<Record<string, number>>({});
+
+  // ── Turnstile state ────────────────────────────────────────────────────
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const turnstileInstanceRef = useRef<Awaited<ReturnType<typeof loadTurnstileWidget>>>(null);
+
+  // Cargar widget Turnstile al montar
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) return;
+    if (!turnstileRef.current) return;
+
+    loadTurnstileWidget(turnstileRef.current, (token) => {
+      setTurnstileToken(token);
+    }).then((instance) => {
+      turnstileInstanceRef.current = instance;
+    });
+
+    return () => {
+      turnstileInstanceRef.current?.remove();
+    };
+  }, []);
 
   // Cargar precios dinámicos desde Supabase
   useEffect(() => {
@@ -321,6 +342,7 @@ export default function RegisterForm() {
           slug: form.slug,
           plan: planParam || undefined,
           months: monthsParam,
+          turnstileToken: turnstileToken || undefined,
         }),
       });
 
@@ -333,6 +355,10 @@ export default function RegisterForm() {
           setError('Este URL ya está en uso. Prueba otro.');
         } else if (data.error === 'TRIAL_ABUSE') {
           setError('Ya creaste una cuenta de prueba. Elige un plan de pago para continuar.');
+        } else if (data.error === 'CAPTCHA_REQUIRED' || data.error === 'CAPTCHA_FAILED') {
+          setError('Verificación de seguridad fallida. Por favor completa el CAPTCHA e intenta de nuevo.');
+          setTurnstileToken(null);
+          turnstileInstanceRef.current?.reset();
         } else {
           setError(data.message || data.error || 'Error al crear la cuenta');
         }
@@ -402,9 +428,6 @@ export default function RegisterForm() {
                 onError={(msg) => setGoogleError(msg)}
                 className="w-full"
               />
-              {googleError && (
-                <p className="text-[11px] text-red-500 text-center -mt-2">{googleError}</p>
-              )}
 
               {/* Divider */}
               <div className="relative my-4">
@@ -623,6 +646,12 @@ export default function RegisterForm() {
                   <p className="text-[11px] font-bold leading-normal">{error}</p>
                 </div>
               )}
+
+              {/* Cloudflare Turnstile widget */}
+              <div
+                ref={turnstileRef}
+                className="flex justify-center [&>div]:w-full"
+              />
 
               <button
                 type="submit"

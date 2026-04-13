@@ -54,9 +54,11 @@ export interface ProductData {
   name: string;
   image_url: string;
   category: string;
-  description?: string;
+  description?: string; // IA description - interno
+  short_description?: string; // Visible para clientes - nuevo
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
+  attributes?: Record<string, any>; // Atributos dinámicos - nuevo
 }
 
 export interface MiniLandingProps {

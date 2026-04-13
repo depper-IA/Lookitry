@@ -805,3 +805,86 @@ CREATE POLICY "trial_registrations_service_role" ON trial_registrations FOR ALL 
 -- Service role policies are in place for all admin/sensitive tables.
 -- Public read policies exist for: blog_categories, blog_settings, blogs (published only), brands (limited), coupons (active), pricing_config, promotions (active), trial_campaigns
 -- Internal tables (service_role only): blog_draft_articles, blog_topic_images, blog_topics (write)
+
+-- ============================================
+-- NEW TABLES FOR DYNAMIC ATTRIBUTES (2026-04-13)
+-- ============================================
+
+-- category_attributes
+-- Define qué atributos tiene cada categoría de producto
+CREATE TABLE category_attributes (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  category_key text NOT NULL, -- clave única: 'vestido', 'rines', 'zapatos', 'camisa', etc.
+  category_label text NOT NULL, -- label para mostrar: 'Vestido', 'Rines', etc.
+  attributes jsonb NOT NULL DEFAULT '[]', -- array de definiciones de atributos
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(category_key)
+);
+
+-- ============================================
+-- NEW COLUMNS FOR PRODUCTS TABLE (2026-04-13)
+-- ============================================
+
+-- short_description: descripción corta visible para clientes (max 500 chars)
+ALTER TABLE products ADD COLUMN short_description varchar(500);
+
+-- attributes: JSONB para atributos dinámicos por categoría
+-- Ejemplo: {"tallas": ["S", "M", "L"], "color": "Rojo", "marca": "Nike", "tipo_tela": "Algodón"}
+ALTER TABLE products ADD COLUMN attributes jsonb DEFAULT '{}'::jsonb;
+
+-- ============================================
+-- SEED: Default category attributes (2026-04-13)
+-- ============================================
+
+INSERT INTO category_attributes (category_key, category_label, attributes) VALUES
+(
+  'vestido',
+  'Vestido',
+  '[{"key": "tallas", "label": "Tallas disponibles", "type": "tags", "options": ["XS", "S", "M", "L", "XL", "XXL"]}, {"key": "color", "label": "Color", "type": "text"}, {"key": "marca", "label": "Marca", "type": "text"}, {"key": "tipo_tela", "label": "Tipo de tela", "type": "text"}]'
+),
+(
+  'rines',
+  'Rines',
+  '[{"key": "medida_pulgadas", "label": "Medida (pulgadas)", "type": "text"}, {"key": "finish", "label": "Finish", "type": "select", "options": ["Mate", "Cromo", "Diamond", "Brillante", "Negro"]}, {"key": "material", "label": "Material", "type": "select", "options": ["Aleación", "Acero"]}, {"key": "peso", "label": "Peso (kg)", "type": "number"}]'
+),
+(
+  'zapatos',
+  'Zapatos',
+  '[{"key": "tallas", "label": "Tallas disponibles", "type": "tags", "options": ["35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45"]}, {"key": "color", "label": "Color", "type": "text"}, {"key": "marca", "label": "Marca", "type": "text"}, {"key": "material", "label": "Material", "type": "text"}]'
+),
+(
+  'camisa',
+  'Camisa',
+  '[{"key": "tallas", "label": "Tallas disponibles", "type": "tags", "options": ["XS", "S", "M", "L", "XL", "XXL"]}, {"key": "color", "label": "Color", "type": "text"}, {"key": "marca", "label": "Marca", "type": "text"}, {"key": "material", "label": "Material", "type": "text"}, {"key": "manga", "label": "Tipo de manga", "type": "select", "options": ["Corta", "Larga", "Sin mangas"]}]'
+),
+(
+  'tshirt',
+  'Camiseta',
+  '[{"key": "tallas", "label": "Tallas disponibles", "type": "tags", "options": ["XS", "S", "M", "L", "XL", "XXL"]}, {"key": "color", "label": "Color", "type": "text"}, {"key": "marca", "label": "Marca", "type": "text"}, {"key": "material", "label": "Material", "type": "text"}]'
+),
+(
+  'hoodie',
+  'Hoodie',
+  '[{"key": "tallas", "label": "Tallas disponibles", "type": "tags", "options": ["XS", "S", "M", "L", "XL", "XXL"]}, {"key": "color", "label": "Color", "type": "text"}, {"key": "marca", "label": "Marca", "type": "text"}, {"key": "material", "label": "Material", "type": "text"}]'
+),
+(
+  'jacket',
+  'Chaqueta',
+  '[{"key": "tallas", "label": "Tallas disponibles", "type": "tags", "options": ["XS", "S", "M", "L", "XL", "XXL"]}, {"key": "color", "label": "Color", "type": "text"}, {"key": "marca", "label": "Marca", "type": "text"}, {"key": "material", "label": "Material", "type": "text"}]'
+),
+(
+  'pants',
+  'Pantalones',
+  '[{"key": "tallas", "label": "Tallas disponibles", "type": "tags", "options": ["26", "28", "30", "32", "34", "36", "38"]}, {"key": "color", "label": "Color", "type": "text"}, {"key": "marca", "label": "Marca", "type": "text"}, {"key": "material", "label": "Material", "type": "text"}]'
+),
+(
+  'accessories',
+  'Accesorios',
+  '[{"key": "color", "label": "Color", "type": "text"}, {"key": "marca", "label": "Marca", "type": "text"}, {"key": "material", "label": "Material", "type": "text"}]'
+),
+(
+  'general',
+  'General',
+  '[{"key": "color", "label": "Color", "type": "text"}, {"key": "marca", "label": "Marca", "type": "text"}, {"key": "material", "label": "Material", "type": "text"}]'
+);

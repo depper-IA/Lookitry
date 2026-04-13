@@ -23,6 +23,7 @@ import couponsRoutes from './coupons.routes';
 import enterpriseRoutes from './enterprise.routes';
 import agentRoutes from './agent.routes';
 import reviewsPublicRoutes from './reviewsPublic.routes';
+import categoryAttributesRoutes from './categoryAttributes.routes';
 
 const router = Router();
 
@@ -48,5 +49,6 @@ router.use('/admin/reviews', adminReviewsRoutes);
 router.use('/admin/coupons', couponsRoutes);
 router.use('/admin/enterprise', enterpriseRoutes);
 router.use('/agent', agentRoutes);
+router.use('/category-attributes', categoryAttributesRoutes);
 
 export default router;

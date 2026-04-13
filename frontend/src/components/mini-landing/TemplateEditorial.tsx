@@ -110,6 +110,20 @@ function EditorialProductCard({ product, selected, primaryColor, onClick }: { pr
           {product.price != null && <p className="text-[10px] md:text-sm font-black text-[var(--secondary)]">${product.price.toLocaleString('es-CO')}</p>}
         </div>
         <p className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest">{product.category}</p>
+        {product.short_description && <p className="text-[8px] md:text-[9px] text-gray-500 line-clamp-1 mt-1">{product.short_description}</p>}
+        {product.attributes && Object.keys(product.attributes).length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {Object.entries(product.attributes).slice(0, 2).map(([key, value]) => {
+              if (!value || (Array.isArray(value) && value.length === 0)) return null;
+              const displayValue = Array.isArray(value) ? value.slice(0, 2).join(', ') : String(value);
+              return (
+                <span key={key} className="text-[7px] md:text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
+                  {displayValue}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
     </button>
   );

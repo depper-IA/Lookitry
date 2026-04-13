@@ -3,12 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import type { Product, CreateProductDto } from '@/types';
+import type { Product, CreateProductDto, AttributeDefinition, CategoryAttribute } from '@/types';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { compressImage, validateImageFile, formatFileSize } from '@/utils/imageCompression';
 import { uploadService } from '@/services/upload.service';
+import { categoryAttributesService } from '@/services/products.service';
 
 interface ProductFormProps {
   product?: Product | null;
@@ -17,96 +18,150 @@ interface ProductFormProps {
   onCancel: () => void;
 }
 
-const STANDARD_CATEGORIES = ['tshirt', 'hoodie', 'jacket', 'pants', 'shoes', 'accessories'];
+const STANDARD_CATEGORIES = ['tshirt', 'hoodie', 'jacket', 'pants', 'shoes', 'accessories', 'vestido', 'rines', 'zapatos', 'camisa'];
 const CATEGORY_LABELS: Record<string, string> = {
-  tshirt: 'Camiseta', hoodie: 'Hoodie', jacket: 'Chaqueta',
-  pants: 'Pantalones', shoes: 'Zapatos', accessories: 'Accesorios', other: 'Otros',
+  tshirt: 'Camiseta', hoodie: 'Hoodie', jacket: 'Chaqueta', pants: 'Pantalones',
+  shoes: 'Zapatos', accessories: 'Accesorios', vestido: 'Vestido', rines: 'Rines',
+  zapatos: 'Zapatos', camisa: 'Camisa', other: 'Otros',
 };
 
-// Mapa de categorías devueltas por n8n → valores del select
 const AI_CATEGORY_MAP: Record<string, string> = {
-  // Camisetas / tops
-  CAMISA: 'tshirt', SHIRT: 'tshirt', TOP: 'tshirt', TSHIRT: 'tshirt', 'T-SHIRT': 'tshirt',
-  BLUSA: 'tshirt', BLOUSE: 'tshirt',
-  // Pantalones
-  PANTALON: 'pants', PANTS: 'pants', JEANS: 'pants', SHORTS: 'pants', FALDA: 'pants', SKIRT: 'pants',
-  // Zapatos
-  ZAPATOS: 'shoes', SHOES: 'shoes', SNEAKERS: 'shoes', BOOTS: 'shoes', BOTAS: 'shoes',
-  SANDALS: 'shoes', SANDALIAS: 'shoes', TENIS: 'shoes',
-  // Hoodie
-  HOODIE: 'hoodie', SUDADERA: 'hoodie', SWEATSHIRT: 'hoodie',
-  // Chaqueta
-  CHAQUETA: 'jacket', JACKET: 'jacket', COAT: 'jacket', ABRIGO: 'jacket',
-  // Accesorios — incluye cascos, gorras, bolsos, etc.
-  ACCESORIOS: 'accessories', ACCESSORIES: 'accessories',
-  CASCO: 'accessories', HELMET: 'accessories',
-  GORRA: 'accessories', HAT: 'accessories', CAP: 'accessories',
-  BOLSO: 'accessories', BAG: 'accessories', PURSE: 'accessories',
-  CINTURON: 'accessories', BELT: 'accessories',
-  BUFANDA: 'accessories', SCARF: 'accessories',
-  GAFAS: 'accessories', GLASSES: 'accessories', SUNGLASSES: 'accessories',
-  RELOJ: 'accessories', WATCH: 'accessories',
-  COLLAR: 'accessories', NECKLACE: 'accessories',
-  PULSERA: 'accessories', BRACELET: 'accessories',
-  ARETES: 'accessories', EARRINGS: 'accessories',
-  GUANTES: 'accessories', GLOVES: 'accessories',
-  // Vestidos / conjuntos → other
-  VESTIDO: 'other', DRESS: 'other',
-  CONJUNTO: 'other', SET: 'other', OUTFIT: 'other',
-  OVEROL: 'other', JUMPSUIT: 'other',
+  CAMISA: 'tshirt', SHIRT: 'tshirt', TSHIRT: 'tshirt', BLUSA: 'tshirt',
+  PANTALON: 'pants', PANTS: 'pants', JEANS: 'pants', FALDA: 'pants',
+  ZAPATOS: 'shoes', SHOES: 'shoes', SNEAKERS: 'shoes', BOTAS: 'shoes',
+  HOODIE: 'hoodie', SUDADERA: 'hoodie', CHAQUETA: 'jacket', JACKET: 'jacket',
+  ACCESORIOS: 'accessories', CASCO: 'accessories', GORRA: 'accessories',
+  VESTIDO: 'vestido', DRESS: 'vestido', RINES: 'rines',
 };
 
-// Mapea la categoría devuelta por n8n: primero match exacto, luego match parcial por palabras
 function mapAICategory(text: string): string | undefined {
   const normalized = text.toUpperCase().trim();
-  // 1. Match exacto
   if (AI_CATEGORY_MAP[normalized]) return AI_CATEGORY_MAP[normalized];
-  // 2. Match parcial: buscar si alguna clave está contenida en el texto
   for (const key of Object.keys(AI_CATEGORY_MAP)) {
     if (normalized.includes(key)) return AI_CATEGORY_MAP[key];
   }
   return undefined;
 }
 
-// Intenta inferir categoría desde el nombre del producto (fallback si n8n no devuelve category)
-function inferCategoryFromName(productName: string): string | undefined {
-  return mapAICategory(productName);
-}
-
 const BADGE_OPTIONS = [
-  { value: '', label: 'Sin badge' },
-  { value: 'nuevo', label: 'Nuevo' },
-  { value: 'top', label: 'Top' },
-  { value: 'oferta', label: 'Oferta' },
+  { value: '', label: 'Sin badge' }, { value: 'nuevo', label: 'Nuevo' },
+  { value: 'top', label: 'Top' }, { value: 'oferta', label: 'Oferta' },
 ];
 
 function buildProxyImageUrl(url: string): string {
   const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-
-  if (!url || url.includes('/api/pruebalo/img-proxy?url=')) {
-    return url;
-  }
-
+  if (!url || url.includes('/api/pruebalo/img-proxy?url=')) return url;
   try {
     const parsed = new URL(url);
     const host = parsed.hostname.toLowerCase();
-    const isInternalAsset =
-      host.endsWith('lookitry.com') ||
-      host.endsWith('supabase.co') ||
-      host.endsWith('minio.wilkiedevs.com');
-
-    if (isInternalAsset) {
-      return url;
-    }
-
+    const isInternalAsset = host.endsWith('lookitry.com') || host.endsWith('supabase.co') || host.endsWith('minio.wilkiedevs.com');
+    if (isInternalAsset) return url;
     return `${apiBase}/api/pruebalo/img-proxy?url=${encodeURIComponent(url)}`;
-  } catch {
-    return url;
+  } catch { return url; }
+}
+
+interface DynamicAttributesProps {
+  category: string;
+  attributes: Record<string, any>;
+  onChange: (attributes: Record<string, any>) => void;
+}
+
+function DynamicAttributes({ category, attributes, onChange }: DynamicAttributesProps) {
+  const [categoryAttrs, setCategoryAttrs] = useState<CategoryAttribute | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadAttributes() {
+      setLoading(true);
+      try {
+        const attrs = await categoryAttributesService.getByCategory(category);
+        setCategoryAttrs(attrs);
+        if (!attrs) {
+          const generalAttrs = await categoryAttributesService.getByCategory('general');
+          setCategoryAttrs(generalAttrs);
+        }
+      } catch (error) {
+        console.error('Error loading category attributes:', error);
+        setCategoryAttrs(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadAttributes();
+  }, [category]);
+
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        <p className="text-xs text-[var(--text-muted)]">Cargando atributos...</p>
+        <div className="h-8 bg-[var(--bg-card)] rounded animate-pulse" />
+      </div>
+    );
   }
+
+  if (!categoryAttrs || !categoryAttrs.attributes.length) return null;
+
+  const handleChange = (key: string, value: any) => onChange({ ...attributes, [key]: value });
+  const handleTagToggle = (key: string, option: string) => {
+    const currentTags = attributes[key] || [];
+    handleChange(key, currentTags.includes(option) ? currentTags.filter((t: string) => t !== option) : [...currentTags, option]);
+  };
+
+  return (
+    <div className="space-y-4 p-4 bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)]">
+      <div className="flex items-center gap-2 border-b border-[var(--border-color)] pb-2">
+        <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+          Atributos de {categoryAttrs.categoryLabel}
+        </span>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {categoryAttrs.attributes.map((attr: AttributeDefinition) => (
+          <div key={attr.key} className="space-y-1.5">
+            <label className="block text-xs font-medium text-[var(--text-secondary)]">{attr.label}</label>
+            {attr.type === 'text' && (
+              <input type="text" value={attributes[attr.key] || ''} onChange={(e) => handleChange(attr.key, e.target.value)}
+                className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                placeholder={`Ej: ${attr.options?.[0] || 'Valor'}`} />
+            )}
+            {attr.type === 'number' && (
+              <input type="number" value={attributes[attr.key] || ''} onChange={(e) => handleChange(attr.key, e.target.value ? Number(e.target.value) : undefined)}
+                className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors" />
+            )}
+            {attr.type === 'select' && attr.options && (
+              <select value={attributes[attr.key] || ''} onChange={(e) => handleChange(attr.key, e.target.value)}
+                className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors">
+                <option value="">Seleccionar...</option>
+                {attr.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+            )}
+            {attr.type === 'tags' && attr.options && (
+              <div className="flex flex-wrap gap-2">
+                {attr.options.map((opt) => {
+                  const isSelected = (attributes[attr.key] || []).includes(opt);
+                  return (
+                    <button key={opt} type="button" onClick={() => handleTagToggle(attr.key, opt)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${isSelected ? 'bg-[#FF5C3A] text-white border-[#FF5C3A]' : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border-[var(--border-color)] hover:border-[#FF5C3A]'}`}>
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function ProductForm({ product, showExternalId = false, onSubmit, onCancel }: ProductFormProps) {
-  const [formData, setFormData] = useState<CreateProductDto>({ name: '', description: '', imageUrl: '', category: 'tshirt', price: undefined, badge: undefined, externalId: undefined });
+  const [formData, setFormData] = useState<CreateProductDto & { short_description?: string; attributes?: Record<string, any> }>({ 
+    name: '', description: '', short_description: '', imageUrl: '', category: 'tshirt', 
+    price: undefined, badge: undefined, externalId: undefined, attributes: {},
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -117,45 +172,33 @@ export function ProductForm({ product, showExternalId = false, onSubmit, onCance
   const [describingWithAI, setDescribingWithAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiGenerated, setAiGenerated] = useState(false);
-  const [showImageTooltip, setShowImageTooltip] = useState(false);
   const [showDescTooltip, setShowDescTooltip] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canDescribeWithAI = !!formData.imageUrl && !!formData.name.trim();
   const imagePreviewSrc = imagePreview ? buildProxyImageUrl(imagePreview) : null;
 
-  // Auto-disparar cuando el usuario termina de escribir el nombre y ya hay imagen
   const autoTriggeredRef = useRef(false);
   useEffect(() => {
-    if (!formData.imageUrl || !formData.name.trim()) {
-      autoTriggeredRef.current = false;
-      return;
-    }
+    if (!formData.imageUrl || !formData.name.trim()) { autoTriggeredRef.current = false; return; }
     if (autoTriggeredRef.current || aiGenerated || describingWithAI || !!product) return;
     autoTriggeredRef.current = true;
-    const category = formData.category === 'other' ? customCategory : formData.category;
-    triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), category);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category);
   }, [formData.imageUrl, formData.name]);
-
-  const handleDescribeWithAI = async () => {
-    if (!canDescribeWithAI) return;
-    const category = formData.category === 'other' ? customCategory : formData.category;
-    triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), category);
-  };
 
   useEffect(() => {
     if (product) {
       const isCustom = !STANDARD_CATEGORIES.includes(product.category);
-      setFormData({ name: product.name, description: product.description || '', imageUrl: product.imageUrl, category: isCustom ? 'other' : product.category, price: product.price ?? undefined, badge: product.badge ?? undefined, externalId: product.externalId ?? undefined });
+      setFormData({ name: product.name, description: product.description || '', short_description: product.shortDescription || '',
+        imageUrl: product.imageUrl, category: isCustom ? 'other' : product.category, price: product.price ?? undefined,
+        badge: product.badge ?? undefined, externalId: product.externalId ?? undefined, attributes: product.attributes || {} });
       setImagePreview(product.imageUrl);
       if (isCustom) { setShowCustomCategory(true); setCustomCategory(product.category); }
     }
   }, [product]);
 
   const handleImageFile = async (file: File) => {
-    setErrors(p => ({ ...p, imageUrl: '' }));
-    setCompressionInfo(null);
+    setErrors(p => ({ ...p, imageUrl: '' })); setCompressionInfo(null);
     const validation = validateImageFile(file);
     if (!validation.valid) { setErrors(p => ({ ...p, imageUrl: validation.error || 'Archivo inválido' })); return; }
     try {
@@ -164,85 +207,36 @@ export function ProductForm({ product, showExternalId = false, onSubmit, onCance
       const compressed = await compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85, maxSizeMB: 5 });
       const saved = Math.round(((originalSize - compressed.size) / originalSize) * 100);
       if (saved > 10) setCompressionInfo(`Optimizada: ${formatFileSize(originalSize)} → ${formatFileSize(compressed.size)} (${saved}% reducido)`);
-      const base64 = await new Promise<string>((res, rej) => {
-        const r = new FileReader();
-        r.onload = e => res(e.target?.result as string);
-        r.onerror = rej;
-        r.readAsDataURL(compressed);
-      });
+      const base64 = await new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target?.result as string); r.onerror = rej; r.readAsDataURL(compressed); });
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       const url = await uploadService.uploadImage(base64.split(',')[1], `product-${ts}.jpg`, false);
-      setImagePreview(url);
-      setFormData(p => ({ ...p, imageUrl: url }));
-      // Disparar auto-descripción directamente con valores actuales
-      const currentName = formData.name.trim();
-      const currentCategory = formData.category === 'other' ? customCategory : formData.category;
-      // Solo disparar descripción automática SI NO estamos editando
-      if (currentName && !product) {
-        triggerDescribeWithAI(url, currentName, currentCategory);
-      }
-    } catch (err: any) {
-      setErrors(p => ({ ...p, imageUrl: err.message || 'Error al procesar la imagen' }));
-    } finally { setCompressing(false); }
+      setImagePreview(url); setFormData(p => ({ ...p, imageUrl: url }));
+      if (formData.name.trim() && !product) triggerDescribeWithAI(url, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category);
+    } catch (err: any) { setErrors(p => ({ ...p, imageUrl: err.message || 'Error al procesar la imagen' })); } 
+    finally { setCompressing(false); }
   };
 
-  // Versión interna que acepta valores explícitos (para llamar desde handleImageFile)
   const triggerDescribeWithAI = async (imageUrl: string, productName: string, category: string) => {
-    setDescribingWithAI(true);
-    setAiError(null);
+    setDescribingWithAI(true); setAiError(null);
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-      // El JWT está en cookie HTTP-Only — no usar localStorage.
-      // El backend lo lee automáticamente desde la cookie en cada request.
       const res = await fetch(`${apiBase}/api/products/describe-ai`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // envía la cookie JWT automáticamente
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         body: JSON.stringify({ image_url: imageUrl, product_name: productName, category }),
       });
-
-      if (!res.ok) {
-        let backendMessage = 'Error al conectar con el servicio de IA';
-        try {
-          const errorData = await res.json();
-          backendMessage = errorData?.message || backendMessage;
-        } catch {}
-        throw new Error(backendMessage);
-      }
+      if (!res.ok) { const errorData = await res.json().catch(() => ({})); throw new Error(errorData?.message || 'Error al conectar con el servicio de IA'); }
       const raw = await res.text();
       if (!raw?.trim()) throw new Error('El servicio de IA no devolvió respuesta');
-      let description = '';
-      let aiCategory: string | undefined;
-      try {
-        const data = JSON.parse(raw);
-        description = data.description || data.text || '';
-        aiCategory = data.category;
-      } catch { description = raw.trim(); }
+      let description = '', aiCategory: string | undefined;
+      try { const data = JSON.parse(raw); description = data.description || data.text || ''; aiCategory = data.category; } catch { description = raw.trim(); }
       if (!description) throw new Error('La IA no devolvió una descripción');
-      const clean = description
-        .replace(/#{1,6}\s*/g, '').replace(/\*\*(.+?)\*\*/g, '$1')
-        .replace(/\*(.+?)\*/g, '$1').replace(/\n{3,}/g, '\n\n').trim();
-      let mappedCategory = category;
-      let mappedCustom = '';
-      if (aiCategory) {
-        const mapped = mapAICategory(aiCategory);
-        if (mapped) {
-          mappedCategory = mapped;
-          if (mapped === 'other') mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase();
-        }
-      }
-      // Fallback: si n8n no devolvió categoría o no hizo match, inferir desde el nombre del producto
-      if (mappedCategory === category && productName) {
-        const inferredFromName = inferCategoryFromName(productName);
-        if (inferredFromName) mappedCategory = inferredFromName;
-      }
+      const clean = description.replace(/#{1,6}\s*/g, '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1').replace(/\n{3,}/g, '\n\n').trim();
+      let mappedCategory = category, mappedCustom = '';
+      if (aiCategory) { const mapped = mapAICategory(aiCategory); if (mapped) { mappedCategory = mapped; if (mapped === 'other') mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase(); } }
       setFormData(p => ({ ...p, description: clean, category: mappedCategory }));
-      setShowCustomCategory(mappedCategory === 'other');
-      setCustomCategory(mappedCustom);
-      setAiGenerated(true);
-    } catch (err: any) {
-      setAiError(err.message || 'Error al generar descripción');
-    } finally { setDescribingWithAI(false); }
+      setShowCustomCategory(mappedCategory === 'other'); setCustomCategory(mappedCustom); setAiGenerated(true);
+    } catch (err: any) { setAiError(err.message || 'Error al generar descripción'); } 
+    finally { setDescribingWithAI(false); }
   };
 
   const validate = (): boolean => {
@@ -252,8 +246,8 @@ export function ProductForm({ product, showExternalId = false, onSubmit, onCance
     else { try { new URL(formData.imageUrl); } catch { e.imageUrl = 'Debe ser una URL válida'; } }
     if (!formData.category) e.category = 'La categoría es requerida';
     if (formData.category === 'other' && !customCategory.trim()) e.customCategory = 'Especifica la categoría';
-    setErrors(e);
-    return Object.keys(e).length === 0;
+    if (formData.short_description && formData.short_description.length > 500) e.short_description = 'Máx 500 caracteres';
+    setErrors(e); return Object.keys(e).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -262,10 +256,8 @@ export function ProductForm({ product, showExternalId = false, onSubmit, onCance
     setIsSubmitting(true);
     try {
       await onSubmit({
-        ...formData,
-        category: formData.category === 'other' ? customCategory.trim() : formData.category,
-        price: formData.price ? Number(formData.price) : undefined,
-        badge: formData.badge || undefined,
+        ...formData, category: formData.category === 'other' ? customCategory.trim() : formData.category,
+        price: formData.price ? Number(formData.price) : undefined, badge: formData.badge || undefined,
         externalId: formData.externalId || undefined,
       });
     } catch { /* error manejado por el padre */ } finally { setIsSubmitting(false); }
@@ -273,303 +265,131 @@ export function ProductForm({ product, showExternalId = false, onSubmit, onCance
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === 'category') { setShowCustomCategory(value === 'other'); if (value !== 'other') setCustomCategory(''); }
-    setFormData(p => ({ ...p, [name]: value }));
+    if (name === 'category') { setShowCustomCategory(value === 'other'); if (value !== 'other') setCustomCategory(''); setFormData(p => ({ ...p, [name]: value, attributes: {} })); }
+    else setFormData(p => ({ ...p, [name]: value }));
     if (errors[name]) setErrors(p => ({ ...p, [name]: '' }));
   };
 
-  const selectStyle = {
-    backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)',
-    color: 'var(--text-primary)', borderRadius: '0.5rem', padding: '0.5rem 0.75rem',
-    fontSize: '0.875rem', width: '100%', outline: 'none', border: '1px solid var(--border-color)',
-  };
-
-  const textareaStyle = {
-    backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)',
-    color: 'var(--text-primary)', borderRadius: '0.5rem', padding: '0.5rem 0.75rem',
-    fontSize: '0.875rem', width: '100%', outline: 'none', border: '1px solid var(--border-color)',
-    resize: 'vertical' as const,
-  };
+  const inputBaseStyle = { backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)', borderRadius: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.875rem', width: '100%', outline: 'none', border: '1px solid var(--border-color)' };
 
   return (
     <Card>
-      <CardHeader>
-        <h3 className="font-syne font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
-          {product ? 'Editar Producto' : 'Nuevo Producto'}
-        </h3>
-      </CardHeader>
+      <CardHeader><h3 className="font-syne font-semibold text-base" style={{ color: 'var(--text-primary)' }}>{product ? 'Editar Producto' : 'Nuevo Producto'}</h3></CardHeader>
       <CardBody>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <Input label="Nombre" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Ej: Camiseta Logo" required />
-          {showExternalId && (
-            <Input
-              label="ID Externo (WooCommerce/Shopify)"
-              name="externalId"
-              value={formData.externalId || ''}
-              onChange={handleChange}
-              error={errors.externalId}
-              placeholder="Ej: 12345 (opcional)"
-            />
-          )}
-
+          {showExternalId && <Input label="ID Externo (WooCommerce/Shopify)" name="externalId" value={formData.externalId || ''} onChange={handleChange} error={errors.externalId} placeholder="Ej: 12345 (opcional)" />}
+          
+          {/* Imagen */}
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Imagen del Producto</label>
-              <div className="relative flex items-center">
-                <button 
-                  type="button"
-                  onClick={() => setShowImageTooltip(!showImageTooltip)}
-                  className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-                >
-                  <svg className="w-3.5 h-3.5" style={{ color: showImageTooltip ? '#FF5C3A' : 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={compressing} size="sm">{compressing ? 'Procesando...' : 'Subir prenda'}</Button>
+                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>o ingresa una URL</span>
+                <a href="https://www.photoroom.com/tools/background-remover" target="_blank" rel="noopener noreferrer" className="ml-auto text-[11px] font-semibold text-[#FF5C3A] hover:bg-[#FF5C3A]/10 border border-[#FF5C3A]/30 px-2 py-1.5 rounded-lg">Quitar fondo</a>
+              </div>
+              <Input name="imageUrl" value={formData.imageUrl} onChange={handleChange} error={errors.imageUrl} placeholder="https://ejemplo.com/imagen.jpg" required />
+              <input ref={fileInputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={e => e.target.files?.[0] && handleImageFile(e.target.files[0])} />
+              {compressionInfo && <p className="text-xs" style={{ color: '#10b981' }}>{compressionInfo}</p>}
+              {imagePreviewSrc && <img src={imagePreviewSrc} alt="Preview" className="w-full max-w-[200px] object-cover rounded-lg border" style={{ borderColor: 'var(--border-color)' }} />}
+            </div>
+          </div>
+
+          {/* Descripción Corta (Visible para clientes) */}
+          <div>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción Corta</label>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-500 font-medium">Visible para clientes</span>
+            </div>
+            <textarea name="short_description" value={formData.short_description || ''} onChange={handleChange} rows={2}
+              style={inputBaseStyle} placeholder="Ej: Perfecta para summer vibes ☀️ Ideal para casual y beach days"
+              className="resize-none" />
+            {errors.short_description && <p className="mt-1 text-xs text-red-500">{errors.short_description}</p>}
+            <p className="mt-1 text-[10px]" style={{ color: 'var(--text-muted)' }}>Máx 500 caracteres. Esta descripción aparece en la tarjeta del producto.</p>
+          </div>
+
+          {/* Descripción IA (Interna) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-1.5">
+                <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción IA <span className="text-[10px] text-[var(--text-muted)]">(Interna)</span></label>
+                <button type="button" onClick={() => setShowDescTooltip(!showDescTooltip)} className="p-1 rounded-full hover:bg-[var(--bg-hover)]">
+                  <svg className="w-3.5 h-3.5" style={{ color: showDescTooltip ? '#FF5C3A' : 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </button>
-                {/* TOOLTIP */}
                 <AnimatePresence>
-                  {showImageTooltip && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1a1a1a] border border-[#333] text-white text-xs rounded-xl p-3 z-50 text-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-                    >
-                      <button 
-                        type="button" 
-                        onClick={() => setShowImageTooltip(false)}
-                        className="absolute top-2 right-2 text-white/40 hover:text-white"
-                      >
-                        <X size={12} />
-                      </button>
-                      <p className="mb-2 leading-relaxed pr-4">Sube una foto de tu prenda en alta calidad, centrada y sin perchas. Para mejores resultados, usa formato vertical (3:4).</p>
-                      <p className="text-[10px] text-[#888] pb-0.5 border-t border-[#333] pt-2">Una buena iluminación garantiza una prueba virtual perfecta.</p>
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#333]"></div>
+                  {showDescTooltip && (
+                    <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="absolute mt-2 w-64 bg-[#1a1a1a] border border-[#333] text-white text-xs rounded-xl p-3 z-50">
+                      <p>Usada <strong>internamente</strong> para el probador virtual. <strong>No visible para clientes.</strong></p>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 flex-wrap">
-                <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={compressing} size="sm">
-                  {compressing ? 'Procesando...' : 'Subir prenda'}
-                </Button>
-                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>o ingresa una URL</span>
-                
-                {/* Botón sugerido quitar fondo */}
-                <a href="https://www.photoroom.com/tools/background-remover" target="_blank" rel="noopener noreferrer" className="ml-auto text-[11px] font-semibold text-[#FF5C3A] hover:bg-[#FF5C3A]/10 border border-[#FF5C3A]/30 px-2 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                  </svg>
-                  Quitar fondo a la imagen
-                </a>
-              </div>
-              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                💡 <strong>Recomendación:</strong> Usa imágenes en formato vertical (proporción 3:4 o 768x1024px). Asegúrate de que el producto esté centrado y se vea completo para un mejor resultado.
-              </p>
-              <Input name="imageUrl" value={formData.imageUrl} onChange={handleChange} error={errors.imageUrl} placeholder="https://ejemplo.com/imagen.jpg" required />
-              <input ref={fileInputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={e => e.target.files?.[0] && handleImageFile(e.target.files[0])} />
-              {compressionInfo && <p className="text-xs" style={{ color: '#10b981' }}>{compressionInfo}</p>}
-              {imagePreviewSrc && (
-                <div>
-                  <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>Vista previa:</p>
-                  <img src={imagePreviewSrc} alt="Preview" className="w-full max-w-[200px] object-cover rounded-lg border" style={{ borderColor: 'var(--border-color)' }} />
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="flex items-center gap-1.5">
-                <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción</label>
-                <div className="relative flex items-center">
-                  <button 
-                    type="button"
-                    onClick={() => setShowDescTooltip(!showDescTooltip)}
-                    className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5" style={{ color: showDescTooltip ? '#FF5C3A' : 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </button>
-                  {/* TOOLTIP DESCRIPCIÓN */}
-                  <AnimatePresence>
-                    {showDescTooltip && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1a1a1a] border border-[#333] text-white text-xs rounded-xl p-3 z-50 text-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-                      >
-                        <button 
-                          type="button" 
-                          onClick={() => setShowDescTooltip(false)}
-                          className="absolute top-2 right-2 text-white/40 hover:text-white"
-                        >
-                          <X size={12} />
-                        </button>
-                        <p className="leading-relaxed pr-4">Recomendamos <strong>no modificar</strong> la descripción generada por la IA para obtener una mayor precisión en la generación de la prueba virtual.</p>
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#333]"></div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
               <div className="flex items-center gap-2">
-                {aiGenerated && (
-                  <button
-                    type="button"
-                    onClick={() => setAiGenerated(false)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-opacity hover:opacity-70"
-                    style={{ color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}
-                  >
-                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Editar manualmente
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleDescribeWithAI}
+                {aiGenerated && <button type="button" onClick={() => setAiGenerated(false)} className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs" style={{ border: '1px solid var(--border-color)' }}>Editar</button>}
+                <button type="button" onClick={() => canDescribeWithAI && triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category)}
                   disabled={!canDescribeWithAI || describingWithAI}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ background: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.25)' }}
-                  title={!formData.imageUrl || !formData.name.trim() ? 'Agrega nombre e imagen primero' : 'Generar descripción con IA'}
-                >
-                  {describingWithAI ? (
-                    <>
-                      <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                      </svg>
-                      Analizando...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                      </svg>
-                      Describir con IA
-                    </>
-                  )}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium disabled:opacity-40" style={{ background: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.25)' }}>
+                  {describingWithAI ? <><svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>Analizando...</> : 'Describir con IA'}
                 </button>
               </div>
             </div>
             {aiGenerated ? (
-              <div
-                className="rounded-lg px-3 py-2 text-sm relative"
-                style={{
-                  backgroundColor: 'rgba(255,92,58,0.04)',
-                  border: '1px solid rgba(255,92,58,0.2)',
-                  color: 'var(--text-primary)',
-                  minHeight: '72px',
-                  whiteSpace: 'pre-wrap',
-                }}
-              >
-                <span className="absolute top-1.5 right-2 text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>
-                  IA
-                </span>
+              <div className="rounded-lg px-3 py-2 text-sm relative" style={{ backgroundColor: 'rgba(255,92,58,0.04)', border: '1px solid rgba(255,92,58,0.2)', minHeight: '72px', whiteSpace: 'pre-wrap' }}>
+                <span className="absolute top-1.5 right-2 text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>IA</span>
                 {formData.description || <span style={{ color: 'var(--text-muted)' }}>Sin descripción</span>}
               </div>
             ) : (
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={3}
-                style={textareaStyle}
-                placeholder="Descripción del producto (opcional, o genera una con IA)"
-              />
+              <textarea name="description" value={formData.description} onChange={handleChange} rows={3} style={{ ...inputBaseStyle, resize: 'vertical' }} placeholder="Descripción interna para el probador (opcional)" />
             )}
-            {aiError && (
-              <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
-                <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" />
-                </svg>
-                {aiError}
-              </p>
-            )}
-            {!canDescribeWithAI && (
-              <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-                Agrega nombre e imagen para habilitar la descripción con IA
-              </p>
-            )}
+            {aiError && <p className="mt-1 text-xs text-red-500">{aiError}</p>}
           </div>
 
+          {/* Categoría */}
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Categoría</label>
             {aiGenerated ? (
-              <div
-                className="rounded-lg px-3 py-2 text-sm flex items-center justify-between"
-                style={{
-                  backgroundColor: 'rgba(255,92,58,0.04)',
-                  border: '1px solid rgba(255,92,58,0.2)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                <span>
-                  {formData.category === 'other'
-                    ? customCategory || 'Otro'
-                    : CATEGORY_LABELS[formData.category] ?? formData.category}
-                </span>
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>
-                  IA
-                </span>
+              <div className="rounded-lg px-3 py-2 text-sm flex items-center justify-between" style={{ backgroundColor: 'rgba(255,92,58,0.04)', border: '1px solid rgba(255,92,58,0.2)' }}>
+                <span>{formData.category === 'other' ? customCategory || 'Otro' : CATEGORY_LABELS[formData.category] ?? formData.category}</span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>IA</span>
               </div>
             ) : (
               <>
-                <select name="category" value={formData.category} onChange={handleChange} style={selectStyle} required>
-                  {[...STANDARD_CATEGORIES, 'other'].map(c => (
-                    <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>
-                  ))}
+                <select name="category" value={formData.category} onChange={handleChange} style={inputBaseStyle} required>
+                  {[...STANDARD_CATEGORIES, 'other'].map(c => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
                 </select>
                 {errors.category && <p className="mt-1 text-xs text-red-500">{errors.category}</p>}
-                {showCustomCategory && (
-                  <div className="mt-3">
-                    <Input label="Especificar categoría" name="customCategory" value={customCategory}
-                      onChange={e => { setCustomCategory(e.target.value); if (errors.customCategory) setErrors(p => ({ ...p, customCategory: '' })); }}
-                      error={errors.customCategory} placeholder="Ej: Gorras, Bufandas..." required />
-                  </div>
-                )}
+                {showCustomCategory && <div className="mt-3"><Input label="Especificar categoría" name="customCategory" value={customCategory} onChange={(e) => { setCustomCategory(e.target.value); setErrors(p => ({ ...p, customCategory: '' })); }} error={errors.customCategory} placeholder="Ej: Gorras, Bufandas..." required /></div>}
               </>
             )}
           </div>
 
-          <div className="flex gap-3 pt-2">
-              <div className="flex-1 space-y-1.5">
-                <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Precio (COP)</label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price ?? ''}
-                  onChange={e => setFormData(p => ({ ...p, price: e.target.value ? Number(e.target.value) : undefined }))}
-                  min={0}
-                  placeholder="Ej: 89000"
-                  style={{ ...selectStyle }}
-                />
-              </div>
-              <div className="flex-1 space-y-1.5">
-                <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Badge</label>
-                <select
-                  name="badge"
-                  value={formData.badge ?? ''}
-                  onChange={e => setFormData(p => ({ ...p, badge: e.target.value as any || undefined }))}
-                  style={selectStyle}
-                >
-                  {BADGE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-              </div>
+          {/* Atributos Dinámicos */}
+          {formData.category && formData.category !== 'other' && (
+            <DynamicAttributes category={formData.category} attributes={formData.attributes || {}} onChange={(attrs) => setFormData(p => ({ ...p, attributes: attrs }))} />
+          )}
+
+          {/* Precio y Badge */}
+          <div className="flex gap-3">
+            <div className="flex-1 space-y-1.5">
+              <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Precio (COP)</label>
+              <input type="number" name="price" value={formData.price ?? ''} onChange={(e) => setFormData(p => ({ ...p, price: e.target.value ? Number(e.target.value) : undefined }))}
+                min={0} placeholder="Ej: 89000" style={inputBaseStyle} />
             </div>
+            <div className="flex-1 space-y-1.5">
+              <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Badge</label>
+              <select name="badge" value={formData.badge ?? ''} onChange={(e) => setFormData(p => ({ ...p, badge: e.target.value as any || undefined }))} style={inputBaseStyle}>
+                {BADGE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+          </div>
 
           <div className="flex gap-3 pt-2">
-            <Button type="submit" disabled={isSubmitting} className="flex-1">
-              {isSubmitting ? 'Guardando...' : product ? 'Actualizar' : 'Crear'}
-            </Button>
-            <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting} className="flex-1">
-              Cancelar
-            </Button>
+            <Button type="submit" disabled={isSubmitting} className="flex-1">{isSubmitting ? 'Guardando...' : product ? 'Actualizar' : 'Crear'}</Button>
+            <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting} className="flex-1">Cancelar</Button>
           </div>
         </form>
       </CardBody>

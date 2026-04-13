@@ -64,6 +64,7 @@ describe('AuthController', () => {
     jest.clearAllMocks();
     controller = new AuthController();
     process.env.NODE_ENV = 'test';
+    process.env.TURNSTILE_ENABLED = 'false'; // Desactivar validación Turnstile en tests
     mockSendEmail.mockResolvedValue(undefined);
     mockSendWelcomeEmail.mockResolvedValue(undefined);
   });

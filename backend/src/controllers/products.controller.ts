@@ -37,6 +37,54 @@ export class ProductsController {
   }
 
   /**
+   * GET /api/products/:id - Obtener un producto específico (para admin - incluye descripción IA)
+   */
+  async getProduct(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({
+          error: 'UNAUTHORIZED',
+          message: 'No autenticado',
+        });
+      }
+
+      const productId = req.params.id;
+
+      if (!productId) {
+        return res.status(400).json({
+          error: 'VALIDATION_ERROR',
+          message: 'ID de producto requerido',
+        });
+      }
+
+      const product = await productsService.getProductById(productId);
+
+      if (!product) {
+        return res.status(404).json({
+          error: 'NOT_FOUND',
+          message: 'Producto no encontrado',
+        });
+      }
+
+      // Verificar que el producto pertenece a la marca
+      if (product.brandId !== req.brand.id) {
+        return res.status(403).json({
+          error: 'FORBIDDEN',
+          message: 'No tienes permiso para ver este producto',
+        });
+      }
+
+      return res.status(200).json(product);
+    } catch (error: any) {
+      console.error('Error en getProduct:', error);
+      return res.status(500).json({
+        error: 'INTERNAL_ERROR',
+        message: 'Error al obtener el producto',
+      });
+    }
+  }
+
+  /**
    * POST /api/products - Crear un nuevo producto
    */
   async createProduct(req: AuthRequest, res: Response) {
@@ -50,11 +98,13 @@ export class ProductsController {
 
       const productData: CreateProductDto = {
         name: req.body.name,
-        description: req.body.description,
+        description: req.body.description, // IA description - interno
+        short_description: req.body.short_description,
         image_url: req.body.image_url || req.body.imageUrl,
         category: req.body.category,
         price: req.body.price != null ? Number(req.body.price) : null,
         badge: req.body.badge || null,
+        attributes: req.body.attributes || {},
       };
 
       const product = await productsService.createProduct(req.brand.id, productData);
@@ -108,7 +158,11 @@ export class ProductsController {
       }
 
       if (req.body.description !== undefined) {
-        updates.description = req.body.description;
+        updates.description = req.body.description; // IA description - interno
+      }
+
+      if (req.body.short_description !== undefined) {
+        updates.short_description = req.body.short_description;
       }
 
       if (req.body.image_url !== undefined || req.body.imageUrl !== undefined) {
@@ -129,6 +183,10 @@ export class ProductsController {
 
       if (req.body.externalId !== undefined || req.body.external_id !== undefined) {
         updates.external_id = req.body.external_id || req.body.externalId || null;
+      }
+
+      if (req.body.attributes !== undefined) {
+        updates.attributes = req.body.attributes;
       }
 
       // Verificar que hay algo que actualizar
@@ -177,7 +235,7 @@ export class ProductsController {
   }
 
   /**
-   * DELETE /api/products/:id - Eliminar un producto (soft delete)
+   * DELETE /api/products/:id - Eliminar un producto
    */
   async deleteProduct(req: AuthRequest, res: Response) {
     try {

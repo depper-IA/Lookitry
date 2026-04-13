@@ -327,7 +327,7 @@ export default function GoogleSignInButton({
         )}
       </button>
 
-      {error && (
+      {error && !onError && (
         <p className="mt-2 text-xs text-red-400 text-center">{error}</p>
       )}
 

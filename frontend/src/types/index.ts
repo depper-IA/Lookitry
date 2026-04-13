@@ -31,7 +31,7 @@ export interface Brand {
   subscriptionStatus?: 'active' | 'expiring_soon' | 'expired' | 'suspended' | null;
   lastPaymentDate?: string | null;
   nextPaymentDate?: string | null;
-  // Trial fields (Requirement 11 - Opción C)
+  // Trial fields
   trialEndDate?: string | null;
   trialGenerationsLimit?: number;
   trialPaymentStatus?: 'pending_payment' | 'completed' | 'active' | 'failed' | null;
@@ -43,7 +43,7 @@ export interface Brand {
   hasLandingPage?: boolean;
   has_landing_page?: boolean;
   customDomain?: string | null;
-  // Contact & Billing (Requirement 503)
+  // Contact & Billing
   phone?: string | null;
   contactName?: string | null;
   address?: string | null;
@@ -108,16 +108,19 @@ export interface AdminReviewsResponse {
   totalPages: number;
 }
 
+// Product types
 export interface Product {
   id: string;
   brandId: string;
   name: string;
-  description?: string;
+  description?: string; // IA description - solo para admin
+  shortDescription?: string; // Visible para clientes - nuevo campo
   imageUrl: string;
   category: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
   externalId?: string | null;
+  attributes?: Record<string, any>; // Atributos dinámicos - nuevo campo
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -125,22 +128,43 @@ export interface Product {
 
 export interface CreateProductDto {
   name: string;
-  description?: string;
+  description?: string; // IA description - interno
+  short_description?: string; // Visible para clientes
   imageUrl: string;
   category: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
   externalId?: string | null;
+  attributes?: Record<string, any>;
 }
 
 export interface UpdateProductDto {
   name?: string;
   description?: string;
+  short_description?: string;
   imageUrl?: string;
   category?: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
   externalId?: string | null;
+  attributes?: Record<string, any>;
+}
+
+// Category Attributes types
+export interface AttributeDefinition {
+  key: string;
+  label: string;
+  type: 'text' | 'number' | 'select' | 'tags' | 'boolean';
+  options?: string[];
+}
+
+export interface CategoryAttribute {
+  id: string;
+  categoryKey: string;
+  categoryLabel: string;
+  attributes: AttributeDefinition[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Usage types
@@ -200,11 +224,10 @@ export interface TryOnConfigResponse {
     buttonText?: string;
     welcomeMessage?: string;
     plan?: BrandPlan;
-    // Mini-landing (task 33)
     brandDescription?: string | null;
     whatsappContact?: string | null;
     coverImageUrl?: string | null;
-      socialLinks?: Record<string, unknown>;
+    socialLinks?: Record<string, unknown>;
     hasLandingPage?: boolean;
     customDomain?: string | null;
   };
@@ -213,7 +236,7 @@ export interface TryOnConfigResponse {
     name: string;
     imageUrl: string;
     category: string;
-    description?: string;
+    description?: string; // Mantenemos para uso interno
   }>;
 }
 
