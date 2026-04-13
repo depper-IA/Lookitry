@@ -216,12 +216,41 @@ if do_backend:
 
 if do_frontend:
     print("\n=== Rebuild FRONTEND ===")
-    run(
-        ssh,
-        f"cd {REPO} && docker compose -f docker-compose.frontend.yml down && "
-        f"docker compose -f docker-compose.frontend.yml build {build_flag} 2>&1 | tail -20",
-        timeout=600,
+    # Subir env file de frontend si existe en local
+    frontend_env_local = os.path.join(
+        os.path.dirname(__file__), "..", "frontend", ".env.production"
     )
+    if os.path.exists(frontend_env_local):
+        print(f"[INFO] Subiendo frontend/.env.production al VPS...")
+        with open(frontend_env_local, "r") as f:
+            frontend_env_content = f.read()
+        run(
+            ssh,
+            f"cat > {REPO}/frontend/.env.production << 'FRONTENDEOF'\n{frontend_env_content}\nFRONTENDEOF",
+            check=False,
+        )
+        # Extraer solo variables NEXT_PUBLIC_* para crear .env que docker-compose usa
+        env_lines = []
+        for line in frontend_env_content.splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key = line.split("=")[0]
+                if key.startswith("NEXT_PUBLIC_"):
+                    env_lines.append(line)
+        env_file_content = "\n".join(env_lines)
+        print(
+            f"[INFO] Creando .env con {len(env_lines)} variables para docker-compose..."
+        )
+        run(
+            ssh,
+            f"cat > {REPO}/.env << 'ENVEOF'\n{env_file_content}\nENVEOF",
+            check=False,
+        )
+    build_cmd = (
+        f"cd {REPO} && docker compose -f docker-compose.frontend.yml down && "
+        f"docker compose -f docker-compose.frontend.yml build {build_flag} 2>&1 | tail -20"
+    )
+    run(ssh, build_cmd, timeout=600)
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml up -d")
 
 run(ssh, "docker ps --format 'table {{.Names}}\\t{{.Status}}'")
