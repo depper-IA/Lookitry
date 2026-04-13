@@ -171,7 +171,13 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
             {/* Google Button PRIMERO */}
             <GoogleSignInButton
               mode="login"
-              onError={(msg) => setGoogleError(msg)}
+              onError={(msg) => {
+                // Solo mostrar error si no viene del GoogleSignInButton interno
+                // (evitar duplicado con el error que ya muestra el botón)
+                if (!msg.includes('Google Sign-In no está configurado')) {
+                  setGoogleError(msg);
+                }
+              }}
             />
 
             {/* Divider */}
