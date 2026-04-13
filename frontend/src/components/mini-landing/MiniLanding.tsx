@@ -129,9 +129,6 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
   const rawTemplate = brand.landing_template || 'classic';
   const template = rawTemplate === 'probador' ? 'moderno' : rawTemplate;
 
-  // Debug para verificar qué template llega en localhost
-  console.log(`[MiniLanding] Renderizando template: ${template} para la marca: ${brand.name}`);
-
   return (
     <div className="relative">
       <Head>
