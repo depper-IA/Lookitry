@@ -155,6 +155,114 @@ export function useContrastTheme(bgColor?: string | null, primaryColor?: string 
   }, [bgColor, primaryColor]);
 }
 
+// ── Landing Theme Hook ─────────────────────────────────────────────────────
+// Sistema de colores inteligente para mini-landings con fallbacks por sección
+export interface LandingTheme {
+  // Fondos de sección
+  heroBg: string;
+  productsBg: string;
+  footerBg: string;
+  cardBg: string;
+  infoBg: string;
+  aboutBg: string;
+  // Textos
+  text: string;
+  muted: string;
+  mutedLight: string;
+  // Bordes
+  border: string;
+  borderLight: string;
+  // Estados
+  surface: string;
+  surfaceHover: string;
+  overlay: string;
+  // CTA
+  ctaBg: string;
+  ctaText: string;
+  // Utilidades
+  isDark: boolean;
+  isDarkHero: boolean;
+  isDarkProducts: boolean;
+  isDarkFooter: boolean;
+}
+
+export function getLandingTheme(brand: BrandData): LandingTheme {
+  const primary = brand.social_links?._landing_primary || brand.primary_color || '#FF5C3A';
+
+  // Fondos con fallbacks
+  const heroBg = brand.cover_bg_color || '#f9f8f6';
+  const productsBg = '#f9f8f6';
+  const footerBg = '#ffffff';
+  const cardBg = '#ffffff';
+  const infoBg = '#ffffff';
+  const aboutBg = brand.widget_bg_color || '#0a0a0a';
+
+  // Detectar si el fondo es oscuro
+  const isDarkHero = isDarkColor(heroBg);
+  const isDarkProducts = isDarkColor(productsBg);
+  const isDarkFooter = isDarkColor(footerBg);
+
+  // Textos basados en luminosidad
+  const heroText = isDarkHero ? '#ffffff' : '#111111';
+  const productsText = isDarkProducts ? '#ffffff' : '#111111';
+  const footerText = isDarkFooter ? '#ffffff' : '#111111';
+  const cardText = isDarkColor(cardBg) ? '#ffffff' : '#111111';
+
+  // Textos secundarios
+  const heroMuted = isDarkHero ? 'rgba(255,255,255,0.72)' : '#6b7280';
+  const productsMuted = isDarkProducts ? 'rgba(255,255,255,0.72)' : '#6b7280';
+  const footerMuted = isDarkFooter ? 'rgba(255,255,255,0.72)' : '#6b7280';
+
+  // Textos terciarios
+  const heroMutedLight = isDarkHero ? 'rgba(255,255,255,0.4)' : '#9ca3af';
+  const productsMutedLight = isDarkProducts ? 'rgba(255,255,255,0.4)' : '#9ca3af';
+  const footerMutedLight = isDarkFooter ? 'rgba(255,255,255,0.4)' : '#9ca3af';
+
+  // Bordes
+  const heroBorder = isDarkHero ? 'rgba(255,255,255,0.08)' : '#f3f4f6';
+  const productsBorder = isDarkProducts ? 'rgba(255,255,255,0.08)' : '#f3f4f6';
+  const footerBorder = isDarkFooter ? 'rgba(255,255,255,0.08)' : '#f3f4f6';
+
+  // CTA
+  const ctaBg = primary;
+  const ctaText = isDarkColor(ctaBg) ? '#ffffff' : '#ffffff';
+
+  return {
+    heroBg,
+    productsBg,
+    footerBg,
+    cardBg,
+    infoBg,
+    aboutBg,
+    text: heroText,
+    muted: heroMuted,
+    mutedLight: heroMutedLight,
+    border: heroBorder,
+    borderLight: isDarkHero ? 'rgba(255,255,255,0.04)' : '#f9fafb',
+    surface: isDarkColor(productsBg) ? 'rgba(255,255,255,0.05)' : '#ffffff',
+    surfaceHover: isDarkColor(productsBg) ? 'rgba(255,255,255,0.10)' : '#f9fafb',
+    overlay: isDarkHero ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+    ctaBg,
+    ctaText,
+    isDark: isDarkHero,
+    isDarkHero,
+    isDarkProducts,
+    isDarkFooter,
+  };
+}
+
+export function useLandingTheme(brand: BrandData): LandingTheme {
+  return useMemo(() => getLandingTheme(brand), [
+    brand.primary_color,
+    brand.secondary_color,
+    brand.cover_bg_color,
+    brand.widget_bg_color,
+    brand.header_color,
+    brand.social_links?._landing_primary,
+    brand.social_links?._landing_secondary,
+  ]);
+}
+
 // ── Brand context for real-time preview updates ───────────────────────────────
 export interface BrandContextValue {
   brand: BrandData;
@@ -231,9 +339,26 @@ export function LookitryLogoText({ className = "" }: { className?: string }) {
 
 // ── Componentes Auxiliares Compartidos ────────────────────────────────────────
 
-export function BrandLogo({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
+export function BrandLogo({ src, alt, className, priority = false }: { src?: string | null; alt: string; className?: string; priority?: boolean }) {
   if (!src) return null;
-  return <img src={src} alt={alt} className={className} />;
+
+  const blurDataURL = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="#e5e7eb" width="100" height="100"/></svg>').toString('base64');
+
+  return (
+    <div className={`relative ${className || ''}`} style={{ minWidth: 24, minHeight: 24 }}>
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="object-contain"
+        sizes="(max-width: 640px) 100px, 160px"
+        loading={priority ? 'eager' : 'lazy'}
+        placeholder="blur"
+        blurDataURL={blurDataURL}
+        priority={priority}
+      />
+    </div>
+  );
 }
 
 export function CoverImage({ src, alt, className, style }: { src?: string | null; alt: string; className?: string; style?: React.CSSProperties }) {
@@ -251,15 +376,31 @@ export function CoverImage({ src, alt, className, style }: { src?: string | null
   );
 }
 
-export function ProductImage({ src, alt, className, sizes }: { src: string; alt: string; className?: string; sizes?: string }) {
+export function ProductImage({ src, alt, className, sizes, primaryColor = '#FF5C3A' }: { src: string; alt: string; className?: string; sizes?: string; primaryColor?: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <div
+        className={`flex items-center justify-center ${className || ''}`}
+        style={{ backgroundColor: `${primaryColor}15`, minHeight: 200 }}
+      >
+        <svg className="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke={primaryColor} strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+        </svg>
+      </div>
+    );
+  }
+
   return (
     <div className={`relative overflow-hidden ${className || ''}`}>
-      <Image 
-        src={src} 
-        alt={alt} 
-        fill 
-        className="object-cover" 
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="object-cover"
         sizes={sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'}
+        onError={() => setHasError(true)}
       />
     </div>
   );
