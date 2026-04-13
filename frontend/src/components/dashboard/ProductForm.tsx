@@ -323,6 +323,16 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
             <div className="flex items-center gap-1.5 mb-1.5">
               <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción Corta</label>
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-500 font-medium">Visible para clientes</span>
+              {/* AI Status Badge */}
+              {describingWithAI && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 font-medium animate-pulse">⏳ Generando...</span>
+              )}
+              {aiGenerated && !describingWithAI && !aiError && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-500 font-medium">✓ IA OK</span>
+              )}
+              {aiError && !describingWithAI && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 font-medium" title={aiError}>✗ IA Error</span>
+              )}
             </div>
             <textarea name="short_description" value={formData.short_description || ''} onChange={handleChange} rows={2}
               style={inputBaseStyle} placeholder="Ej: Perfecta para summer vibes ☀️ Ideal para casual y beach days"
