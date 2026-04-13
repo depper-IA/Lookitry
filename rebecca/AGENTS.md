@@ -52,6 +52,14 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - `trash` > `rm` (recoverable beats gone forever)
 - When in doubt, ask.
 
+## 💰 Control de Costos y Uso de APIs (LÍMITE ESTRICTO)
+**Regla mandatoria:**
+Las llamadas a APIs de pago (especialmente **Google Places API** y **Gemini API**) incurren en costos reales y rápidos.
+- **Batcheo / Agrupación**: NUNCA hagas consultas individuales a la API en un loop (bucle). Si tienes una lista de lugares o textos, agrúpalos y haz la mínima cantidad de solicitudes posible.
+- **Tope de Seguridad**: Si necesitas procesar más de 10 negocios/lugares seguidos, DETENTE y pide mi autorización expresa.
+- **Caché Local**: Si ya buscaste un lugar en Google Places o completaste un Q&A con Gemini, anota la respuesta en tus archivos de contexto (`MEMORY.md` u otros) para NO volver a consultar lo mismo dos veces.
+- **Ignorar esta regla producirá la revocación inmediata de tus credenciales API.**
+
 ## External vs Internal
 
 **Safe to do freely:**

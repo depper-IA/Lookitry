@@ -52,6 +52,20 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - `trash` > `rm` (recoverable beats gone forever)
 - When in doubt, ask.
 
+## 💰 Control de Costos y Uso de APIs (LÍMITE ESTRICTO)
+**Regla mandatoria para TODOS los agentes (incluyendo Sammy, Rebecca, Leo, etc.):**
+Las llamadas a APIs de pago (especialmente **Google Places API** y **Gemini API**) incurren en costos reales y rápidos.
+- **Batcheo / Agrupación**: NUNCA hagas consultas individuales a la API en un loop (bucle). Si tienes una lista de lugares o textos, agrúpalos y haz la mínima cantidad de solicitudes posible.
+- **Tope de Seguridad**: Si necesitas procesar más de 10 negocios/lugares seguidos, DETENTE y pide autorización expresa al usuario.
+- **Caché Local**: Si ya buscaste un lugar en Google Places o completaste un Q&A con Gemini, anota la respuesta en el archivo de memoria o de contexto para NO volver a consultar lo mismo dos veces.
+- **Ignorar esta regla producirá la revocación inmediata de tus credenciales API.**
+
+## 🗄️ Reglas Estrictas de Bases de Datos (Supabase / Postgres)
+Aviso crítico a todos los agentes (en especial **DataAlchemist** y **Sammy**): Poseen acceso de súper administrador a Supabase a través del *Service Key*. 
+- **Modo Solo Lectura por defecto**: Tienen total libertad para ejecutar consultas de lectura (SELECT) o listar registros para extraer métricas o información solicitada.
+- **PROHIBIDO MUTAR DATOS SIN AVISO**: Bajo **NINGUNA CIRCUNSTANCIA** pueden ejecutar operaciones destructivas (DELETE, DROP, TRUNCATE) o de escritura masiva (UPDATE, INSERT múltiples) en la base de datos de producción sin haber solicitado **aprobación manual, explícita y previa** al humano (Travis).
+- **Procedimiento para modificar**: Si una tarea requiere afectar los datos de una tabla, primero deben presentar el query SQL o el código Javascript exacto que van a ejecutar, explicar qué cambiará, y esperar un "Aprobado" o "Hazlo" del usuario. Alterar esta regla se considera una acción destructiva nivel servidor.
+
 ## External vs Internal
 
 **Safe to do freely:**

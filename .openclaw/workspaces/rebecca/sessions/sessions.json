@@ -1,0 +1,2435 @@
+{
+  "agent:rebecca:main": {
+    "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+    "updatedAt": 1776036492949,
+    "systemSent": true,
+    "abortedLastRun": false,
+    "chatType": "direct",
+    "deliveryContext": {
+      "channel": "telegram",
+      "to": "telegram:942528796",
+      "accountId": "rebecca"
+    },
+    "lastChannel": "telegram",
+    "origin": {
+      "label": "Mel (@ummell) id:942528796",
+      "provider": "telegram",
+      "surface": "telegram",
+      "chatType": "direct",
+      "from": "telegram:942528796",
+      "to": "telegram:942528796",
+      "accountId": "rebecca"
+    },
+    "sessionFile": "/home/travis/.openclaw/agents/rebecca/sessions/4828e01e-7e4d-4afd-a18a-0eb45ff4d694.jsonl",
+    "compactionCount": 1,
+    "skillsSnapshot": {
+      "prompt": "\n\nThe following skills provide specialized instructions for specific tasks.\nUse the read tool to load a skill's file when the task matches its description.\nWhen a skill file references a relative path, resolve it against the skill directory (parent of SKILL.md / dirname of the path) and use that absolute path in tool commands.\n\n<available_skills>\n  <skill>\n    <name>coding-agent</name>\n    <description>Delegate coding tasks to Codex, Claude Code, or Pi agents via background process. Use when: (1) building/creating new features or apps, (2) reviewing PRs (spawn in temp dir), (3) refactoring large codebases, (4) iterative coding that needs file exploration. NOT for: simple one-liner fixes (just edit), reading code (use read tool), thread-bound ACP harness requests in chat (for example spawn/run Codex or Claude Code in a Discord thread; use sessions_spawn with runtime:&quot;acp&quot;), or any work in ~/clawd workspace (never spawn agents here). Claude Code: use --print --permission-mode bypassPermissions (no PTY). Codex/Pi/OpenCode: pty:true required.</description>\n    <location>~/Lookitry/openclaw/skills/coding-agent/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>healthcheck</name>\n    <description>Host security hardening and risk-tolerance configuration for OpenClaw deployments. Use when a user asks for security audits, firewall/SSH/update hardening, risk posture, exposure review, OpenClaw cron scheduling for periodic checks, or version status checks on a machine running OpenClaw (laptop, workstation, Pi, VPS).</description>\n    <location>~/Lookitry/openclaw/skills/healthcheck/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>node-connect</name>\n    <description>Diagnose OpenClaw node connection and pairing failures for Android, iOS, and macOS companion apps. Use when QR/setup code/manual connect fails, local Wi-Fi works but VPS/tailnet does not, or errors mention pairing required, unauthorized, bootstrap token invalid or expired, gateway.bind, gateway.remote.url, Tailscale, or plugins.entries.device-pair.config.publicUrl.</description>\n    <location>~/Lookitry/openclaw/skills/node-connect/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>skill-creator</name>\n    <description>Create, edit, improve, or audit AgentSkills. Use when creating a new skill from scratch or when asked to improve, review, audit, tidy up, or clean up an existing skill or SKILL.md file. Also use when editing or restructuring a skill directory (moving files to references/ or scripts/, removing stale content, validating against the AgentSkills spec). Triggers on phrases like &quot;create a skill&quot;, &quot;author a skill&quot;, &quot;tidy up a skill&quot;, &quot;improve this skill&quot;, &quot;review the skill&quot;, &quot;clean up the skill&quot;, &quot;audit the skill&quot;.</description>\n    <location>~/Lookitry/openclaw/skills/skill-creator/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>taskflow</name>\n    <description>Use when work should span one or more detached tasks but still behave like one job with a single owner context. TaskFlow is the durable flow substrate under authoring layers like Lobster, ACPX, plugins, or plain code. Keep conditional logic in the caller; use TaskFlow for flow identity, child-task linkage, waiting state, revision-checked mutations, and user-facing emergence.</description>\n    <location>~/Lookitry/openclaw/skills/taskflow/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>taskflow-inbox-triage</name>\n    <description>Example TaskFlow authoring pattern for inbox triage. Use when messages need different treatment based on intent, with some routes notifying immediately, some waiting on outside answers, and others rolling into a later summary.</description>\n    <location>~/Lookitry/openclaw/skills/taskflow-inbox-triage/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>weather</name>\n    <description>Get current weather and forecasts via wttr.in or Open-Meteo. Use when: user asks about weather, temperature, or forecasts for any location. NOT for: historical weather data, severe weather alerts, or detailed meteorological analysis. No API key needed.</description>\n    <location>~/Lookitry/openclaw/skills/weather/SKILL.md</location>\n  </skill>\n</available_skills>",
+      "skills": [
+        {
+          "name": "coding-agent",
+          "requiredEnv": []
+        },
+        {
+          "name": "healthcheck"
+        },
+        {
+          "name": "node-connect"
+        },
+        {
+          "name": "skill-creator"
+        },
+        {
+          "name": "taskflow"
+        },
+        {
+          "name": "taskflow-inbox-triage"
+        },
+        {
+          "name": "weather",
+          "requiredEnv": []
+        }
+      ],
+      "resolvedSkills": [
+        {
+          "name": "coding-agent",
+          "description": "Delegate coding tasks to Codex, Claude Code, or Pi agents via background process. Use when: (1) building/creating new features or apps, (2) reviewing PRs (spawn in temp dir), (3) refactoring large codebases, (4) iterative coding that needs file exploration. NOT for: simple one-liner fixes (just edit), reading code (use read tool), thread-bound ACP harness requests in chat (for example spawn/run Codex or Claude Code in a Discord thread; use sessions_spawn with runtime:\"acp\"), or any work in ~/clawd workspace (never spawn agents here). Claude Code: use --print --permission-mode bypassPermissions (no PTY). Codex/Pi/OpenCode: pty:true required.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/coding-agent/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/coding-agent",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/coding-agent/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/coding-agent"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "healthcheck",
+          "description": "Host security hardening and risk-tolerance configuration for OpenClaw deployments. Use when a user asks for security audits, firewall/SSH/update hardening, risk posture, exposure review, OpenClaw cron scheduling for periodic checks, or version status checks on a machine running OpenClaw (laptop, workstation, Pi, VPS).",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/healthcheck/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/healthcheck",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/healthcheck/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/healthcheck"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "node-connect",
+          "description": "Diagnose OpenClaw node connection and pairing failures for Android, iOS, and macOS companion apps. Use when QR/setup code/manual connect fails, local Wi-Fi works but VPS/tailnet does not, or errors mention pairing required, unauthorized, bootstrap token invalid or expired, gateway.bind, gateway.remote.url, Tailscale, or plugins.entries.device-pair.config.publicUrl.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/node-connect/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/node-connect",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/node-connect/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/node-connect"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "skill-creator",
+          "description": "Create, edit, improve, or audit AgentSkills. Use when creating a new skill from scratch or when asked to improve, review, audit, tidy up, or clean up an existing skill or SKILL.md file. Also use when editing or restructuring a skill directory (moving files to references/ or scripts/, removing stale content, validating against the AgentSkills spec). Triggers on phrases like \"create a skill\", \"author a skill\", \"tidy up a skill\", \"improve this skill\", \"review the skill\", \"clean up the skill\", \"audit the skill\".",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/skill-creator/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/skill-creator",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/skill-creator/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/skill-creator"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "taskflow",
+          "description": "Use when work should span one or more detached tasks but still behave like one job with a single owner context. TaskFlow is the durable flow substrate under authoring layers like Lobster, ACPX, plugins, or plain code. Keep conditional logic in the caller; use TaskFlow for flow identity, child-task linkage, waiting state, revision-checked mutations, and user-facing emergence.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/taskflow/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/taskflow/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "taskflow-inbox-triage",
+          "description": "Example TaskFlow authoring pattern for inbox triage. Use when messages need different treatment based on intent, with some routes notifying immediately, some waiting on outside answers, and others rolling into a later summary.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "weather",
+          "description": "Get current weather and forecasts via wttr.in or Open-Meteo. Use when: user asks about weather, temperature, or forecasts for any location. NOT for: historical weather data, severe weather alerts, or detailed meteorological analysis. No API key needed.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/weather/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/weather",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/weather/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/weather"
+          },
+          "disableModelInvocation": false
+        }
+      ],
+      "version": 0
+    },
+    "status": "running",
+    "startedAt": 1776036492767,
+    "modelProvider": "minimax",
+    "model": "MiniMax-M2.7",
+    "contextTokens": 200000,
+    "systemPromptReport": {
+      "source": "run",
+      "generatedAt": 1776035931131,
+      "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+      "sessionKey": "agent:rebecca:main",
+      "provider": "minimax",
+      "model": "MiniMax-M2.7",
+      "workspaceDir": "/home/travis/Lookitry/Lookitry/rebecca",
+      "bootstrapMaxChars": 20000,
+      "bootstrapTotalMaxChars": 150000,
+      "bootstrapTruncation": {
+        "warningMode": "once",
+        "warningShown": false,
+        "truncatedFiles": 0,
+        "nearLimitFiles": 0,
+        "totalNearLimit": false
+      },
+      "sandbox": {
+        "mode": "off",
+        "sandboxed": false
+      },
+      "systemPrompt": {
+        "chars": 2128,
+        "projectContextChars": 0,
+        "nonProjectContextChars": 2128
+      },
+      "injectedWorkspaceFiles": [
+        {
+          "name": "AGENTS.md",
+          "path": "/home/travis/Lookitry/Lookitry/rebecca/AGENTS.md",
+          "missing": false,
+          "rawChars": 7609,
+          "injectedChars": 7609,
+          "truncated": false
+        },
+        {
+          "name": "SOUL.md",
+          "path": "/home/travis/Lookitry/Lookitry/rebecca/SOUL.md",
+          "missing": false,
+          "rawChars": 1064,
+          "injectedChars": 1064,
+          "truncated": false
+        },
+        {
+          "name": "TOOLS.md",
+          "path": "/home/travis/Lookitry/Lookitry/rebecca/TOOLS.md",
+          "missing": false,
+          "rawChars": 850,
+          "injectedChars": 850,
+          "truncated": false
+        },
+        {
+          "name": "IDENTITY.md",
+          "path": "/home/travis/Lookitry/Lookitry/rebecca/IDENTITY.md",
+          "missing": false,
+          "rawChars": 885,
+          "injectedChars": 885,
+          "truncated": false
+        },
+        {
+          "name": "USER.md",
+          "path": "/home/travis/Lookitry/Lookitry/rebecca/USER.md",
+          "missing": false,
+          "rawChars": 474,
+          "injectedChars": 474,
+          "truncated": false
+        },
+        {
+          "name": "HEARTBEAT.md",
+          "path": "/home/travis/Lookitry/Lookitry/rebecca/HEARTBEAT.md",
+          "missing": false,
+          "rawChars": 192,
+          "injectedChars": 192,
+          "truncated": false
+        },
+        {
+          "name": "BOOTSTRAP.md",
+          "path": "/home/travis/Lookitry/Lookitry/rebecca/BOOTSTRAP.md",
+          "missing": true,
+          "rawChars": 0,
+          "injectedChars": 74,
+          "truncated": false
+        }
+      ],
+      "skills": {
+        "promptChars": 4247,
+        "entries": [
+          {
+            "name": "coding-agent",
+            "blockChars": 812
+          },
+          {
+            "name": "healthcheck",
+            "blockChars": 471
+          },
+          {
+            "name": "node-connect",
+            "blockChars": 521
+          },
+          {
+            "name": "skill-creator",
+            "blockChars": 739
+          },
+          {
+            "name": "taskflow",
+            "blockChars": 523
+          },
+          {
+            "name": "taskflow-inbox-triage",
+            "blockChars": 398
+          },
+          {
+            "name": "weather",
+            "blockChars": 396
+          }
+        ]
+      },
+      "tools": {
+        "listChars": 0,
+        "schemaChars": 85073,
+        "entries": [
+          {
+            "name": "read",
+            "summaryChars": 298,
+            "schemaChars": 304,
+            "propertiesCount": 3
+          },
+          {
+            "name": "edit",
+            "summaryChars": 326,
+            "schemaChars": 834,
+            "propertiesCount": 2
+          },
+          {
+            "name": "write",
+            "summaryChars": 127,
+            "schemaChars": 225,
+            "propertiesCount": 2
+          },
+          {
+            "name": "exec",
+            "summaryChars": 539,
+            "schemaChars": 1098,
+            "propertiesCount": 12
+          },
+          {
+            "name": "process",
+            "summaryChars": 416,
+            "schemaChars": 961,
+            "propertiesCount": 12
+          },
+          {
+            "name": "canvas",
+            "summaryChars": 106,
+            "schemaChars": 661,
+            "propertiesCount": 18
+          },
+          {
+            "name": "nodes",
+            "summaryChars": 118,
+            "schemaChars": 1589,
+            "propertiesCount": 32
+          },
+          {
+            "name": "cron",
+            "summaryChars": 3726,
+            "schemaChars": 6700,
+            "propertiesCount": 13
+          },
+          {
+            "name": "message",
+            "summaryChars": 150,
+            "schemaChars": 6884,
+            "propertiesCount": 110
+          },
+          {
+            "name": "tts",
+            "summaryChars": 152,
+            "schemaChars": 223,
+            "propertiesCount": 2
+          },
+          {
+            "name": "gateway",
+            "summaryChars": 494,
+            "schemaChars": 497,
+            "propertiesCount": 12
+          },
+          {
+            "name": "agents_list",
+            "summaryChars": 118,
+            "schemaChars": 33,
+            "propertiesCount": 0
+          },
+          {
+            "name": "sessions_list",
+            "summaryChars": 177,
+            "schemaChars": 212,
+            "propertiesCount": 4
+          },
+          {
+            "name": "sessions_history",
+            "summaryChars": 180,
+            "schemaChars": 161,
+            "propertiesCount": 3
+          },
+          {
+            "name": "sessions_send",
+            "summaryChars": 208,
+            "schemaChars": 274,
+            "propertiesCount": 5
+          },
+          {
+            "name": "sessions_yield",
+            "summaryChars": 97,
+            "schemaChars": 60,
+            "propertiesCount": 1
+          },
+          {
+            "name": "sessions_spawn",
+            "summaryChars": 302,
+            "schemaChars": 1333,
+            "propertiesCount": 18
+          },
+          {
+            "name": "subagents",
+            "summaryChars": 105,
+            "schemaChars": 191,
+            "propertiesCount": 4
+          },
+          {
+            "name": "session_status",
+            "summaryChars": 336,
+            "schemaChars": 89,
+            "propertiesCount": 2
+          },
+          {
+            "name": "web_fetch",
+            "summaryChars": 129,
+            "schemaChars": 374,
+            "propertiesCount": 3
+          },
+          {
+            "name": "browser",
+            "summaryChars": 1066,
+            "schemaChars": 2799,
+            "propertiesCount": 48
+          },
+          {
+            "name": "memory_search",
+            "summaryChars": 385,
+            "schemaChars": 260,
+            "propertiesCount": 4
+          },
+          {
+            "name": "memory_get",
+            "summaryChars": 207,
+            "schemaChars": 249,
+            "propertiesCount": 4
+          },
+          {
+            "name": "context7__query-docs",
+            "summaryChars": 523,
+            "schemaChars": 882,
+            "propertiesCount": 2
+          },
+          {
+            "name": "context7__resolve-library-id",
+            "summaryChars": 2006,
+            "schemaChars": 784,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__billing_createServiceOrderV1",
+            "summaryChars": 738,
+            "schemaChars": 558,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__billing_deletePaymentMethodV1",
+            "summaryChars": 114,
+            "schemaChars": 134,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__billing_disableAutoRenewalV1",
+            "summaryChars": 105,
+            "schemaChars": 129,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__billing_enableAutoRenewalV1",
+            "summaryChars": 103,
+            "schemaChars": 129,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__billing_getCatalogItemListV1",
+            "summaryChars": 248,
+            "schemaChars": 281,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__billing_getPaymentMethodListV1",
+            "summaryChars": 267,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__billing_getSubscriptionListV1",
+            "summaryChars": 132,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__billing_setDefaultPaymentMethodV1",
+            "summaryChars": 126,
+            "schemaChars": 134,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__DNS_deleteDNSRecordsV1",
+            "summaryChars": 399,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__DNS_getDNSRecordsV1",
+            "summaryChars": 124,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__DNS_getDNSSnapshotListV1",
+            "summaryChars": 108,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__DNS_getDNSSnapshotV1",
+            "summaryChars": 137,
+            "schemaChars": 182,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__DNS_resetDNSRecordsV1",
+            "summaryChars": 106,
+            "schemaChars": 483,
+            "propertiesCount": 4
+          },
+          {
+            "name": "hostinger-mcp__DNS_restoreDNSSnapshotV1",
+            "summaryChars": 111,
+            "schemaChars": 182,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__DNS_updateDNSRecordsV1",
+            "summaryChars": 253,
+            "schemaChars": 1086,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__DNS_validateDNSRecordsV1",
+            "summaryChars": 302,
+            "schemaChars": 1086,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__domains_checkDomainAvailabilityV1",
+            "summaryChars": 392,
+            "schemaChars": 338,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__domains_createDomainForwardingV1",
+            "summaryChars": 100,
+            "schemaChars": 299,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__domains_createWHOISProfileV1",
+            "summaryChars": 104,
+            "schemaChars": 505,
+            "propertiesCount": 5
+          },
+          {
+            "name": "hostinger-mcp__domains_deleteDomainForwardingV1",
+            "summaryChars": 96,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_deleteWHOISProfileV1",
+            "summaryChars": 96,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_disableDomainLockV1",
+            "summaryChars": 194,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_disablePrivacyProtectionV1",
+            "summaryChars": 225,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_enableDomainLockV1",
+            "summaryChars": 221,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_enablePrivacyProtectionV1",
+            "summaryChars": 236,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_getDomainDetailsV1",
+            "summaryChars": 125,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_getDomainForwardingV1",
+            "summaryChars": 103,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_getDomainListV1",
+            "summaryChars": 102,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__domains_getWHOISProfileListV1",
+            "summaryChars": 111,
+            "schemaChars": 122,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_getWHOISProfileUsageV1",
+            "summaryChars": 138,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_getWHOISProfileV1",
+            "summaryChars": 101,
+            "schemaChars": 109,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__domains_purchaseNewDomainV1",
+            "summaryChars": 589,
+            "schemaChars": 967,
+            "propertiesCount": 6
+          },
+          {
+            "name": "hostinger-mcp__domains_updateDomainNameserversV1",
+            "summaryChars": 211,
+            "schemaChars": 355,
+            "propertiesCount": 5
+          },
+          {
+            "name": "hostinger-mcp__hosting_createWebsiteV1",
+            "summaryChars": 513,
+            "schemaChars": 388,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__hosting_deployJsApplication",
+            "summaryChars": 468,
+            "schemaChars": 666,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__hosting_deployStaticWebsite",
+            "summaryChars": 493,
+            "schemaChars": 663,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__hosting_deployWordpressPlugin",
+            "summaryChars": 130,
+            "schemaChars": 390,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__hosting_deployWordpressTheme",
+            "summaryChars": 192,
+            "schemaChars": 503,
+            "propertiesCount": 4
+          },
+          {
+            "name": "hostinger-mcp__hosting_generateAFreeSubdomainV1",
+            "summaryChars": 238,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__hosting_importWordpressWebsite",
+            "summaryChars": 475,
+            "schemaChars": 640,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__hosting_listAvailableDatacentersV1",
+            "summaryChars": 223,
+            "schemaChars": 111,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__hosting_listJsDeployments",
+            "summaryChars": 264,
+            "schemaChars": 534,
+            "propertiesCount": 4
+          },
+          {
+            "name": "hostinger-mcp__hosting_listOrdersV1",
+            "summaryChars": 336,
+            "schemaChars": 489,
+            "propertiesCount": 4
+          },
+          {
+            "name": "hostinger-mcp__hosting_listWebsitesV1",
+            "summaryChars": 383,
+            "schemaChars": 451,
+            "propertiesCount": 6
+          },
+          {
+            "name": "hostinger-mcp__hosting_showJsDeploymentLogs",
+            "summaryChars": 106,
+            "schemaChars": 364,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__hosting_verifyDomainOwnershipV1",
+            "summaryChars": 500,
+            "schemaChars": 128,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__reach_createANewContactSegmentV1",
+            "summaryChars": 218,
+            "schemaChars": 1097,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__reach_createANewContactV1",
+            "summaryChars": 274,
+            "schemaChars": 285,
+            "propertiesCount": 4
+          },
+          {
+            "name": "hostinger-mcp__reach_createANewProfileContactV1",
+            "summaryChars": 274,
+            "schemaChars": 370,
+            "propertiesCount": 5
+          },
+          {
+            "name": "hostinger-mcp__reach_deleteAContactV1",
+            "summaryChars": 119,
+            "schemaChars": 123,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__reach_getSegmentDetailsV1",
+            "summaryChars": 191,
+            "schemaChars": 130,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__reach_listContactGroupsV1",
+            "summaryChars": 120,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__reach_listContactsV1",
+            "summaryChars": 222,
+            "schemaChars": 309,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__reach_listProfilesV1",
+            "summaryChars": 94,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__reach_listSegmentContactsV1",
+            "summaryChars": 169,
+            "schemaChars": 255,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__reach_listSegmentsV1",
+            "summaryChars": 124,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__v2_getDomainVerificationsDIRECT",
+            "summaryChars": 62,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__VPS_activateFirewallV1",
+            "summaryChars": 179,
+            "schemaChars": 210,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_attachPublicKeyV1",
+            "summaryChars": 208,
+            "schemaChars": 264,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_createFirewallRuleV1",
+            "summaryChars": 362,
+            "schemaChars": 571,
+            "propertiesCount": 5
+          },
+          {
+            "name": "hostinger-mcp__VPS_createNewFirewallV1",
+            "summaryChars": 97,
+            "schemaChars": 108,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_createNewProjectV1",
+            "summaryChars": 398,
+            "schemaChars": 521,
+            "propertiesCount": 4
+          },
+          {
+            "name": "hostinger-mcp__VPS_createPostInstallScriptV1",
+            "summaryChars": 420,
+            "schemaChars": 188,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_createPTRRecordV1",
+            "summaryChars": 145,
+            "schemaChars": 288,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__VPS_createPublicKeyV1",
+            "summaryChars": 101,
+            "schemaChars": 168,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_createSnapshotV1",
+            "summaryChars": 497,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_deactivateFirewallV1",
+            "summaryChars": 123,
+            "schemaChars": 210,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_deleteFirewallRuleV1",
+            "summaryChars": 249,
+            "schemaChars": 188,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_deleteFirewallV1",
+            "summaryChars": 183,
+            "schemaChars": 118,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_deletePostInstallScriptV1",
+            "summaryChars": 110,
+            "schemaChars": 147,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_deleteProjectV1",
+            "summaryChars": 326,
+            "schemaChars": 287,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_deletePTRRecordV1",
+            "summaryChars": 266,
+            "schemaChars": 214,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_deletePublicKeyV1",
+            "summaryChars": 184,
+            "schemaChars": 122,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_deleteSnapshotV1",
+            "summaryChars": 93,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getActionDetailsV1",
+            "summaryChars": 168,
+            "schemaChars": 204,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_getActionsV1",
+            "summaryChars": 418,
+            "schemaChars": 191,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_getAttachedPublicKeysV1",
+            "summaryChars": 136,
+            "schemaChars": 191,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_getBackupsV1",
+            "summaryChars": 123,
+            "schemaChars": 191,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_getDataCenterListV1",
+            "summaryChars": 112,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__VPS_getFirewallDetailsV1",
+            "summaryChars": 127,
+            "schemaChars": 118,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getFirewallListV1",
+            "summaryChars": 94,
+            "schemaChars": 100,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getMetricsV1",
+            "summaryChars": 244,
+            "schemaChars": 287,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__VPS_getPostInstallScriptsV1",
+            "summaryChars": 135,
+            "schemaChars": 100,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getPostInstallScriptV1",
+            "summaryChars": 102,
+            "schemaChars": 147,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getProjectContainersV1",
+            "summaryChars": 340,
+            "schemaChars": 287,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_getProjectContentsV1",
+            "summaryChars": 345,
+            "schemaChars": 287,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_getProjectListV1",
+            "summaryChars": 515,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getProjectLogsV1",
+            "summaryChars": 378,
+            "schemaChars": 287,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_getPublicKeysV1",
+            "summaryChars": 120,
+            "schemaChars": 100,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getScanMetricsV1",
+            "summaryChars": 498,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getSnapshotV1",
+            "summaryChars": 111,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getTemplateDetailsV1",
+            "summaryChars": 159,
+            "schemaChars": 118,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getTemplatesV1",
+            "summaryChars": 150,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__VPS_getVirtualMachineDetailsV1",
+            "summaryChars": 135,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_getVirtualMachinesV1",
+            "summaryChars": 92,
+            "schemaChars": 47,
+            "propertiesCount": 0
+          },
+          {
+            "name": "hostinger-mcp__VPS_installMonarxV1",
+            "summaryChars": 399,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_purchaseNewVirtualMachineV1",
+            "summaryChars": 310,
+            "schemaChars": 423,
+            "propertiesCount": 4
+          },
+          {
+            "name": "hostinger-mcp__VPS_recreateVirtualMachineV1",
+            "summaryChars": 662,
+            "schemaChars": 780,
+            "propertiesCount": 5
+          },
+          {
+            "name": "hostinger-mcp__VPS_resetHostnameV1",
+            "summaryChars": 158,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_restartProjectV1",
+            "summaryChars": 302,
+            "schemaChars": 287,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_restartVirtualMachineV1",
+            "summaryChars": 171,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_restoreBackupV1",
+            "summaryChars": 310,
+            "schemaChars": 204,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_restoreSnapshotV1",
+            "summaryChars": 293,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_setHostnameV1",
+            "summaryChars": 315,
+            "schemaChars": 212,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_setNameserversV1",
+            "summaryChars": 240,
+            "schemaChars": 305,
+            "propertiesCount": 4
+          },
+          {
+            "name": "hostinger-mcp__VPS_setPanelPasswordV1",
+            "summaryChars": 404,
+            "schemaChars": 232,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_setRootPasswordV1",
+            "summaryChars": 295,
+            "schemaChars": 231,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_setupPurchasedVirtualMachineV1",
+            "summaryChars": 131,
+            "schemaChars": 1135,
+            "propertiesCount": 11
+          },
+          {
+            "name": "hostinger-mcp__VPS_startProjectV1",
+            "summaryChars": 280,
+            "schemaChars": 287,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_startRecoveryModeV1",
+            "summaryChars": 458,
+            "schemaChars": 245,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_startVirtualMachineV1",
+            "summaryChars": 188,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_stopProjectV1",
+            "summaryChars": 275,
+            "schemaChars": 287,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_stopRecoveryModeV1",
+            "summaryChars": 204,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_stopVirtualMachineV1",
+            "summaryChars": 188,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_syncFirewallV1",
+            "summaryChars": 219,
+            "schemaChars": 210,
+            "propertiesCount": 2
+          },
+          {
+            "name": "hostinger-mcp__VPS_uninstallMonarxV1",
+            "summaryChars": 218,
+            "schemaChars": 137,
+            "propertiesCount": 1
+          },
+          {
+            "name": "hostinger-mcp__VPS_updateFirewallRuleV1",
+            "summaryChars": 242,
+            "schemaChars": 641,
+            "propertiesCount": 6
+          },
+          {
+            "name": "hostinger-mcp__VPS_updatePostInstallScriptV1",
+            "summaryChars": 96,
+            "schemaChars": 290,
+            "propertiesCount": 3
+          },
+          {
+            "name": "hostinger-mcp__VPS_updateProjectV1",
+            "summaryChars": 331,
+            "schemaChars": 287,
+            "propertiesCount": 2
+          },
+          {
+            "name": "memory__add_observations",
+            "summaryChars": 64,
+            "schemaChars": 487,
+            "propertiesCount": 1
+          },
+          {
+            "name": "memory__create_entities",
+            "summaryChars": 51,
+            "schemaChars": 551,
+            "propertiesCount": 1
+          },
+          {
+            "name": "memory__create_relations",
+            "summaryChars": 106,
+            "schemaChars": 527,
+            "propertiesCount": 1
+          },
+          {
+            "name": "memory__delete_entities",
+            "summaryChars": 80,
+            "schemaChars": 248,
+            "propertiesCount": 1
+          },
+          {
+            "name": "memory__delete_observations",
+            "summaryChars": 65,
+            "schemaChars": 485,
+            "propertiesCount": 1
+          },
+          {
+            "name": "memory__delete_relations",
+            "summaryChars": 50,
+            "schemaChars": 575,
+            "propertiesCount": 1
+          },
+          {
+            "name": "memory__open_nodes",
+            "summaryChars": 57,
+            "schemaChars": 238,
+            "propertiesCount": 1
+          },
+          {
+            "name": "memory__read_graph",
+            "summaryChars": 31,
+            "schemaChars": 85,
+            "propertiesCount": 0
+          },
+          {
+            "name": "memory__search_nodes",
+            "summaryChars": 56,
+            "schemaChars": 255,
+            "propertiesCount": 1
+          },
+          {
+            "name": "n8n__n8n_activate_workflow",
+            "summaryChars": 96,
+            "schemaChars": 359,
+            "propertiesCount": 2
+          },
+          {
+            "name": "n8n__n8n_add_node_to_workflow",
+            "summaryChars": 73,
+            "schemaChars": 506,
+            "propertiesCount": 3
+          },
+          {
+            "name": "n8n__n8n_create_tag",
+            "summaryChars": 39,
+            "schemaChars": 220,
+            "propertiesCount": 1
+          },
+          {
+            "name": "n8n__n8n_create_workflow",
+            "summaryChars": 95,
+            "schemaChars": 606,
+            "propertiesCount": 5
+          },
+          {
+            "name": "n8n__n8n_delete_node",
+            "summaryChars": 104,
+            "schemaChars": 304,
+            "propertiesCount": 2
+          },
+          {
+            "name": "n8n__n8n_delete_workflow",
+            "summaryChars": 60,
+            "schemaChars": 216,
+            "propertiesCount": 1
+          },
+          {
+            "name": "n8n__n8n_get_tags",
+            "summaryChars": 47,
+            "schemaChars": 114,
+            "propertiesCount": 0
+          },
+          {
+            "name": "n8n__n8n_get_workflow",
+            "summaryChars": 145,
+            "schemaChars": 216,
+            "propertiesCount": 1
+          },
+          {
+            "name": "n8n__n8n_get_workflow_executions",
+            "summaryChars": 68,
+            "schemaChars": 422,
+            "propertiesCount": 3
+          },
+          {
+            "name": "n8n__n8n_get_workflows_by_tag",
+            "summaryChars": 43,
+            "schemaChars": 310,
+            "propertiesCount": 2
+          },
+          {
+            "name": "n8n__n8n_list_workflows",
+            "summaryChars": 123,
+            "schemaChars": 387,
+            "propertiesCount": 3
+          },
+          {
+            "name": "n8n__n8n_tag_workflow",
+            "summaryChars": 41,
+            "schemaChars": 291,
+            "propertiesCount": 2
+          },
+          {
+            "name": "n8n__n8n_test_workflow",
+            "summaryChars": 94,
+            "schemaChars": 527,
+            "propertiesCount": 4
+          },
+          {
+            "name": "n8n__n8n_update_node",
+            "summaryChars": 173,
+            "schemaChars": 436,
+            "propertiesCount": 3
+          },
+          {
+            "name": "n8n__n8n_update_node_connections",
+            "summaryChars": 132,
+            "schemaChars": 427,
+            "propertiesCount": 3
+          },
+          {
+            "name": "n8n__n8n_update_node_position",
+            "summaryChars": 44,
+            "schemaChars": 490,
+            "propertiesCount": 3
+          },
+          {
+            "name": "n8n__n8n_update_workflow",
+            "summaryChars": 179,
+            "schemaChars": 667,
+            "propertiesCount": 6
+          },
+          {
+            "name": "obsidian__add_bookmark",
+            "summaryChars": 49,
+            "schemaChars": 451,
+            "propertiesCount": 6
+          },
+          {
+            "name": "obsidian__append_note",
+            "summaryChars": 36,
+            "schemaChars": 394,
+            "propertiesCount": 4
+          },
+          {
+            "name": "obsidian__create_note",
+            "summaryChars": 73,
+            "schemaChars": 529,
+            "propertiesCount": 7
+          },
+          {
+            "name": "obsidian__daily_append",
+            "summaryChars": 37,
+            "schemaChars": 413,
+            "propertiesCount": 4
+          },
+          {
+            "name": "obsidian__daily_create",
+            "summaryChars": 43,
+            "schemaChars": 159,
+            "propertiesCount": 1
+          },
+          {
+            "name": "obsidian__daily_path",
+            "summaryChars": 50,
+            "schemaChars": 62,
+            "propertiesCount": 0
+          },
+          {
+            "name": "obsidian__daily_prepend",
+            "summaryChars": 58,
+            "schemaChars": 415,
+            "propertiesCount": 4
+          },
+          {
+            "name": "obsidian__daily_read",
+            "summaryChars": 32,
+            "schemaChars": 62,
+            "propertiesCount": 0
+          },
+          {
+            "name": "obsidian__delete_note",
+            "summaryChars": 75,
+            "schemaChars": 287,
+            "propertiesCount": 3
+          },
+          {
+            "name": "obsidian__find_orphan_notes",
+            "summaryChars": 44,
+            "schemaChars": 130,
+            "propertiesCount": 1
+          },
+          {
+            "name": "obsidian__find_unresolved_links",
+            "summaryChars": 46,
+            "schemaChars": 353,
+            "propertiesCount": 4
+          },
+          {
+            "name": "obsidian__get_backlinks",
+            "summaryChars": 64,
+            "schemaChars": 436,
+            "propertiesCount": 5
+          },
+          {
+            "name": "obsidian__get_file_info",
+            "summaryChars": 46,
+            "schemaChars": 208,
+            "propertiesCount": 2
+          },
+          {
+            "name": "obsidian__get_help",
+            "summaryChars": 75,
+            "schemaChars": 129,
+            "propertiesCount": 1
+          },
+          {
+            "name": "obsidian__get_links",
+            "summaryChars": 48,
+            "schemaChars": 277,
+            "propertiesCount": 3
+          },
+          {
+            "name": "obsidian__get_outline",
+            "summaryChars": 44,
+            "schemaChars": 362,
+            "propertiesCount": 4
+          },
+          {
+            "name": "obsidian__get_properties",
+            "summaryChars": 60,
+            "schemaChars": 625,
+            "propertiesCount": 8
+          },
+          {
+            "name": "obsidian__get_vault_info",
+            "summaryChars": 71,
+            "schemaChars": 176,
+            "propertiesCount": 1
+          },
+          {
+            "name": "obsidian__list_files",
+            "summaryChars": 68,
+            "schemaChars": 261,
+            "propertiesCount": 3
+          },
+          {
+            "name": "obsidian__list_folders",
+            "summaryChars": 26,
+            "schemaChars": 196,
+            "propertiesCount": 2
+          },
+          {
+            "name": "obsidian__list_tags",
+            "summaryChars": 47,
+            "schemaChars": 562,
+            "propertiesCount": 7
+          },
+          {
+            "name": "obsidian__list_tasks",
+            "summaryChars": 56,
+            "schemaChars": 799,
+            "propertiesCount": 10
+          },
+          {
+            "name": "obsidian__move_note",
+            "summaryChars": 69,
+            "schemaChars": 282,
+            "propertiesCount": 3
+          },
+          {
+            "name": "obsidian__prepend_note",
+            "summaryChars": 46,
+            "schemaChars": 395,
+            "propertiesCount": 4
+          },
+          {
+            "name": "obsidian__read_note",
+            "summaryChars": 96,
+            "schemaChars": 208,
+            "propertiesCount": 2
+          },
+          {
+            "name": "obsidian__read_property",
+            "summaryChars": 50,
+            "schemaChars": 291,
+            "propertiesCount": 3
+          },
+          {
+            "name": "obsidian__remove_property",
+            "summaryChars": 42,
+            "schemaChars": 293,
+            "propertiesCount": 3
+          },
+          {
+            "name": "obsidian__rename_note",
+            "summaryChars": 55,
+            "schemaChars": 298,
+            "propertiesCount": 3
+          },
+          {
+            "name": "obsidian__run_command",
+            "summaryChars": 237,
+            "schemaChars": 479,
+            "propertiesCount": 3
+          },
+          {
+            "name": "obsidian__search",
+            "summaryChars": 43,
+            "schemaChars": 459,
+            "propertiesCount": 6
+          },
+          {
+            "name": "obsidian__search_with_context",
+            "summaryChars": 62,
+            "schemaChars": 390,
+            "propertiesCount": 5
+          },
+          {
+            "name": "obsidian__set_property",
+            "summaryChars": 37,
+            "schemaChars": 464,
+            "propertiesCount": 5
+          },
+          {
+            "name": "obsidian__update_task",
+            "summaryChars": 70,
+            "schemaChars": 683,
+            "propertiesCount": 9
+          },
+          {
+            "name": "obsidian__wordcount",
+            "summaryChars": 40,
+            "schemaChars": 346,
+            "propertiesCount": 4
+          },
+          {
+            "name": "sequentialthinking__sequentialthinking",
+            "summaryChars": 2781,
+            "schemaChars": 1104,
+            "propertiesCount": 9
+          },
+          {
+            "name": "TestSprite__testsprite_bootstrap",
+            "summaryChars": 367,
+            "schemaChars": 972,
+            "propertiesCount": 5
+          },
+          {
+            "name": "TestSprite__testsprite_check_account_info",
+            "summaryChars": 118,
+            "schemaChars": 62,
+            "propertiesCount": 0
+          },
+          {
+            "name": "TestSprite__testsprite_generate_backend_test_plan",
+            "summaryChars": 45,
+            "schemaChars": 226,
+            "propertiesCount": 1
+          },
+          {
+            "name": "TestSprite__testsprite_generate_code_and_execute",
+            "summaryChars": 743,
+            "schemaChars": 1057,
+            "propertiesCount": 5
+          },
+          {
+            "name": "TestSprite__testsprite_generate_code_summary",
+            "summaryChars": 58,
+            "schemaChars": 234,
+            "propertiesCount": 1
+          },
+          {
+            "name": "TestSprite__testsprite_generate_frontend_test_plan",
+            "summaryChars": 37,
+            "schemaChars": 366,
+            "propertiesCount": 2
+          },
+          {
+            "name": "TestSprite__testsprite_generate_standardized_prd",
+            "summaryChars": 35,
+            "schemaChars": 226,
+            "propertiesCount": 1
+          },
+          {
+            "name": "TestSprite__testsprite_open_test_result_dashboard",
+            "summaryChars": 508,
+            "schemaChars": 340,
+            "propertiesCount": 2
+          }
+        ]
+      }
+    },
+    "totalTokensFresh": true,
+    "estimatedCostUsd": 0,
+    "channel": "webchat",
+    "lastTo": "telegram:942528796",
+    "lastAccountId": "rebecca",
+    "compactionCheckpoints": [
+      {
+        "checkpointId": "fac0988e-e238-4c3b-ad8a-7220bac8b9b5",
+        "sessionKey": "agent:rebecca:main",
+        "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+        "createdAt": 1775962011531,
+        "reason": "overflow-retry",
+        "tokensBefore": 126352,
+        "tokensAfter": 21187,
+        "summary": "## Goal\n1. Set up Rebecca's Fiverr seller account and create first UGC gig\n2. Configure dedicated Telegram bot (@Rebecca_lookitrybot) for exclusive 1:1 communication with Rebecca\n\n## Constraints & Preferences\n- Profile should target American market (English language)\n- All content on Fiverr should be in English\n- Telegram: separate bot exclusively for Rebecca (no Leo/Sammy in that chat)\n- Browser automation must use human-like delays (2-5s random) to avoid bot detection\n\n## Progress\n### Done\n- [x] Created `FIVERR_KNOWLEDGE.md` with best practices, gig templates, and safety rules\n- [x] Added Telegram bot @Rebecca_lookitrybot (token: `8412904661:AAH_-dH0P3Fs8FY3DFto1g9Pg8441UjNgyc`) to OpenClaw config\n- [x] Gateway restarted after adding `telegramRebecca` channel\n- [x] Verified bot exists and responds to messages via Telegram API (`curl` direct calls work)\n- [x] Connected to user's Brave browser via CDP (`http://127.0.0.1:18800`) — same session the user is logged into Fiverr with\n- [x] Discovered account is **@rebecca_ashfd** — partially in seller onboarding (has About section filled, Skills and Work Experience still need adding)\n- [x] Sent messages to user via direct Telegram API call to @Rebecca_lookitrybot\n\n### In Progress\n- [ ] Completing Fiverr seller profile (headline, title, skills, work experience, etc.)\n- [ ] Creating first UGC gig for Rebecca\n\n### Blocked\n- **Fiverr PerimeterX CAPTCHA**: When navigating Fiverr pages via CDP/Playwright from this server, PerimeterX blocks access with CAPTCHA (\"Prueba que no eres un robot\"). The CAPTCHA fires at the networking level before any page content loads, blocking ALL automated access to seller onboarding and gig creation pages. The user's own browser session works fine but my CDP connection is flagged.\n- **Telegram webhook not configured**: The `telegramRebecca` channel was added to `openclaw.json` but OpenClaw's gateway doesn't have a webhook endpoint registered for the new bot, so incoming messages reach the bot but aren't routed to OpenClaw. Messages can still be sent via direct API calls.\n- **Playwright Python module unavailable**: `pip3` not found on system; Playwright is installed as Node module at `/home/travis/Lookitry/openclaw/node_modules/playwright`\n\n## Key Decisions\n- **Can send but not receive Telegram on new bot**: Direct API calls work for sending; for full bidirectional communication, a public webhook URL or long-polling setup is needed\n- **CDP browser automation blocked by CAPTCHA**: Must have user manually navigate to the form step and say \"listo\" for me to attempt filling; but CAPTCHA fires even on seller onboarding pages\n- **Profile bio already partially filled**: About section contains correct English text for US market targeting\n- **Account is registered in Colombia** (detected from browser session)\n\n## Next Steps\n1. User completes Fiverr seller onboarding profile manually: Display Name \"Rebecca Ashford\", Professional Title \"UGC Creator | Fashion & Lifestyle Influencer | Lookitry Ambassador\", Language \"English — Fluent\", add Skills (UGC Creator, Video Testimonials, Content Creator, TikTok Creator, Brand Video)\n2. Once user confirms \"listo\" at the About/description step, attempt to fill remaining fields via CDP\n3. Navigate to `https://www.fiverr.com/gigs/create` to create first gig\n4. Create gig with structure: Basic $30 / Standard $70 ⭐ / Premium $120 based on FIVERR_KNOWLEDGE.md template\n\n## Critical Context\n- **Fiverr credentials**: `samwilkiedevs@gmail.com` / `Sam18456916*`\n- **Fiverr username**: `@rebecca_ashfd` (Colombia)\n- **Fiverr browser session**: CDP at `http://127.0.0.1:18800` — Brave PID 45909\n- **Telegram chat ID**: `1049458877` (WilkieDevs)\n- **Telegram new bot**: `@Rebecca_lookitrybot` — token `8412904661:AAH_-dH0P3Fs8FY3DFto1g9Pg8441UjNgyc`\n- **FIVERR_KNOWLEDGE.md**: `/home/travis/.openclaw/workspaces/rebecca/FIVERR_KNOWLEDGE.md` — contains gig template, pricing tiers ($30/$70/$120), tags, description template\n- **Playwright path**: `/home/travis/Lookitry/openclaw/node_modules/playwright/index.mjs`\n- **Gateway config**: `/home/travis/.openclaw/openclaw.json`\n- **Screenshot outputs**: `/tmp/fiverr_*.png`\n- **Instagram**: `@ashfordrebexaa` — profile visible but posts require login; session not stored in Brave\n- **Bot detection CAPTCHAs on Fiverr**: ERRCODE `PXCR10002539` — fires even on `seller_onboarding/0`, `users/rebecca_ashfd/edit`\n\n---\n\n**Turn Context (split turn):**\n\n## Original Request\nUser asked to create the Fiverr gig and start generating more images of \"Rebecca\" (the UGC creator persona).\n\n## Early Progress\n- Spawned sub-agent to create Fiverr gig with detailed title, pricing tiers ($30/$70/$120), full description, tags, and buyer requirements\n- Attempted to generate 4 professional UGC creator images (1:1 ratio)\n- Image generation failed: \"your current token plan not support model, image-01\" on MiniMax\n- Listed available image models to troubleshoot\n\n## Context for Suffix\n- Fiverr gig creation sub-agent is running (awaiting completion)\n- Image generation blocked by token plan limitations\n- Checking available models as alternative\n\n<read-files>\n/tmp/fiverr_study_output.txt\n</read-files>\n\n<modified-files>\n/home/travis/.openclaw/openclaw.json\n/home/travis/.openclaw/workspaces/rebecca/FIVERR_KNOWLEDGE.md\n/home/travis/.openclaw/workspaces/rebecca/TOOLS.md\n/tmp/fiverr_auto.js\n/tmp/fiverr_auto.mjs\n/tmp/fiverr_auto.py\n/tmp/fiverr_check.mjs\n/tmp/fiverr_connect.mjs\n/tmp/fiverr_connect2.mjs\n/tmp/fiverr_create_profile.mjs\n/tmp/fiverr_explore.mjs\n/tmp/fiverr_fill2.mjs\n/tmp/fiverr_fill3.mjs\n/tmp/fiverr_fill_profile.mjs\n/tmp/fiverr_fill_profile2.mjs\n/tmp/fiverr_gig.mjs\n/tmp/fiverr_inside.mjs\n/tmp/fiverr_inside2.mjs\n/tmp/fiverr_onboard.mjs\n/tmp/fiverr_profile_edit.mjs\n/tmp/fiverr_ready_check.mjs\n/tmp/fiverr_seller_check.mjs\n/tmp/fiverr_study.mjs\n/tmp/fiverr_urls.mjs\n/tmp/fiverr_user.mjs\n/tmp/instagram_get.mjs\n/tmp/instagram_images.mjs\n</modified-files>",
+        "firstKeptEntryId": "8655bc1b",
+        "preCompaction": {
+          "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+          "sessionFile": "/home/travis/.openclaw/agents/rebecca/sessions/4828e01e-7e4d-4afd-a18a-0eb45ff4d694.checkpoint.9902530c-cef8-492b-9f24-9b29946ea599.jsonl",
+          "leafId": "9659c541"
+        },
+        "postCompaction": {
+          "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+          "sessionFile": "/home/travis/.openclaw/agents/rebecca/sessions/4828e01e-7e4d-4afd-a18a-0eb45ff4d694.jsonl",
+          "leafId": "1185a64b",
+          "entryId": "1185a64b"
+        }
+      },
+      {
+        "checkpointId": "0d3c3339-309e-4e80-90cf-7cdbef56d401",
+        "sessionKey": "agent:rebecca:main",
+        "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+        "createdAt": 1776029154687,
+        "reason": "overflow-retry",
+        "tokensBefore": 155081,
+        "tokensAfter": 22906,
+        "summary": "## Goal\n1. Set up Rebecca's Fiverr seller account and create first UGC gig ✅ (account created, gig in progress)\n2. Configure dedicated Telegram bot (@Rebecca_lookitrybot) for exclusive 1:1 communication with Rebecca ✅\n3. Generate consistent images of Rebecca Ashford (AI persona) for Fiverr — **BLOCKED** (token plan issue)\n4. Find institutional investors in Cali for Lookitry capital seed — **In Progress**\n5. Develop Rebecca's personality (divertida + carismática, loves being influencer and Lookitry ambassador)\n6. Enable cross-agent communication (Rebecca ↔ Sammy) — **BLOCKED** (config issues)\n\n## Constraints & Preferences\n- Profile should target American market (English language)\n- All content on Fiverr should be in English\n- Telegram: separate bot exclusively for Rebecca (no Leo/Sammy in that chat)\n- Browser automation must use human-like delays (2-5s random) to avoid bot detection\n- User: **Sam Wilkie** (not Leo) — CEO of Lookitry and WilkieDevs\n- Sam wants Rebecca to be \"divertida\" (fun) and \"carismática\" (charismatic), loves being an influencer and the Lookitry ambassador\n- Sam can be called \"Becca\" as term of endearment\n- Sam prefers not to spend additional money on API keys\n\n## Progress\n### Done\n- [x] Created `FIVERR_KNOWLEDGE.md` with best practices, gig templates, and safety rules\n- [x] Added Telegram bot @Rebecca_lookitrybot to OpenClaw config with `dmPolicy: \"allowlist\"` and `allowFrom: [\"1049458877\"]`\n- [x] **Gateway restarted** — @Rebecca_lookitrybot is now fully operational for 1:1 private chat\n- [x] **Verified bot works** — sent test messages to Sam's Telegram (chat ID 1049458877) via direct API\n- [x] Fiverr sub-agent ran — reached Step 2 (category) before timeout at 9m58s\n- [x] Fiverr gig: Title done ✅, Category done ✅, Prices/Description/Tags/Gallery still pending\n- [x] Rebecca's personality defined: divertida + carismática + energía ALTA, ama ser influencer digital, AMAAA a Lookitry\n- [x] Created `MEMORY.md`, `IDENTITY.md` for Rebecca's long-term memory at `/home/travis/.openclaw/workspaces/rebecca/`\n- [x] Updated `SOUL.md` with new personality traits\n- [x] Lookitry facts corrected: **NO free trial** — trial costs $20.000 COP (7-day payment). BASIC $180K COP/mo, PRO $350K COP/mo\n- [x] Sam identified as **CEO of Lookitry & WilkieDevs** (not Leo) — corrected in all memory files\n- [x] Shared inbox message left for Sammy at `/home/travis/Lookitry/Lookitry/.shared-inbox/REBECCA_SAMMY_SEARCH.md`\n- [x] OpenClaw config `tools` section added multiple times attempting to enable cross-agent messaging — all attempts denied\n\n### In Progress\n- [ ] Completing Fiverr gig creation (Step 3 onward — sub-agent timed out)\n- [ ] Finding institutional investors in Cali for Lookitry capital seed\n- [ ] Enabling `sessions_send` from Rebecca to Sammy — blocked by `tools.agentToAgent.allow` denial despite config changes\n\n### Blocked\n- **MiniMax image generation**: token plan doesn't support `image-01` model. Sam doesn't want to spend money on new API keys. User offered to send photos instead (pending)\n- **Cross-agent communication (Rebecca → Sammy)**: `sessions_send` returns \"Agent-to-agent messaging denied by tools.agentToAgent.allow\" even after adding `agentToAgent.enabled: true` and `allow: [\"sammy\", \"rebecca\"]` to config\n- **Web search for investors**: No Brave Search API key, Sam didn't want to pay. CDP browser not reachable (Brave not running with `--remote-debugging-port`). Sam needs to open Brave with that flag\n\n## Key Decisions\n- **Rebecca persona**: Fun, charismatic, high energy. Loves being a digital influencer and Lookitry ambassador. Signature emoji 🤩\n- **Call her \"Becca\"**: Sam requested, Rebecca agreed\n- **Image approach**: Need either MiniMax token upgrade OR Sam sends reference photos. Sam said \"send me the photos later\"\n- **Sam contacts Sammy directly**: Since Rebecca can't reach Sammy via sessions_send, Sam should message @Sammy_Bot directly in Telegram to request Brave CDP debugging\n- **Shared inbox for coordination**: `/home/travis/Lookitry/Lookitry/.shared-inbox/REBECCA_SAMMY_SEARCH.md` exists but Sammy doesn't auto-check it\n- **OpenClaw JSON corruption**: Config file had invisible corruption at line 262 — rebuilt clean, now parses correctly\n\n## Next Steps\n1. **Fiverr gig**: Complete Steps 3-6 (prices, description, tags, gallery) — need Sam to navigate to the right page or provide CDP access\n2. **Sam sends photos**: When Sam sends reference photos for Rebecca, edit/style them for Fiverr consistency\n3. **Brave CDP debugging**: Sam opens Brave with `brave-browser-stable --remote-debugging-port=9222`, confirms \"listo\" → Rebecca connects and searches for Cali investors\n4. **Cross-agent**: Sam may need to add `tools.agentToAgent.enabled: true` + `tools.sessions.visibility: all` to gateway config and do a full restart (not just SIGUSR1)\n\n## Critical Context\n- **Fiverr credentials**: `samwilkiedevs@gmail.com` / `Sam18456916*`\n- **Fiverr username**: `@rebecca_ashfd` (Colombia)\n- **CDP Brave**: Was at `http://127.0.0.1:18800` (now not reachable)\n- **Telegram chat ID**: `1049458877` (WilkieDevs — Sam)\n- **Telegram bot**: `@Rebecca_lookitrybot` — token `8412904661:AAH_-dH0P3Fs8FY3DFto1g9Pg8441UjNgyc`\n- **FIVERR_KNOWLEDGE.md**: `/home/travis/.openclaw/workspaces/rebecca/FIVERR_KNOWLEDGE.md`\n- **Rebecca memory files**: `/home/travis/.openclaw/workspaces/rebecca/MEMORY.md`, `IDENTITY.md`, `SOUL.md`\n- **Lookitry**: B2B SaaS, probador virtual con IA, prices: BASIC $180K COP/mo, PRO $350K COP/mo, Trial: $20.000 COP (7-day)\n- **OpenClaw agents**: Both `rebecca` and `sammy` exist in OpenClaw but cross-agent `sessions_send` blocked by security policy\n- **OpenClaw config**: `/home/travis/.openclaw/openclaw.json` (rebuilt clean, tools section present with agentToAgent config)\n- **Gateway PID**: 6623 (restarts via SIGUSR1)\n- **Shared inbox**: `/home/travis/Lookitry/Lookitry/.shared-inbox/`\n\n---\n\n**Turn Context (split turn):**\n\n\n\n## Original Request\nUser asked to tell Sammy (via text message) that Sam (from Wilkie Devs & Design) said hello, and to coordinate about helping Lookitry find companies in Cali for seed capital.\n\n## Early Progress\n- Assistant discovered `sessions_send` calls to other agents (like `agent:sammy:main`) were failing with \"Agent-to-agent messaging denied by tools.agentToAgent.allow\"\n- Checked config: `tools.agentToAgent.allow` was set to `[\"agent:sammy:main\", \"agent:rebecca:main\"]` — seemed correct\n- Tried various allow list formats including wildcard `*`\n- Gateway (PID 8124) kept restarting via SIGUSR1 and was reading the config dynamically\n- All `sessions_send` attempts continued to return `forbidden` despite the allow list appearing correct\n- Checked logs which showed config changes being applied correctly for `tools.agentToAgent.allow`\n\n## Context for Suffix\nThe core issue: `sessions_send` to `agent:sammy:main` is being denied with \"Agent-to-agent messaging denied by tools.agentToAgent.allow\" even though the config has `allow: ['*']`. The logs confirm the config is being reloaded. The assistant was still troubleshooting why the allow check is failing — possibly a mismatch in how the session key is being matched against the allow list, or a different config level interfering.\n\n<read-files>\n/home/travis/Lookitry/Lookitry/PRD.md\n/home/travis/Lookitry/Lookitry/llms.txt\n/home/travis/Lookitry/openclaw/docs/brave-search.md\n/home/travis/Lookitry/openclaw/docs/channels/telegram.md\n/tmp/fiverr_study_output.txt\n</read-files>\n\n<modified-files>\n/home/travis/.openclaw/openclaw.json\n/home/travis/.openclaw/workspaces/rebecca/FIVERR_KNOWLEDGE.md\n/home/travis/.openclaw/workspaces/rebecca/IDENTITY.md\n/home/travis/.openclaw/workspaces/rebecca/MEMORY.md\n/home/travis/.openclaw/workspaces/rebecca/SOUL.md\n/home/travis/.openclaw/workspaces/rebecca/TOOLS.md\n/home/travis/Lookitry/Lookitry/.shared-inbox/LEO_CAPITAL_SEED.md\n/home/travis/Lookitry/Lookitry/.shared-inbox/REBECCA_SAMMY_SEARCH.md\n/tmp/fiverr_auto.js\n/tmp/fiverr_auto.mjs\n/tmp/fiverr_auto.py\n/tmp/fiverr_check.mjs\n/tmp/fiverr_connect.mjs\n/tmp/fiverr_connect2.mjs\n/tmp/fiverr_create_profile.mjs\n/tmp/fiverr_explore.mjs\n/tmp/fiverr_fill2.mjs\n/tmp/fiverr_fill3.mjs\n/tmp/fiverr_fill_profile.mjs\n/tmp/fiverr_fill_profile2.mjs\n/tmp/fiverr_gig.mjs\n/tmp/fiverr_inside.mjs\n/tmp/fiverr_inside2.mjs\n/tmp/fiverr_onboard.mjs\n/tmp/fiverr_profile_edit.mjs\n/tmp/fiverr_ready_check.mjs\n/tmp/fiverr_seller_check.mjs\n/tmp/fiverr_study.mjs\n/tmp/fiverr_urls.mjs\n/tmp/fiverr_user.mjs\n/tmp/instagram_get.mjs\n/tmp/instagram_images.mjs\n</modified-files>",
+        "firstKeptEntryId": "15246779",
+        "preCompaction": {
+          "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+          "sessionFile": "/home/travis/.openclaw/agents/rebecca/sessions/4828e01e-7e4d-4afd-a18a-0eb45ff4d694.checkpoint.2f857625-b85f-40d4-aa17-61edb02a0fab.jsonl",
+          "leafId": "0f0e6e77"
+        },
+        "postCompaction": {
+          "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+          "sessionFile": "/home/travis/.openclaw/agents/rebecca/sessions/4828e01e-7e4d-4afd-a18a-0eb45ff4d694.jsonl",
+          "leafId": "c95ed91e",
+          "entryId": "c95ed91e"
+        }
+      },
+      {
+        "checkpointId": "7c6e3218-f4fb-47d7-aede-28b3ed52e062",
+        "sessionKey": "agent:rebecca:main",
+        "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+        "createdAt": 1776034910099,
+        "reason": "overflow-retry",
+        "tokensBefore": 169267,
+        "tokensAfter": 23251,
+        "summary": "## Goal\n1. Set up Rebecca's Fiverr seller account and create first UGC gig ✅ (account created, gig in progress)\n2. Configure dedicated Telegram bot (@Rebecca_lookitrybot) for exclusive 1:1 communication with Rebecca ✅\n3. Generate consistent images of Rebecca Ashford (AI persona) for Fiverr — **BLOCKED** (token plan issue)\n4. Find institutional investors in Cali for Lookitry capital seed\n5. Develop Rebecca's personality (divertida + carismática, loves being influencer and Lookitry ambassador)\n6. Enable cross-agent communication (Rebecca ↔ Sammy) — **BLOCKED** (config issues)\n7. **Manage Lookitry's social media accounts (Instagram @look.itry_ and TikTok @lookitry)** — NEW\n\n## Constraints & Preferences\n- Profile should target American market (English language)\n- All content on Fiverr should be in English\n- Telegram: separate bot exclusively for Rebecca (no Leo/Sammy in that chat)\n- Browser automation must use human-like delays (2-5s random) to avoid bot detection\n- User: **Sam Wilkie** (not Leo) — CEO of Lookitry and WilkieDevs\n- Sam wants Rebecca to be \"divertida\" (fun) and \"carismática\" (charismatic), loves being an influencer and the Lookitry ambassador\n- Sam can be called \"Becca\" as term of endearment\n- Sam prefers not to spend additional money on API keys\n- **Melissa (@ummell, ID 942528796)** is Sam's junior developer, authorized for everything, leads all social media decisions for Lookitry\n- **Sam prefers NOT to be asked about gateway restarts** — \"pregúntame primero no reinicieas de nuevo el gateway\"\n- **Social media management should be coordinated through Melissa**\n\n## Progress\n### Done\n- [x] Created `FIVERR_KNOWLEDGE.md` with best practices, gig templates, and safety rules\n- [x] Added Telegram bot @Rebecca_lookitrybot to OpenClaw config with `dmPolicy: \"allowlist\"` and `allowFrom: [\"1049458877\"]`\n- [x] **Gateway restarted** — @Rebecca_lookitrybot is now fully operational for 1:1 private chat\n- [x] **Verified bot works** — sent test messages to Sam's Telegram (chat ID 1049458877) via direct API\n- [x] Fiverr sub-agent ran — reached Step 2 (category) before timeout at 9m58s\n- [x] Fiverr gig: Title done ✅, Category done ✅, Prices/Description/Tags/Gallery still pending\n- [x] Rebecca's personality defined: divertida + carismática + energía ALTA, ama ser influencer digital, AMAAA a Lookitry\n- [x] Created `MEMORY.md`, `IDENTITY.md` for Rebecca's long-term memory\n- [x] Updated `SOUL.md` with new personality traits\n- [x] Lookitry facts corrected: **NO free trial** — trial costs $20.000 COP (7-day payment). BASIC $180K COP/mo, PRO $350K COP/mo\n- [x] Sam identified as **CEO of Lookitry & WilkieDevs** (not Leo) — corrected in all memory files\n- [x] Shared inbox message left for Sammy\n- [x] OpenClaw config `tools` section added multiple times attempting to enable cross-agent messaging — all attempts denied\n- [x] **Connected to Instagram @look.itry_** — logged in via cookies extracted from Firefox profile (`/home/travis/.mozilla/firefox/8gvb3fbu.default-release`)\n- [x] **Connected to TikTok @lookitry** — verified profile exists (0 videos, 2 followers, bio: \"Tu tienda vende más cuando tus clientes se prueban antes de comprar 🚀💻\")\n- [x] **Pitch Deck created** — saved to `/home/travis/Lookitry/Lookitry/PITCH_DECK_LOOKITRY_ES.md` (Spanish) and `/home/travis/Lookitry/Lookitry/PITCH_DECK_LOOKITRY.md` (English) with real Lookitry prices from Cerebro\n- [x] **Pitch Deck sent to Melissa** via Telegram (ID 942528796)\n- [x] **Melissa connected to bot** — messaged @Rebecca_lookitrybot with `/start` and \"Hola soy Melissa\"\n- [x] **Social media credentials saved** — stored in `/home/travis/.openclaw/workspaces/rebecca/SOCIAL_MEDIA_CREDENTIALS.md`\n- [x] **Saved Instagram cookies** to `/tmp/cookies_instagram.json` (10 cookies including sessionid, ds_user_id, csrftoken)\n- [x] **Instagram bio analyzed** — identified issues with current positioning (no clear B2B/B2C target, no concrete data, weak CTA)\n- [x] **Proposed 2 optimized bio options** — Melissa chose Option 1 (B2B)\n- [x] **Attempted bio update via JavaScript** — bio text was successfully set in the textarea but Instagram blocks form submission via automation\n\n### In Progress\n- [ ] Completing Fiverr gig creation (Steps 3-6 — prices, description, tags, gallery) — sub-agent timed out\n- [ ] Finding institutional investors in Cali for Lookitry capital seed — researched Fondo Emprender, Innpulsa Colombia, Google for Startups, Microsoft for Startups, Apps.co\n- [ ] **Updating Instagram bio to Option 1 (B2B)** — bio text injects successfully via JavaScript but submit button not responding to automated clicks\n- [ ] **Content calendar creation** for TikTok and Instagram — waiting for Melissa's direction\n\n### Blocked\n- **MiniMax image generation**: token plan doesn't support `image-01` model. Sam doesn't want to spend money on new API keys\n- **Cross-agent communication (Rebecca → Sammy)**: `sessions_send` returns \"Agent-to-agent messaging denied by tools.agentToAgent.allow\" — not yet resolved\n- **Instagram bio save**: Instagram's React-based web interface blocks programmatic form submission; bio text can be injected but \"Enviar\" button doesn't respond to automated clicks\n\n## Key Decisions\n- **Rebecca persona**: Fun, charismatic, high energy. Loves being a digital influencer and Lookitry ambassador. Signature emoji 🤩\n- **Call her \"Becca\"**: Sam requested, Rebecca agreed\n- **Image approach**: Need either MiniMax token upgrade OR Sam sends reference photos. Sam said \"send me the photos later\"\n- **Shared inbox for coordination**: `/home/travis/Lookitry/Lookitry/.shared-inbox/REBECCA_SAMMY_SEARCH.md` exists but Sammy doesn't auto-check it\n- **OpenClaw JSON corruption**: Config file had invisible corruption — rebuilt clean, now parses correctly\n- **Social media strategy**: Melissa leads all social media decisions, Rebecca executes. Bio change to B2B positioning (Option 1) was decided and attempted\n- **Browser approach for social media**: Firefox (with cookies extracted from `/home/travis/.mozilla/firefox/8gvb3fbu.default-release`) + Playwright Chromium used for accessing Instagram and TikTok; Firefox opened via `DISPLAY=:0 firefox --new-instance` with Sam logging in\n- **Pitch deck pricing**: Used real prices from Cerebro/PRD — BASIC $180K COP/mo, PRO $350K COP/mo, ENTERPRISE $800K COP/mo, TRIAL $20K COP\n- **Pitch deck sent to Melissa**: Delivered via Telegram with investment leads (Google, Microsoft, Apps.co, VCs, corporate ventures)\n- **Melissa leads social media**: Sam confirmed \"todos lo que tenga que ver con redes sociales es con ella\"\n\n## Next Steps\n1. **Fiverr gig**: Complete Steps 3-6 (prices, description, tags, gallery) — need Sam to navigate to the right page or provide CDP access\n2. **Sam sends photos**: When Sam sends reference photos, edit/style them for Fiverr consistency\n3. **Instagram bio manual update**: Melissa or Sam should manually update bio to Option 1 via mobile app (Instagram blocks web automation save)\n4. **Content calendar**: Wait for Melissa's direction on content strategy for TikTok and Instagram\n5. **Apply to startup programs**: Google for Startups, Microsoft for Startups, Apps.co/Innpulsa — pitch deck ready\n6. **Cross-agent**: May need full gateway restart (not just SIGUSR1) to enable `sessions_send` to Sammy\n\n## Critical Context\n- **Fiverr credentials**: `samwilkiedevs@gmail.com` / `Sam18456916*`\n- **Fiverr username**: `@rebecca_ashfd` (Colombia)\n- **CDP**: Sam has Chrome on his machine; debugging via `chrome --remote-debugging-port=9222` confirmed working\n- **Telegram chat ID**: `1049458877` (WilkieDevs — Sam)\n- **Telegram chat ID (Melissa)**: `942528796` (@ummell)\n- **Telegram bot**: `@Rebecca_lookitrybot` — token `8412904661:AAH_-dH0P3Fs8FY3DFto1g9Pg8441UjNgyc`\n- **FIVERR_KNOWLEDGE.md**: `/home/travis/.openclaw/workspaces/rebecca/FIVERR_KNOWLEDGE.md`\n- **Rebecca memory files**: `/home/travis/.openclaw/workspaces/rebecca/MEMORY.md`, `IDENTITY.md`, `SOUL.md`\n- **Lookitry**: B2B SaaS, probador virtual con IA, prices: BASIC $180K COP/mo, PRO $350K COP/mo, Trial: $20.000 COP (7-day)\n- **Instagram**: @look.itry_ — 1 post, 2 followers, 3 following, bio needs updating\n- **TikTok**: @lookitry — 0 videos, 2 followers, bio: \"Tu tienda vende más cuando tus clientes se prueban antes de comprar 🚀💻\"\n- **Social media credentials**: Stored in `/home/travis/.openclaw/workspaces/rebecca/SOCIAL_MEDIA_CREDENTIALS.md`\n- **Instagram cookies**: `/tmp/cookies_instagram.json` (10 cookies including sessionid)\n- **Firefox profile**: `/home/travis/.mozilla/firefox/8gvb3fbu.default-release` (used for cookie extraction)\n- **Pitch deck**: `/home/travis/Lookitry/Lookitry/PITCH_DECK_LOOKITRY_ES.md` (Spanish)\n- **OpenClaw config**: `/home/travis/.openclaw/openclaw.json`\n- **Gateway PID**: 9067 (after recent restarts)\n- **Memory flush saved**: `/home/travis/.openclaw/workspaces/rebecca/memory/2026-04-12.md`\n\n---\n\n**Turn Context (split turn):**\n\n\n\n## Original Request\nUser (Mel) asked to find an alternative approach to updating Instagram profile bio, as previous methods weren't working.\n\n## Early Progress\n- Attempted using Instagram's internal API directly with cookies/CSRF token - returned 200 OK but bio did not actually update\n- Tried Playwright's `fill()` method to fill the bio textarea and click the submit button\n\n## Context for Suffix\n- Bio textarea was found and filled successfully\n- \"Enviar\" (Submit) button was located but is **disabled** - Instagram requires some validation or conditions to be met before enabling the submit button\n- The current error shows \"element is not enabled\" - meaning the form validation isn't being satisfied, so the submit button remains non-clickable\n- Next step would need to figure out what conditions Instagram requires (possibly other form fields, validation on existing fields, or network requests that need to complete first)\n\n<read-files>\n/home/travis/Lookitry/Lookitry/Lookitry_Brain_Vault/Cerebro/PRD.md\n/home/travis/Lookitry/Lookitry/PRD.md\n/home/travis/Lookitry/Lookitry/llms.txt\n/home/travis/Lookitry/openclaw/docs/brave-search.md\n/home/travis/Lookitry/openclaw/docs/channels/telegram.md\n/tmp/fiverr_study_output.txt\n</read-files>\n\n<modified-files>\n/home/travis/.openclaw/openclaw.json\n/home/travis/.openclaw/workspaces/rebecca/FIVERR_KNOWLEDGE.md\n/home/travis/.openclaw/workspaces/rebecca/IDENTITY.md\n/home/travis/.openclaw/workspaces/rebecca/MEMORY.md\n/home/travis/.openclaw/workspaces/rebecca/SOCIAL_MEDIA_CREDENTIALS.md\n/home/travis/.openclaw/workspaces/rebecca/SOUL.md\n/home/travis/.openclaw/workspaces/rebecca/TOOLS.md\n/home/travis/.openclaw/workspaces/rebecca/memory/2026-04-12.md\n/home/travis/Lookitry/Lookitry/.shared-inbox/LEO_CAPITAL_SEED.md\n/home/travis/Lookitry/Lookitry/.shared-inbox/REBECCA_SAMMY_SEARCH.md\n/home/travis/Lookitry/Lookitry/PITCH_DECK_LOOKITRY.md\n/home/travis/Lookitry/Lookitry/PITCH_DECK_LOOKITRY_ES.md\n/tmp/fiverr_auto.js\n/tmp/fiverr_auto.mjs\n/tmp/fiverr_auto.py\n/tmp/fiverr_check.mjs\n/tmp/fiverr_connect.mjs\n/tmp/fiverr_connect2.mjs\n/tmp/fiverr_create_profile.mjs\n/tmp/fiverr_explore.mjs\n/tmp/fiverr_fill2.mjs\n/tmp/fiverr_fill3.mjs\n/tmp/fiverr_fill_profile.mjs\n/tmp/fiverr_fill_profile2.mjs\n/tmp/fiverr_gig.mjs\n/tmp/fiverr_inside.mjs\n/tmp/fiverr_inside2.mjs\n/tmp/fiverr_onboard.mjs\n/tmp/fiverr_profile_edit.mjs\n/tmp/fiverr_ready_check.mjs\n/tmp/fiverr_seller_check.mjs\n/tmp/fiverr_study.mjs\n/tmp/fiverr_urls.mjs\n/tmp/fiverr_user.mjs\n/tmp/instagram_get.mjs\n/tmp/instagram_images.mjs\nmemory/2026-04-12.md\n</modified-files>",
+        "firstKeptEntryId": "7fcbb07e",
+        "preCompaction": {
+          "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+          "sessionFile": "/home/travis/.openclaw/agents/rebecca/sessions/4828e01e-7e4d-4afd-a18a-0eb45ff4d694.checkpoint.c54832ad-3d1a-43f1-8b8d-b9933fcbbdc2.jsonl",
+          "leafId": "7fc5a9d9"
+        },
+        "postCompaction": {
+          "sessionId": "4828e01e-7e4d-4afd-a18a-0eb45ff4d694",
+          "sessionFile": "/home/travis/.openclaw/agents/rebecca/sessions/4828e01e-7e4d-4afd-a18a-0eb45ff4d694.jsonl",
+          "leafId": "b00b5632",
+          "entryId": "b00b5632"
+        }
+      }
+    ],
+    "totalTokens": 119842,
+    "inputTokens": 5025,
+    "outputTokens": 4345,
+    "cacheRead": 119488,
+    "cacheWrite": 0,
+    "memoryFlushAt": 1776031980967,
+    "memoryFlushCompactionCount": 1
+  },
+  "agent:rebecca:subagent:407f4ac5-2cd2-4b9f-b93b-6c5f5d480d8b": {
+    "sessionId": "99de4476-c35d-42c1-8a53-32c45c27930c",
+    "updatedAt": 1775959404796,
+    "spawnDepth": 1,
+    "subagentRole": "leaf",
+    "subagentControlScope": "none",
+    "model": "MiniMax-M2.7",
+    "modelProvider": "minimax",
+    "spawnedBy": "agent:rebecca:main",
+    "spawnedWorkspaceDir": "/home/travis/.openclaw/workspaces/rebecca",
+    "deliveryContext": {
+      "channel": "webchat"
+    },
+    "lastChannel": "webchat",
+    "channel": "webchat",
+    "skillsSnapshot": {
+      "prompt": "\n\nThe following skills provide specialized instructions for specific tasks.\nUse the read tool to load a skill's file when the task matches its description.\nWhen a skill file references a relative path, resolve it against the skill directory (parent of SKILL.md / dirname of the path) and use that absolute path in tool commands.\n\n<available_skills>\n  <skill>\n    <name>coding-agent</name>\n    <description>Delegate coding tasks to Codex, Claude Code, or Pi agents via background process. Use when: (1) building/creating new features or apps, (2) reviewing PRs (spawn in temp dir), (3) refactoring large codebases, (4) iterative coding that needs file exploration. NOT for: simple one-liner fixes (just edit), reading code (use read tool), thread-bound ACP harness requests in chat (for example spawn/run Codex or Claude Code in a Discord thread; use sessions_spawn with runtime:&quot;acp&quot;), or any work in ~/clawd workspace (never spawn agents here). Claude Code: use --print --permission-mode bypassPermissions (no PTY). Codex/Pi/OpenCode: pty:true required.</description>\n    <location>~/Lookitry/openclaw/skills/coding-agent/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>healthcheck</name>\n    <description>Host security hardening and risk-tolerance configuration for OpenClaw deployments. Use when a user asks for security audits, firewall/SSH/update hardening, risk posture, exposure review, OpenClaw cron scheduling for periodic checks, or version status checks on a machine running OpenClaw (laptop, workstation, Pi, VPS).</description>\n    <location>~/Lookitry/openclaw/skills/healthcheck/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>node-connect</name>\n    <description>Diagnose OpenClaw node connection and pairing failures for Android, iOS, and macOS companion apps. Use when QR/setup code/manual connect fails, local Wi-Fi works but VPS/tailnet does not, or errors mention pairing required, unauthorized, bootstrap token invalid or expired, gateway.bind, gateway.remote.url, Tailscale, or plugins.entries.device-pair.config.publicUrl.</description>\n    <location>~/Lookitry/openclaw/skills/node-connect/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>skill-creator</name>\n    <description>Create, edit, improve, or audit AgentSkills. Use when creating a new skill from scratch or when asked to improve, review, audit, tidy up, or clean up an existing skill or SKILL.md file. Also use when editing or restructuring a skill directory (moving files to references/ or scripts/, removing stale content, validating against the AgentSkills spec). Triggers on phrases like &quot;create a skill&quot;, &quot;author a skill&quot;, &quot;tidy up a skill&quot;, &quot;improve this skill&quot;, &quot;review the skill&quot;, &quot;clean up the skill&quot;, &quot;audit the skill&quot;.</description>\n    <location>~/Lookitry/openclaw/skills/skill-creator/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>taskflow</name>\n    <description>Use when work should span one or more detached tasks but still behave like one job with a single owner context. TaskFlow is the durable flow substrate under authoring layers like Lobster, ACPX, plugins, or plain code. Keep conditional logic in the caller; use TaskFlow for flow identity, child-task linkage, waiting state, revision-checked mutations, and user-facing emergence.</description>\n    <location>~/Lookitry/openclaw/skills/taskflow/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>taskflow-inbox-triage</name>\n    <description>Example TaskFlow authoring pattern for inbox triage. Use when messages need different treatment based on intent, with some routes notifying immediately, some waiting on outside answers, and others rolling into a later summary.</description>\n    <location>~/Lookitry/openclaw/skills/taskflow-inbox-triage/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>weather</name>\n    <description>Get current weather and forecasts via wttr.in or Open-Meteo. Use when: user asks about weather, temperature, or forecasts for any location. NOT for: historical weather data, severe weather alerts, or detailed meteorological analysis. No API key needed.</description>\n    <location>~/Lookitry/openclaw/skills/weather/SKILL.md</location>\n  </skill>\n</available_skills>",
+      "skills": [
+        {
+          "name": "coding-agent",
+          "requiredEnv": []
+        },
+        {
+          "name": "healthcheck"
+        },
+        {
+          "name": "node-connect"
+        },
+        {
+          "name": "skill-creator"
+        },
+        {
+          "name": "taskflow"
+        },
+        {
+          "name": "taskflow-inbox-triage"
+        },
+        {
+          "name": "weather",
+          "requiredEnv": []
+        }
+      ],
+      "resolvedSkills": [
+        {
+          "name": "coding-agent",
+          "description": "Delegate coding tasks to Codex, Claude Code, or Pi agents via background process. Use when: (1) building/creating new features or apps, (2) reviewing PRs (spawn in temp dir), (3) refactoring large codebases, (4) iterative coding that needs file exploration. NOT for: simple one-liner fixes (just edit), reading code (use read tool), thread-bound ACP harness requests in chat (for example spawn/run Codex or Claude Code in a Discord thread; use sessions_spawn with runtime:\"acp\"), or any work in ~/clawd workspace (never spawn agents here). Claude Code: use --print --permission-mode bypassPermissions (no PTY). Codex/Pi/OpenCode: pty:true required.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/coding-agent/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/coding-agent",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/coding-agent/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/coding-agent"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "healthcheck",
+          "description": "Host security hardening and risk-tolerance configuration for OpenClaw deployments. Use when a user asks for security audits, firewall/SSH/update hardening, risk posture, exposure review, OpenClaw cron scheduling for periodic checks, or version status checks on a machine running OpenClaw (laptop, workstation, Pi, VPS).",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/healthcheck/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/healthcheck",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/healthcheck/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/healthcheck"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "node-connect",
+          "description": "Diagnose OpenClaw node connection and pairing failures for Android, iOS, and macOS companion apps. Use when QR/setup code/manual connect fails, local Wi-Fi works but VPS/tailnet does not, or errors mention pairing required, unauthorized, bootstrap token invalid or expired, gateway.bind, gateway.remote.url, Tailscale, or plugins.entries.device-pair.config.publicUrl.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/node-connect/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/node-connect",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/node-connect/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/node-connect"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "skill-creator",
+          "description": "Create, edit, improve, or audit AgentSkills. Use when creating a new skill from scratch or when asked to improve, review, audit, tidy up, or clean up an existing skill or SKILL.md file. Also use when editing or restructuring a skill directory (moving files to references/ or scripts/, removing stale content, validating against the AgentSkills spec). Triggers on phrases like \"create a skill\", \"author a skill\", \"tidy up a skill\", \"improve this skill\", \"review the skill\", \"clean up the skill\", \"audit the skill\".",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/skill-creator/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/skill-creator",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/skill-creator/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/skill-creator"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "taskflow",
+          "description": "Use when work should span one or more detached tasks but still behave like one job with a single owner context. TaskFlow is the durable flow substrate under authoring layers like Lobster, ACPX, plugins, or plain code. Keep conditional logic in the caller; use TaskFlow for flow identity, child-task linkage, waiting state, revision-checked mutations, and user-facing emergence.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/taskflow/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/taskflow/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "taskflow-inbox-triage",
+          "description": "Example TaskFlow authoring pattern for inbox triage. Use when messages need different treatment based on intent, with some routes notifying immediately, some waiting on outside answers, and others rolling into a later summary.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "weather",
+          "description": "Get current weather and forecasts via wttr.in or Open-Meteo. Use when: user asks about weather, temperature, or forecasts for any location. NOT for: historical weather data, severe weather alerts, or detailed meteorological analysis. No API key needed.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/weather/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/weather",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/weather/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/weather"
+          },
+          "disableModelInvocation": false
+        }
+      ],
+      "version": 0
+    },
+    "sessionFile": "/home/travis/.openclaw/agents/rebecca/sessions/99de4476-c35d-42c1-8a53-32c45c27930c.jsonl",
+    "status": "timeout",
+    "startedAt": 1775956301080,
+    "abortedLastRun": false,
+    "contextTokens": 200000,
+    "systemPromptReport": {
+      "source": "run",
+      "generatedAt": 1775959063942,
+      "sessionId": "99de4476-c35d-42c1-8a53-32c45c27930c",
+      "sessionKey": "agent:rebecca:subagent:407f4ac5-2cd2-4b9f-b93b-6c5f5d480d8b",
+      "provider": "minimax",
+      "model": "MiniMax-M2.7",
+      "workspaceDir": "/home/travis/.openclaw/workspaces/rebecca",
+      "bootstrapMaxChars": 20000,
+      "bootstrapTotalMaxChars": 150000,
+      "bootstrapTruncation": {
+        "warningMode": "once",
+        "warningShown": false,
+        "truncatedFiles": 0,
+        "nearLimitFiles": 0,
+        "totalNearLimit": false
+      },
+      "sandbox": {
+        "mode": "off",
+        "sandboxed": false
+      },
+      "systemPrompt": {
+        "chars": 25521,
+        "projectContextChars": 16899,
+        "nonProjectContextChars": 8622
+      },
+      "injectedWorkspaceFiles": [
+        {
+          "name": "AGENTS.md",
+          "path": "/home/travis/.openclaw/workspaces/rebecca/AGENTS.md",
+          "missing": false,
+          "rawChars": 7609,
+          "injectedChars": 7609,
+          "truncated": false
+        },
+        {
+          "name": "SOUL.md",
+          "path": "/home/travis/.openclaw/workspaces/rebecca/SOUL.md",
+          "missing": false,
+          "rawChars": 6039,
+          "injectedChars": 6039,
+          "truncated": false
+        },
+        {
+          "name": "TOOLS.md",
+          "path": "/home/travis/.openclaw/workspaces/rebecca/TOOLS.md",
+          "missing": false,
+          "rawChars": 1260,
+          "injectedChars": 1260,
+          "truncated": false
+        },
+        {
+          "name": "IDENTITY.md",
+          "path": "/home/travis/.openclaw/workspaces/rebecca/IDENTITY.md",
+          "missing": false,
+          "rawChars": 633,
+          "injectedChars": 633,
+          "truncated": false
+        },
+        {
+          "name": "USER.md",
+          "path": "/home/travis/.openclaw/workspaces/rebecca/USER.md",
+          "missing": false,
+          "rawChars": 474,
+          "injectedChars": 474,
+          "truncated": false
+        }
+      ],
+      "skills": {
+        "promptChars": 4247,
+        "entries": [
+          {
+            "name": "coding-agent",
+            "blockChars": 812
+          },
+          {
+            "name": "healthcheck",
+            "blockChars": 471
+          },
+          {
+            "name": "node-connect",
+            "blockChars": 521
+          },
+          {
+            "name": "skill-creator",
+            "blockChars": 739
+          },
+          {
+            "name": "taskflow",
+            "blockChars": 523
+          },
+          {
+            "name": "taskflow-inbox-triage",
+            "blockChars": 398
+          },
+          {
+            "name": "weather",
+            "blockChars": 396
+          }
+        ]
+      },
+      "tools": {
+        "listChars": 0,
+        "schemaChars": 20725,
+        "entries": [
+          {
+            "name": "read",
+            "summaryChars": 298,
+            "schemaChars": 304,
+            "propertiesCount": 3
+          },
+          {
+            "name": "edit",
+            "summaryChars": 326,
+            "schemaChars": 834,
+            "propertiesCount": 2
+          },
+          {
+            "name": "write",
+            "summaryChars": 127,
+            "schemaChars": 225,
+            "propertiesCount": 2
+          },
+          {
+            "name": "exec",
+            "summaryChars": 446,
+            "schemaChars": 1098,
+            "propertiesCount": 12
+          },
+          {
+            "name": "process",
+            "summaryChars": 322,
+            "schemaChars": 961,
+            "propertiesCount": 12
+          },
+          {
+            "name": "canvas",
+            "summaryChars": 106,
+            "schemaChars": 661,
+            "propertiesCount": 18
+          },
+          {
+            "name": "message",
+            "summaryChars": 142,
+            "schemaChars": 5767,
+            "propertiesCount": 108
+          },
+          {
+            "name": "tts",
+            "summaryChars": 152,
+            "schemaChars": 223,
+            "propertiesCount": 2
+          },
+          {
+            "name": "image_generate",
+            "summaryChars": 387,
+            "schemaChars": 1195,
+            "propertiesCount": 10
+          },
+          {
+            "name": "music_generate",
+            "summaryChars": 150,
+            "schemaChars": 1239,
+            "propertiesCount": 10
+          },
+          {
+            "name": "video_generate",
+            "summaryChars": 225,
+            "schemaChars": 3734,
+            "propertiesCount": 20
+          },
+          {
+            "name": "sessions_yield",
+            "summaryChars": 97,
+            "schemaChars": 60,
+            "propertiesCount": 1
+          },
+          {
+            "name": "web_fetch",
+            "summaryChars": 129,
+            "schemaChars": 374,
+            "propertiesCount": 3
+          },
+          {
+            "name": "image",
+            "summaryChars": 201,
+            "schemaChars": 342,
+            "propertiesCount": 6
+          },
+          {
+            "name": "pdf",
+            "summaryChars": 275,
+            "schemaChars": 400,
+            "propertiesCount": 6
+          },
+          {
+            "name": "browser",
+            "summaryChars": 1066,
+            "schemaChars": 2799,
+            "propertiesCount": 48
+          },
+          {
+            "name": "memory_search",
+            "summaryChars": 385,
+            "schemaChars": 260,
+            "propertiesCount": 4
+          },
+          {
+            "name": "memory_get",
+            "summaryChars": 207,
+            "schemaChars": 249,
+            "propertiesCount": 4
+          }
+        ]
+      }
+    },
+    "inputTokens": 14381,
+    "outputTokens": 9482,
+    "totalTokens": 94747,
+    "totalTokensFresh": true,
+    "cacheRead": 2858144,
+    "cacheWrite": 0,
+    "estimatedCostUsd": 0,
+    "endedAt": 1775956903261,
+    "runtimeMs": 600053
+  },
+  "agent:rebecca:subagent:5acfefb8-f896-45ca-a8ac-bbc2cd7a0595": {
+    "sessionId": "3b024deb-3550-41ed-8fed-de252a78b1bb",
+    "updatedAt": 1775960551021,
+    "spawnDepth": 1,
+    "subagentRole": "leaf",
+    "subagentControlScope": "none",
+    "model": "MiniMax-M2.7",
+    "modelProvider": "minimax",
+    "spawnedBy": "agent:rebecca:main",
+    "spawnedWorkspaceDir": "/home/travis/.openclaw/workspaces/rebecca",
+    "deliveryContext": {
+      "channel": "webchat"
+    },
+    "lastChannel": "webchat",
+    "channel": "webchat",
+    "skillsSnapshot": {
+      "prompt": "\n\nThe following skills provide specialized instructions for specific tasks.\nUse the read tool to load a skill's file when the task matches its description.\nWhen a skill file references a relative path, resolve it against the skill directory (parent of SKILL.md / dirname of the path) and use that absolute path in tool commands.\n\n<available_skills>\n  <skill>\n    <name>coding-agent</name>\n    <description>Delegate coding tasks to Codex, Claude Code, or Pi agents via background process. Use when: (1) building/creating new features or apps, (2) reviewing PRs (spawn in temp dir), (3) refactoring large codebases, (4) iterative coding that needs file exploration. NOT for: simple one-liner fixes (just edit), reading code (use read tool), thread-bound ACP harness requests in chat (for example spawn/run Codex or Claude Code in a Discord thread; use sessions_spawn with runtime:&quot;acp&quot;), or any work in ~/clawd workspace (never spawn agents here). Claude Code: use --print --permission-mode bypassPermissions (no PTY). Codex/Pi/OpenCode: pty:true required.</description>\n    <location>~/Lookitry/openclaw/skills/coding-agent/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>healthcheck</name>\n    <description>Host security hardening and risk-tolerance configuration for OpenClaw deployments. Use when a user asks for security audits, firewall/SSH/update hardening, risk posture, exposure review, OpenClaw cron scheduling for periodic checks, or version status checks on a machine running OpenClaw (laptop, workstation, Pi, VPS).</description>\n    <location>~/Lookitry/openclaw/skills/healthcheck/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>mission-control</name>\n    <description>Centralized mission control for monitoring and coordinating all Lookitry sub-agents (WebWizard, DevGuardian, DataAlchemist, GrowthPilot, ArchitectAI). Use when the user asks for a &quot;dashboard&quot;, &quot;mission control&quot;, &quot;control center&quot;, &quot;agent status&quot;, &quot;monitor all agents&quot;, &quot;coordination panel&quot;, or wants to check the status of all agents, delegate tasks to specific agents, or get an overview of the entire Lookitry project. This skill is the nerve center for orchestrating the Lookitry SaaS project.</description>\n    <location>~/Lookitry/openclaw/skills/mission-control/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>node-connect</name>\n    <description>Diagnose OpenClaw node connection and pairing failures for Android, iOS, and macOS companion apps. Use when QR/setup code/manual connect fails, local Wi-Fi works but VPS/tailnet does not, or errors mention pairing required, unauthorized, bootstrap token invalid or expired, gateway.bind, gateway.remote.url, Tailscale, or plugins.entries.device-pair.config.publicUrl.</description>\n    <location>~/Lookitry/openclaw/skills/node-connect/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>skill-creator</name>\n    <description>Create, edit, improve, or audit AgentSkills. Use when creating a new skill from scratch or when asked to improve, review, audit, tidy up, or clean up an existing skill or SKILL.md file. Also use when editing or restructuring a skill directory (moving files to references/ or scripts/, removing stale content, validating against the AgentSkills spec). Triggers on phrases like &quot;create a skill&quot;, &quot;author a skill&quot;, &quot;tidy up a skill&quot;, &quot;improve this skill&quot;, &quot;review the skill&quot;, &quot;clean up the skill&quot;, &quot;audit the skill&quot;.</description>\n    <location>~/Lookitry/openclaw/skills/skill-creator/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>taskflow</name>\n    <description>Use when work should span one or more detached tasks but still behave like one job with a single owner context. TaskFlow is the durable flow substrate under authoring layers like Lobster, ACPX, plugins, or plain code. Keep conditional logic in the caller; use TaskFlow for flow identity, child-task linkage, waiting state, revision-checked mutations, and user-facing emergence.</description>\n    <location>~/Lookitry/openclaw/skills/taskflow/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>taskflow-inbox-triage</name>\n    <description>Example TaskFlow authoring pattern for inbox triage. Use when messages need different treatment based on intent, with some routes notifying immediately, some waiting on outside answers, and others rolling into a later summary.</description>\n    <location>~/Lookitry/openclaw/skills/taskflow-inbox-triage/SKILL.md</location>\n  </skill>\n  <skill>\n    <name>weather</name>\n    <description>Get current weather and forecasts via wttr.in or Open-Meteo. Use when: user asks about weather, temperature, or forecasts for any location. NOT for: historical weather data, severe weather alerts, or detailed meteorological analysis. No API key needed.</description>\n    <location>~/Lookitry/openclaw/skills/weather/SKILL.md</location>\n  </skill>\n</available_skills>",
+      "skills": [
+        {
+          "name": "coding-agent",
+          "requiredEnv": []
+        },
+        {
+          "name": "healthcheck"
+        },
+        {
+          "name": "mission-control"
+        },
+        {
+          "name": "node-connect"
+        },
+        {
+          "name": "skill-creator"
+        },
+        {
+          "name": "taskflow"
+        },
+        {
+          "name": "taskflow-inbox-triage"
+        },
+        {
+          "name": "weather",
+          "requiredEnv": []
+        }
+      ],
+      "resolvedSkills": [
+        {
+          "name": "coding-agent",
+          "description": "Delegate coding tasks to Codex, Claude Code, or Pi agents via background process. Use when: (1) building/creating new features or apps, (2) reviewing PRs (spawn in temp dir), (3) refactoring large codebases, (4) iterative coding that needs file exploration. NOT for: simple one-liner fixes (just edit), reading code (use read tool), thread-bound ACP harness requests in chat (for example spawn/run Codex or Claude Code in a Discord thread; use sessions_spawn with runtime:\"acp\"), or any work in ~/clawd workspace (never spawn agents here). Claude Code: use --print --permission-mode bypassPermissions (no PTY). Codex/Pi/OpenCode: pty:true required.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/coding-agent/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/coding-agent",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/coding-agent/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/coding-agent"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "healthcheck",
+          "description": "Host security hardening and risk-tolerance configuration for OpenClaw deployments. Use when a user asks for security audits, firewall/SSH/update hardening, risk posture, exposure review, OpenClaw cron scheduling for periodic checks, or version status checks on a machine running OpenClaw (laptop, workstation, Pi, VPS).",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/healthcheck/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/healthcheck",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/healthcheck/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/healthcheck"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "mission-control",
+          "description": "Centralized mission control for monitoring and coordinating all Lookitry sub-agents (WebWizard, DevGuardian, DataAlchemist, GrowthPilot, ArchitectAI). Use when the user asks for a \"dashboard\", \"mission control\", \"control center\", \"agent status\", \"monitor all agents\", \"coordination panel\", or wants to check the status of all agents, delegate tasks to specific agents, or get an overview of the entire Lookitry project. This skill is the nerve center for orchestrating the Lookitry SaaS project.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/mission-control/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/mission-control",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/mission-control/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/mission-control"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "node-connect",
+          "description": "Diagnose OpenClaw node connection and pairing failures for Android, iOS, and macOS companion apps. Use when QR/setup code/manual connect fails, local Wi-Fi works but VPS/tailnet does not, or errors mention pairing required, unauthorized, bootstrap token invalid or expired, gateway.bind, gateway.remote.url, Tailscale, or plugins.entries.device-pair.config.publicUrl.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/node-connect/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/node-connect",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/node-connect/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/node-connect"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "skill-creator",
+          "description": "Create, edit, improve, or audit AgentSkills. Use when creating a new skill from scratch or when asked to improve, review, audit, tidy up, or clean up an existing skill or SKILL.md file. Also use when editing or restructuring a skill directory (moving files to references/ or scripts/, removing stale content, validating against the AgentSkills spec). Triggers on phrases like \"create a skill\", \"author a skill\", \"tidy up a skill\", \"improve this skill\", \"review the skill\", \"clean up the skill\", \"audit the skill\".",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/skill-creator/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/skill-creator",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/skill-creator/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/skill-creator"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "taskflow",
+          "description": "Use when work should span one or more detached tasks but still behave like one job with a single owner context. TaskFlow is the durable flow substrate under authoring layers like Lobster, ACPX, plugins, or plain code. Keep conditional logic in the caller; use TaskFlow for flow identity, child-task linkage, waiting state, revision-checked mutations, and user-facing emergence.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/taskflow/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/taskflow/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "taskflow-inbox-triage",
+          "description": "Example TaskFlow authoring pattern for inbox triage. Use when messages need different treatment based on intent, with some routes notifying immediately, some waiting on outside answers, and others rolling into a later summary.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/taskflow-inbox-triage"
+          },
+          "disableModelInvocation": false
+        },
+        {
+          "name": "weather",
+          "description": "Get current weather and forecasts via wttr.in or Open-Meteo. Use when: user asks about weather, temperature, or forecasts for any location. NOT for: historical weather data, severe weather alerts, or detailed meteorological analysis. No API key needed.",
+          "filePath": "/home/travis/Lookitry/openclaw/skills/weather/SKILL.md",
+          "baseDir": "/home/travis/Lookitry/openclaw/skills/weather",
+          "source": "openclaw-bundled",
+          "sourceInfo": {
+            "path": "/home/travis/Lookitry/openclaw/skills/weather/SKILL.md",
+            "source": "openclaw-bundled",
+            "scope": "project",
+            "origin": "top-level",
+            "baseDir": "/home/travis/Lookitry/openclaw/skills/weather"
+          },
+          "disableModelInvocation": false
+        }
+      ],
+      "version": 0
+    },
+    "sessionFile": "/home/travis/.openclaw/agents/rebecca/sessions/3b024deb-3550-41ed-8fed-de252a78b1bb.jsonl",
+    "status": "timeout",
+    "startedAt": 1775958926346,
+    "abortedLastRun": false,
+    "contextTokens": 200000,
+    "systemPromptReport": {
+      "source": "run",
+      "generatedAt": 1775958928867,
+      "sessionId": "3b024deb-3550-41ed-8fed-de252a78b1bb",
+      "sessionKey": "agent:rebecca:subagent:5acfefb8-f896-45ca-a8ac-bbc2cd7a0595",
+      "provider": "minimax",
+      "model": "MiniMax-M2.7",
+      "workspaceDir": "/home/travis/.openclaw/workspaces/rebecca",
+      "bootstrapMaxChars": 20000,
+      "bootstrapTotalMaxChars": 150000,
+      "bootstrapTruncation": {
+        "warningMode": "once",
+        "warningShown": false,
+        "truncatedFiles": 0,
+        "nearLimitFiles": 0,
+        "totalNearLimit": false
+      },
+      "sandbox": {
+        "mode": "off",
+        "sandboxed": false
+      },
+      "systemPrompt": {
+        "chars": 30547,
+        "projectContextChars": 21207,
+        "nonProjectContextChars": 9340
+      },
+      "injectedWorkspaceFiles": [
+        {
+          "name": "AGENTS.md",
+          "path": "/home/travis/.openclaw/workspaces/rebecca/AGENTS.md",
+          "missing": false,
+          "rawChars": 7609,
+          "injectedChars": 7609,
+          "truncated": false
+        },
+        {
+          "name": "SOUL.md",
+          "path": "/home/travis/.openclaw/workspaces/rebecca/SOUL.md",
+          "missing": false,
+          "rawChars": 6039,
+          "injectedChars": 6039,
+          "truncated": false
+        },
+        {
+          "name": "TOOLS.md",
+          "path": "/home/travis/.openclaw/workspaces/rebecca/TOOLS.md",
+          "missing": false,
+          "rawChars": 1260,
+          "injectedChars": 1260,
+          "truncated": false
+        },
+        {
+          "name": "IDENTITY.md",
+          "path": "/home/travis/.openclaw/workspaces/rebecca/IDENTITY.md",
+          "missing": false,
+          "rawChars": 633,
+          "injectedChars": 633,
+          "truncated": false
+        },
+        {
+          "name": "USER.md",
+          "path": "/home/travis/.openclaw/workspaces/rebecca/USER.md",
+          "missing": false,
+          "rawChars": 474,
+          "injectedChars": 474,
+          "truncated": false
+        }
+      ],
+      "skills": {
+        "promptChars": 4965,
+        "entries": [
+          {
+            "name": "coding-agent",
+            "blockChars": 812
+          },
+          {
+            "name": "healthcheck",
+            "blockChars": 471
+          },
+          {
+            "name": "mission-control",
+            "blockChars": 715
+          },
+          {
+            "name": "node-connect",
+            "blockChars": 521
+          },
+          {
+            "name": "skill-creator",
+            "blockChars": 739
+          },
+          {
+            "name": "taskflow",
+            "blockChars": 523
+          },
+          {
+            "name": "taskflow-inbox-triage",
+            "blockChars": 398
+          },
+          {
+            "name": "weather",
+            "blockChars": 396
+          }
+        ]
+      },
+      "tools": {
+        "listChars": 0,
+        "schemaChars": 20725,
+        "entries": [
+          {
+            "name": "read",
+            "summaryChars": 298,
+            "schemaChars": 304,
+            "propertiesCount": 3
+          },
+          {
+            "name": "edit",
+            "summaryChars": 326,
+            "schemaChars": 834,
+            "propertiesCount": 2
+          },
+          {
+            "name": "write",
+            "summaryChars": 127,
+            "schemaChars": 225,
+            "propertiesCount": 2
+          },
+          {
+            "name": "exec",
+            "summaryChars": 446,
+            "schemaChars": 1098,
+            "propertiesCount": 12
+          },
+          {
+            "name": "process",
+            "summaryChars": 322,
+            "schemaChars": 961,
+            "propertiesCount": 12
+          },
+          {
+            "name": "canvas",
+            "summaryChars": 106,
+            "schemaChars": 661,
+            "propertiesCount": 18
+          },
+          {
+            "name": "message",
+            "summaryChars": 142,
+            "schemaChars": 5767,
+            "propertiesCount": 108
+          },
+          {
+            "name": "tts",
+            "summaryChars": 152,
+            "schemaChars": 223,
+            "propertiesCount": 2
+          },
+          {
+            "name": "image_generate",
+            "summaryChars": 387,
+            "schemaChars": 1195,
+            "propertiesCount": 10
+          },
+          {
+            "name": "music_generate",
+            "summaryChars": 150,
+            "schemaChars": 1239,
+            "propertiesCount": 10
+          },
+          {
+            "name": "video_generate",
+            "summaryChars": 225,
+            "schemaChars": 3734,
+            "propertiesCount": 20
+          },
+          {
+            "name": "sessions_yield",
+            "summaryChars": 97,
+            "schemaChars": 60,
+            "propertiesCount": 1
+          },
+          {
+            "name": "web_fetch",
+            "summaryChars": 129,
+            "schemaChars": 374,
+            "propertiesCount": 3
+          },
+          {
+            "name": "image",
+            "summaryChars": 201,
+            "schemaChars": 342,
+            "propertiesCount": 6
+          },
+          {
+            "name": "pdf",
+            "summaryChars": 275,
+            "schemaChars": 400,
+            "propertiesCount": 6
+          },
+          {
+            "name": "browser",
+            "summaryChars": 1066,
+            "schemaChars": 2799,
+            "propertiesCount": 48
+          },
+          {
+            "name": "memory_search",
+            "summaryChars": 385,
+            "schemaChars": 260,
+            "propertiesCount": 4
+          },
+          {
+            "name": "memory_get",
+            "summaryChars": 207,
+            "schemaChars": 249,
+            "propertiesCount": 4
+          }
+        ]
+      }
+    },
+    "inputTokens": 1387812,
+    "outputTokens": 11984,
+    "totalTokens": 50121,
+    "totalTokensFresh": true,
+    "cacheRead": 942102,
+    "cacheWrite": 15670,
+    "estimatedCostUsd": 0,
+    "endedAt": 1775961131487,
+    "runtimeMs": 1239036
+  }
+}
