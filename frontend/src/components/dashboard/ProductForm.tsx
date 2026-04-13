@@ -201,7 +201,8 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
   const autoTriggeredRef = useRef(false);
   useEffect(() => {
     if (!formData.imageUrl || !formData.name.trim()) { autoTriggeredRef.current = false; return; }
-    if (autoTriggeredRef.current || aiGenerated || describingWithAI || !!product) return;
+    // Trigger AI even for existing products (if image changes)
+    if (autoTriggeredRef.current || aiGenerated || describingWithAI) return;
     autoTriggeredRef.current = true;
     triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category);
   }, [formData.imageUrl, formData.name]);
@@ -231,7 +232,8 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       const url = await uploadService.uploadImage(base64.split(',')[1], `product-${ts}.jpg`, false);
       setImagePreview(url); setFormData(p => ({ ...p, imageUrl: url }));
-      if (formData.name.trim() && !product) triggerDescribeWithAI(url, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category);
+      // Trigger AI description when image is uploaded/changed
+      if (formData.name.trim()) triggerDescribeWithAI(url, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category);
     } catch (err: any) { setErrors(p => ({ ...p, imageUrl: err.message || 'Error al procesar la imagen' })); } 
     finally { setCompressing(false); }
   };
@@ -298,7 +300,10 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
       <CardBody>
         <form onSubmit={handleSubmit} className="space-y-6">
           <Input label="Nombre" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Ej: Camiseta Logo" required />
-          {showExternalId && <Input label="ID Externo (WooCommerce/Shopify)" name="externalId" value={formData.externalId || ''} onChange={handleChange} error={errors.externalId} placeholder="Ej: 12345 (opcional)" />}
+          {/* ID Externo (solo para productos sincronizados por plugin) */}
+          {showExternalId && formData.externalId && (
+            <Input label="ID Externo (WooCommerce/Shopify)" name="externalId" value={formData.externalId || ''} onChange={handleChange} error={errors.externalId} placeholder="Ej: 12345 (opcional)" disabled />
+          )}
           
           {/* Imagen */}
           <div>
@@ -318,11 +323,10 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
             </div>
           </div>
 
-          {/* Descripción Corta (Visible para clientes) */}
+          {/* Descripción Corta */}
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción Corta</label>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-500 font-medium">Visible para clientes</span>
               {/* AI Status Badge */}
               {describingWithAI && (
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 font-medium animate-pulse">⏳ Generando...</span>
