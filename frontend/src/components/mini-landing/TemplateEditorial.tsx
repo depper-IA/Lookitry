@@ -19,6 +19,7 @@ import {
   getSmartBorderColor,
   getContrastColor,
   useContrastTheme,
+  useLandingTheme,
   YouTubeIcon, 
   XIcon, 
   InstagramIcon, 
@@ -216,6 +217,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
   const [isLoading, setIsLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { ref: productsRef, isVisible } = useScrollReveal();
+  const theme = useLandingTheme(brand);
 
   useEffect(() => {
     if (products && products.length > 0) {
@@ -244,7 +246,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-[#fcfcfc] ${brand.landing_font || 'font-jakarta'} overflow-x-hidden ${isPreview ? 'p-0 h-auto' : ''}`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
+    <div className={`min-h-screen flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden ${isPreview ? 'p-0 h-auto' : ''}`} style={{ backgroundColor: theme.cardBg, '--primary': primary, '--secondary': secondary, '--secondary-10': secondary + "1a", '--secondary-20': secondary + "33", '--secondary-05': secondary + "0d" } as React.CSSProperties}>
       <EditorialHeader brand={brand} entries={entries} socialIcons={socialIcons} />
       <EditorialHero brand={brand} />
       
