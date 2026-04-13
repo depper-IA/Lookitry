@@ -72,35 +72,85 @@ function EmptyState() {
   );
 }
 
-// ── Atributos Tags ────────────────────────────────────────────────────────────
+// ── Atributos con Labels ─────────────────────────────────────────────────────
 
-function AttributeTags({ attributes, category }: { attributes: Record<string, any>; category: string }) {
+// Mapeo de labels humanas para cada atributo
+const ATTRIBUTE_LABELS: Record<string, string> = {
+  finish: 'Finish',
+  medida_pulgadas: 'Medida',
+  material: 'Material',
+  tipo_tela: 'Tela',
+  marca: 'Marca',
+  color: 'Color',
+  peso: 'Peso',
+  manga: 'Manga',
+};
+
+function AttributeDisplay({ attributes, category }: { attributes: Record<string, any>; category: string }) {
   if (!attributes || Object.keys(attributes).length === 0) return null;
   
-  // Solo mostrar atributos relevantes como tags
-  const displayAttrs: { key: string; value: any }[] = [];
+  // Construir lista de atributos para mostrar
+  const displayItems: { label: string; value: string }[] = [];
   
-  if (attributes.finish) displayAttrs.push({ key: 'finish', value: attributes.finish });
-  if (attributes.medida_pulgadas) displayAttrs.push({ key: 'medida', value: attributes.medida_pulgadas + '"' });
-  if (attributes.material) displayAttrs.push({ key: 'material', value: attributes.material });
-  if (attributes.tipo_tela) displayAttrs.push({ key: 'tela', value: attributes.tipo_tela });
-  if (attributes.marca) displayAttrs.push({ key: 'marca', value: attributes.marca });
-  if (attributes.color) displayAttrs.push({ key: 'color', value: attributes.color });
-  
-  // Mostrar tallas si existen
-  if (attributes.tallas && Array.isArray(attributes.tallas) && attributes.tallas.length > 0) {
-    const tallasStr = attributes.tallas.slice(0, 4).join(', ');
-    displayAttrs.push({ key: 'tallas', value: tallasStr + (attributes.tallas.length > 4 ? '...' : '') });
+  // Finish para rines
+  if (attributes.finish) {
+    displayItems.push({ label: ATTRIBUTE_LABELS.finish || 'Finish', value: attributes.finish });
   }
   
-  if (displayAttrs.length === 0) return null;
+  // Medida para rines
+  if (attributes.medida_pulgadas) {
+    displayItems.push({ label: ATTRIBUTE_LABELS.medida_pulgadas || 'Medida', value: attributes.medida_pulgadas + '"' });
+  }
+  
+  // Material
+  if (attributes.material) {
+    displayItems.push({ label: ATTRIBUTE_LABELS.material || 'Material', value: attributes.material });
+  }
+  
+  // Tipo de tela
+  if (attributes.tipo_tela) {
+    displayItems.push({ label: ATTRIBUTE_LABELS.tipo_tela || 'Tela', value: attributes.tipo_tela });
+  }
+  
+  // Marca
+  if (attributes.marca) {
+    displayItems.push({ label: ATTRIBUTE_LABELS.marca || 'Marca', value: attributes.marca });
+  }
+  
+  // Color
+  if (attributes.color) {
+    displayItems.push({ label: ATTRIBUTE_LABELS.color || 'Color', value: attributes.color });
+  }
+  
+  // Peso para rines
+  if (attributes.peso) {
+    displayItems.push({ label: ATTRIBUTE_LABELS.peso || 'Peso', value: attributes.peso + ' kg' });
+  }
+  
+  // Agujeros para rines
+  if (attributes.agujeros) {
+    displayItems.push({ label: 'Agujeros', value: attributes.agujeros });
+  }
+  
+  // Manga para camisas
+  if (attributes.manga) {
+    displayItems.push({ label: ATTRIBUTE_LABELS.manga || 'Manga', value: attributes.manga });
+  }
+  
+  // Tallas (especial - es array)
+  if (attributes.tallas && Array.isArray(attributes.tallas) && attributes.tallas.length > 0) {
+    displayItems.push({ label: 'Tallas', value: attributes.tallas.slice(0, 5).join(', ') + (attributes.tallas.length > 5 ? '...' : '') });
+  }
+  
+  if (displayItems.length === 0) return null;
   
   return (
-    <div className="flex flex-wrap gap-1.5 mt-2">
-      {displayAttrs.map(({ key, value }) => (
-        <span key={key} className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-semibold bg-[var(--bg-input)] text-[var(--text-secondary)] border border-[var(--border-color)]/50">
-          {value}
-        </span>
+    <div className="flex flex-col gap-1.5 mt-2">
+      {displayItems.map(({ label, value }, idx) => (
+        <div key={idx} className="flex items-center gap-2">
+          <span className="text-[9px] font-semibold text-[var(--text-muted)] uppercase tracking-wider min-w-[50px]">{label}:</span>
+          <span className="text-[10px] font-medium text-[var(--text-secondary)]">{value}</span>
+        </div>
       ))}
     </div>
   );
@@ -168,7 +218,7 @@ function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
                   )}
                   
                   {/* Atributos Dinámicos */}
-                  <AttributeTags attributes={product.attributes || {}} category={product.category} />
+                  <AttributeDisplay attributes={product.attributes || {}} category={product.category} />
                   
                   <div className="flex items-center gap-2 mt-3">
                     <span className="text-[9px] md:text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest leading-none">{product.category}</span>
@@ -275,7 +325,7 @@ function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
                          {product.shortDescription && (
                            <p className="text-[10px] text-[var(--text-secondary)] mt-1 line-clamp-1 max-w-xs">{product.shortDescription}</p>
                          )}
-                         <AttributeTags attributes={product.attributes || {}} category={product.category} />
+                         <AttributeDisplay attributes={product.attributes || {}} category={product.category} />
                          <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-widest mt-1 leading-none">{product.category}</p>
                        </div>
                     </div>
