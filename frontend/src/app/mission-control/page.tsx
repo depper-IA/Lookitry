@@ -45,98 +45,6 @@ interface QuickAction {
   action: () => void;
 }
 
-/* ── Mock Data ────────────────────────────────────────────────────────────── */
-const MOCK_AGENTS: Agent[] = [
-  {
-    id: 'webwizard',
-    name: 'WebWizard',
-    emoji: '🎨',
-    specialty: 'Frontend — Next.js 14, Tailwind, Framer Motion',
-    description: 'Crea interfaces que parezcan de Apple, optimiza el SEO del sitio y construye el widget del probador virtual.',
-    status: 'ready',
-    lastTask: 'UI redesign',
-    color: '#8b5cf6',
-    gradient: 'from-indigo-500 to-purple-600',
-  },
-  {
-    id: 'devguardian',
-    name: 'DevGuardian',
-    emoji: '🛡️',
-    specialty: 'QA & Security — Vitest, Jest, Audits',
-    description: 'Mantiene los tests en verde, audita la seguridad de las API Routes y asegura que no haya regresiones.',
-    status: 'ready',
-    lastTask: 'Security audit',
-    color: '#ec4899',
-    gradient: 'from-pink-500 to-rose-600',
-  },
-  {
-    id: 'dataalchemist',
-    name: 'DataAlchemist',
-    emoji: '🧪',
-    specialty: 'Backend & Automation — Supabase, MinIO, n8n',
-    description: 'Gestiona Supabase, flujos de datos en n8n, almacenamiento en MinIO y curación de bases de datos.',
-    status: 'busy',
-    lastTask: 'Redis config',
-    color: '#06b6d4',
-    gradient: 'from-cyan-500 to-sky-600',
-  },
-  {
-    id: 'growthpilot',
-    name: 'GrowthPilot',
-    emoji: '🛰️',
-    specialty: 'Sales & CRM — Brevo, WooCommerce, Referidos',
-    description: 'Sincroniza leads con Brevo, monitorea ventas en WooCommerce y aplica reglas del programa de referidos.',
-    status: 'ready',
-    lastTask: 'CRM sync',
-    color: '#10b981',
-    gradient: 'from-emerald-500 to-teal-600',
-  },
-  {
-    id: 'architectai',
-    name: 'ArchitectAI',
-    emoji: '🏗️',
-    specialty: 'DevOps & Hardware — Docker, Traefik, VPS',
-    description: 'Gestiona contenedores Docker, configura Traefik y ejecuta despliegues seguros en el VPS.',
-    status: 'ready',
-    lastTask: 'Deploy config',
-    color: '#f59e0b',
-    gradient: 'from-amber-500 to-orange-600',
-  },
-];
-
-const MOCK_HEALTH: HealthItem[] = [
-  { icon: '🌐', label: 'Frontend', sublabel: 'Next.js 14 — Production', status: 'ok' },
-  { icon: '⚙️', label: 'Backend', sublabel: 'Express + TypeScript', status: 'ok' },
-  { icon: '🛒', label: 'WooCommerce', sublabel: 'Plugin v1.0.0', status: 'ok' },
-  { icon: '🗄️', label: 'Database', sublabel: 'Supabase — 28 tables', status: 'ok' },
-  { icon: '🐳', label: 'Containers', sublabel: 'Docker + Traefik', status: 'ok' },
-  { icon: '🔒', label: 'Security', sublabel: 'Secrets rotated', status: 'ok' },
-  { icon: '💳', label: 'Payments', sublabel: 'Wompi + PayPal', status: 'ok' },
-  { icon: '📧', label: 'Email', sublabel: 'Brevo integration', status: 'warn' },
-];
-
-const MOCK_COMMITS: CommitItem[] = [
-  { hash: '449aba4', message: 'fix(security): remove hardcoded secrets', author: 'Sammy', time: '2 min ago' },
-  { hash: '6ed607f', message: 'feat: optimize review logos webp', author: 'WebWizard', time: '2 days ago' },
-  { hash: '8e31ebd', message: 'feat(redis): improve local resilience', author: 'DataAlchemist', time: '3 days ago' },
-];
-
-const MOCK_ACTIVITY: ActivityItem[] = [
-  { icon: '🔒', iconBg: 'bg-rose-500/20', title: 'Security Fix Deployed', description: 'Hardcoded secrets removed from codebase. Webhook tokens rotated.', time: '2 minutes ago' },
-  { icon: '🎛️', iconBg: 'bg-blue-500/20', title: 'Mission Control Launched', description: 'New dashboard deployed for agent orchestration and monitoring.', time: '8 minutes ago' },
-  { icon: '✅', iconBg: 'bg-violet-500/20', title: 'Gateway Online', description: 'OpenClaw orchestrator running with 5 sub-agents configured.', time: 'Active now' },
-];
-
-/* ── Framer Motion Variants ───────────────────────────────────────────────── */
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
-
-const stagger = {
-  visible: { transition: { staggerChildren: 0.08 } },
-};
-
 /* ── Components ───────────────────────────────────────────────────────────── */
 
 /** Tooltip wrapper */
@@ -332,10 +240,14 @@ export default function MissionControlPage() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [selectedHealth, setSelectedHealth] = useState<HealthItem | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [stats, setStats] = useState({ agents: 5, files: 298, commits: 6, pending: 1, uptime: '99.9%' });
-  const [health, setHealth] = useState(MOCK_HEALTH);
-  const [commits, setCommits] = useState(MOCK_COMMITS);
-  const [activity] = useState(MOCK_ACTIVITY);
+  
+  // Real State from API
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [commits, setCommits] = useState<CommitItem[]>([]);
+  const [stats, setStats] = useState({ agentsCount: 0, filesTracked: 0, commitsWeek: 0, pending: 0, uptime: '100%' });
+  const [health, setHealth] = useState<HealthItem[]>([]);
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   /* Live clock */
   useEffect(() => {
@@ -346,20 +258,55 @@ export default function MissionControlPage() {
   }, []);
 
   /* Fetch real data */
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch('/api/agents/status');
-        if (res.ok) {
-          const data = await res.json();
-          // Use real data if available
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch('/api/agents/status');
+      if (res.ok) {
+        const data = await res.json();
+        setAgents(data.agents || []);
+        setCommits(data.commits || []);
+        setStats(data.stats || { agentsCount: 0, filesTracked: 0, commitsWeek: 0, pending: 0, uptime: '100%' });
+        
+        // Map health from services
+        const healthMap: HealthItem[] = [
+          { icon: '🌐', label: 'Frontend', sublabel: 'Next.js 14 — Active', status: data.services.frontend },
+          { icon: '🦾', label: 'OpenClaw', sublabel: 'Orchestrator V2', status: data.services.openclaw },
+          { icon: '🗄️', label: 'Supabase', sublabel: 'Cloud DB', status: data.services.supabase },
+          { icon: '💬', label: 'Telegram', sublabel: 'Bot Integration', status: data.services.telegram },
+        ];
+        setHealth(healthMap);
+
+        // Generate activity feed from commits or static
+        const feed: ActivityItem[] = (data.commits || []).map((c: any) => ({
+          icon: '📝',
+          iconBg: 'bg-emerald-500/20',
+          title: `Commit: ${c.hash}`,
+          description: c.message,
+          time: c.time
+        }));
+        if (feed.length === 0) {
+            feed.push({
+                icon: '✅',
+                iconBg: 'bg-violet-500/20',
+                title: 'Systems Heartbeat',
+                description: 'OpenClaw Ecosystem is reporting normal status.',
+                time: 'Active now'
+            });
         }
-      } catch {
-        // Use mock data
+        setActivity(feed);
       }
-    };
-    fetchData();
+    } catch (e) {
+      console.error('Failed to fetch status', e);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+    const id = setInterval(fetchData, 30000); // Update every 30s
+    return () => clearInterval(id);
+  }, [fetchData]);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -393,6 +340,17 @@ export default function MissionControlPage() {
     return '✗';
   };
 
+  if (loading) {
+    return (
+        <div className="min-h-screen bg-[#030712] flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+                <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+                <p className="text-cyan-400 font-mono text-sm uppercase tracking-widest animate-pulse">Initializing Mission Control...</p>
+            </div>
+        </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#030712] text-[#f8fafc] overflow-x-hidden relative">
       {/* Background effects */}
@@ -400,7 +358,7 @@ export default function MissionControlPage() {
       <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full mc-glow-1 pointer-events-none z-0" />
       <div className="absolute -bottom-48 -right-32 w-96 h-96 rounded-full mc-glow-2 pointer-events-none z-0" />
 
-      <div className="relative z-10 max-w-[1600px] mx-auto px-6 lg:px-10 py-8">
+      <div className="relative z-10 max-w-[1700px] mx-auto px-6 lg:px-10 py-8">
         {/* ── Header ─────────────────────────────────────────────── */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
@@ -429,21 +387,27 @@ export default function MissionControlPage() {
 
         {/* ── Stats Bar ───────────────────────────────────────────── */}
         <motion.div
-          variants={stagger}
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+          }}
           initial="hidden"
           animate="visible"
           className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8"
         >
           {[
-            { icon: '🤖', value: stats.agents, label: 'Active Agents', color: 'text-cyan-400' },
-            { icon: '📦', value: stats.files, label: 'Files Tracked', color: 'text-violet-400' },
-            { icon: '🚀', value: stats.commits, label: 'Commits This Week', color: 'text-emerald-400' },
+            { icon: '🤖', value: stats.agentsCount, label: 'Active Agents', color: 'text-cyan-400' },
+            { icon: '📦', value: stats.filesTracked, label: 'Files Tracked', color: 'text-violet-400' },
+            { icon: '🚀', value: stats.commitsWeek, label: 'Recent Commits', color: 'text-emerald-400' },
             { icon: '⚠️', value: stats.pending, label: 'Pending Changes', color: 'text-amber-400' },
             { icon: '⏱️', value: stats.uptime, label: 'Uptime', color: 'text-blue-400' },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
-              variants={fadeUp}
+              variants={{
+                hidden: { opacity: 0, y: 10 },
+                visible: { opacity: 1, y: 0 }
+              }}
               className="group p-5 bg-[#0f172a]/80 border border-[#334155] rounded-2xl hover:border-cyan-500/30 hover:-translate-y-0.5 transition-all duration-300"
             >
               <div className="w-11 h-11 rounded-xl bg-[#1e293b] flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
@@ -470,32 +434,32 @@ export default function MissionControlPage() {
                 <h2 className="text-base font-bold">Agent Roster</h2>
               </div>
               <span className="px-3.5 py-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[10px] font-semibold text-cyan-400 uppercase tracking-wider">
-                {MOCK_AGENTS.filter((a) => a.status === 'ready').length} Ready
+                {agents.filter((a) => a.status === 'ready').length} Ready
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {MOCK_AGENTS.map((agent) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {agents.map((agent) => (
                 <Tooltip key={agent.id} content="Click para delegar tarea">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedAgent(agent)}
-                    className="text-left p-5 bg-[#1e293b]/60 border border-[#334155] rounded-xl hover:border-cyan-500 transition-all duration-300 relative overflow-hidden group"
+                    className="text-left w-full p-4 bg-[#1e293b]/60 border border-[#334155] rounded-xl hover:border-cyan-500 transition-all duration-300 relative overflow-hidden group"
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${agent.gradient} opacity-0 group-hover:opacity-[0.07] transition-opacity duration-300`} />
-                    <div className="flex items-start gap-3.5 relative z-10">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.gradient} flex items-center justify-center text-xl flex-shrink-0`}>
+                    <div className="flex items-start gap-3 relative z-10">
+                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${agent.gradient} flex items-center justify-center text-lg flex-shrink-0`}>
                         {agent.emoji}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-bold mb-1 truncate">{agent.name}</h3>
-                        <p className="text-[10px] text-[#64748b] leading-relaxed line-clamp-2">{agent.specialty}</p>
-                        <div className="flex items-center justify-between mt-2.5">
-                          <div className={`flex items-center gap-1.5 text-[10px] font-semibold ${statusColor(agent.status)}`}>
-                            <div className={`w-1.5 h-1.5 rounded-full ${agent.status === 'busy' ? 'bg-amber-400' : agent.status === 'error' ? 'bg-rose-400' : 'bg-emerald-400'}`} />
+                        <h3 className="text-xs font-bold mb-0.5 truncate">{agent.name}</h3>
+                        <p className="text-[9px] text-[#64748b] leading-relaxed line-clamp-1">{agent.specialty}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <div className={`flex items-center gap-1.5 text-[9px] font-semibold ${statusColor(agent.status)}`}>
+                            <div className={`w-1 h-1 rounded-full ${agent.status === 'busy' ? 'bg-amber-400' : agent.status === 'error' ? 'bg-rose-400' : 'bg-emerald-400'}`} />
                             {statusLabel(agent.status)}
                           </div>
-                          <span className="text-[10px] text-[#64748b] truncate ml-2">Last: {agent.lastTask}</span>
+                          <span className="text-[8px] text-[#64748b] truncate ml-2">Task: {agent.lastTask}</span>
                         </div>
                       </div>
                     </div>
@@ -546,17 +510,19 @@ export default function MissionControlPage() {
                 <h2 className="text-base font-bold">Recent Commits</h2>
               </div>
               <div className="flex flex-col gap-3">
-                {commits.map((c) => (
+                {commits.length > 0 ? commits.map((c) => (
                   <div key={c.hash} className="flex items-center gap-3.5 p-3.5 bg-[#1e293b]/60 rounded-xl hover:bg-[#1e293b]/80 transition-colors">
                     <span className="font-mono text-[10px] text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-md font-semibold flex-shrink-0">
-                      {c.hash}
+                      {c.hash.substring(0, 7)}
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">{c.message}</p>
                       <p className="text-[10px] text-[#64748b] mt-0.5">{c.time} — {c.author}</p>
                     </div>
                   </div>
-                ))}
+                )) : (
+                    <p className="text-xs text-[#64748b] text-center py-4 italic">No recent commits found.</p>
+                )}
               </div>
             </motion.div>
 
