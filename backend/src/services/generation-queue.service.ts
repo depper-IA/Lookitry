@@ -22,6 +22,7 @@ export class GenerationQueueService {
   private readonly FAILED_KEY = 'queue:tryon:failed';
   private readonly MAX_RETRIES = 3;
   private readonly JOB_TTL_SECONDS = 3600;
+  private readonly STALE_JOB_TIMEOUT_MS = 300000;
 
   async enqueueJob(job: Omit<TryOnJob, 'created_at'>): Promise<void> {
     const fullJob: TryOnJob = {
@@ -71,6 +72,45 @@ export class GenerationQueueService {
     }
 
     console.error(`[Queue] Job failed: ${generationId} - ${error}`);
+  }
+
+  async recoverStaleJobs(): Promise<number> {
+    const processing = await redis.lrange(this.PROCESSING_KEY, 0, -1);
+    const now = Date.now();
+    let recovered = 0;
+
+    for (const item of processing) {
+      try {
+        const job: TryOnJob & { dequeued_at?: string } = JSON.parse(item);
+        if (!job.dequeued_at) continue;
+
+        const dequeuedTime = new Date(job.dequeued_at).getTime();
+        const ageMs = now - dequeuedTime;
+
+        if (ageMs > this.STALE_JOB_TIMEOUT_MS) {
+          console.warn(`[Queue] Recovering stale job ${job.generation_id} (age: ${Math.round(ageMs / 60000)}min)`);
+          await this.removeFromProcessing(job.generation_id);
+          await redis.lpush(this.QUEUE_KEY, JSON.stringify({
+            brand_id: job.brand_id,
+            product_id: job.product_id,
+            selfie_url: job.selfie_url,
+            product_image_url: job.product_image_url,
+            prompt: job.prompt,
+            generation_id: job.generation_id,
+            created_at: job.created_at,
+          }));
+          recovered++;
+        }
+      } catch (e) {
+        console.error('[Queue] Error recovering stale job:', e);
+      }
+    }
+
+    if (recovered > 0) {
+      console.log(`[Queue] Recovered ${recovered} stale jobs`);
+    }
+
+    return recovered;
   }
 
   private async removeFromProcessing(generationId: string): Promise<void> {

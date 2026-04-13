@@ -129,6 +129,20 @@ export class N8nClient {
     return !!(this.webhookUrl && this.apiKey);
   }
 
+  async isWebhookRegistered(): Promise<boolean> {
+    if (!this.webhookUrl) return false;
+    try {
+      const response = await axios.head(this.webhookUrl, {
+        timeout: 5000,
+        headers: this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {},
+        validateStatus: () => true,
+      });
+      return response.status !== 404;
+    } catch {
+      return false;
+    }
+  }
+
   /**
    * Obtener información de configuración (sin exponer credenciales)
    */
