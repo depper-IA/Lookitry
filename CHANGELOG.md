@@ -1,5 +1,27 @@
 # CHANGELOG — Lookitry
 
+## 13 de Abril 2026 (Continuación)
+
+### Fix: Sistema de Temas para Mini-Landings
+
+**Cambios implementados:**
+
+| # | Componente | Cambio |
+|---|-----------|--------|
+| 1 | `shared.tsx` | Nuevo hook `useLandingTheme(brand)` con fallbacks por sección |
+| 2 | `shared.tsx` | `BrandLogo` ahora usa Next.js Image con blur placeholder |
+| 3 | `shared.tsx` | `ProductImage` ahora tiene `onError` handler con SVG fallback |
+| 4 | `MiniLanding.tsx` | Eliminado `console.log` de debug |
+
+**Hook `useLandingTheme` disponible:**
+- `heroBg`, `productsBg`, `footerBg`, `cardBg`, `infoBg`, `aboutBg` - fondos por sección
+- `text`, `muted`, `mutedLight` - textos adaptativos
+- `border`, `borderLight` - bordes adaptativos
+- `surface`, `surfaceHover` - superficies para cards
+- `ctaBg`, `ctaText` - colores de CTA
+
+---
+
 ## 13 de Abril 2026
 
 ### Fix: Jobs Atascados en Cola Try-On
