@@ -55,6 +55,14 @@ export default function ProductsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; id?: string }>({ isOpen: false });
   const [showExternalIdField, setShowExternalIdField] = useState(false);
+  const [brandId, setBrandId] = useState<string | undefined>();
+
+  useEffect(() => {
+    // Obtener brandId para filtrar categorías
+    brandsService.getCurrentBrand().then(brand => {
+      setBrandId(brand.id);
+    }).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem('products-view-mode') as ViewMode | null;
@@ -275,6 +283,7 @@ export default function ProductsPage() {
                   <ProductForm
                     product={editingProduct}
                     showExternalId={showExternalIdField}
+                    brandId={brandId}
                     onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
                     onCancel={() => { setShowForm(false); setEditingProduct(null); }}
                   />

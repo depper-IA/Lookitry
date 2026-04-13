@@ -130,6 +130,8 @@ export default function RegisterForm() {
   const [monthsParam, setMonthsParam] = useState(1);
   const [dynamicPrices, setDynamicPrices] = useState<Record<string, number>>({});
 
+  const [googleError, setGoogleError] = useState<string | null>(null);
+
   // ── Turnstile state ────────────────────────────────────────────────────
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);

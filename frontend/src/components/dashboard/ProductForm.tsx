@@ -11,18 +11,37 @@ import { compressImage, validateImageFile, formatFileSize } from '@/utils/imageC
 import { uploadService } from '@/services/upload.service';
 import { categoryAttributesService } from '@/services/products.service';
 
+// Wilkie Devs brand ID - only this brand sees "Rines"
+const WILKIE_DEVS_BRAND_ID = 'cf95f272-8de9-45e2-9290-d026312f2c31';
+
 interface ProductFormProps {
   product?: Product | null;
   showExternalId?: boolean;
+  brandId?: string; // Para filtrar categorías internas
   onSubmit: (data: CreateProductDto) => Promise<void>;
   onCancel: () => void;
 }
 
-const STANDARD_CATEGORIES = ['tshirt', 'hoodie', 'jacket', 'pants', 'shoes', 'accessories', 'vestido', 'rines', 'zapatos', 'camisa'];
+// Categorías públicas para todos
+const PUBLIC_CATEGORIES = ['tshirt', 'vestido', 'zapatos', 'camisa', 'hoodie', 'chaqueta', 'pantalones', 'accesorios'];
+
+// Categorías internas (solo para marcas específicas)
+const INTERNAL_CATEGORIES: Record<string, string[]> = {
+  [WILKIE_DEVS_BRAND_ID]: ['rines'],
+};
+
+function getAvailableCategories(brandId?: string): string[] {
+  const base = [...PUBLIC_CATEGORIES];
+  if (brandId && INTERNAL_CATEGORIES[brandId]) {
+    base.push(...INTERNAL_CATEGORIES[brandId]);
+  }
+  return base;
+}
+
 const CATEGORY_LABELS: Record<string, string> = {
-  tshirt: 'Camiseta', hoodie: 'Hoodie', jacket: 'Chaqueta', pants: 'Pantalones',
-  shoes: 'Zapatos', accessories: 'Accesorios', vestido: 'Vestido', rines: 'Rines',
-  zapatos: 'Zapatos', camisa: 'Camisa', other: 'Otros',
+  tshirt: 'Camiseta', hoodie: 'Hoodie', chaqueta: 'Chaqueta', pantalones: 'Pantalones',
+  zapatos: 'Zapatos', accesorios: 'Accesorios', vestido: 'Vestido', rines: 'Rines',
+  camisa: 'Camisa', other: 'Otros',
 };
 
 const AI_CATEGORY_MAP: Record<string, string> = {
@@ -157,7 +176,8 @@ function DynamicAttributes({ category, attributes, onChange }: DynamicAttributes
   );
 }
 
-export function ProductForm({ product, showExternalId = false, onSubmit, onCancel }: ProductFormProps) {
+export function ProductForm({ product, showExternalId = false, brandId, onSubmit, onCancel }: ProductFormProps) {
+  const availableCategories = getAvailableCategories(brandId);
   const [formData, setFormData] = useState<CreateProductDto & { short_description?: string; attributes?: Record<string, any> }>({ 
     name: '', description: '', short_description: '', imageUrl: '', category: 'tshirt', 
     price: undefined, badge: undefined, externalId: undefined, attributes: {},
@@ -188,7 +208,7 @@ export function ProductForm({ product, showExternalId = false, onSubmit, onCance
 
   useEffect(() => {
     if (product) {
-      const isCustom = !STANDARD_CATEGORIES.includes(product.category);
+      const isCustom = !availableCategories.includes(product.category);
       setFormData({ name: product.name, description: product.description || '', short_description: product.shortDescription || '',
         imageUrl: product.imageUrl, category: isCustom ? 'other' : product.category, price: product.price ?? undefined,
         badge: product.badge ?? undefined, externalId: product.externalId ?? undefined, attributes: product.attributes || {} });
@@ -328,44 +348,25 @@ export function ProductForm({ product, showExternalId = false, onSubmit, onCance
                   )}
                 </AnimatePresence>
               </div>
-              <div className="flex items-center gap-2">
-                {aiGenerated && <button type="button" onClick={() => setAiGenerated(false)} className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs" style={{ border: '1px solid var(--border-color)' }}>Editar</button>}
-                <button type="button" onClick={() => canDescribeWithAI && triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category)}
-                  disabled={!canDescribeWithAI || describingWithAI}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium disabled:opacity-40" style={{ background: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.25)' }}>
-                  {describingWithAI ? <><svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>Analizando...</> : 'Describir con IA'}
-                </button>
-              </div>
+              {/* AI auto-generates description silently - no UI shown to user */}
             </div>
-            {aiGenerated ? (
-              <div className="rounded-lg px-3 py-2 text-sm relative" style={{ backgroundColor: 'rgba(255,92,58,0.04)', border: '1px solid rgba(255,92,58,0.2)', minHeight: '72px', whiteSpace: 'pre-wrap' }}>
-                <span className="absolute top-1.5 right-2 text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>IA</span>
-                {formData.description || <span style={{ color: 'var(--text-muted)' }}>Sin descripción</span>}
-              </div>
-            ) : (
-              <textarea name="description" value={formData.description} onChange={handleChange} rows={3} style={{ ...inputBaseStyle, resize: 'vertical' }} placeholder="Descripción interna para el probador (opcional)" />
-            )}
+            {/* Description - auto-generated by IA silently, shown to user as normal field */}
+            <textarea name="description" value={formData.description} onChange={handleChange} rows={3} style={{ ...inputBaseStyle, resize: 'vertical' }} placeholder="Descripción interna para el probador (opcional)" />
             {aiError && <p className="mt-1 text-xs text-red-500">{aiError}</p>}
           </div>
 
           {/* Categoría */}
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Categoría</label>
-            {aiGenerated ? (
-              <div className="rounded-lg px-3 py-2 text-sm flex items-center justify-between" style={{ backgroundColor: 'rgba(255,92,58,0.04)', border: '1px solid rgba(255,92,58,0.2)' }}>
-                <span>{formData.category === 'other' ? customCategory || 'Otro' : CATEGORY_LABELS[formData.category] ?? formData.category}</span>
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>IA</span>
-              </div>
-            ) : (
+              {/* Category - auto-detected by IA silently */}
               <>
                 <select name="category" value={formData.category} onChange={handleChange} style={inputBaseStyle} required>
-                  {[...STANDARD_CATEGORIES, 'other'].map(c => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
+                  {[...availableCategories, 'other'].map(c => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
                 </select>
                 {errors.category && <p className="mt-1 text-xs text-red-500">{errors.category}</p>}
                 {showCustomCategory && <div className="mt-3"><Input label="Especificar categoría" name="customCategory" value={customCategory} onChange={(e) => { setCustomCategory(e.target.value); setErrors(p => ({ ...p, customCategory: '' })); }} error={errors.customCategory} placeholder="Ej: Gorras, Bufandas..." required /></div>}
               </>
-            )}
-          </div>
+            </div>
 
           {/* Atributos Dinámicos */}
           {formData.category && formData.category !== 'other' && (
