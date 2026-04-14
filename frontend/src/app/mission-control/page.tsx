@@ -1,8 +1,9 @@
-// Lookitry Mission Control - Overview Page
+// Lookitry Mission Control - Overview Page with REAL DATA
 // v1.0 | Abril 2026
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { 
@@ -14,11 +15,49 @@ import {
   Activity, 
   Bot, 
   Server,
-  ArrowRight,
+  Users,
+  DollarSign,
+  RefreshCw,
 } from 'lucide-react';
-import { MCLayout, OverviewStats, AgentsGrid, TryOnQueue, SystemStatusGrid, BusinessKPIs } from '@/components/mission-control';
-import { StatusDot, Badge } from '@/components/mission-control';
+import { MCLayout, StatusDot, Badge } from '@/components/mission-control';
 import { MOCK_SYSTEM_STATUS } from '@/lib/mission-control/constants';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface RealMetrics {
+  metrics: {
+    totalBrands: number;
+    activeBrands: number;
+    trialBrands: number;
+    proBrands: number;
+    revenueToday: number;
+    revenueMonth: number;
+    activeAgents: number;
+  };
+  planDistribution: {
+    trial: number;
+    basic: number;
+    pro: number;
+    enterprise: number;
+  };
+  subscriptionStatus: {
+    active: number;
+    expiringSoon: number;
+    expired: number;
+    suspended: number;
+    trial: number;
+  };
+  recentPayments: Array<{
+    id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    createdAt: string;
+  }>;
+  lastUpdated: string;
+}
 
 // ============================================================================
 // Quick Stats
@@ -40,7 +79,33 @@ const QUICK_LINKS = [
 // ============================================================================
 
 export default function MissionControlPage() {
+  const [metrics, setMetrics] = useState<RealMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const systemStatus = MOCK_SYSTEM_STATUS.overall;
+
+  useEffect(() => {
+    async function fetchMetrics() {
+      try {
+        const response = await fetch('/api/mission-control/overview');
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        setMetrics(data);
+        setError(null);
+      } catch (err) {
+        setError('No se pudieron cargar las métricas');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMetrics();
+    // Refresh every 60 seconds
+    const interval = setInterval(fetchMetrics, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <MCLayout 
@@ -63,25 +128,140 @@ export default function MissionControlPage() {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="mb-8 flex items-center justify-between"
       >
-        <h1 className="font-display text-3xl font-bold tracking-tight text-[#F0F0F0]">
-          Mission Control
-        </h1>
-        <p className="mt-2 text-[#888888]">
-          Bienvenido al centro de comando de Lookitry. Aquí puedes monitorear todos los agentes, 
-          métricas y operaciones en tiempo real.
-        </p>
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-[#F0F0F0]">
+            Mission Control
+          </h1>
+          <p className="mt-2 text-[#888888]">
+            Bienvenido al centro de comando de Lookitry. Aquí puedes monitorear todos los agentes, 
+            métricas y operaciones en tiempo real.
+          </p>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="flex items-center gap-2 rounded-lg border border-[#1e1e1e] bg-[#111111] px-3 py-2 text-xs text-[#888888] transition-colors hover:bg-[#1a1a1a] hover:text-[#F0F0F0]"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh
+        </button>
       </motion.div>
 
-      {/* Overview Stats */}
-      <OverviewStats
-        agentCount={10}
-        systemStatus={systemStatus}
-        tryons24h={847}
-        activeUsers={847}
-        pnlToday={120}
-      />
+      {/* Overview Stats - REAL DATA */}
+      <section className="mb-8">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="font-display text-xl font-semibold text-[#F0F0F0]">Mission Control Overview</h2>
+            <p className="mt-1 text-sm text-[#888888]">Resumen operativo en tiempo real</p>
+          </div>
+          {metrics?.lastUpdated && (
+            <span className="text-xs text-[#555555]">
+              Actualizado: {new Date(metrics.lastUpdated).toLocaleTimeString('es-CO')}
+            </span>
+          )}
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="animate-pulse rounded-lg border border-[#1e1e1e] bg-[#111111] p-4 h-24" />
+            ))}
+          </div>
+        ) : metrics ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Brands */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-lg border border-[#FF5C3A]/30 bg-gradient-to-br from-[#FF5C3A]/10 to-transparent p-4"
+            >
+              <div className="flex items-center gap-2">
+                <Users className="h-6 w-6 text-[#FF5C3A]" />
+                <div>
+                  <p className="text-xs text-[#888888]">Total Marcas</p>
+                  <p className="font-mono text-2xl font-bold text-[#FF5C3A]">{metrics.metrics.totalBrands}</p>
+                </div>
+              </div>
+              <div className="mt-2 flex gap-2 text-xs">
+                <span className="text-[#00E5A0]">● {metrics.metrics.activeBrands} activas</span>
+                <span className="text-[#FFB547]">● {metrics.metrics.trialBrands} trial</span>
+              </div>
+            </motion.div>
+
+            {/* Revenue */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="rounded-lg border border-[#1e1e1e] bg-[#111111] p-4"
+            >
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-6 w-6 text-[#00E5A0]" />
+                <div>
+                  <p className="text-xs text-[#888888]">Revenue (30d)</p>
+                  <p className="font-mono text-2xl font-bold text-[#00E5A0]">
+                    ${metrics.metrics.revenueMonth.toFixed(0)}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-[#555555]">COP {(metrics.metrics.revenueMonth * 4200).toFixed(0)}</p>
+            </motion.div>
+
+            {/* Plan Distribution */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="rounded-lg border border-[#1e1e1e] bg-[#111111] p-4"
+            >
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-6 w-6 text-[#FFB547]" />
+                <div>
+                  <p className="text-xs text-[#888888]">Planes</p>
+                  <p className="font-mono text-2xl font-bold text-[#FFB547]">
+                    {metrics.planDistribution.pro + metrics.planDistribution.basic}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2 flex gap-3 text-xs">
+                <span className="text-[#FFB547]">PRO {metrics.planDistribution.pro}</span>
+                <span className="text-[#888888]">BASIC {metrics.planDistribution.basic}</span>
+              </div>
+            </motion.div>
+
+            {/* Subscription Status */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="rounded-lg border border-[#1e1e1e] bg-[#111111] p-4"
+            >
+              <div className="flex items-center gap-2">
+                <Activity className="h-6 w-6 text-[#00E5A0]" />
+                <div>
+                  <p className="text-xs text-[#888888]">Suscripciones</p>
+                  <p className="font-mono text-2xl font-bold text-[#F0F0F0]">
+                    {metrics.subscriptionStatus.active}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2 flex gap-2 text-xs">
+                {metrics.subscriptionStatus.expiringSoon > 0 && (
+                  <span className="text-[#FFB547]">⚠ {metrics.subscriptionStatus.expiringSoon} expiran</span>
+                )}
+                {metrics.subscriptionStatus.expired > 0 && (
+                  <span className="text-[#FF3A5C]">✕ {metrics.subscriptionStatus.expired} vencidas</span>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-[#FF3A5C]/30 bg-[#FF3A5C]/10 p-4 text-center">
+            <p className="text-[#FF3A5C]">{error || 'Error cargando métricas'}</p>
+          </div>
+        )}
+      </section>
 
       {/* Quick Access Grid */}
       <section className="mb-8">
@@ -110,16 +290,15 @@ export default function MissionControlPage() {
                 {link.count && (
                   <span className="mt-1 text-xs text-[#555555]">{link.count} agentes</span>
                 )}
-                <ArrowRight className="mt-3 h-4 w-4 text-[#555555] transition-transform group-hover:translate-x-1 group-hover:text-[#FF5C3A]" />
               </Link>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* Recent Activity - Preview Cards */}
+      {/* Recent Activity */}
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Agent Status Preview */}
+        {/* Agent Status */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -139,10 +318,10 @@ export default function MissionControlPage() {
           </div>
           <div className="space-y-3">
             {[
-              { name: 'Sammantha', status: 'online', task: 'Coordinando daily sync' },
-              { name: 'Kira', status: 'busy', task: 'Ejecutando tests E2E' },
-              { name: 'Leo', status: 'online', task: 'Analizando posiciones' },
-              { name: 'Zephyr', status: 'online', task: 'Monitoreando servicios' },
+              { name: 'Sammantha', status: 'online', task: 'Coordinando operaciones' },
+              { name: 'Pixel', status: 'online', task: 'Desarrollo frontend' },
+              { name: 'Kira', status: 'busy', task: 'Ejecutando tests' },
+              { name: 'Leo', status: 'online', task: 'Analizando trading' },
             ].map((agent, idx) => (
               <div key={idx} className="flex items-center gap-3 rounded-lg bg-[#0a0a0a] p-3">
                 <StatusDot status={agent.status as 'online' | 'busy' | 'offline'} size="md" />
@@ -155,7 +334,7 @@ export default function MissionControlPage() {
           </div>
         </motion.div>
 
-        {/* System Status Preview */}
+        {/* System Status */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -200,16 +379,14 @@ export default function MissionControlPage() {
       <motion.footer
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.4 }}
         className="mt-12 border-t border-[#1e1e1e] pt-6 text-center"
       >
-        <p className="text-sm text-[#555555]">
-          Lookitry Mission Control v1.0 • 
-          <span className="mx-2">•</span>
-          Actualizado en tiempo real
-        </p>
-        <p className="mt-1 text-xs text-[#444444]">
-          Powered by Sammantha + 10 Agentes IA
+        <p className="text-xs text-[#555555]">
+          Lookitry Mission Control v1.0 | 
+          {metrics?.lastUpdated && (
+            <> Última actualización: {new Date(metrics.lastUpdated).toLocaleString('es-CO')}</>
+          )}
         </p>
       </motion.footer>
     </MCLayout>
