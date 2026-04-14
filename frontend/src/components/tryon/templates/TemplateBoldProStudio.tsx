@@ -223,6 +223,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                       {config.products.map(p => {
                         const sel = selectedProduct?.id === p.id;
                         const alreadyGenerated = generatedProducts.has(p.id);
+                        
                         return (
                           <button
                             key={p.id}
@@ -232,32 +233,84 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                               borderColor: sel ? primaryColor : borderColor,
                               backgroundColor: bgLuminance ? '#ffffff' : 'rgba(255,255,255,0.03)',
                               transform: sel ? 'scale(1.02)' : 'scale(1)',
-                              boxShadow: sel ? `0 0 15px ${primaryColor}30` : 'none'
+                              boxShadow: sel ? `0 0 20px ${primaryColor}40` : '0 4px 12px rgba(0,0,0,0.15)'
                             }}
                           >
                             <div className="aspect-[1/1] bg-black/5 overflow-hidden relative">
                               <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                               
-                              {/* Visto badge dynamic */}
-                              {alreadyGenerated && (
-                                <div 
-                                  className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest z-10 border"
-                                  style={{ backgroundColor: `${primaryColor}CC`, color: '#fff', borderColor: 'rgba(255,255,255,0.2)' }}
-                                >
-                                  Visto
+                              {/* Badges superiores */}
+                              <div className="absolute top-2 left-2 flex flex-col gap-1.5">
+                                {/* Badge de producto */}
+                                {p.badge && (
+                                  <span className="px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-widest text-white shadow-lg"
+                                    style={{ background: p.badge === 'nuevo' ? '#10B981' : p.badge === 'top' ? '#F59E0B' : '#EF4444' }}>
+                                    {p.badge}
+                                  </span>
+                                )}
+                                {/* Badge de visto */}
+                                {alreadyGenerated && (
+                                  <span className="px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-1"
+                                    style={{ backgroundColor: `${primaryColor}CC` }}>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                                    Visto
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {/* Precio */}
+                              {p.price != null && (
+                                <div className="absolute top-2 right-2">
+                                  <span className="px-2 py-1 rounded-lg text-[10px] font-black text-white shadow-lg"
+                                    style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
+                                    ${p.price.toLocaleString('es-CO')}
+                                  </span>
                                 </div>
                               )}
                               
+                              {/* Overlay de selección */}
                               {sel && (
-                                <div className="absolute inset-0 bg-white/5 flex items-center justify-center">
-                                  <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-lg">
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke={primaryColor} strokeWidth={4}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                <div className="absolute inset-0 bg-white/10 flex items-center justify-center">
+                                  <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-xl" style={{ backgroundColor: primaryColor }}>
+                                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                                   </div>
                                 </div>
                               )}
                             </div>
-                            <div className={`p-1.5 text-center flex-1 flex items-center justify-center ${isSmall ? 'min-h-[32px]' : ''}`}>
-                              <p className="text-[9px] font-black uppercase italic truncate max-w-full" style={{ color: textPrimary }}>{p.name}</p>
+                            
+                            {/* Info del producto */}
+                            <div className={`p-2 text-center ${isSmall ? 'min-h-[48px]' : ''} flex flex-col items-center justify-center`}>
+                              <p className="text-[9px] sm:text-[10px] font-black uppercase italic truncate max-w-full leading-tight" style={{ color: textPrimary }}>{p.name}</p>
+                              
+                              {/* Categoría */}
+                              {p.category && (
+                                <span className="mt-1 px-1.5 py-0.5 rounded text-[7px] font-semibold uppercase tracking-wider text-white/80 bg-black/30">
+                                  {p.category}
+                                </span>
+                              )}
+                              
+                              {/* Descripción corta */}
+                              {p.shortDescription && (
+                                <p className="mt-1 text-[8px] text-gray-500 truncate max-w-full px-1 hidden sm:block">{p.shortDescription}</p>
+                              )}
+                              
+                              {/* Atributos */}
+                              {p.attributes && Object.keys(p.attributes).length > 0 && (
+                                <div className="mt-1.5 flex flex-wrap justify-center gap-1 px-1">
+                                  {p.attributes.material && (
+                                    <span className="text-[7px] text-gray-600">{p.attributes.material}</span>
+                                  )}
+                                  {p.attributes.medida_pulgadas && (
+                                    <span className="text-[7px] text-gray-600">{p.attributes.medida_pulgadas}&quot;</span>
+                                  )}
+                                  {p.attributes.marca && (
+                                    <span className="text-[7px] text-gray-600">{p.attributes.marca}</span>
+                                  )}
+                                  {p.attributes.tallas && Array.isArray(p.attributes.tallas) && (
+                                    <span className="text-[7px] text-gray-600">{p.attributes.tallas.slice(0, 3).join(', ')}</span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </button>
                         );

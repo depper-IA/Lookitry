@@ -8,7 +8,12 @@ export interface Product {
   name: string;
   imageUrl: string;
   category: string;
+  description?: string;
+  shortDescription?: string;
+  price?: number | null;
+  badge?: 'nuevo' | 'top' | 'oferta' | null;
   externalId?: string | null;
+  attributes?: Record<string, any>;
 }
 
 export interface TryOnTemplateProps {

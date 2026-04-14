@@ -66,6 +66,8 @@ const allowedOrigins = [
     'http://127.0.0.1:3004',
     'http://100.85.125.102:3000',
     'http://100.85.125.102:3001',
+    'http://100.85.125.102:3005',
+    'http://100.85.125.102:3006',
     'https://travis-System-Product-Name.tailfcaac6.ts.net',
     ...corsOriginEnv,
   ]),

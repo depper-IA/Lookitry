@@ -62,7 +62,12 @@ export function WidgetRealPreview({
       name: p.name,
       imageUrl: p.imageUrl,
       category: p.category,
-      description: p.description
+      description: p.description,
+      shortDescription: p.shortDescription,
+      price: p.price,
+      badge: p.badge,
+      externalId: p.externalId,
+      attributes: p.attributes
     }))
   };
 

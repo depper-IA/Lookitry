@@ -4,6 +4,101 @@ import { X, AlertCircle, CheckCircle, Info } from 'lucide-react';
 import type { TryOnConfigResponse } from '@/types';
 import type { Product, Step } from './types';
 
+// Helper para determinar si un color es claro u oscuro
+function isLightBg(hex: string): boolean {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5;
+}
+
+// ── Badge y categoría para productos ──────────────────────────────────────
+const CATEGORY_STYLES: Record<string, { bg: string; text: string }> = {
+  rines: { bg: '#1E293B', text: 'rgba(255,255,255,0.9)' },
+  tshirt: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
+  camisa: { bg: '#78350F', text: 'rgba(255,255,255,0.9)' },
+  vestido: { bg: '#4C1D95', text: 'rgba(255,255,255,0.9)' },
+  zapatos: { bg: '#166534', text: 'rgba(255,255,255,0.9)' },
+  default: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
+};
+
+const BADGE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
+  nuevo: { bg: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', text: 'white', dot: '#34D399' },
+  top: { bg: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', text: 'white', dot: '#FCD34D' },
+  oferta: { bg: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', text: 'white', dot: '#FCA5A5' },
+};
+
+export function ProductBadge({ type }: { type: string }) {
+  const style = BADGE_STYLES[type.toLowerCase()] || BADGE_STYLES.nuevo;
+  return (
+    <div 
+      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-white text-[9px] font-bold uppercase tracking-wider"
+      style={{ 
+        background: style.bg, 
+        boxShadow: `0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)`, 
+        border: '1px solid rgba(255,255,255,0.1)'
+      }}
+    >
+      <div className="w-1.5 h-1.5 rounded-full" style={{ background: style.dot, boxShadow: `0 0 4px ${style.dot}` }} />
+      {type}
+    </div>
+  );
+}
+
+export function CategoryBadge({ category }: { category: string }) {
+  const style = CATEGORY_STYLES[category.toLowerCase()] || CATEGORY_STYLES.default;
+  return (
+    <div 
+      className="inline-flex items-center px-2 py-0.5 rounded text-white/80 text-[8px] font-semibold uppercase tracking-wider"
+      style={{ background: style.bg }}
+    >
+      {category}
+    </div>
+  );
+}
+
+// Technical specs line
+function TechLine({ attributes, textColor }: { attributes: Record<string, any>; textColor: string }) {
+  if (!attributes || Object.keys(attributes).length === 0) return null;
+  const parts: string[] = [];
+  if (attributes.material) parts.push(attributes.material);
+  if (attributes.medida_pulgadas) parts.push(attributes.medida_pulgadas + '"');
+  if (attributes.marca) parts.push(attributes.marca);
+  if (parts.length === 0) return null;
+  return <p className="text-[10px] font-medium tracking-wide truncate" style={{ color: textColor + 'aa' }}>{parts.join(' · ')}</p>;
+}
+
+// Attribute pills (solo los que no aparecen en TechLine)
+function AttrPills({ attributes }: { attributes: Record<string, any>; primaryColor?: string }) {
+  if (!attributes || Object.keys(attributes).length === 0) return null;
+  const pills: string[] = [];
+  if (attributes.finish) pills.push(attributes.finish);
+  if (attributes.peso) pills.push(typeof attributes.peso === 'number' ? attributes.peso + 'kg' : attributes.peso);
+  if (attributes.tallas && Array.isArray(attributes.tallas)) pills.push(attributes.tallas.slice(0, 4).join(', '));
+  if (pills.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1">
+      {pills.map((pill, i) => (
+        <span key={i} className="px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide bg-white/10 text-white/80">
+          {pill}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// Price display
+function PriceTag({ price, textColor }: { price: number | undefined | null; textColor: string }) {
+  if (price == null) return null;
+  return (
+    <p className="text-base font-black tracking-tight" style={{ color: '#FF5C3A' }}>
+      ${price.toLocaleString('es-CO')}
+    </p>
+  );
+}
+
 /** Texto de tiempo estimado mostrado debajo del botón de generación */
 export const GENERATION_TIME_HINT = 'Puede tardar unos 30 segundos';
 /** Texto mostrado cuando el resultado ya fue generado antes */
@@ -58,6 +153,7 @@ export function StepBar({ step, primaryColor }: { step: Step; primaryColor: stri
 }
 
 // ── Selector de productos amigable ────────────────────────────────────────────
+// ── Selector de productos amigable (con toda la información del editor) ────────
 export function FriendlyProductSelector({
   products, selected, onSelect, primaryColor, generatedProducts,
 }: {
@@ -67,6 +163,11 @@ export function FriendlyProductSelector({
   primaryColor: string;
   generatedProducts: Map<string, string>;
 }) {
+  // Determinar si el fondo es claro u oscuro para ajustar colores
+  const bgLuminance = typeof window !== 'undefined' 
+    ? isLightBg(getComputedStyle(document.documentElement).getPropertyValue('--secondary-bg').trim() || '#ffffff')
+    : false;
+  
   if (products.length === 0) {
     return (
       <div className="text-center py-8 md:py-12">
@@ -95,57 +196,110 @@ export function FriendlyProductSelector({
         <p className="text-sm md:text-base font-black text-gray-900 uppercase italic tracking-tight">¿Qué quieres probarte?</p>
         <p className="text-[10px] md:text-sm text-gray-500 font-medium uppercase tracking-widest mt-0.5">Toca el producto que más te guste</p>
       </div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 md:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
         {products.map((p, index) => {
           const sel = selected?.id === p.id;
           const alreadyGenerated = generatedProducts.has(p.id);
+          const isDark = !bgLuminance;
+          const cardBg = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)';
+          const borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+          
           return (
             <motion.button
               key={p.id}
               onClick={() => onSelect(p)}
-              className={`rounded-xl overflow-hidden border-2 text-left transition-all duration-200 bg-white ${
-                sel ? 'scale-[1.04] shadow-lg' : 'border-gray-100 hover:border-gray-200'
+              className={`rounded-2xl overflow-hidden border-2 text-left transition-all duration-300 ${
+                sel ? 'scale-[1.03] shadow-xl' : 'hover:scale-[1.02] hover:shadow-lg'
               }`}
-              style={sel ? { borderColor: primaryColor, boxShadow: `0 4px 16px ${primaryColor}30` } : {}}
+              style={{ 
+                borderColor: sel ? primaryColor : borderColor,
+                boxShadow: sel ? `0 8px 24px ${primaryColor}30` : `0 4px 12px rgba(0,0,0,0.1)`,
+                background: cardBg,
+              }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               whileTap={{ scale: 0.98 }}
               aria-label={`Seleccionar ${p.name}`}
             >
+              {/* Image Container */}
               <div className="relative bg-gray-50 aspect-square">
                 <img
                   src={p.imageUrl}
                   alt={p.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain p-2"
                 />
-                {alreadyGenerated && !sel && (
-                  <motion.div 
-                    className="absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center shadow-md" 
-                    style={{ backgroundColor: '#10b981' }}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                  >
-                    <svg className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </motion.div>
+                
+                {/* Selection/Generated Badge */}
+                <div className="absolute top-2 left-2 flex flex-col gap-1.5">
+                  {alreadyGenerated && !sel && (
+                    <motion.div 
+                      className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center shadow-md" 
+                      style={{ backgroundColor: '#10b981' }}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                    >
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </motion.div>
+                  )}
+                  {sel && (
+                    <motion.div
+                      className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-white shadow-md"
+                      style={{ backgroundColor: primaryColor }}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    </motion.div>
+                  )}
+                </div>
+                
+                {/* Price Badge */}
+                {p.price != null && (
+                  <div className="absolute top-2 right-2">
+                    <div className="px-2 py-1 rounded-lg" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+                      <p className="text-[10px] font-black text-white">${p.price.toLocaleString('es-CO')}</p>
+                    </div>
+                  </div>
                 )}
-                {sel && (
-                  <motion.div
-                    className="absolute top-1 right-1 w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center text-white shadow-md"
-                    style={{ backgroundColor: primaryColor }}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                  >
-                    <svg className="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  </motion.div>
+                
+                {/* Badge overlay */}
+                {p.badge && (
+                  <div className="absolute bottom-2 left-2">
+                    <ProductBadge type={p.badge} />
+                  </div>
                 )}
               </div>
-              <div className="p-1.5 md:p-2">
-                <p className="font-black text-[9px] md:text-[11px] text-gray-900 uppercase tracking-tighter truncate leading-none">{p.name}</p>
+              
+              {/* Product Info */}
+              <div className="p-3">
+                <p className="font-black text-[10px] md:text-[11px] text-gray-900 uppercase tracking-tight truncate leading-tight">
+                  {p.name}
+                </p>
+                
+                {/* Category + Short Description */}
+                <div className="mt-1.5 flex items-center justify-between gap-1">
+                  {p.category && <CategoryBadge category={p.category} />}
+                  {p.shortDescription && (
+                    <span className="text-[8px] text-gray-500 truncate max-w-[60%]">{p.shortDescription}</span>
+                  )}
+                </div>
+                
+                {/* Attributes Pills */}
+                {p.attributes && Object.keys(p.attributes).length > 0 && (
+                  <div className="mt-2">
+                    <AttrPills attributes={p.attributes} primaryColor={primaryColor} />
+                  </div>
+                )}
+                
+                {/* Tech Line */}
+                {p.attributes && (
+                  <TechLine attributes={p.attributes} textColor="#666666" />
+                )}
               </div>
             </motion.button>
           );
