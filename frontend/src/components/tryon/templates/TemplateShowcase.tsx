@@ -490,9 +490,15 @@ function ProductGridEditorial({
                 
                 {/* Badges */}
                 <div className="absolute top-2 left-2 flex flex-col gap-1">
+                  {p.badge && (
+                    <span className="px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-widest text-white shadow-lg"
+                      style={{ background: p.badge === 'nuevo' ? '#10B981' : p.badge === 'top' ? '#F59E0B' : '#EF4444' }}>
+                      {p.badge}
+                    </span>
+                  )}
                   {alreadyGenerated && !sel && (
                     <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-md" style={{ backgroundColor: primaryColor }}>
-                      <svg className="w-2.5 sm:w-3 sm:w-3 h-2.5 sm:h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <svg className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
@@ -506,6 +512,16 @@ function ProductGridEditorial({
                   )}
                 </div>
                 
+                {/* Precio */}
+                {p.price != null && (
+                  <div className="absolute top-2 right-2">
+                    <span className="px-2 py-1 rounded-lg text-[10px] font-black text-white shadow-lg"
+                      style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
+                      ${p.price.toLocaleString('es-CO')}
+                    </span>
+                  </div>
+                )}
+                
                 {/* Nombre en overlay - solo visible en hover para tablet+ */}
                 <div 
                   className="hidden md:block absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0"
@@ -517,7 +533,7 @@ function ProductGridEditorial({
                 </div>
               </div>
               
-              {/* Footer - visible siempre en móvil, oculto en tablet+ (porque ya se ve en overlay) */}
+              {/* Footer */}
               <div className="p-2 sm:p-3 md:p-4" style={{ backgroundColor: cardBg }}>
                 <p 
                   className={`text-[10px] sm:text-[11px] font-black uppercase italic tracking-tight truncate leading-tight transition-colors ${
@@ -527,10 +543,33 @@ function ProductGridEditorial({
                 >
                   {p.name}
                 </p>
-                {p.category && (
-                  <p className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wider mt-0.5 truncate" style={{ color: textMuted }}>
-                    {p.category}
-                  </p>
+                
+                <div className="flex items-center justify-between gap-1 mt-1">
+                  {p.category && (
+                    <span className="px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wider bg-black/10 text-black/70">
+                      {p.category}
+                    </span>
+                  )}
+                  {p.shortDescription && (
+                    <span className="text-[8px] text-gray-500 truncate max-w-[60%]">{p.shortDescription}</span>
+                  )}
+                </div>
+                
+                {p.attributes && Object.keys(p.attributes).length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {p.attributes.material && (
+                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.material}</span>
+                    )}
+                    {p.attributes.medida_pulgadas && (
+                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.medida_pulgadas}&quot;</span>
+                    )}
+                    {p.attributes.marca && (
+                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.marca}</span>
+                    )}
+                    {p.attributes.tallas && Array.isArray(p.attributes.tallas) && (
+                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.tallas.slice(0, 3).join(', ')}</span>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

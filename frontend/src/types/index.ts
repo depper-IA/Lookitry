@@ -114,16 +114,30 @@ export interface Product {
   brandId: string;
   name: string;
   description?: string; // IA description - solo para admin
-  shortDescription?: string; // Visible para clientes - nuevo campo
+  shortDescription?: string; // Visible para clientes
   imageUrl: string;
   category: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
   externalId?: string | null;
-  attributes?: Record<string, any>; // Atributos dinámicos - nuevo campo
+  attributes?: Record<string, any>; // Atributos dinámicos
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+// Producto simplificado para uso en widgets/frontend (sin campos de admin)
+export interface ProductWidget {
+  id: string;
+  name: string;
+  imageUrl: string;
+  category: string;
+  description?: string;
+  shortDescription?: string;
+  price?: number | null;
+  badge?: 'nuevo' | 'top' | 'oferta' | null;
+  externalId?: string | null;
+  attributes?: Record<string, any>;
 }
 
 export interface CreateProductDto {
@@ -237,6 +251,11 @@ export interface TryOnConfigResponse {
     imageUrl: string;
     category: string;
     description?: string; // Mantenemos para uso interno
+    shortDescription?: string; // Descripción visible para clientes
+    price?: number | null; // Precio del producto
+    badge?: 'nuevo' | 'top' | 'oferta' | null; // Badge del producto
+    externalId?: string | null; // ID de plataforma externa
+    attributes?: Record<string, any>; // Atributos dinámicos
   }>;
 }
 

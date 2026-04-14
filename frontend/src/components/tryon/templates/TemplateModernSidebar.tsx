@@ -311,8 +311,22 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                   
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-black uppercase italic truncate tracking-tight" style={{ color: sidebarText }}>{p.name}</p>
-                    {p.category && (
-                      <p className="text-[9px] truncate tracking-wider uppercase mt-0.5" style={{ color: sidebarSubtle }}>{p.category}</p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      {p.category && (
+                        <span className="text-[9px] truncate tracking-wider uppercase opacity-70" style={{ color: sidebarSubtle }}>{p.category}</span>
+                      )}
+                      {p.price != null && (
+                        <span className="text-[9px] font-black" style={{ color: primaryColor }}>${p.price.toLocaleString('es-CO')}</span>
+                      )}
+                    </div>
+                    {p.shortDescription && (
+                      <p className="text-[8px] text-gray-500 truncate mt-0.5">{p.shortDescription}</p>
+                    )}
+                    {p.badge && (
+                      <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest text-white"
+                        style={{ background: p.badge === 'nuevo' ? '#10B981' : p.badge === 'top' ? '#F59E0B' : '#EF4444' }}>
+                        {p.badge}
+                      </span>
                     )}
                   </div>
                   
@@ -575,16 +589,45 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                               </div>
                               
                               <div className="p-2.5">
-                                <p 
-                                  className="text-[11px] font-black uppercase italic truncate tracking-tight"
-                                  style={{ color: isSelected ? primaryColor : mainTextPrimary }}
-                                >
-                                  {p.name}
-                                </p>
+                                <div className="flex items-center justify-between gap-1">
+                                  <p 
+                                    className="text-[11px] font-black uppercase italic truncate tracking-tight flex-1"
+                                    style={{ color: isSelected ? primaryColor : mainTextPrimary }}
+                                  >
+                                    {p.name}
+                                  </p>
+                                  {p.price != null && (
+                                    <span className="text-[10px] font-black" style={{ color: primaryColor }}>$</span>
+                                  )}
+                                </div>
                                 {p.category && (
                                   <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mt-0.5" style={{ color: mainTextMuted }}>
                                     {p.category}
                                   </p>
+                                )}
+                                {p.price != null && (
+                                  <p className="text-[10px] font-black" style={{ color: mainTextMuted }}>
+                                    ${p.price.toLocaleString('es-CO')}
+                                  </p>
+                                )}
+                                {p.shortDescription && (
+                                  <p className="text-[8px] text-gray-500 truncate mt-0.5">{p.shortDescription}</p>
+                                )}
+                                {p.badge && (
+                                  <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest text-white"
+                                    style={{ background: p.badge === 'nuevo' ? '#10B981' : p.badge === 'top' ? '#F59E0B' : '#EF4444' }}>
+                                    {p.badge}
+                                  </span>
+                                )}
+                                {p.attributes && Object.keys(p.attributes).length > 0 && (
+                                  <div className="mt-1.5 flex flex-wrap gap-1">
+                                    {p.attributes.material && (
+                                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.material}</span>
+                                    )}
+                                    {p.attributes.medida_pulgadas && (
+                                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.medida_pulgadas}&quot;</span>
+                                    )}
+                                  </div>
                                 )}
                               </div>
                             </div>
