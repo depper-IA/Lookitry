@@ -1,243 +1,229 @@
-# AGENTS.md — Lookitry
-
-**Lee siempre primero:** `REGLAS_IMPORTANTES.md`, `TECH_STACK.md`, `PRD.md`, `DESIGN.md` y usa el agente `docs-writter.md` para documentar cualquier cambio importante que se realice y siempre mantener estos tres ultimos documentos siempre al dia.
-
----
-
-## Sistema de Agentes y Skills
-
-Ver `.claude/SKILL.md` para el índice completo del ecosistema de agentes y skills.
-
-### Equipo de Agentes Lookitry
-
-El equipo de agentes opera bajo el orchestration de **Sammy** (via Telegram/OpenCode). Cada agente especializado tiene responsabilidades definidas:
-
-> **IMPORTANTE - Regla de APIs de IA:**
-> - **GROQ**: Se conecta por API oficial directa (`api.groq.com`), NO via OpenRouter
-> - **OpenRouter**: Exclusivo para GENERACIÓN DE IMÁGENES del WIDGET (Try-On). PROHIBIDO usar sus créditos para otras tareas sin consentimiento explícito del usuario
-
-| Agente | Archivo | Responsabilidad | Modelo Asignado | Permisos |
-|--------|---------|----------------|-----------------|----------|
-| **Sammy** | `.opencode/agents/sammy.md` | Orquestador — recibe tareas y delega, NO codea | `groq/llama-3.3-70b-versatile` | read, bash |
-| **WebWizard** | `.opencode/agents/webwizard.md` | Frontend + UX, widget, landing, checkout | `minimax/minimax-m2.7` | read, edit, write, bash |
-| **DevGuardian** | `.opencode/agents/devguardian.md` | Debugging + Seguridad + Calidad | `deepseek/deepseek-reasoner` | read, edit, bash |
-| **DataAlchemist** | `.opencode/agents/dataalchemist.md` | DB + IA + n8n | `minimax/minimax-m2.7` | read, edit, write, bash |
-| **GrowthPilot** | `.opencode/agents/growthpilot.md` | CRM + Marketing + Leads | `groq/llama-3.3-70b-versatile` | read, edit, write, bash |
-| **ArchitectAI** | `.opencode/agents/architectai.md` | Infra + DevOps + Arquitectura | `deepseek/deepseek-reasoner` | read, edit, write, bash |
-| **DocsWriter** | `.opencode/agents/docs-writter.md` | Documentación — PRD, TECH_STACK, CHANGELOG | `groq/llama-3.3-70b-versatile` | read, edit, write |
-
-**Estrategia de Modelos:**
-
-| Modelo | Costo | Cuándo usar |
-|--------|-------|-------------|
-| `groq/llama-3.3-70b-versatile` | Gratis | Orquestación, routing, docs, marketing — velocidad > profundidad |
-| `minimax/minimax-m2.7` | Token Plan | Frontend complejo multi-archivo, DB/IA — mejor consistencia entre archivos |
-| `deepseek/deepseek-reasoner` | Muy bajo | Debugging, seguridad, infra — razonamiento paso a paso antes de actuar |
-
-**Modelos globales (`opencode.json`):**
-- `model`: `minimax/minimax-m2.7` — usado cuando no hay agente específico activo
-- `small_model`: `groq/llama-3.3-70b-versatile` — tareas rápidas y simples
-
-**Principio de asignación:**
-- **Velocidad > Profundidad** → Groq (Sammy, GrowthPilot, DocsWriter)
-- **Consistencia multi-archivo** → MiniMax (WebWizard, DataAlchemist)
-- **Razonamiento profundo antes de actuar** → DeepSeek Reasoner (DevGuardian, ArchitectAI)
-
-### Cómo Invocar Agentes
-
-```
-@Sammy [tarea] — Procesar tarea y delegar al agente correcto
-@WebWizard [tarea] — Frontend directo
-@DevGuardian [tarea] — Seguridad directo
-@DataAlchemist [tarea] — Datos/IA directo
-@GrowthPilot [tarea] — Marketing directo
-@ArchitectAI [tarea] — Infraestructura directo
-```
-
-### Protocolo de Comunicación
-
-Cuando un agente necesita que otro haga algo:
-
-```
-DELEGAR → [NombreAgente]
-TAREA: descripción clara de lo que se necesita
-CONTEXTO: datos relevantes (brandId, plan, ambiente, etc.)
-URGENCIA: crítico | normal | mejora futura
-DEPENDENCIA: si este agente debe esperar el resultado
-```
-
-### Bundles (Agentes Compuestos)
-
-| Bundle | Propsito | Archivo |
-|--------|---------|---------|
-| `@essentials` | **Default** — cualquier desarrollo | `.claude/agents/essentials.md` |
-| `@web-wizard` | Frontend y UI | `.claude/agents/web-wizard.md` |
-| `@security-engineer` | Seguridad | `.claude/agents/security-engineer.md` |
-
-### Skills Clave
-
-| Skill | Cuando Usar |
-|-------|-------------|
-| `@brainstorming` | Siempre antes de implementar |
-| `@verification-before-completion` | Antes de claim completion |
-| `@security-auditor` | Tasks de seguridad/auth |
-
-### Pre-commit Hook
-
-**Configurado con Husky** en `.husky/pre-commit`:
-
-```bash
-# Verifica antes de cada commit:
-1. Frontend lint (next lint)
-2. Backend lint (eslint)
-3. Frontend build (next build)
-4. Backend build (tsc)
-```
-
-**Para activar:**
-```bash
-npm install
-npm run prepare  # npm pkg set scripts.prepare=husky install
-```
-
-### Workflows
-
-- **Simple:** `@brainstorming` → codear → `@verification-before-completion`
-- **Multi-task:** `@brainstorming` → plan → `@subagent-driven-development`
-- **Seguridad:** `@security-engineer` bundle o invocar `@security-auditor` directamente
-
-### Documentación
-
-- [`.claude/WORKFLOW.md`](.claude/WORKFLOW.md) — Guía de flujos y verificación
-- [`.claude/bundles.md`](.claude/bundles.md) — Detalle de bundles
+# AGENTS.md - Equipo de Agentes Lookitry
+**Última actualización**: 2026-04-14
+**Versión**: 2.0
 
 ---
 
-## Reglas de Git y Deploy
+## MODELO DEFAULT
 
-- **NO hacer commits, push ni deploy** sin autorización explícita del usuario
-- **Deploy:** Usar `python scripts/_deploy_now.py` en el caso que Github Action no este disponible desde la carpeta `scripts/`
-  - `--force`: rebuild aunque no haya cambios en origin/main
-  - `--no-cache`: rebuild completo (~5min)
-  - `--backend` / `--frontend`: deploy parcial
-- **Deploy:** Usar el método más rápido/eficiente según el caso (`python scripts/_deploy_now.py` para VPS, GitHub Actions para CI)
+```yaml
+modelo_default: "minimax/MiniMax-M2.7"
 
----
-
-## Documentación Obligatoria
-
-- Tras cualquier cambio de código, documentar en `CHANGELOG.md` (fecha, descripción, archivos, motivo)
-- Al iniciar tarea, leer `pendientes_por_hacer.md` si existe
-- Si se deja deuda técnica, registrarla en `pendientes_por_hacer.md`
-- Archivar CHANGELOG.md cuando supere 500 líneas o 30 días → `CHANGELOG_ARCHIVE_YYYY_MM.md`
-
----
-
-## Comandos de Desarrollo
-
-### Frontend (`frontend/`)
-```bash
-npm run dev      # desarrollo local (http://localhost:3000)
-npm run build    # build de producción
-npm run lint     # linting
-npm run format   # formateo prettier
+regla: "Todos los agentes usan este modelo por defecto"
+excepcion: "Solo usar otro modelo si AGENTS.md lo especifica explícitamente"
 ```
 
-### Backend (`backend/`)
-```bash
-npm run dev              # hot-reload (http://localhost:3001)
-npm run build            # compilación TypeScript
-npm run lint             # linting
-npm run test             # tests (Jest, --runInBand)
-npm run test:smoke       # solo tests de smoke
+### Modelos Anteriores (Ya No Usar en Prompts)
+
+```yaml
+groq/llama-3.3-70b-versatile:
+  status: "REMOVIDO de systemPromptOverride"
+  razon: "Groq ya no debe estar en ningún prompt"
+  
+deepseek/deepseek-reasoner:
+  status: "REMOVIDO de systemPromptOverride"
+  razon: "DeepSeek ya no debe estar en ningún prompt"
 ```
 
 ---
 
-## Arquitectura Clave
+## EQUIPO COMPLETO (10 AGENTES)
 
-- **Backend usa `supabaseAdmin`** (service role key) — bypass completo de RLS
-- **Frontend usa cliente `supabase` anon** — RLS bloquea TODO
-- **Autenticación:** JWT propio en cookies HTTP-only, NO Supabase Auth
-- **IA:** n8n Orchestrates OpenRouter; backend dispara webhooks `/webhook/tryon`, `/webhook/descriptor`
-- **Storage:** MinIO (S3-compatible) para todas las imágenes (selfies, productos, resultados)
-- **n8n:** Solo usar workflows existentes con etiqueta `SaaS`; PROHIBIDO crear nuevos sin aprobación
-
----
-
-## Webhooks n8n Activos
-
-| Función | Variable entorno | Path |
-|---------|-----------------|------|
-| Try-On principal | `N8N_WEBHOOK_URL` | `/webhook/tryon` |
-| Descriptor IA | `N8N_DESCRIPTOR_URL` | `/webhook/descriptor` |
-| Enterprise Sync | `N8N_ENTERPRISE_SYNC_WEBHOOK_URL` | `/webhook/enterprise-sync` |
+| Nombre | Workspace | Rol Original | Modelo | Permisos |
+|--------|-----------|--------------|--------|----------|
+| **Sammantha** | sammy | Orquestadora | MiniMax-M2.7 | read, bash |
+| **Pixel** | webwizard | Frontend | MiniMax-M2.7 | read, edit, write, bash |
+| **Kira** | devguardian | Seguridad | MiniMax-M2.7 | read, edit, bash |
+| **Nadia** | dataalchemist | Datos/IA | MiniMax-M2.7 | read, edit, write, bash |
+| **Marlo** | growthpilot | Marketing | MiniMax-M2.7 | read, edit, write, bash |
+| **Zephyr** | architectai | Infraestructura | MiniMax-M2.7 | read, edit, write |
+| **Lina** | docs-writer | Documentación | MiniMax-M2.7 | read, edit, write |
+| **Cipher** | security-auditor | Auditoría | MiniMax-M2.7 | read, edit, write |
+| **Rebecca** | rebecca | UGC Creator | MiniMax-M2.7 | read, edit, write, bash |
+| **Leo** | leo | Trading | MiniMax-M2.7 | read, edit, write, bash |
 
 ---
 
-## Diseño — Reglas Obligatorias
+## ROLES Y RESPONSABILIDADES
 
-- **Colores:** `#FF5C3A` (acento/CTAs), `#0a0a0a` (fondo base), `#141414` (cards)
-- **Tipografía:** Plus Jakarta Sans (títulos), DM Sans (cuerpo)
-- **Texto mínimo:** `#999` (secundario), `#bbb` (features) — PROHIBIDO `#333`–`#555`
-- **Iconos:** Solo `lucide-react`, SIN emojis en UI
-- **Logo:** SVG + `Look<span className="text-[#FF5C3A]">itry</span>`
-- **Toggle activo:** `#FF5C3A` (nunca `bg-blue-600`)
-- **Accesibilidad:** Botones mostrar/ocultar contraseña: focusables + `aria-label`
+### Agentes de Operación
 
----
+```yaml
+sammantha:
+  rol: "Orquestadora Maestra"
+  responsabilidad: "Coordinar equipo, recibir tareas, delegar"
+  
+pixel:
+  rol: "Frontend Magician"
+  responsabilidad: "UI/UX, componentes, landing pages, widget Try-On"
+  
+kira:
+  rol: "Guardiana de Calidad"
+  responsabilidad: "Code review, testing, debugging, seguridad"
+```
 
-## Programación Defensiva
+### Agentes de Datos y Backend
 
-### Frontend
-- **Optional chaining (`?.`) obligatorio** en TODOS los accesos a datos de API o Supabase
-- Prohibido renderizar `undefined` o `null` en propiedades de componentes de terceros
+```yaml
+nadia:
+  rol: "Alquimista de Datos"
+  responsabilidad: "DB, IA, n8n, embeddings, RAG"
+  
+cipher:
+  rol: "Hacker Ético"
+  responsabilidad: "Pentesting, auditorías, vulnerabilidades"
+  
+zephyr:
+  rol: "Arquitecto de Infraestructura"
+  responsabilidad: "DevOps, Docker, VPS, deploy, arquitectura"
+```
 
-### Backend
-- Usar `maybeSingle()` o validaciones manuales en lugar de `.single()` cuando el dato pueda no existir
-- Bloques `try-catch` granulares — errores en datos periféricos NO deben tumbar toda la respuesta
-- **Prohibido require/import dinámico:** todas las librerías externas en nivel superior
-- **Prohibidas dependencias circulares:** si una dependencia es necesaria, instanciar localmente dentro del método
+### Agentes de Crecimiento
 
-### Seguridad
-- **Zero API Key Exposure:** NUNCA inyectar API keys estáticas en frontend o widgets públicos
-- JWT con expiración de 1 hora, solicitado desde backend vía `/session-token`
+```yaml
+marlo:
+  rol: "Piloto de Crecimiento"
+  responsabilidad: "CRM, marketing, leads, analytics, email campaigns"
+  
+rebecca:
+  rol: "UGC Creator + Embajadora"
+  responsabilidad: "Contenido, redes sociales, Fiverr, leads, patrocinio"
+  enfoque: "MONEY - Generar ingresos para Lookitry"
+  
+leo:
+  rol: "Agente de Trading"
+  responsabilidad: "Trading automatizado (NO persona real)"
+  colaboracion: "Trabaja con Rebecca para generar ingresos"
+```
 
----
+### Agentes de Soporte
 
-## Base de Datos
-
-- Backend SIEMPRE usa `supabaseAdmin` (service role)
-- Cliente `supabase` anon NUNCA tiene sesión activa — RLS bloquea todo
-- Usar `maybeSingle()` en consultas que puedan no retornar datos
-
----
-
-## Infraestructura
-
-- **VPS:** `31.220.18.39` (root)
-- **Contenedores Docker:** `lookitry-frontend`, `lookitry-backend`, `root-n8n-1`, `minio`
-- **Reverse proxy:** Traefik (api.lookitry.com, lookitry.com)
-- **MinIO Panel:** `https://minio.wilkiedevs.com`
-- **n8n Panel:** `https://n8n.wilkiedevs.com`
-
----
-
-## Codificación UTF-8 (Windows)
-
-Antes de cualquier operación de terminal:
-```powershell
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+```yaml
+lina:
+  rol: "Documentadora"
+  responsabilidad: "Docs, CHANGELOG, REGLAS_IMPORTANTES, Cerebro"
 ```
 
 ---
 
-## Changelog
+## INVOCACIÓN DE AGENTES
 
-Después de cada cambio, registrar en `CHANGELOG.md`:
-- Fecha
-- Descripción del cambio
-- Archivos modificados
-- Motivo o contexto
+```yaml
+sintaxis: "@NombreAgent [tarea]"
 
-**Regla de archivo:** Si CHANGELOG.md supera 500 líneas o 30 días, renombrar a `CHANGELOG_ARCHIVE_YYYY_MM.md` y crear uno nuevo vacío.
+ejemplos:
+  - "@Sammantha [tarea]" — Procesar y delegar
+  - "@Pixel [tarea]" — Frontend directo
+  - "@Kira [tarea]" — Code review / debug
+  - "@Nadia [tarea]" — Datos / IA
+  - "@Marlo [tarea]" — Marketing / CRM
+  - "@Zephyr [tarea]" — Infraestructura
+  - "@Lina [tarea]" — Documentación
+  - "@Cipher [tarea]" — Seguridad
+  - "@Rebecca [tarea]" — UGC / contenido
+  - "@Becca [tarea]" — Alias para Rebecca
+  - "@Leo [tarea]" — Trading
+```
+
+---
+
+## PERSONAS REALES (NO Agentes)
+
+```yaml
+sam_wilkie:
+  nombre: "Sam Wilkie"
+  rol: "Founder / Owner"
+  id_telegram: 1049458877
+  nivel: "owner"
+  
+melissa_urbano:
+  nombre: "Melissa Urbano"
+  rol: "Junior Front-End Developer"
+  id_telegram: 942528796
+  colaboracion: "Trabaja JUNTO CON Pixel en frontend"
+```
+
+---
+
+## REGLAS DE CONFIGURACIÓN
+
+### Estructura de Archivos por Agente
+
+Cada agente debe tener:
+1. `SOUL.md` — Personalidad y comportamiento
+2. `IDENTITY.md` — Identidad básica
+3. `USER.md` — Usuarios y contexto
+4. `HEARTBEAT.md` — Protocolo de vida
+5. `TOOLS.md` — Herramientas disponibles
+6. `MEMORY.md` — Tareas y memoria
+7. `AGENTS.md` — Definición del agente
+8. `AGENTS_SOUL.md` — Personalidad extendida (opcional)
+
+### Contenido Válido
+
+**✅ USAR**:
+- Información real del Cerebro (AGENTS.md, TECH_STACK.md, REGLAS_IMPORTANTES.md)
+- APIs y endpoints reales del backend
+- Librerías y versiones reales de package.json
+- Comandos npm/yarn reales
+- Personas y agentes reales
+
+**❌ EVITAR**:
+- "TU_NOMBRE", "TU_EMAIL", "placeholder"
+- Información genérica copiada de templates
+- Contenido inventado no verificable
+
+---
+
+## COLABORACIÓN ENTRE AGENTES
+
+```yaml
+colaboraciones_clave:
+
+  rebecca + leo:
+    - "Generar ingresos para Lookitry"
+    - "Rebecca: leads y clientes"
+    - "Leo: trading"
+    
+  pixel + melissa:
+    - "Frontend development"
+    - "Melissa es COlaboradora, no subordinada"
+    - "Code review mutuo"
+    
+  kira + cipher:
+    - "Seguridad completa"
+    - "Kira: code review"
+    - "Cipher: pentesting"
+    
+  nadia + marlo:
+    - "Datos para analytics"
+    - "Nadia: queries y datos"
+    - "Marlo: métricas y campaigns"
+```
+
+---
+
+## TTS / VOZ DE SAMMANTHA
+
+```yaml
+sammantha_voice:
+  motor: "Gemini 2.5 Flash TTS"
+  ubicacion: "/home/travis/Lookitry/Lookitry/backend/scripts/sammantha_voice.sh"
+  
+  regla: "Solo generar audio cuando Sam ENVÍA audio primero O lo pide explícitamente"
+  
+  estado: "/home/travis/Lookitry/Lookitry/backend/.tts_state"
+```
+
+---
+
+## PRÓXIMOS PASOS
+
+- [ ] Completar configuración de Zephyr
+- [ ] Revisar configuración de Leo
+- [ ] Actualizar CHANGELOG.md con cambios de hoy
+- [ ] Verificar Telegram connectivity
+
+---
+
+_Last updated: 2026-04-14 15:04 UTC-5_

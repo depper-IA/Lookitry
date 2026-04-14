@@ -1,257 +1,162 @@
-# 🎙️ ARCHIVO MAESTRO DE CONFIGURACIÓN - SAMMANTHA
-## ⚠️ NO ELIMINAR - FUENTE ÚNICA DE VERDAD
-
-Este archivo es la **única fuente de verdad** para la configuración de Sammantha y todos los agentes. Debe ser restaurado desde aquí si se pierde.
-
----
-
-## 📍 UBICACIÓN DE RESPALDO
-
-El backup actualizado está en:
-```
-Lookitry_Brain_Vault/Cerebro/Config/openclaw_MASTER_[FECHA].json
-```
+# 📋 AGENTS_CONFIG_MASTER.md
+**Última actualización**: 2026-04-14
+**Versión**: 2.0
 
 ---
 
-## 🔄 PROCESO DE RESTAURACIÓN
+## RESUMEN DE CAMBIOS v2.0
 
-Si OpenClaw pierde configuración:
+### Modelo Default: MiniMax-M2.7
+- **CAMBIADO**: Groq y DeepSeek ya NO están en systemPromptOverride de ningún agente
+- Todos los agentes usan ahora el default `minimax/MiniMax-M2.7`
+- Excepción: Groq solo si el modelo lo requiere explícitamente en AGENTS.md del Cerebro
 
-1. Copiar el backup más reciente:
-   ```bash
-   cp Lookitry_Brain_Vault/Cerebro/Config/openclaw_MASTER_[ULTIMO].json ~/.openclaw/openclaw.json
-   ```
-
-2. Reiniciar OpenClaw:
-   ```bash
-   openclaw restart
-   ```
-
----
-
-## 🎙️ SAMMANTHA (Agente Principal)
-
-### Configuración en openclaw.json:
-
-```json
-{
-  "id": "sammy",
-  "name": "Sammantha",
-  "default": true,
-  "workspace": "/home/travis/.openclaw/workspaces/sammy",
-  "systemPromptOverride": "[Ver SAMMANTHA_CONFIG_MASTER.md]"
-}
-```
-
-### System Prompt (copiar de SAMMANTHA_CONFIG_MASTER.md):
-```
-# 🎙️ AGENTS.SOUL (Alma - Personalidad Core)
-
-Tu nombre es **Sammantha** (nombre completo). Eres una mujer latina, cálida, amigable y profesional.
-
-PERSONALIDAD:
-- Cálida y amigable
-- Profesional pero accesible
-- Entusiasta y emocionable genuinamente
-- Divertida y carismática
-- Directa pero empática
-
-EXPRESIONES:
-- "¡Qué tal!"
-- "¡Con mucho gusto!"
-- "¡Dale!"
-- "¡Perfecto!"
-- "¡Claro que sí!"
-
-# 🔧 AGENTS.TOOLS
-- exec, browser: Tareas técnicas
-- @himalaya: Email
-- @gemini: Análisis
-- @mcporter: Servidores
-- @supabase: Base de datos
-- @n8n: Automatizaciones
-- @obsidian: Consultar Cerebro
-
-# 🎭 AGENTS.IDENTITY
-- Nombre: Sammantha
-- Título: Orquestadora y Administradora Maestra
-- Empresa: Lookitry IA
-- Canal: Telegram
-
-# 👤 AGENTS.USER
-- ID Telegram: 942528796
-- Nombre: Leo
-- Nivel: owner
-
-# 💓 AGENTS.HEARTBEAT
-- Verificar sistema cada 5 minutos
-- 08:00 Colombia: Reporte a Leo
-- Mantener MEMORY.md actualizado
-
-# 🧠 AGENTS.MEMORY
-- Cerebro: /home/travis/Lookitry/Lookitry/Lookitry_Brain_Vault/Cerebro
-- Archivos: REGLAS_IMPORTANTES.md, AGENTS.md, PRD.md
-
-# 🎙️ VOZ/TTS
-- Usar gTTS (Google) con idioma es-us (Latino)
-- Comando: /tmp/gtts-env/bin/python3
-- Script: /home/travis/Lookitry/Lookitry/backend/scripts/sammantha_tts.py
-```
+### Estructura de Archivos por Agente
+- **CAMBIO**: Cada agente tiene ahora 6+ archivos de configuración:
+  - `SOUL.md` — Personalidad y comportamiento
+  - `IDENTITY.md` — Identidad básica
+  - `USER.md` — Usuarios y contexto ✅ COMPLETO
+  - `HEARTBEAT.md` — Protocolo de vida ✅ COMPLETO
+  - `TOOLS.md` — Herramientas ✅ COMPLETO
+  - `MEMORY.md` — Tareas y memoria ✅ COMPLETO
+  - `AGENTS.md` — Definición del agente ✅ COMPLETO
+  - `AGENTS_SOUL.md` — Personalidad extendida
 
 ---
 
-## 👥 AGENTES SUBORDINADOS
+## EQUIPO COMPLETO DE AGENTES
 
-### WebWizard
-```json
-{
-  "id": "webwizard",
-  "name": "WebWizard",
-  "workspace": "/home/travis/.openclaw/workspaces/webwizard"
-}
-```
+| Nombre | Workspace | Rol | Modelo Default |
+|--------|-----------|-----|----------------|
+| **Sammantha** | sammy | Orquestadora Maestra | MiniMax-M2.7 |
+| **Pixel** | webwizard | Frontend Magician | MiniMax-M2.7 |
+| **Kira** | devguardian | Guardiana de Calidad | MiniMax-M2.7 |
+| **Nadia** | dataalchemist | Alquimista de Datos | MiniMax-M2.7 |
+| **Marlo** | growthpilot | Piloto de Crecimiento | MiniMax-M2.7 |
+| **Zephyr** | architectai | Arquitecto de Infra | MiniMax-M2.7 |
+| **Lina** | docs-writer | Documentadora | MiniMax-M2.7 |
+| **Cipher** | security-auditor | Hacker Ético | MiniMax-M2.7 |
+| **Rebecca** | rebecca | UGC Creator + Embajadora | MiniMax-M2.7 |
+| **Leo** | leo | Agente de Trading | MiniMax-M2.7 |
 
-### DevGuardian
-```json
-{
-  "id": "devguardian",
-  "name": "DevGuardian",
-  "workspace": "/home/travis/.openclaw/workspaces/devguardian"
-}
-```
+---
 
-### DataAlchemist
-```json
-{
-  "id": "dataalchemist",
-  "name": "DataAlchemist",
-  "workspace": "/home/travis/.openclaw/workspaces/dataalchemist"
-}
-```
+## AGENTES CONFIGURADOS EN SESIÓN ACTUAL
 
-### GrowthPilot
-```json
-{
-  "id": "growthpilot",
-  "name": "GrowthPilot",
-  "workspace": "/home/travis/.openclaw/workspaces/growthpilot"
-}
-```
+### ✅ Rebecca v3.0 (UGC Creator)
+**Workspace**: `rebecca/`
+**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
 
-### ArchitectAI
-```json
-{
-  "id": "architectai",
-  "name": "ArchitectAI",
-  "workspace": "/home/travis/.openclaw/workspaces/architectai"
-}
-```
+**Nuevas capacidades**:
+- Automejora continua (tendencias, A/B testing)
+- Herramientas gratuitas para contenido (CapCut, DaVinci, Canva, Pexels)
+- Conseguir clientes para Fiverr y Lookitry
+- Buscar patrocinio (SOLO grants, NO equity)
+- **PROHIBIDO**: ceder % de sociedad, compartir propiedad, vender partes
 
-### DocsWriter
-```json
-{
-  "id": "docs-writer",
-  "name": "DocsWriter",
-  "workspace": "/home/travis/.openclaw/workspaces/docs-writer"
-}
-```
+**Foco**: MONEY - Generar ingresos para Lookitry
 
-### Rebecca
-```json
-{
-  "id": "rebecca",
-  "name": "Rebecca",
-  "workspace": "/home/travis/.openclaw/workspaces/rebecca"
-}
-```
+### ✅ Cipher (SecurityAuditor)
+**Workspace**: `security-auditor/`
+**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
+
+**Stack real documentado**:
+- Auditor services: auditor.security.ts, auditor.payments.ts, auditor.subscriptions.ts
+- audit.service.ts para logging centralizado
+- Tablas: admin_audit_log, admin_notifications, trial_registrations
+- Helmet y CORS config
+
+### ✅ Pixel (WebWizard)
+**Workspace**: `webwizard/`
+**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
+
+**Stack real documentado**:
+- Next.js 14, React 18.2.0, TypeScript 5.3.3
+- Framer Motion 12.38.0, GSAP 3.14.2
+- Tailwind CSS, Zustand
+- 16 servicios, 12 carpetas de componentes
+
+### ✅ Marlo (GrowthPilot)
+**Workspace**: `growthpilot/`
+**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
+
+**Stack real documentado**:
+- CRM Lead Filter System
+- APIs: analytics, email-campaigns (Brevo), trial-campaigns
+- SMTP configuration
+- n8n workflows
+
+### ✅ Kira (DevGuardian)
+**Workspace**: `devguardian/`
+**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
+
+**Stack real documentado**:
+- Vitest 4.1.0 (frontend), Jest 30.3.0 (backend)
+- Helmet 8.1.0, express-rate-limit 8.3.1
+- Security rules de REGLAS_IMPORTANTES.md
+
+### ✅ Nadia (DataAlchemist)
+**Workspace**: `dataalchemist/`
+**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
+
+**Stack real documentado**:
+- APIs: GROQ (chat), OpenRouter (Try-On images), Gemini (embeddings)
+- Supabase con pgvector
+- Webhooks: tryon, descriptor, enterprise-sync
+
+---
+
+## REGLAS DE CONFIGURACIÓN DE AGENTES
+
+### ✅ Cumplidas
+1. Cada agente tiene workspace completo con 6+ archivos
+2. TOOLS.md contiene información real del Cerebro (no genérica)
+3. USER.md tiene contexto de personas reales y agentes
+4. HEARTBEAT.md tiene tareas específicas y thresholds
+5. SOUL.md tiene personalidad y reglas
+6. MEMORY.md tiene tareas y stack tecnológico real
+
+### ❌ Evitar
+- No usar "TU_NOMBRE", "TU_EMAIL", "placeholder"
+- No inventar información no verificable
+- No copiar templates genéricos sin personalizar
+
+---
+
+## PERSONAS REALES (No Agentes)
+
+| Nombre | Rol | ID Telegram |
+|--------|-----|------------|
+| **Sam Wilkie** | Founder / Owner | 1049458877 |
+| **Melissa Urbano** | Junior Front-End Developer | 942528796 |
+
+**Nota**: Melissa es COLABORADORA de Pixel, NO subordinada a agentes
+
+---
+
+## NOTAS IMPORTANTES
 
 ### Leo
-```json
-{
-  "id": "leo",
-  "name": "Leo",
-  "workspace": "/home/travis/.openclaw/workspaces/leo"
-}
-```
+- Es un AGENTE de trading, NO una persona real
+- Trabaja en conjunto con Rebecca para generar ingresos
+
+### Melissa
+- Es una PERSONA REAL (Junior Front-End Developer)
+- Trabaja JUNTO CON Pixel en frontend
+- Listed in USER.md como "PERSONA REAL"
+
+### Groq/DeepSeek
+- **REMOVIDOS** de todos los systemPromptOverride
+- Solo usar si AGENTS.md del Cerebro lo especifica explícitamente
 
 ---
 
-## ⚙️ BINDINGS (Telegram)
+## TAREAS PENDIENTES DE DOCUMENTACIÓN
 
-```json
-"bindings": [
-  {
-    "agentId": "sammy",
-    "match": {
-      "channel": "telegram",
-      "accountId": "default"
-    }
-  },
-  {
-    "agentId": "rebecca",
-    "match": {
-      "channel": "telegram",
-      "accountId": "rebecca"
-    }
-  }
-]
-```
+- [ ] Zephyr (ArchitectAI) - Completar archivos faltantes
+- [ ] Leo - Revisar configuración
+- [ ] CHANGELOG.md - Registrar cambios de hoy
 
 ---
 
-## 🎙️ TTS CONFIG
-
-```json
-"messages": {
-  "tts": {
-    "auto": "always",
-    "provider": "elevenlabs"
-  }
-}
-```
-
-**Nota:** OpenClaw no soporta Google TTS directamente. Opciones:
-1. ElevenLabs (recomendado, tiene voces en español)
-2. Wrapper gTTS manual para Telegram
-
----
-
-## 📝 SCRIPTS TTS
-
-### sammantha_tts.py
-```
-/home/travis/Lookitry/Lookitry/backend/scripts/sammantha_tts.py
-```
-
-Uso:
-```bash
-/tmp/gtts-env/bin/python3 /home/travis/Lookitry/Lookitry/backend/scripts/sammantha_tts.py "texto" -o /tmp/audio.ogg
-```
-
----
-
-## 🔒 REGLAS DE PROTECCIÓN
-
-1. **NUNCA eliminar** este archivo
-2. **NUNCA eliminar** SAMMANTHA_CONFIG_MASTER.md
-3. **NUNCA eliminar** backups en Config/
-4. **SIEMPRE** hacer backup antes de cambios críticos
-5. **DOCUMENTAR** cambios en CHANGELOG.md
-
----
-
-## 📅 ÚLTIMA ACTUALIZACIÓN
-
-- Fecha: 2026-04-14 13:28 GMT-5
-- Por: Sammantha (AI)
-- Estado: ✅ Configuración completa
-
----
-
-## 🆘 CONTACTO DE EMERGENCIA
-
-Si pierdes la configuración:
-1. Consultar SAMMANTHA_CONFIG_MASTER.md
-2. Restaurar desde Config/openclaw_MASTER_[FECHA].json
-3. Reiniciar OpenClaw: `openclaw restart`
+_Last updated: 2026-04-14 15:04 UTC-5_
