@@ -139,9 +139,10 @@
         "url": "https://mcp.supabase.com/mcp?project_ref=vkdooutklowctuudjnkl&features=docs%2Caccount%2Cdatabase%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage%2Cdebugging"
       },
       "n8n": {
-        "command": "node",
+        "command": "bash",
         "args": [
-          "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/n8n-mcp-server/dist/index.js"
+          "/home/travis/Lookitry/Lookitry/.opencode/run-mcp.sh",
+          "n8n"
         ],
         "env": {
           "N8N_BASE_URL": "https://n8n.wilkiedevs.com",
