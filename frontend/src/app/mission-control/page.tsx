@@ -1,5 +1,5 @@
-// Lookitry Mission Control - Overview Page with REAL DATA
-// v1.0 | Abril 2026
+// Mission Control - Overview Page focused on OpenClaw Agents
+// v2.0 | Abril 2026 - AGENTS REAL DATA from OpenClaw
 
 'use client';
 
@@ -16,46 +16,48 @@ import {
   Bot, 
   Server,
   Users,
-  DollarSign,
-  RefreshCw,
+  MessageSquare,
+  Clock,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
 import { MCLayout, StatusDot, Badge } from '@/components/mission-control';
-import { MOCK_SYSTEM_STATUS } from '@/lib/mission-control/constants';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-interface RealMetrics {
-  metrics: {
-    totalBrands: number;
-    activeBrands: number;
-    trialBrands: number;
-    proBrands: number;
-    revenueToday: number;
-    revenueMonth: number;
+interface AgentStats {
+  totalSessions: number;
+  telegramSessions: number;
+  webchatSessions: number;
+  completedSessions: number;
+}
+
+interface Agent {
+  id: string;
+  name: string;
+  role: string;
+  description: string;
+  icon: string;
+  status: 'online' | 'busy' | 'offline';
+  lastActivity: string;
+  lastActivityTimestamp: number;
+  channel: string;
+  stats: AgentStats;
+  skills: string[];
+  currentTask: string;
+}
+
+interface AgentsResponse {
+  agents: Agent[];
+  summary: {
+    totalAgents: number;
     activeAgents: number;
+    totalSessions: number;
+    telegramAgents: number;
+    webchatAgents: number;
   };
-  planDistribution: {
-    trial: number;
-    basic: number;
-    pro: number;
-    enterprise: number;
-  };
-  subscriptionStatus: {
-    active: number;
-    expiringSoon: number;
-    expired: number;
-    suspended: number;
-    trial: number;
-  };
-  recentPayments: Array<{
-    id: string;
-    amount: number;
-    currency: string;
-    status: string;
-    createdAt: string;
-  }>;
   lastUpdated: string;
 }
 
@@ -63,152 +65,122 @@ interface RealMetrics {
 // Quick Stats
 // ============================================================================
 
-const QUICK_LINKS = [
-  { id: 'agents', label: 'Agentes', icon: Cpu, count: 10, color: '#FF5C3A' },
-  { id: 'product', label: 'Try-On', icon: Zap, color: '#00E5A0' },
-  { id: 'business', label: 'Business', icon: TrendingUp, color: '#FFB547' },
-  { id: 'security', label: 'Seguridad', icon: Shield, color: '#FF3A5C' },
-  { id: 'growth', label: 'Growth', icon: Megaphone, color: '#5C8AFF' },
-  { id: 'trading', label: 'Trading', icon: Activity, color: '#BF5CFF' },
-  { id: 'autolookitry', label: 'Autolookitry', icon: Bot, color: '#FF5C3A' },
-  { id: 'system', label: 'Sistema', icon: Server, color: '#00E5A0' },
-];
+const STAT_COLORS = ['#FF5C3A', '#00E5A0', '#FFB547', '#5C8AFF', '#BF5CFF', '#FF3A5C'];
 
 // ============================================================================
 // Page Component
 // ============================================================================
 
 export default function MissionControlPage() {
-  const [metrics, setMetrics] = useState<RealMetrics | null>(null);
+  const [agents, setAgents] = useState<AgentsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const systemStatus = MOCK_SYSTEM_STATUS.overall;
-
   useEffect(() => {
-    async function fetchMetrics() {
+    async function fetchAgents() {
       try {
-        const response = await fetch('/api/mission-control/overview');
+        const response = await fetch('/api/mission-control/agents');
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
-        setMetrics(data);
+        setAgents(data);
         setError(null);
       } catch (err) {
-        setError('No se pudieron cargar las métricas');
+        setError('No se pudieron cargar los agentes');
         console.error(err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchMetrics();
-    // Refresh every 60 seconds
-    const interval = setInterval(fetchMetrics, 60000);
+    fetchAgents();
+    const interval = setInterval(fetchAgents, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const systemStatus = agents?.summary?.activeAgents > 0 ? 'healthy' : 'warning';
 
   return (
     <MCLayout 
       globalStatus={systemStatus}
       notificationCount={0}
-      agentStatuses={{
-        sammantha: 'online',
-        pixel: 'online',
-        kira: 'busy',
-        nadia: 'online',
-        cipher: 'online',
-        zephyr: 'online',
-        marlo: 'online',
-        rebecca: 'busy',
-        leo: 'online',
-        lina: 'online',
-      }}
+      agentStatuses={agents?.agents?.reduce((acc, a) => {
+        acc[a.id] = a.status;
+        return acc;
+      }, {} as Record<string, 'online' | 'busy' | 'offline'>) || {}}
     >
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8 flex items-center justify-between"
+        className="mb-8"
       >
-        <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight text-[#F0F0F0]">
-            Mission Control
-          </h1>
-          <p className="mt-2 text-[#888888]">
-            Bienvenido al centro de comando de Lookitry. Aquí puedes monitorear todos los agentes, 
-            métricas y operaciones en tiempo real.
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight text-[#F0F0F0]">
+              🎯 Mission Control
+            </h1>
+            <p className="mt-2 text-[#888888]">
+              Centro de comando de agentes OpenClaw. Monitorea, coordina y delega tareas en tiempo real.
+            </p>
+          </div>
+          {agents?.lastUpdated && (
+            <div className="text-right text-xs text-[#555555]">
+              <p>Actualizado: {new Date(agents.lastUpdated).toLocaleTimeString('es-CO')}</p>
+              <p className="mt-1">Sesiones: {agents.summary.totalSessions}</p>
+            </div>
+          )}
         </div>
-        <button 
-          onClick={() => window.location.reload()}
-          className="flex items-center gap-2 rounded-lg border border-[#1e1e1e] bg-[#111111] px-3 py-2 text-xs text-[#888888] transition-colors hover:bg-[#1a1a1a] hover:text-[#F0F0F0]"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </button>
       </motion.div>
 
-      {/* Overview Stats - REAL DATA */}
+      {/* Summary Stats */}
       <section className="mb-8">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="font-display text-xl font-semibold text-[#F0F0F0]">Mission Control Overview</h2>
-            <p className="mt-1 text-sm text-[#888888]">Resumen operativo en tiempo real</p>
+            <h2 className="font-display text-xl font-semibold text-[#F0F0F0]">Estado General</h2>
+            <p className="mt-1 text-sm text-[#888888]">Resumen de agentes OpenClaw</p>
           </div>
-          {metrics?.lastUpdated && (
-            <span className="text-xs text-[#555555]">
-              Actualizado: {new Date(metrics.lastUpdated).toLocaleTimeString('es-CO')}
-            </span>
-          )}
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1,2,3,4].map(i => (
               <div key={i} className="animate-pulse rounded-lg border border-[#1e1e1e] bg-[#111111] p-4 h-24" />
             ))}
           </div>
-        ) : metrics ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Total Brands */}
+        ) : agents ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Total Agents */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               className="rounded-lg border border-[#FF5C3A]/30 bg-gradient-to-br from-[#FF5C3A]/10 to-transparent p-4"
             >
               <div className="flex items-center gap-2">
-                <Users className="h-6 w-6 text-[#FF5C3A]" />
+                <Cpu className="h-6 w-6 text-[#FF5C3A]" />
                 <div>
-                  <p className="text-xs text-[#888888]">Total Marcas</p>
-                  <p className="font-mono text-2xl font-bold text-[#FF5C3A]">{metrics.metrics.totalBrands}</p>
+                  <p className="text-xs text-[#888888]">Total Agentes</p>
+                  <p className="font-mono text-2xl font-bold text-[#FF5C3A]">{agents.summary.totalAgents}</p>
                 </div>
-              </div>
-              <div className="mt-2 flex gap-2 text-xs">
-                <span className="text-[#00E5A0]">● {metrics.metrics.activeBrands} activas</span>
-                <span className="text-[#FFB547]">● {metrics.metrics.trialBrands} trial</span>
               </div>
             </motion.div>
 
-            {/* Revenue */}
+            {/* Active Agents */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
-              className="rounded-lg border border-[#1e1e1e] bg-[#111111] p-4"
+              className="rounded-lg border border-[#00E5A0]/30 bg-gradient-to-br from-[#00E5A0]/10 to-transparent p-4"
             >
               <div className="flex items-center gap-2">
-                <DollarSign className="h-6 w-6 text-[#00E5A0]" />
+                <Activity className="h-6 w-6 text-[#00E5A0]" />
                 <div>
-                  <p className="text-xs text-[#888888]">Revenue (30d)</p>
-                  <p className="font-mono text-2xl font-bold text-[#00E5A0]">
-                    ${metrics.metrics.revenueMonth.toFixed(0)}
-                  </p>
+                  <p className="text-xs text-[#888888]">Activos</p>
+                  <p className="font-mono text-2xl font-bold text-[#00E5A0]">{agents.summary.activeAgents}</p>
                 </div>
               </div>
-              <p className="mt-2 text-xs text-[#555555]">COP {(metrics.metrics.revenueMonth * 4200).toFixed(0)}</p>
             </motion.div>
 
-            {/* Plan Distribution */}
+            {/* Telegram */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -216,21 +188,15 @@ export default function MissionControlPage() {
               className="rounded-lg border border-[#1e1e1e] bg-[#111111] p-4"
             >
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-6 w-6 text-[#FFB547]" />
+                <MessageSquare className="h-6 w-6 text-[#5C8AFF]" />
                 <div>
-                  <p className="text-xs text-[#888888]">Planes</p>
-                  <p className="font-mono text-2xl font-bold text-[#FFB547]">
-                    {metrics.planDistribution.pro + metrics.planDistribution.basic}
-                  </p>
+                  <p className="text-xs text-[#888888]">Telegram</p>
+                  <p className="font-mono text-2xl font-bold text-[#5C8AFF]">{agents.summary.telegramAgents}</p>
                 </div>
-              </div>
-              <div className="mt-2 flex gap-3 text-xs">
-                <span className="text-[#FFB547]">PRO {metrics.planDistribution.pro}</span>
-                <span className="text-[#888888]">BASIC {metrics.planDistribution.basic}</span>
               </div>
             </motion.div>
 
-            {/* Subscription Status */}
+            {/* Total Sessions */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -238,141 +204,128 @@ export default function MissionControlPage() {
               className="rounded-lg border border-[#1e1e1e] bg-[#111111] p-4"
             >
               <div className="flex items-center gap-2">
-                <Activity className="h-6 w-6 text-[#00E5A0]" />
+                <Clock className="h-6 w-6 text-[#FFB547]" />
                 <div>
-                  <p className="text-xs text-[#888888]">Suscripciones</p>
-                  <p className="font-mono text-2xl font-bold text-[#F0F0F0]">
-                    {metrics.subscriptionStatus.active}
-                  </p>
+                  <p className="text-xs text-[#888888]">Sesiones Totales</p>
+                  <p className="font-mono text-2xl font-bold text-[#FFB547]">{agents.summary.totalSessions}</p>
                 </div>
-              </div>
-              <div className="mt-2 flex gap-2 text-xs">
-                {metrics.subscriptionStatus.expiringSoon > 0 && (
-                  <span className="text-[#FFB547]">⚠ {metrics.subscriptionStatus.expiringSoon} expiran</span>
-                )}
-                {metrics.subscriptionStatus.expired > 0 && (
-                  <span className="text-[#FF3A5C]">✕ {metrics.subscriptionStatus.expired} vencidas</span>
-                )}
               </div>
             </motion.div>
           </div>
         ) : (
           <div className="rounded-lg border border-[#FF3A5C]/30 bg-[#FF3A5C]/10 p-4 text-center">
-            <p className="text-[#FF3A5C]">{error || 'Error cargando métricas'}</p>
+            <p className="text-[#FF3A5C]">{error || 'Error cargando agentes'}</p>
           </div>
         )}
       </section>
 
-      {/* Quick Access Grid */}
+      {/* Agent Cards Grid */}
       <section className="mb-8">
         <h2 className="mb-4 font-display text-lg font-semibold text-[#F0F0F0]">
-          Acceso Rápido
+          Agentes OpenClaw
         </h2>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {QUICK_LINKS.map((link, idx) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {agents?.agents.map((agent, idx) => (
             <motion.div
-              key={link.id}
+              key={agent.id}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.05 }}
+              className={`rounded-lg border p-4 transition-all ${
+                agent.status === 'online' ? 'border-[#00E5A0]/30 bg-[#00E5A0]/5' :
+                agent.status === 'busy' ? 'border-[#FFB547]/30 bg-[#FFB547]/5' :
+                'border-[#1e1e1e] bg-[#111111]'
+              }`}
             >
-              <Link
-                href={`/mission-control/${link.id}`}
-                className="group flex flex-col items-center justify-center rounded-lg border border-[#1e1e1e] bg-[#111111] p-6 transition-all duration-200 hover:border-[#FF5C3A]/30 hover:bg-[#161616] hover:shadow-[0_0_20px_rgba(255,92,58,0.1)]"
-              >
-                <div 
-                  className="mb-3 rounded-xl p-3"
-                  style={{ backgroundColor: `${link.color}20` }}
-                >
-                  <link.icon className="h-6 w-6" style={{ color: link.color }} />
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">{agent.icon}</div>
+                  <div>
+                    <h3 className="font-semibold text-[#F0F0F0]">{agent.name}</h3>
+                    <p className="text-xs text-[#888888]">{agent.role}</p>
+                  </div>
                 </div>
-                <span className="font-medium text-[#F0F0F0]">{link.label}</span>
-                {link.count && (
-                  <span className="mt-1 text-xs text-[#555555]">{link.count} agentes</span>
-                )}
-              </Link>
+                <StatusDot status={agent.status} size="md" />
+              </div>
+              
+              <p className="text-xs text-[#555555] mb-3">{agent.description}</p>
+              
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#888888]">Última actividad</span>
+                  <span className="text-[#F0F0F0]">{agent.lastActivity}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#888888]">Canal</span>
+                  <Badge variant={agent.channel === 'telegram' ? 'ok' : 'pending'}>
+                    {agent.channel === 'telegram' ? '📱 Telegram' : '💻 Webchat'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#888888]">Sesiones</span>
+                  <span className="text-[#F0F0F0]">{agent.stats.totalSessions}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#888888]">Completadas</span>
+                  <span className="text-[#00E5A0]">{agent.stats.completedSessions}</span>
+                </div>
+              </div>
+
+              {agent.skills.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-[#1e1e1e]">
+                  <p className="text-xs text-[#555555] mb-2">Skills</p>
+                  <div className="flex flex-wrap gap-1">
+                    {agent.skills.slice(0, 4).map((skill) => (
+                      <span 
+                        key={skill}
+                        className="px-2 py-0.5 rounded text-[10px] bg-[#1e1e1e] text-[#888888]"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* Recent Activity */}
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Agent Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-lg border border-[#1e1e1e] bg-[#111111] p-4"
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-display text-sm font-semibold text-[#F0F0F0]">
-              Estado de Agentes
-            </h3>
-            <Link 
-              href="/mission-control/agents"
-              className="text-xs text-[#FF5C3A] hover:underline"
-            >
-              Ver todos →
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {[
-              { name: 'Sammantha', status: 'online', task: 'Coordinando operaciones' },
-              { name: 'Pixel', status: 'online', task: 'Desarrollo frontend' },
-              { name: 'Kira', status: 'busy', task: 'Ejecutando tests' },
-              { name: 'Leo', status: 'online', task: 'Analizando trading' },
-            ].map((agent, idx) => (
-              <div key={idx} className="flex items-center gap-3 rounded-lg bg-[#0a0a0a] p-3">
-                <StatusDot status={agent.status as 'online' | 'busy' | 'offline'} size="md" />
-                <div className="flex-1">
-                  <span className="font-medium text-[#F0F0F0]">{agent.name}</span>
-                  <p className="text-xs text-[#555555]">{agent.task}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* System Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="rounded-lg border border-[#1e1e1e] bg-[#111111] p-4"
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-display text-sm font-semibold text-[#F0F0F0]">
-              Servicios Críticos
-            </h3>
-            <Link 
-              href="/mission-control/system"
-              className="text-xs text-[#FF5C3A] hover:underline"
-            >
-              Ver dashboard →
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {MOCK_SYSTEM_STATUS.services.slice(0, 4).map((svc, idx) => (
-              <div 
-                key={idx}
-                className="flex items-center gap-2 rounded-lg bg-[#0a0a0a] p-3"
-              >
-                <StatusDot status={svc.status as 'up' | 'down' | 'degraded'} size="sm" />
-                <span className="text-sm text-[#F0F0F0]">{svc.name}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 rounded-lg border border-[#1e1e1e] bg-[#0a0a0a] p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[#888888]">Uptime General</span>
-              <Badge variant="ok">99.8%</Badge>
-            </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#1e1e1e]">
-              <div className="h-full w-[99.8%] rounded-full bg-[#00E5A0]" />
-            </div>
-          </div>
-        </motion.div>
+      {/* Quick Actions */}
+      <section>
+        <h2 className="mb-4 font-display text-lg font-semibold text-[#F0F0F0]">
+          Accesos Rápidos
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Link
+            href="/admin"
+            className="flex items-center gap-2 rounded-lg border border-[#1e1e1e] bg-[#111111] p-4 transition-all hover:border-[#FF5C3A]/30 hover:bg-[#161616]"
+          >
+            <Server className="h-5 w-5 text-[#FF5C3A]" />
+            <span className="text-sm text-[#F0F0F0]">Admin Dashboard</span>
+          </Link>
+          <Link
+            href="/admin/agents"
+            className="flex items-center gap-2 rounded-lg border border-[#1e1e1e] bg-[#111111] p-4 transition-all hover:border-[#00E5A0]/30 hover:bg-[#161616]"
+          >
+            <Cpu className="h-5 w-5 text-[#00E5A0]" />
+            <span className="text-sm text-[#F0F0F0]">Gestionar Agentes</span>
+          </Link>
+          <Link
+            href="/admin/audit-log"
+            className="flex items-center gap-2 rounded-lg border border-[#1e1e1e] bg-[#111111] p-4 transition-all hover:border-[#FFB547]/30 hover:bg-[#161616]"
+          >
+            <Activity className="h-5 w-5 text-[#FFB547]" />
+            <span className="text-sm text-[#F0F0F0]">Audit Log</span>
+          </Link>
+          <Link
+            href="/admin/health"
+            className="flex items-center gap-2 rounded-lg border border-[#1e1e1e] bg-[#111111] p-4 transition-all hover:border-[#5C8AFF]/30 hover:bg-[#161616]"
+          >
+            <CheckCircle className="h-5 w-5 text-[#5C8AFF]" />
+            <span className="text-sm text-[#F0F0F0]">System Health</span>
+          </Link>
+        </div>
       </section>
 
       {/* Footer */}
@@ -383,9 +336,9 @@ export default function MissionControlPage() {
         className="mt-12 border-t border-[#1e1e1e] pt-6 text-center"
       >
         <p className="text-xs text-[#555555]">
-          Lookitry Mission Control v1.0 | 
-          {metrics?.lastUpdated && (
-            <> Última actualización: {new Date(metrics.lastUpdated).toLocaleString('es-CO')}</>
+          Lookitry Mission Control v2.0 | OpenClaw Agent Control Center
+          {agents?.lastUpdated && (
+            <> | Última actualización: {new Date(agents.lastUpdated).toLocaleString('es-CO')}</>
           )}
         </p>
       </motion.footer>
