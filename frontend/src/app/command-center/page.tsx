@@ -23,17 +23,134 @@ interface HeartbeatData {
   services: Record<string, string>;
 }
 
+/* ─── SAMMY PIXEL ART SPRITE ────────────────────────────────────────────────── */
+function SammyPixelSprite({ status }: { status: string }) {
+  // Hand-crafted 16x24 pixel art sprite — every pixel is a rect
+  // Colors: hair=#1a0a2e, skin=#f0c8a0, eye=#00FFFF, outfit=#0a0a1e, accent=#00FFFF, orange=#FF5C3A
+  const p = (x: number, y: number, c: string) => (
+    <rect x={x} y={y} width={1} height={1} fill={c} />
+  );
+
+  // Animation class based on status
+  const animClass = status === 'busy' ? 'sammy-sprite-busy' : status === 'error' ? 'sammy-sprite-error' : 'sammy-sprite-idle';
+
+  return (
+    <svg viewBox="0 0 16 24" width="48" height="72"
+      style={{ imageRendering: 'pixelated', filter: status === 'error' ? 'hue-rotate(-30deg) brightness(1.3)' : 'none' }}
+      className={animClass}>
+      {/* Hair (top) */}
+      {p(5,0,'#1a0a2e')}{p(6,0,'#1a0a2e')}{p(9,0,'#1a0a2e')}{p(10,0,'#1a0a2e')}
+      {p(4,1,'#1a0a2e')}{p(5,1,'#2a1a4e')}{p(6,1,'#2a1a4e')}{p(7,1,'#2a1a4e')}{p(8,1,'#2a1a4e')}{p(9,1,'#2a1a4e')}{p(10,1,'#2a1a4e')}{p(11,1,'#1a0a2e')}
+      {p(3,2,'#1a0a2e')}{p(4,2,'#3a2a5e')}{p(5,2,'#3a2a5e')}{p(6,2,'#3a2a5e')}{p(7,2,'#3a2a5e')}{p(8,2,'#3a2a5e')}{p(9,2,'#3a2a5e')}{p(10,2,'#3a2a5e')}{p(11,2,'#3a2a5e')}{p(12,2,'#1a0a2e')}
+      {p(3,3,'#1a0a2e')}{p(4,3,'#3a2a5e')}{p(5,3,'#f0c8a0')}{p(6,3,'#f0c8a0')}{p(7,3,'#f0c8a0')}{p(8,3,'#f0c8a0')}{p(9,3,'#f0c8a0')}{p(10,3,'#f0c8a0')}{p(11,3,'#3a2a5e')}{p(12,3,'#1a0a2e')}
+      {/* Eyes row */}
+      {p(3,4,'#1a0a2e')}{p(4,4,'#f0c8a0')}{p(5,4,'#f0c8a0')}{p(6,4,'#1a0a2e')}{p(7,4,'#f0c8a0')}{p(8,4,'#f0c8a0')}{p(9,4,'#1a0a2e')}{p(10,4,'#f0c8a0')}{p(11,4,'#f0c8a0')}{p(12,4,'#1a0a2e')}
+      {/* Eye glow */}
+      {p(5,4,'#00FFFF')}{p(6,4,'#00FFFF')}{p(9,4,'#00FFFF')}{p(10,4,'#00FFFF')}
+      {p(3,5,'#1a0a2e')}{p(4,5,'#f0c8a0')}{p(5,5,'#00FFFF')}{p(6,5,'#0a0a1e')}{p(7,5,'#f0c8a0')}{p(8,5,'#f0c8a0')}{p(9,5,'#00FFFF')}{p(10,5,'#0a0a1e')}{p(11,5,'#f0c8a0')}{p(12,5,'#1a0a2e')}
+      {p(4,6,'#f0c8a0')}{p(5,6,'#00FFFF')}{p(6,6,'#00FFFF')}{p(7,6,'#f0c8a0')}{p(8,6,'#f0c8a0')}{p(9,6,'#00FFFF')}{p(10,6,'#00FFFF')}{p(11,6,'#f0c8a0')}
+      {/* Cheeks/mouth */}
+      {p(3,7,'#1a0a2e')}{p(4,7,'#f0c8a0')}{p(5,7,'#0a0a1e')}{p(6,7,'#f0c8a0')}{p(7,7,'#f0c8a0')}{p(8,7,'#f0c8a0')}{p(9,7,'#f0c8a0')}{p(10,7,'#0a0a1e')}{p(11,7,'#f0c8a0')}{p(12,7,'#1a0a2e')}
+      {/* Lower face */}
+      {p(4,8,'#f0c8a0')}{p(5,8,'#f0c8a0')}{p(6,8,'#f0c8a0')}{p(7,8,'#f0c8a0')}{p(8,8,'#f0c8a0')}{p(9,8,'#f0c8a0')}{p(10,8,'#f0c8a0')}{p(11,8,'#f0c8a0')}
+      {p(3,9,'#1a0a2e')}{p(4,9,'#f0c8a0')}{p(5,9,'#f0c8a0')}{p(6,9,'#f0c8a0')}{p(7,9,'#f0c8a0')}{p(8,9,'#f0c8a0')}{p(9,9,'#f0c8a0')}{p(10,9,'#f0c8a0')}{p(11,9,'#f0c8a0')}{p(12,9,'#1a0a2e')}
+      {/* Neck + collar */}
+      {p(6,10,'#f0c8a0')}{p(7,10,'#f0c8a0')}{p(8,10,'#f0c8a0')}{p(9,10,'#f0c8a0')}
+      {/* Collar with brain */}
+      {p(5,11,'#0a0a1e')}{p(6,11,'#00FFFF')}{p(7,11,'#FF5C3A')}{p(8,11,'#FF5C3A')}{p(9,11,'#00FFFF')}{p(10,11,'#0a0a1e')}
+      {/* Outfit body */}
+      {p(4,12,'#0a0a1e')}{p(5,12,'#00FFFF')}{p(6,12,'#0a0a1e')}{p(7,12,'#0a0a1e')}{p(8,12,'#0a0a1e')}{p(9,12,'#0a0a1e')}{p(10,12,'#00FFFF')}{p(11,12,'#0a0a1e')}
+      {p(3,13,'#0a0a1e')}{p(4,13,'#0a0a1e')}{p(5,13,'#00FFFF')}{p(6,13,'#0a0a1e')}{p(7,13,'#0a0a1e')}{p(8,13,'#0a0a1e')}{p(9,13,'#0a0a1e')}{p(10,13,'#00FFFF')}{p(11,13,'#0a0a1e')}{p(12,13,'#0a0a1e')}
+      {p(3,14,'#0a0a1e')}{p(4,14,'#0a0a1e')}{p(5,14,'#0a0a1e')}{p(6,14,'#0a0a1e')}{p(7,14,'#0a0a1e')}{p(8,14,'#0a0a1e')}{p(9,14,'#0a0a1e')}{p(10,14,'#0a0a1e')}{p(11,14,'#0a0a1e')}{p(12,14,'#0a0a1e')}
+      {/* Arms */}
+      {p(2,13,'#0a0a1e')}{p(2,14,'#0a0a1e')}{p(2,15,'#0a0a1e')}{p(2,16,'#0a0a1e')}
+      {p(13,13,'#0a0a1e')}{p(13,14,'#0a0a1e')}{p(13,15,'#0a0a1e')}{p(13,16,'#0a0a1e')}
+      {/* Lower body */}
+      {p(4,15,'#0a0a1e')}{p(5,15,'#0a0a1e')}{p(6,15,'#0a0a1e')}{p(7,15,'#0a0a1e')}{p(8,15,'#0a0a1e')}{p(9,15,'#0a0a1e')}{p(10,15,'#0a0a1e')}{p(11,15,'#0a0a1e')}
+      {p(4,16,'#0a0a1e')}{p(5,16,'#0a0a1e')}{p(6,16,'#0a0a1e')}{p(7,16,'#0a0a1e')}{p(8,16,'#0a0a1e')}{p(9,16,'#0a0a1e')}{p(10,16,'#0a0a1e')}{p(11,16,'#0a0a1e')}
+      {p(4,17,'#0a0a1e')}{p(5,17,'#0a0a1e')}{p(6,17,'#0a0a1e')}{p(7,17,'#0a0a1e')}{p(8,17,'#0a0a1e')}{p(9,17,'#0a0a1e')}{p(10,17,'#0a0a1e')}{p(11,17,'#0a0a1e')}
+      {/* Legs */}
+      {p(5,18,'#0a0a1e')}{p(6,18,'#0a0a1e')}{p(9,18,'#0a0a1e')}{p(10,18,'#0a0a1e')}
+      {p(5,19,'#0a0a1e')}{p(6,19,'#FF5C3A')}{p(9,19,'#FF5C3A')}{p(10,19,'#0a0a1e')}
+      {p(4,20,'#0a0a1e')}{p(5,20,'#FF5C3A')}{p(6,20,'#FF5C3A')}{p(7,20,'#0a0a1e')}{p(8,20,'#0a0a1e')}{p(9,20,'#FF5C3A')}{p(10,20,'#FF5C3A')}{p(11,20,'#0a0a1e')}
+      {/* Feet */}
+      {p(3,21,'#0a0a1e')}{p(4,21,'#FF5C3A')}{p(5,21,'#FF5C3A')}{p(6,21,'#FF5C3A')}{p(7,21,'#FF5C3A')}{p(8,21,'#FF5C3A')}{p(9,21,'#FF5C3A')}{p(10,21,'#FF5C3A')}{p(11,21,'#FF5C3A')}{p(12,21,'#0a0a1e')}
+      {p(3,22,'#FF5C3A')}{p(4,22,'#FF5C3A')}{p(5,22,'#FF5C3A')}{p(6,22,'#FF5C3A')}{p(7,22,'#FF5C3A')}{p(8,22,'#FF5C3A')}{p(9,22,'#FF5C3A')}{p(10,22,'#FF5C3A')}{p(11,22,'#FF5C3A')}{p(12,22,'#FF5C3A')}
+      {/* Glow halo (behind) */}
+      {status !== 'idle' && <ellipse cx="8" cy="12" rx="7" ry="12" fill="#00FFFF" opacity={status === 'busy' ? 0.15 : 0.08} />}
+    </svg>
+  );
+}
+
+/* ─── DATA STREAM ─────────────────────────────────────────────────────────── */
+function DataStream() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dropsRef = useRef<{ x: number; y: number; speed: number; char: string }[]>([]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン░▒▓';
+    let raf = 0;
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Spawn new drops
+      if (Math.random() > 0.7) {
+        dropsRef.current.push({
+          x: Math.random() * canvas.width,
+          y: 0,
+          speed: Math.random() * 2 + 1,
+          char: chars[Math.floor(Math.random() * chars.length)],
+        });
+      }
+
+      // Update and draw
+      ctx.font = '9px monospace';
+      dropsRef.current = dropsRef.current.filter(d => d.y < canvas.height);
+      for (const d of dropsRef.current) {
+        const alpha = (canvas.height - d.y) / canvas.height;
+        ctx.fillStyle = `rgba(0, 255, 255, ${alpha * 0.6})`;
+        ctx.fillText(d.char, d.x, d.y);
+        d.y += d.speed;
+      }
+
+      raf = requestAnimationFrame(draw);
+    };
+    raf = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return <canvas ref={canvasRef} width={60} height={180}
+    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.3, pointerEvents: 'none' }} />;
+}
+
 /* ─── SAMMY ROOM (Immersive + Heartbeat-driven) ─────────────────────────────── */
 function SammyRoom({ agentId }: { agentId: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const radarCanvasRef = useRef<HTMLCanvasElement>(null);
-  const scanRef = useRef(0);
-  const particlesRef = useRef<{ x: number; y: number; vx: number; vy: number; life: number; color: string }[]>([]);
+  const particlesRef = useRef<{ x: number; y: number; vx: number; vy: number; life: number; color: string; size: number }[]>([]);
+  const glitchRef = useRef(0);
   const [heartbeat, setHeartbeat] = useState<HeartbeatData | null>(null);
-  const [speechBubble, setSpeechBubble] = useState('');
   const [taskTyping, setTaskTyping] = useState('');
+  const [glitchText, setGlitchText] = useState(false);
+  const [frame, setFrame] = useState(0);
   const typingRef = useRef<NodeJS.Timeout | null>(null);
   const targetTask = useRef('');
+  const frameRef = useRef(0);
+
+  // Frame animation loop
+  useEffect(() => {
+    const id = setInterval(() => {
+      frameRef.current = (frameRef.current + 1) % 4;
+      setFrame(frameRef.current);
+    }, 400);
+    return () => clearInterval(id);
+  }, []);
 
   // Fetch heartbeat
   useEffect(() => {
@@ -43,13 +160,10 @@ function SammyRoom({ agentId }: { agentId: string }) {
         if (!res.ok) return;
         const data: HeartbeatData = await res.json();
         setHeartbeat(data);
-
-        // Update speech bubble target for Sammy
-        const sammy = data.agents.find(a => a.id === 'sammy');
+        const sammy = data.agents.find((a: any) => a.id === 'sammy');
         if (sammy) {
           targetTask.current = sammy.lastTask && sammy.lastTask !== 'Sin actividad reciente'
-            ? sammy.lastTask
-            : 'Monitoreando agentes...';
+            ? sammy.lastTask : 'Monitoreando el ecosistema...';
         }
       } catch { /* silent */ }
     };
@@ -58,25 +172,29 @@ function SammyRoom({ agentId }: { agentId: string }) {
     return () => clearInterval(id);
   }, []);
 
-  // Typewriter effect for task text
+  // Typewriter
   useEffect(() => {
     if (typingRef.current) clearInterval(typingRef.current);
     if (targetTask.current === taskTyping) return;
     typingRef.current = setInterval(() => {
       setTaskTyping(prev => {
         if (prev.length < targetTask.current.length) {
+          setGlitchText(true);
+          setTimeout(() => setGlitchText(false), 80);
           return targetTask.current.slice(0, prev.length + 1);
         }
         clearInterval(typingRef.current!);
         return prev;
       });
-    }, 40);
+    }, 35);
     return () => { if (typingRef.current) clearInterval(typingRef.current); };
-  }, [targetTask.current]);
+  }, [targetTask.current, taskTyping]);
 
-  const sammyStatus = heartbeat?.agents.find(a => a.id === 'sammy')?.status ?? 'idle';
+  const sammyStatus = heartbeat?.agents.find((a: any) => a.id === 'sammy')?.status ?? 'idle';
   const isBusy = sammyStatus === 'busy';
   const isError = sammyStatus === 'error';
+  const statusColor = isError ? '#FF003C' : isBusy ? '#FFD700' : '#00FF41';
+  const statusLabel = isError ? '⚠ ERROR' : isBusy ? '⚡ ACTIVE' : '◉ IDLE';
 
   // Particle system
   useEffect(() => {
@@ -84,112 +202,101 @@ function SammyRoom({ agentId }: { agentId: string }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
     let raf = 0;
+
     const spawn = () => {
-      if (particlesRef.current.length < 60) {
-        const count = isBusy ? 3 : 1;
-        for (let i = 0; i < count; i++) {
-          particlesRef.current.push({
-            x: Math.random() * canvas.width,
-            y: canvas.height,
-            vx: (Math.random() - 0.5) * 1.5,
-            vy: -(Math.random() * 2.5 + 0.8),
-            life: 1,
-            color: isBusy ? (Math.random() > 0.5 ? '#00FFFF' : '#FF5C3A') : '#00FF41',
-          });
-        }
+      const count = isBusy ? 4 : isError ? 2 : 1;
+      for (let i = 0; i < count && particlesRef.current.length < 80; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * (isBusy ? 3 : 1.5) + 0.5;
+        particlesRef.current.push({
+          x: 140 + (Math.random() - 0.5) * 40,
+          y: 130,
+          vx: Math.cos(angle) * speed * 0.3,
+          vy: -Math.abs(Math.sin(angle) * speed),
+          life: 1,
+          color: isError ? '#FF003C' : isBusy ? (Math.random() > 0.5 ? '#00FFFF' : '#FF5C3A') : '#00FF41',
+          size: Math.random() * 3 + 1,
+        });
       }
     };
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (isBusy) spawn();
+      if (isBusy || isError) spawn();
 
       particlesRef.current = particlesRef.current.filter(p => p.life > 0);
       for (const p of particlesRef.current) {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life -= 0.012;
-        ctx.globalAlpha = p.life * 0.7;
+        p.x += p.vx; p.y += p.vy; p.vy += 0.02;
+        p.life -= 0.015;
+        ctx.globalAlpha = p.life * 0.8;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 6;
         ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, 2, 2);
+        ctx.fillRect(p.x, p.y, p.size, p.size);
       }
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
       raf = requestAnimationFrame(draw);
     };
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
-  }, [isBusy]);
+  }, [isBusy, isError]);
 
-  // Radar animation
+  // Radar
   useEffect(() => {
     const canvas = radarCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    const CX = 40, CY = 40, R = 36;
     let raf = 0;
+    const CX = 40, CY = 40, R = 36;
+
     const draw = (t: number) => {
       ctx.clearRect(0, 0, 80, 80);
 
-      // Grid circles
-      ctx.strokeStyle = '#00FF4133';
-      ctx.lineWidth = 0.5;
-      for (let r = R / 3; r <= R; r += R / 3) {
-        ctx.beginPath();
-        ctx.arc(CX, CY, r, 0, Math.PI * 2);
-        ctx.stroke();
+      // Grid
+      ctx.strokeStyle = '#00FF4122'; ctx.lineWidth = 0.5;
+      for (let r = R/3; r <= R; r += R/3) {
+        ctx.beginPath(); ctx.arc(CX, CY, r, 0, Math.PI * 2); ctx.stroke();
       }
-      // Crosshairs
       ctx.beginPath();
-      ctx.moveTo(CX - R, CY); ctx.lineTo(CX + R, CY);
-      ctx.moveTo(CX, CY - R); ctx.lineTo(CX, CY + R);
+      ctx.moveTo(CX-R, CY); ctx.lineTo(CX+R, CY);
+      ctx.moveTo(CX, CY-R); ctx.lineTo(CX, CY+R);
       ctx.stroke();
 
-      // Radar sweep
-      const sweep = (t * 0.001) % (Math.PI * 2);
+      // Sweep
+      const sweep = (t * 0.002) % (Math.PI * 2);
       const grad = ctx.createConicGradient(sweep, CX, CY);
-      grad.addColorStop(0, '#00FF4133');
-      grad.addColorStop(0.15, '#00FF4100');
-      grad.addColorStop(1, '#00FF4100');
+      grad.addColorStop(0, '#00FF4133'); grad.addColorStop(0.2, '#00FF4100'); grad.addColorStop(1, '#00FF4100');
       ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(CX, CY, R, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2); ctx.fill();
 
       // Agent dots
       if (heartbeat) {
-        heartbeat.agents.forEach((a, i) => {
-          const angle = (i / heartbeat.agents.length) * Math.PI * 2;
-          const dist = R * 0.5;
-          const dx = CX + Math.cos(angle) * dist - 3;
-          const dy = CY + Math.sin(angle) * dist - 3;
+        heartbeat.agents.forEach((a: any, i: number) => {
+          const angle = (i / Math.max(heartbeat.agents.length, 1)) * Math.PI * 2 - Math.PI / 2;
+          const dist = R * 0.55;
+          const dx = CX + Math.cos(angle) * dist;
+          const dy = CY + Math.sin(angle) * dist;
           ctx.fillStyle = a.status === 'ready' ? '#00FF41' : a.status === 'busy' ? '#FFD700' : a.status === 'error' ? '#FF003C' : '#334155';
-          ctx.beginPath();
-          ctx.arc(dx + 3, dy + 3, 3, 0, Math.PI * 2);
-          ctx.fill();
-          // Blink if error
-          if (a.status === 'error' && Math.sin(t * 0.01) > 0) {
-            ctx.fillStyle = '#FF003C88';
-            ctx.beginPath();
-            ctx.arc(dx + 3, dy + 3, 6, 0, Math.PI * 2);
-            ctx.fill();
+          ctx.beginPath(); ctx.arc(dx, dy, 3, 0, Math.PI * 2); ctx.fill();
+          if (a.status === 'error') {
+            ctx.strokeStyle = '#FF003C88';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(dx, dy, 6 + Math.sin(t * 0.01) * 2, 0, Math.PI * 2); ctx.stroke();
           }
         });
       }
 
-      // Center dot (Sammy)
+      // Center
       ctx.fillStyle = '#00FFFF';
-      ctx.beginPath();
-      ctx.arc(CX, CY, 4, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.shadowColor = '#00FFFF';
+      ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(CX, CY, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
       ctx.strokeStyle = '#00FFFF44';
       ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(CX, CY, 7, 0, Math.PI * 2);
-      ctx.stroke();
+      ctx.beginPath(); ctx.arc(CX, CY, 7, 0, Math.PI * 2); ctx.stroke();
 
       raf = requestAnimationFrame(draw);
     };
@@ -197,90 +304,89 @@ function SammyRoom({ agentId }: { agentId: string }) {
     return () => cancelAnimationFrame(raf);
   }, [heartbeat]);
 
-  const statusColor = isError ? '#FF003C' : isBusy ? '#FFD700' : '#00FF41';
-  const statusLabel = isError ? '⚠ ERROR' : isBusy ? '⚡ ACTIVE' : '◉ IDLE';
-
   return (
-    <div style={{ position: 'relative', width: '100%', aspectRatio: '280/180', overflow: 'hidden',
-      background: '#030508', borderRadius: 6 }}>
+    <div style={{ position: 'relative', width: '100%', aspectRatio: '280/180', overflow: 'hidden', background: '#030508', borderRadius: 6 }}>
 
       {/* Room image */}
       <Image src="/assets/Room-sammanta.png" alt="Sammy Room" fill
-        style={{ objectFit: 'cover', imageRendering: 'auto', opacity: isError ? 0.6 : 0.85 }}
+        style={{ objectFit: 'cover', imageRendering: 'auto', opacity: isError ? 0.5 : 0.75 }}
         unoptimized />
 
-      {/* Scan lines overlay */}
-      <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.02) 2px, rgba(0,255,255,0.02) 4px)', pointerEvents: 'none' }} />
+      {/* Data stream overlay (left side) */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: 30, height: '100%', overflow: 'hidden', pointerEvents: 'none' }}>
+        <DataStream />
+      </div>
+
+      {/* Scan lines */}
+      <div style={{ position: 'absolute', inset: 0,
+        background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.015) 2px, rgba(0,255,255,0.015) 4px)',
+        pointerEvents: 'none' }} />
 
       {/* Error flash */}
       {isError && (
-        <div style={{ position: 'absolute', inset: 0, background: '#FF003C18',
-          animation: 'cc-pulse 0.5s ease-in-out infinite', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: '#FF003C12',
+          animation: 'cc-pulse 0.4s ease-in-out infinite', pointerEvents: 'none' }} />
       )}
 
       {/* Particle canvas */}
       <canvas ref={canvasRef} width={280} height={180}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
 
-      {/* HUD: corner brackets */}
+      {/* Corner HUD brackets */}
       <svg viewBox="0 0 280 180" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-        {/* Corner brackets */}
-        {[[0, 0], [280, 0], [0, 180], [280, 180]].map(([cx, cy], i) => {
-          const sx = i % 2 === 0 ? 1 : -1;
-          const sy = i < 2 ? 1 : -1;
-          return (
-            <g key={i} stroke={statusColor} strokeWidth={1.5} fill="none" opacity={0.7}>
-              <path d={`M${cx + sx * 12},${cy} L${cx},${cy} L${cx},${cy + sy * 12}`} />
-            </g>
-          );
-        })}
-        {/* Top data line */}
-        <line x1={16} y1={12} x2={264} y2={12} stroke="#00FFFF" strokeWidth={0.5} opacity={0.3} />
-        <line x1={16} y1={168} x2={264} y2={168} stroke="#00FFFF" strokeWidth={0.5} opacity={0.3} />
+        {[[0, 0, 1, 1], [280, 0, -1, 1], [0, 180, 1, -1], [280, 180, -1, -1]].map(([cx, cy, sx, sy], i) => (
+          <g key={i} stroke={statusColor} strokeWidth={1.5} fill="none" opacity={0.8}>
+            <path d={`M${Number(cx)},${Number(cy)} L${Number(cx) + Number(sx) * 14},${Number(cy)} L${Number(cx) + Number(sx) * 14},${Number(cy) + Number(sy) * 14}`} />
+          </g>
+        ))}
+        {/* Decorative lines */}
+        <line x1="20" y1="14" x2="260" y2="14" stroke="#00FFFF" strokeWidth={0.5} opacity={0.2} />
+        <line x1="20" y1="166" x2="260" y2="166" stroke="#00FFFF" strokeWidth={0.5} opacity={0.2} />
+        {/* Diagonal corner details */}
+        <path d="M20,14 L32,14 M14,20 L14,32" stroke="#00FFFF44" strokeWidth={1} fill="none" />
       </svg>
 
-      {/* Mini radar (top right) */}
+      {/* Mini radar */}
       <div style={{ position: 'absolute', top: 8, right: 8, width: 40, height: 40,
-        background: '#00000088', border: '1px solid #00FF4144', borderRadius: 4 }}>
+        background: '#00000088', border: `1px solid ${statusColor}44`, borderRadius: 4 }}>
         <canvas ref={radarCanvasRef} width={80} height={80}
           style={{ width: '100%', height: '100%' }} />
       </div>
 
-      {/* Speech bubble (top left) */}
-      <div style={{ position: 'absolute', top: 8, left: 8, maxWidth: 140,
-        background: '#00FFFF11', border: '1px solid #00FFFF44', borderRadius: 4,
-        padding: '4px 8px', backdropFilter: 'blur(4px)' }}>
-        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 7, color: '#00FFFF88', marginBottom: 2 }}>
-          CURRENT_TASK
+      {/* Speech bubble */}
+      <div style={{ position: 'absolute', top: 8, left: 36, maxWidth: 150,
+        background: '#00FFFF0a', border: '1px solid #00FFFF33', borderRadius: 4,
+        padding: '4px 8px', backdropFilter: 'blur(6px)' }}>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 6.5, color: '#00FFFF66', marginBottom: 2, letterSpacing: '0.1em' }}>
+          ▶ CURRENT_TASK
         </div>
-        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 7.5, color: '#00FFFF',
-          minHeight: 10, lineHeight: 1.3 }}>
-          {taskTyping}
-          <span style={{ animation: 'cc-blink 0.8s step-end infinite' }}>█</span>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 7, color: glitchText ? '#FF5C3A' : '#00FFFF',
+          minHeight: 10, lineHeight: 1.4, textShadow: glitchText ? '0 0 8px #FF5C3A' : '0 0 4px #00FFFF66' }}>
+          {taskTyping}<span style={{ animation: 'cc-blink 0.8s step-end infinite' }}>█</span>
         </div>
       </div>
 
-      {/* Stats HUD (bottom left) */}
-      <div style={{ position: 'absolute', bottom: 8, left: 8, display: 'flex', gap: 8 }}>
+      {/* Stats HUD */}
+      <div style={{ position: 'absolute', bottom: 8, left: 36, display: 'flex', gap: 6 }}>
         {[
           { label: 'AGENTS', value: heartbeat ? `${heartbeat.stats.agentsCount}/${heartbeat.agents.length}` : '—/10' },
           { label: 'TASKS', value: heartbeat?.stats.totalTasks?.toString() ?? '—' },
-          { label: 'SUCCESS', value: heartbeat ? `${heartbeat.stats.successRate}%` : '—' },
+          { label: 'OK%', value: heartbeat ? `${heartbeat.stats.successRate}` : '—' },
         ].map(({ label, value }) => (
-          <div key={label} style={{ background: '#00000066', border: '1px solid #00FF4122',
-            borderRadius: 3, padding: '2px 6px', textAlign: 'center' }}>
-            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: '#00FF41', fontWeight: 700 }}>{value}</div>
-            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 6, color: '#00FF4177' }}>{label}</div>
+          <div key={label} style={{ background: '#00000066', border: `1px solid ${statusColor}22`,
+            borderRadius: 3, padding: '3px 7px', textAlign: 'center' }}>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: statusColor, fontWeight: 700 }}>{value}</div>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 6, color: statusColor, opacity: 0.6 }}>{label}</div>
           </div>
         ))}
       </div>
 
-      {/* Services status (bottom right) */}
+      {/* Services */}
       <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 4, flexDirection: 'column', alignItems: 'flex-end' }}>
-        {heartbeat && Object.entries(heartbeat.services).slice(0, 4).map(([name, status]) => (
+        {heartbeat && Object.entries(heartbeat.services).slice(0, 4).map(([name, st]) => (
           <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 3,
-            fontFamily: "'JetBrains Mono', monospace", fontSize: 6.5, color: status === 'ok' ? '#00FF41' : status === 'warn' ? '#FFD700' : '#FF003C' }}>
-            <span>{status === 'ok' ? '●' : status === 'warn' ? '◐' : '✕'}</span>
+            fontFamily: "'JetBrains Mono', monospace", fontSize: 6, color: st === 'ok' ? '#00FF41' : st === 'warn' ? '#FFD700' : '#FF003C' }}>
+            <span>{st === 'ok' ? '●' : st === 'warn' ? '◐' : '✕'}</span>
             <span style={{ opacity: 0.7 }}>{name.toUpperCase()}</span>
           </div>
         ))}
@@ -288,28 +394,42 @@ function SammyRoom({ agentId }: { agentId: string }) {
 
       {/* Status badge */}
       <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
-        display: 'flex', alignItems: 'center', gap: 5, padding: '2px 10px', borderRadius: 2,
-        border: `1px solid ${statusColor}55`,
-        background: `${statusColor}11`,
+        display: 'flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 2,
+        border: `1px solid ${statusColor}55`, background: `${statusColor}11`,
         fontFamily: "'JetBrains Mono', monospace", fontSize: 8, letterSpacing: '0.1em', color: statusColor }}>
         <span style={{ width: 5, height: 5, borderRadius: '50%', background: statusColor,
-          animation: sammyStatus === 'busy' ? 'cc-pulse 0.5s infinite' : 'cc-pulse 1.5s infinite' }} />
+          animation: isBusy ? 'cc-pulse 0.4s infinite' : 'cc-pulse 1.5s infinite' }} />
         SAMMY — {statusLabel}
       </div>
 
-      {/* Avatar */}
+      {/* Sammy sprite */}
       <div style={{
-        position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
-        width: 48, height: 60, imageRendering: 'pixelated',
-        animation: isBusy ? 'sammy-typing 0.3s steps(2) infinite' : isError ? 'sammy-error 0.5s ease-in-out infinite' : 'sammy-idle 3s ease-in-out infinite',
+        position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)',
+        width: 48, height: 72,
+        filter: isError ? 'drop-shadow(0 0 12px #FF003C)' : isBusy ? 'drop-shadow(0 0 12px #00FFFF)' : 'drop-shadow(0 0 8px #00FFFF44)',
       }}>
-        <Image src="/assets/sammy.webp" alt="Sammy Avatar" fill
-          style={{ objectFit: 'contain', imageRendering: 'pixelated' }}
-          unoptimized />
+        <SammyPixelSprite status={sammyStatus} />
       </div>
+
+      {/* Activity ring */}
+      <div style={{
+        position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)',
+        width: 64, height: 64, borderRadius: '50%',
+        border: `2px solid ${statusColor}33`,
+        animation: isBusy ? 'sammy-ring-spin 2s linear infinite' : 'sammy-ring-pulse 3s ease-in-out infinite',
+        pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)',
+        width: 56, height: 56, borderRadius: '50%',
+        border: `1px solid ${statusColor}22`,
+        animation: isBusy ? 'sammy-ring-spin 4s linear infinite reverse' : 'none',
+        pointerEvents: 'none',
+      }} />
     </div>
   );
 }
+
 
 /* ─── CONFIG ───────────────────────────────────────────────────────────────── */
 const SB_URL  = 'https://vkdooutklowctuudjnkl.supabase.co';
