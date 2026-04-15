@@ -2233,3 +2233,24 @@ Nuevo componente HalfStarRating permite puntuación con media estrella (4.5, 3.5
 ### Motivo
 - Migrar de Google Palm (deprecated) a OpenAI para embeddings de documentación
 - Usar variables de entorno en lugar de credenciales hardcodeadas
+
+## [2026-04-15] - Command Center Cleanup + Sam Assets
+
+### Comando Center: Unificación
+
+**Problema:** Existían múltiples versiones del Command Center (duplicados).
+
+**Solución:**
+- ELIMINADO: `SammyControlTower.tsx` (redundante)
+- ELIMINADO: `sammy-control-tower.css` (redundante)
+- ELIMINADO: `MissionControl.jsx` (redundante)
+- ELIMINADO: `mission-control.css` (redundante)
+- ELIMINADO: `mission-control/page.tsx` (redundante)
+- MANTENIDO: `command-center/page.tsx` como fuente única
+
+### Sam's Custom Assets Integrados
+
+- `Room-sammanta.png` integrado como fondo de la sala de Sammy
+- `sammy.webp` integrado como avatar animado de Sammy
+- Assets copiados a `frontend/public/assets/` para acceso público
+- Marcados con `unoptimized` para evitar procesamiento de Next.js
