@@ -1,0 +1,48 @@
+/* Mission Control CSS Module */
+
+.mcContainer {
+  position: relative;
+  min-height: 100vh;
+  background: #020408;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.mcHeader {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(2, 4, 8, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #00FF4118;
+  padding: 12px 24px;
+}
+
+.mcGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Background effects */
+.mcBgGrid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: 0;
+}
+
+.mcGlow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
+}
