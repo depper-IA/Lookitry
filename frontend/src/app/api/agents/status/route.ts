@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Server-side Supabase con service key (sin RLS, datos reales)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
+// Server-side Supabase con service key (sin RLS, datos reales) — lazy init para evitar error en build
+let _supabaseAdmin: ReturnType<typeof createClient> | null = null;
+function getSupabaseAdmin() {
+  if (!_supabaseAdmin) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_KEY;
+    if (!url || !key) return null;
+    _supabaseAdmin = createClient(url, key);
+  }
+  return _supabaseAdmin;
+}
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const GITHUB_REPO = 'depper-IA/lookitry';
@@ -126,11 +132,13 @@ async function checkService(url: string, timeout = 5000): Promise<'ok' | 'warn' 
 
 export async function GET() {
   try {
+    const sbAdmin = getSupabaseAdmin();
     // 1. Heartbeats reales de agentes desde Supabase
-    const { data: heartbeatData } = await supabaseAdmin
-      .from('agent_sessions')
-      .select('agent_name, current_task_description, status, last_heartbeat_at')
-      .order('last_heartbeat_at', { ascending: false });
+    const heartbeatData = sbAdmin
+      ? (await sbAdmin.from('agent_sessions')
+        .select('agent_name, current_task_description, status, last_heartbeat_at')
+        .order('last_heartbeat_at', { ascending: false })).data
+      : null;
 
     const heartbeatMap = new Map<string, any>();
     (heartbeatData ?? []).forEach((s: any) => {
@@ -162,11 +170,12 @@ export async function GET() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const { data: activitiesRaw } = await supabaseAdmin
-      .from('agent_activities')
-      .select('agent_name, status, duration_ms, task_type, task_description, created_at')
-      .gte('created_at', thirtyDaysAgo.toISOString())
-      .order('created_at', { ascending: false });
+    const activitiesRaw = sbAdmin
+      ? (await sbAdmin.from('agent_activities')
+        .select('agent_name, status, duration_ms, task_type, task_description, created_at')
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .order('created_at', { ascending: false })).data
+      : [];
 
     const activities = activitiesRaw ?? [];
     const completed = activities.filter((a: any) => a.status !== 'running');
