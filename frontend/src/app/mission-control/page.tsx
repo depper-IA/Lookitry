@@ -37,20 +37,35 @@ interface ActivityItem {
   title: string;
   description: string;
   time: string;
+  status?: string;
 }
 
-interface QuickAction {
-  emoji: string;
-  label: string;
-  action: () => void;
+interface MissionControlData {
+  agents: Agent[];
+  commits: CommitItem[];
+  stats: {
+    agentsCount: number;
+    totalTasks: number;
+    successRate: number;
+    commitsWeek: number;
+    pending: number;
+    uptime: string;
+  };
+  services: {
+    frontend: 'ok' | 'warn' | 'error';
+    api: 'ok' | 'warn' | 'error';
+    supabase: 'ok' | 'warn' | 'error';
+    n8n: 'ok' | 'warn' | 'error';
+  };
+  recentActivity: ActivityItem[];
+  timestamp: string;
 }
 
-/* ── Components ───────────────────────────────────────────────────────────── */
+/* ── Sub-components ───────────────────────────────────────────────────────── */
 
-/** Tooltip wrapper */
 function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
   return (
-    <div className="relative group inline-block">
+    <div className="relative group inline-block w-full">
       {children}
       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-[#1e293b] border border-[#334155] text-xs text-[#f8fafc] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl">
         {content}
@@ -60,26 +75,20 @@ function Tooltip({ children, content }: { children: React.ReactNode; content: st
   );
 }
 
-/** Agent delegation modal */
-function AgentModal({
-  agent,
-  onClose,
-}: {
-  agent: Agent;
-  onClose: () => void;
-}) {
-  const [task, setTask] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+function AgentModal({ agent, onClose }: { agent: Agent; onClose: () => void }) {
+  const statusLabel = {
+    ready: 'Activo — Listo',
+    busy: 'Ocupado — En tarea',
+    idle: 'Inactivo',
+    error: 'Error detectado',
+  }[agent.status];
 
-  const handleSubmit = () => {
-    if (!task.trim()) return;
-    setSubmitted(true);
-    setTimeout(() => {
-      setTask('');
-      setSubmitted(false);
-      onClose();
-    }, 1800);
-  };
+  const statusColor = {
+    ready: 'text-emerald-400',
+    busy: 'text-amber-400',
+    idle: 'text-[#64748b]',
+    error: 'text-rose-400',
+  }[agent.status];
 
   return (
     <motion.div
@@ -97,9 +106,8 @@ function AgentModal({
         className="bg-[#0f172a] border border-[#334155] rounded-2xl p-8 w-full max-w-md shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${agent.gradient} flex items-center justify-center text-2xl`}>
+          <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${agent.gradient} flex items-center justify-center text-2xl shadow-lg`}>
             {agent.emoji}
           </div>
           <div>
@@ -108,63 +116,38 @@ function AgentModal({
           </div>
         </div>
 
-        {/* Description */}
         <p className="text-sm text-[#94a3b8] mb-6 leading-relaxed">{agent.description}</p>
 
-        {/* Task input */}
-        {!submitted ? (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-2">
-                Delegar tarea
-              </label>
-              <textarea
-                value={task}
-                onChange={(e) => setTask(e.target.value)}
-                placeholder={`Describe la tarea para ${agent.name}...`}
-                rows={3}
-                className="w-full bg-[#1e293b] border border-[#334155] rounded-xl px-4 py-3 text-sm text-[#f8fafc] placeholder-[#64748b] focus:outline-none focus:border-[#06b6d4] focus:ring-1 focus:ring-[#06b6d4] transition-colors resize-none"
-              />
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={onClose}
-                className="flex-1 py-3 rounded-xl border border-[#334155] text-sm font-semibold text-[#94a3b8] hover:bg-[#1e293b] transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={!task.trim()}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#06b6d4] to-[#8b5cf6] text-sm font-bold text-white hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Delegar →
-              </button>
-            </div>
+        <div className="bg-[#1e293b] rounded-xl p-4 space-y-3">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-[#64748b]">Estado actual</span>
+            <span className={`font-semibold ${statusColor}`}>{statusLabel}</span>
           </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center gap-3 py-6"
-          >
-            <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center text-3xl">
-              ✅
-            </div>
-            <p className="text-[#10b981] font-semibold">Tarea enviada a {agent.name}</p>
-            <p className="text-xs text-[#64748b]">Recibirás confirmación cuando esté lista</p>
-          </motion.div>
-        )}
+          <div className="flex justify-between items-start text-sm gap-4">
+            <span className="text-[#64748b] flex-shrink-0">Última tarea</span>
+            <span className="text-[#f8fafc] text-right line-clamp-2">{agent.lastTask}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-[#64748b]">ID del agente</span>
+            <span className="font-mono text-xs text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded">{agent.id}</span>
+          </div>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="mt-5 w-full py-3 rounded-xl border border-[#334155] text-sm font-semibold text-[#94a3b8] hover:bg-[#1e293b] hover:text-[#f8fafc] transition-all"
+        >
+          Cerrar
+        </button>
       </motion.div>
     </motion.div>
   );
 }
 
-/** Health detail drawer */
 function HealthDrawer({ item, onClose }: { item: HealthItem; onClose: () => void }) {
   const statusColors = { ok: 'text-emerald-400', warn: 'text-amber-400', error: 'text-rose-400' };
   const statusBg = { ok: 'bg-emerald-500/20', warn: 'bg-amber-500/20', error: 'bg-rose-500/20' };
-  const statusLabel = { ok: 'Operacional', warn: 'Advertencia', error: 'Error' };
+  const statusLabel = { ok: 'Operacional', warn: 'Advertencia', error: 'Sin respuesta' };
 
   return (
     <motion.div
@@ -190,28 +173,26 @@ function HealthDrawer({ item, onClose }: { item: HealthItem; onClose: () => void
               <p className="text-sm text-[#64748b]">{item.sublabel}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-[#64748b] hover:text-[#f8fafc] text-2xl leading-none">
-            ×
-          </button>
+          <button onClick={onClose} className="text-[#64748b] hover:text-[#f8fafc] text-2xl leading-none transition-colors">×</button>
         </div>
 
-        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${statusBg[item.status]} ${statusColors[item.status]}`}>
+        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${statusBg[item.status]} ${statusColors[item.status]} mb-5`}>
           <span className="text-lg">{item.status === 'ok' ? '✓' : item.status === 'warn' ? '⚠' : '✗'}</span>
           <span className="font-semibold text-sm">{statusLabel[item.status]}</span>
         </div>
 
-        <div className="mt-6 p-4 bg-[#1e293b] rounded-xl space-y-2">
+        <div className="p-4 bg-[#1e293b] rounded-xl space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-[#64748b]">Service</span>
+            <span className="text-[#64748b]">Servicio</span>
             <span className="text-[#f8fafc] font-medium">{item.label}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-[#64748b]">Status</span>
+            <span className="text-[#64748b]">Estado</span>
             <span className={`font-medium ${statusColors[item.status]}`}>{statusLabel[item.status]}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-[#64748b]">Last checked</span>
-            <span className="text-[#f8fafc]">Hace ~2 min</span>
+            <span className="text-[#64748b]">Verificado</span>
+            <span className="text-[#f8fafc]">Hace &lt;1 min</span>
           </div>
         </div>
       </motion.div>
@@ -219,7 +200,6 @@ function HealthDrawer({ item, onClose }: { item: HealthItem; onClose: () => void
   );
 }
 
-/** Quick action feedback */
 function ActionToast({ message }: { message: string }) {
   return (
     <motion.div
@@ -240,14 +220,10 @@ export default function MissionControlPage() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [selectedHealth, setSelectedHealth] = useState<HealthItem | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  
-  // Real State from API
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [commits, setCommits] = useState<CommitItem[]>([]);
-  const [stats, setStats] = useState({ agentsCount: 0, filesTracked: 0, commitsWeek: 0, pending: 0, uptime: '100%' });
-  const [health, setHealth] = useState<HealthItem[]>([]);
-  const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [data, setData] = useState<MissionControlData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [overallStatus, setOverallStatus] = useState<'ok' | 'warn' | 'error'>('ok');
 
   /* Live clock */
   useEffect(() => {
@@ -257,54 +233,31 @@ export default function MissionControlPage() {
     return () => clearInterval(id);
   }, []);
 
-  /* Fetch real data */
-  const fetchData = useCallback(async () => {
+  /* Fetch real data from our server-side proxy */
+  const fetchData = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
     try {
-      const res = await fetch('/api/agents/status');
-      if (res.ok) {
-        const data = await res.json();
-        setAgents(data.agents || []);
-        setCommits(data.commits || []);
-        setStats(data.stats || { agentsCount: 0, filesTracked: 0, commitsWeek: 0, pending: 0, uptime: '100%' });
-        
-        // Map health from services
-        const healthMap: HealthItem[] = [
-          { icon: '🌐', label: 'Frontend', sublabel: 'Next.js 14 — Active', status: data.services.frontend },
-          { icon: '🦾', label: 'OpenClaw', sublabel: 'Orchestrator V2', status: data.services.openclaw },
-          { icon: '🗄️', label: 'Supabase', sublabel: 'Cloud DB', status: data.services.supabase },
-          { icon: '💬', label: 'Telegram', sublabel: 'Bot Integration', status: data.services.telegram },
-        ];
-        setHealth(healthMap);
+      const res = await fetch('/api/agents/status', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json: MissionControlData = await res.json();
+      setData(json);
+      setLastRefresh(new Date());
 
-        // Generate activity feed from commits or static
-        const feed: ActivityItem[] = (data.commits || []).map((c: any) => ({
-          icon: '📝',
-          iconBg: 'bg-emerald-500/20',
-          title: `Commit: ${c.hash}`,
-          description: c.message,
-          time: c.time
-        }));
-        if (feed.length === 0) {
-            feed.push({
-                icon: '✅',
-                iconBg: 'bg-violet-500/20',
-                title: 'Systems Heartbeat',
-                description: 'OpenClaw Ecosystem is reporting normal status.',
-                time: 'Active now'
-            });
-        }
-        setActivity(feed);
-      }
+      // Calcular estado general del sistema
+      const serviceValues = Object.values(json.services);
+      if (serviceValues.some(s => s === 'error')) setOverallStatus('error');
+      else if (serviceValues.some(s => s === 'warn')) setOverallStatus('warn');
+      else setOverallStatus('ok');
     } catch (e) {
-      console.error('Failed to fetch status', e);
+      console.error('[MissionControl] fetch error:', e);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchData();
-    const id = setInterval(fetchData, 30000); // Update every 30s
+    fetchData(true);
+    const id = setInterval(() => fetchData(false), 30_000); // auto-refresh 30s
     return () => clearInterval(id);
   }, [fetchData]);
 
@@ -313,12 +266,20 @@ export default function MissionControlPage() {
     setTimeout(() => setToast(null), 2500);
   }, []);
 
-  const quickActions: QuickAction[] = [
-    { emoji: '🔍', label: 'Full Audit', action: () => showToast('Audit iniciado...') },
-    { emoji: '🚀', label: 'Deploy', action: () => showToast('Despliegue lanzado...') },
-    { emoji: '🧪', label: 'Run Tests', action: () => showToast('Tests ejecutándose...') },
-    { emoji: '📊', label: 'Analytics', action: () => showToast('Abriendo analytics...') },
-  ];
+  const handleRefresh = () => {
+    showToast('Actualizando datos...');
+    fetchData(false);
+  };
+
+  // Mapeo de services → health items con labels legibles
+  const healthItems: HealthItem[] = data
+    ? [
+        { icon: '🌐', label: 'Frontend', sublabel: 'lookitry.com', status: data.services.frontend },
+        { icon: '🦾', label: 'API Backend', sublabel: 'api.lookitry.com', status: data.services.api },
+        { icon: '🗄️', label: 'Supabase', sublabel: 'Base de datos', status: data.services.supabase },
+        { icon: '⚙️', label: 'n8n', sublabel: 'Automatización', status: data.services.n8n },
+      ]
+    : [];
 
   const statusColor = (status: Agent['status']) => {
     if (status === 'ready') return 'text-emerald-400';
@@ -327,9 +288,16 @@ export default function MissionControlPage() {
     return 'text-[#64748b]';
   };
 
+  const statusDotColor = (status: Agent['status']) => {
+    if (status === 'ready') return 'bg-emerald-400';
+    if (status === 'busy') return 'bg-amber-400 animate-pulse';
+    if (status === 'error') return 'bg-rose-400';
+    return 'bg-[#475569]';
+  };
+
   const statusLabel = (status: Agent['status']) => {
     if (status === 'ready') return 'Ready';
-    if (status === 'busy') return 'Busy';
+    if (status === 'busy') return 'Working';
     if (status === 'error') return 'Error';
     return 'Idle';
   };
@@ -340,25 +308,51 @@ export default function MissionControlPage() {
     return '✗';
   };
 
+  const globalStatusLabel = {
+    ok: 'All Systems Operational',
+    warn: 'Degraded Performance',
+    error: 'Service Disruption',
+  }[overallStatus];
+
+  const globalStatusStyle = {
+    ok: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+    warn: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
+    error: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
+  }[overallStatus];
+
+  const globalDotStyle = {
+    ok: 'bg-emerald-400 mc-status-dot',
+    warn: 'bg-amber-400 animate-pulse',
+    error: 'bg-rose-400 animate-pulse',
+  }[overallStatus];
+
   if (loading) {
     return (
-        <div className="min-h-screen bg-[#030712] flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
-                <p className="text-cyan-400 font-mono text-sm uppercase tracking-widest animate-pulse">Initializing Mission Control...</p>
-            </div>
+      <div className="min-h-screen bg-[#030712] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+          <p className="text-cyan-400 font-mono text-sm uppercase tracking-widest animate-pulse">
+            Connecting to Mission Control...
+          </p>
         </div>
+      </div>
     );
   }
+
+  const agents = data?.agents ?? [];
+  const commits = data?.commits ?? [];
+  const stats = data?.stats ?? { agentsCount: 0, totalTasks: 0, successRate: 0, commitsWeek: 0, pending: 0, uptime: '—' };
+  const activity = data?.recentActivity ?? [];
 
   return (
     <div className="min-h-screen bg-[#030712] text-[#f8fafc] overflow-x-hidden relative">
       {/* Background effects */}
-      <div className="mc-bg-grid fixed inset-0 pointer-events-none z-0" />
-      <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full mc-glow-1 pointer-events-none z-0" />
-      <div className="absolute -bottom-48 -right-32 w-96 h-96 rounded-full mc-glow-2 pointer-events-none z-0" />
+      <div className={`${styles['mc-bg-grid']} fixed inset-0 pointer-events-none z-0`} />
+      <div className={`${styles['mc-glow-1']} absolute -top-32 -left-32 w-96 h-96 rounded-full pointer-events-none z-0`} />
+      <div className={`${styles['mc-glow-2']} absolute -bottom-48 -right-32 w-96 h-96 rounded-full pointer-events-none z-0`} />
 
       <div className="relative z-10 max-w-[1700px] mx-auto px-6 lg:px-10 py-8">
+
         {/* ── Header ─────────────────────────────────────────────── */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
@@ -376,11 +370,20 @@ export default function MissionControlPage() {
               <p className="text-xs text-[#64748b] uppercase tracking-[3px] mt-1">Lookitry Operations Center</p>
             </div>
           </div>
-          <div className="flex items-center gap-5">
-            <div className="flex items-center gap-2.5 px-5 py-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 mc-status-dot" />
-              <span className="text-xs font-semibold text-emerald-400">All Systems Operational</span>
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* Status badge dinámico */}
+            <div className={`flex items-center gap-2.5 px-5 py-2.5 border rounded-full ${globalStatusStyle}`}>
+              <div className={`w-2.5 h-2.5 rounded-full ${globalDotStyle}`} />
+              <span className="text-xs font-semibold">{globalStatusLabel}</span>
             </div>
+            {/* Refresh button */}
+            <button
+              onClick={handleRefresh}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#1e293b] border border-[#334155] rounded-full text-xs font-medium text-[#94a3b8] hover:border-cyan-500/40 hover:text-[#f8fafc] transition-all"
+            >
+              🔄 Refresh
+            </button>
+            {/* Clock */}
             <div className="text-sm font-medium text-[#94a3b8] font-mono tabular-nums">{clock}</div>
           </div>
         </motion.header>
@@ -389,31 +392,30 @@ export default function MissionControlPage() {
         <motion.div
           variants={{
             hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+            visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
           }}
           initial="hidden"
           animate="visible"
           className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8"
         >
           {[
-            { icon: '🤖', value: stats.agentsCount, label: 'Active Agents', color: 'text-cyan-400' },
-            { icon: '📦', value: stats.filesTracked, label: 'Files Tracked', color: 'text-violet-400' },
-            { icon: '🚀', value: stats.commitsWeek, label: 'Recent Commits', color: 'text-emerald-400' },
-            { icon: '⚠️', value: stats.pending, label: 'Pending Changes', color: 'text-amber-400' },
-            { icon: '⏱️', value: stats.uptime, label: 'Uptime', color: 'text-blue-400' },
-          ].map((stat, i) => (
+            { icon: '🤖', value: stats.agentsCount, label: 'Agentes Activos', color: 'text-cyan-400' },
+            { icon: '📋', value: stats.totalTasks, label: 'Tasks (30d)', color: 'text-violet-400' },
+            { icon: '✅', value: `${stats.successRate}%`, label: 'Tasa de Éxito', color: 'text-emerald-400' },
+            { icon: '⚙️', value: stats.pending, label: 'En Progreso', color: 'text-amber-400' },
+            { icon: '📦', value: stats.commitsWeek, label: 'Commits Recientes', color: 'text-blue-400' },
+          ].map((stat) => (
             <motion.div
               key={stat.label}
-              variants={{
-                hidden: { opacity: 0, y: 10 },
-                visible: { opacity: 1, y: 0 }
-              }}
+              variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
               className="group p-5 bg-[#0f172a]/80 border border-[#334155] rounded-2xl hover:border-cyan-500/30 hover:-translate-y-0.5 transition-all duration-300"
             >
               <div className="w-11 h-11 rounded-xl bg-[#1e293b] flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
                 {stat.icon}
               </div>
-              <div className={`text-3xl lg:text-4xl font-extrabold mb-2 ${stat.color} tabular-nums`}>{stat.value}</div>
+              <div className={`text-3xl lg:text-4xl font-extrabold mb-2 ${stat.color} tabular-nums`}>
+                {stat.value}
+              </div>
               <div className="text-[10px] text-[#64748b] uppercase tracking-widest">{stat.label}</div>
             </motion.div>
           ))}
@@ -421,6 +423,7 @@ export default function MissionControlPage() {
 
         {/* ── Main Grid ───────────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 mb-6">
+
           {/* Agent Roster */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -433,45 +436,61 @@ export default function MissionControlPage() {
                 <span className="text-2xl">🤖</span>
                 <h2 className="text-base font-bold">Agent Roster</h2>
               </div>
-              <span className="px-3.5 py-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[10px] font-semibold text-cyan-400 uppercase tracking-wider">
-                {agents.filter((a) => a.status === 'ready').length} Ready
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="px-3.5 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">
+                  {agents.filter((a) => a.status === 'ready' || a.status === 'busy').length} Online
+                </span>
+                <span className="px-3.5 py-1.5 bg-[#1e293b] border border-[#334155] rounded-full text-[10px] font-semibold text-[#64748b] uppercase tracking-wider">
+                  {agents.filter((a) => a.status === 'busy').length} Working
+                </span>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {agents.map((agent) => (
-                <Tooltip key={agent.id} content="Click para delegar tarea">
+                <Tooltip key={agent.id} content={`Ver detalle de ${agent.name}`}>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedAgent(agent)}
-                    className="text-left w-full p-4 bg-[#1e293b]/60 border border-[#334155] rounded-xl hover:border-cyan-500 transition-all duration-300 relative overflow-hidden group"
+                    className="text-left w-full p-4 bg-[#1e293b]/60 border border-[#334155] rounded-xl hover:border-cyan-500/50 transition-all duration-300 relative overflow-hidden group"
                   >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${agent.gradient} opacity-0 group-hover:opacity-[0.07] transition-opacity duration-300`} />
+                    <div className={`absolute inset-0 bg-gradient-to-br ${agent.gradient} opacity-0 group-hover:opacity-[0.08] transition-opacity duration-300`} />
                     <div className="flex items-start gap-3 relative z-10">
-                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${agent.gradient} flex items-center justify-center text-lg flex-shrink-0`}>
+                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${agent.gradient} flex items-center justify-center text-lg flex-shrink-0 shadow-lg`}>
                         {agent.emoji}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-xs font-bold mb-0.5 truncate">{agent.name}</h3>
                         <p className="text-[9px] text-[#64748b] leading-relaxed line-clamp-1">{agent.specialty}</p>
-                        <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center justify-between mt-2.5">
                           <div className={`flex items-center gap-1.5 text-[9px] font-semibold ${statusColor(agent.status)}`}>
-                            <div className={`w-1 h-1 rounded-full ${agent.status === 'busy' ? 'bg-amber-400' : agent.status === 'error' ? 'bg-rose-400' : 'bg-emerald-400'}`} />
+                            <div className={`w-1.5 h-1.5 rounded-full ${statusDotColor(agent.status)}`} />
                             {statusLabel(agent.status)}
                           </div>
-                          <span className="text-[8px] text-[#64748b] truncate ml-2">Task: {agent.lastTask}</span>
                         </div>
+                        {(agent.status === 'busy' || agent.status === 'ready') && agent.lastTask !== 'Sin actividad reciente' && (
+                          <p className="text-[8px] text-[#64748b] mt-1 truncate italic">{agent.lastTask}</p>
+                        )}
                       </div>
                     </div>
                   </motion.button>
                 </Tooltip>
               ))}
             </div>
+
+            {/* Última actualización */}
+            {lastRefresh && (
+              <p className="text-[10px] text-[#475569] mt-5 text-right">
+                Datos en tiempo real · Actualizado {lastRefresh.toLocaleTimeString('es-CO', { hour12: false })} · Auto-refresh 30s
+              </p>
+            )}
           </motion.div>
 
           {/* Right Panel */}
           <div className="flex flex-col gap-5">
-            {/* Quick Actions */}
+
+            {/* Recent Commits */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -479,49 +498,26 @@ export default function MissionControlPage() {
               className="bg-[#0f172a]/80 border border-[#334155] rounded-2xl p-6"
             >
               <div className="flex items-center gap-3 mb-5">
-                <span className="text-2xl">⚡</span>
-                <h2 className="text-base font-bold">Quick Actions</h2>
+                <span className="text-2xl">📦</span>
+                <h2 className="text-base font-bold">Commits Recientes</h2>
+                <span className="ml-auto text-[10px] text-[#64748b] font-mono">github.com</span>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                {quickActions.map((qa) => (
-                  <motion.button
-                    key={qa.label}
-                    whileHover={{ scale: 1.03, borderColor: '#06b6d4' }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={qa.action}
-                    className="flex flex-col items-center gap-2.5 p-5 bg-[#1e293b]/60 border border-[#334155] rounded-xl hover:bg-cyan-500/5 transition-all duration-300"
-                  >
-                    <span className="text-2xl">{qa.emoji}</span>
-                    <span className="text-xs font-semibold">{qa.label}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Recent Commits */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-[#0f172a]/80 border border-[#334155] rounded-2xl p-6"
-            >
-              <div className="flex items-center gap-3 mb-5">
-                <span className="text-2xl">📝</span>
-                <h2 className="text-base font-bold">Recent Commits</h2>
-              </div>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5">
                 {commits.length > 0 ? commits.map((c) => (
-                  <div key={c.hash} className="flex items-center gap-3.5 p-3.5 bg-[#1e293b]/60 rounded-xl hover:bg-[#1e293b]/80 transition-colors">
-                    <span className="font-mono text-[10px] text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-md font-semibold flex-shrink-0">
+                  <div key={c.hash} className="flex items-start gap-3 p-3 bg-[#1e293b]/60 rounded-xl hover:bg-[#1e293b]/80 transition-colors">
+                    <span className="font-mono text-[10px] text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded-md font-semibold flex-shrink-0 mt-0.5">
                       {c.hash.substring(0, 7)}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">{c.message}</p>
-                      <p className="text-[10px] text-[#64748b] mt-0.5">{c.time} — {c.author}</p>
+                      <p className="text-xs font-medium line-clamp-2 leading-relaxed">{c.message}</p>
+                      <p className="text-[10px] text-[#64748b] mt-1">{c.time} — {c.author}</p>
                     </div>
                   </div>
                 )) : (
-                    <p className="text-xs text-[#64748b] text-center py-4 italic">No recent commits found.</p>
+                  <div className="flex flex-col items-center gap-2 py-6 text-center">
+                    <span className="text-2xl opacity-40">📭</span>
+                    <p className="text-xs text-[#64748b] italic">No se pudieron cargar los commits</p>
+                  </div>
                 )}
               </div>
             </motion.div>
@@ -530,26 +526,32 @@ export default function MissionControlPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="bg-[#0f172a]/80 border border-[#334155] rounded-2xl p-6"
+              transition={{ delay: 0.4 }}
+              className="bg-[#0f172a]/80 border border-[#334155] rounded-2xl p-6 flex-1"
             >
               <div className="flex items-center gap-3 mb-5">
                 <span className="text-2xl">📡</span>
-                <h2 className="text-base font-bold">Activity Feed</h2>
+                <h2 className="text-base font-bold">Agent Activity Feed</h2>
+                <span className="ml-auto px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[9px] text-cyan-400 font-semibold uppercase">Live</span>
               </div>
-              <div className="flex flex-col gap-4">
-                {activity.map((a, i) => (
-                  <div key={i} className="flex gap-3.5 pb-4 border-b border-[#334155] last:border-0 last:pb-0">
-                    <div className={`w-9 h-9 rounded-lg ${a.iconBg} flex items-center justify-center text-sm flex-shrink-0`}>
+              <div className="flex flex-col gap-3">
+                {activity.length > 0 ? activity.map((a, i) => (
+                  <div key={i} className="flex gap-3 pb-3 border-b border-[#1e293b] last:border-0 last:pb-0">
+                    <div className={`w-8 h-8 rounded-lg ${a.iconBg} flex items-center justify-center text-sm flex-shrink-0 mt-0.5`}>
                       {a.icon}
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold">{a.title}</p>
-                      <p className="text-xs text-[#64748b] leading-relaxed mt-0.5">{a.description}</p>
-                      <span className="text-[10px] text-[#64748b] mt-1.5 block">{a.time}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold truncate">{a.title}</p>
+                      <p className="text-[10px] text-[#64748b] leading-relaxed mt-0.5 line-clamp-1">{a.description}</p>
+                      <span className="text-[9px] text-[#475569] mt-1 block">{a.time}</span>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div className="flex flex-col items-center gap-2 py-6 text-center">
+                    <span className="text-2xl opacity-40">🤫</span>
+                    <p className="text-xs text-[#64748b] italic">Sin actividad registrada aún</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -559,21 +561,26 @@ export default function MissionControlPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.5 }}
           className="bg-[#0f172a]/80 border border-[#334155] rounded-2xl p-7"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">🏥</span>
-            <h2 className="text-base font-bold">Project Health</h2>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🏥</span>
+              <h2 className="text-base font-bold">Infrastructure Health</h2>
+            </div>
+            <span className="text-[10px] text-[#64748b]">
+              Verificado hace &lt;1 min
+            </span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {health.map((item, i) => (
-              <Tooltip key={i} content="Click para ver detalles">
+            {healthItems.map((item, i) => (
+              <Tooltip key={i} content="Click para ver detalle">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedHealth(item)}
-                  className="flex items-center gap-3 p-3.5 bg-[#1e293b]/60 rounded-xl hover:bg-[#1e293b] border border-transparent hover:border-[#334155] transition-all duration-300 text-left"
+                  className="flex items-center gap-3 p-3.5 bg-[#1e293b]/60 rounded-xl hover:bg-[#1e293b] border border-transparent hover:border-[#334155] transition-all duration-300 text-left w-full"
                 >
                   <span className="text-lg flex-shrink-0">{item.icon}</span>
                   <div className="flex-1 min-w-0">
@@ -595,7 +602,10 @@ export default function MissionControlPage() {
 
         {/* ── Footer ───────────────────────────────────────────────── */}
         <div className="mt-8 py-5 text-center">
-          <p className="text-xs text-[#64748b]">Mission Control — Lookitry SaaS Operations Center • Built with precision</p>
+          <p className="text-xs text-[#475569]">
+            Mission Control · Lookitry SaaS Operations Center · Datos en tiempo real desde Supabase & GitHub
+            {lastRefresh && ` · Última sync: ${lastRefresh.toLocaleTimeString('es-CO', { hour12: false })}`}
+          </p>
         </div>
       </div>
 
