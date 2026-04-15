@@ -1,3 +1,32 @@
+## [2026-04-15] - Sync Completo Agentes Brain Vault
+
+### Sync: Archivos de Agentes Actualizados
+
+**Problema:** Lina no estaba actualizando los archivos individuales de agentes en `Lookitry_Brain_Vault/Cerebro/Agentes/` cuando se hacían cambios en la configuración.
+
+**Solución:** Sammantha ejecutó sync manual de todos los archivos:
+
+**Archivos ACTUALIZADOS:**
+- `Agentes/rebecca.md` — CREADO (faltaba completamente)
+- `Agentes/leo.md` — CREADO (faltaba completamente)
+- `Agentes/architectai.md` — Actualizado (eliminado GROQ fallback)
+- `Agentes/security-auditor.md` — Actualizado
+- `Agentes/growthpilot.md` — Actualizado
+- `Agentes/docs-writter.md` — Actualizado
+- `Agentes/dataalchemist.md` — Actualizado
+- `Agentes/devguardian.md` — Actualizado
+- `Agentes/webwizard.md` — Actualizado (eliminado GROQ/DeepSeek fallback)
+
+**Contenido sincronizado:**
+- Modelo único: MiniMax-M2.7 (Groq/DeepSeek removidos)
+- Herramientas y MCPs actuales
+- Roles y responsabilidades actualizados
+- Colaboraciones correctas
+
+**Regla establecida:** Lina DEBE sincronizar `Agentes/` después de cada cambio en AGENTS.md o REGLAS_IMPORTANTES.md
+
+---
+
 ## [2026-04-11] - Sammy MiniMax reasoning_content Fix
 
 ### Fix: Sammy se quedaba colgado al recibir mensajes
