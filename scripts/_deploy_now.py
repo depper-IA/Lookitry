@@ -28,7 +28,7 @@ for pkg, import_name in [("paramiko", "paramiko"), ("python-dotenv", "dotenv")]:
         __import__(import_name)
     except ImportError:
         print(f"[setup] Instalando {pkg}...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", pkg, "-q"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pkg, "--break-system-packages", "-q"])
 
 import paramiko
 from dotenv import load_dotenv
