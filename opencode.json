@@ -152,9 +152,11 @@
     "supabase": {
       "type": "local",
       "command": [
-        "npx",
-        "tsx",
-        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/supabase-mcp/src/index.ts"
+        "pwsh",
+        "-ExecutionPolicy", "Bypass",
+        "-File",
+        "${WORKSPACE_ROOT}/.opencode/run-mcp.ps1",
+        "supabase"
       ],
       "enabled": true,
       "environment": {
@@ -165,9 +167,11 @@
     "n8n": {
       "type": "local",
       "command": [
-        "npx",
-        "tsx",
-        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/n8n-mcp-server/src/index.ts"
+        "pwsh",
+        "-ExecutionPolicy", "Bypass",
+        "-File",
+        "${WORKSPACE_ROOT}/.opencode/run-mcp.ps1",
+        "n8n"
       ],
       "enabled": true,
       "environment": {
