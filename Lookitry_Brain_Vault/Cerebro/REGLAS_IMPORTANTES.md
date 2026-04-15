@@ -20,11 +20,24 @@ inclusion: always
 
 **REGLA DE ORO: NO ELIMINAR informacion tecnica que siga siendo valida o funcional (versiones de librerias, estructuras de carpetas, reglas previas). Solo se debe incluir la informacion que falta o se actualiza, manteniendo el historial y contexto previo.**
 
+### 0.1 Sync de Agentes (OBLIGATORIO)
+
+**CADA VEZ que se modifique AGENTS.md o la configuracion de agentes en openclaw.json:**
+1. **Sincronizar TODOS los archivos en `Lookitry_Brain_Vault/Cerebro/Agentes/`**
+2. Crear archivos faltantes (ej: `rebecca.md`, `leo.md`)
+3. Actualizar archivos existentes con nueva informacion
+4. Incluir: identidad, modelo, herramientas, MCPs, responsabilidades, colaboraciones
+5. **NUNCA dejar archivos de agentes desactualizados**
+
+**Responsable**: Lina (docs-writer)
+**Trigger**: Cualquier cambio en AGENTS.md, REGLAS_IMPORTANTES.md, o configuracion de agentes
+
 ---
 
 ## 1. Reglas de Git
 
-- **NO hacer commits ni push** sin que el usuario lo pide explicitamente
+- **Auto-commit**: DESPUÉS de cada tarea significativa, hacer commit automáticamente con mensaje descriptivo (conventional commits: `feat:`, `fix:`, `docs:`, etc.)
+- **Auto-push**: Hacer push después de cada commit exitoso
 - **NO hacer deploy** sin autorizacion explícita del usuario
 
 ### 1.1 Deploy
