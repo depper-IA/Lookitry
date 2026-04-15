@@ -1,10 +1,24 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
+import './command-center.css';
 
 /* ─── CONFIG ───────────────────────────────────────────────────────────────── */
 const SB_URL  = 'https://vkdooutklowctuudjnkl.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM';
+
+/* ─── API ROUTE HELPERS ─────────────────────────────────────────────────────── */
+async function fetchSVGFromAPI(agentId: string, type: 'character' | 'room'): Promise<string> {
+  const res = await fetch('/api/command-center/generate-svg', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ agentId, type })
+  });
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  const data = await res.json();
+  return data.svg || '';
+}
 
 /* ─── AGENTS ───────────────────────────────────────────────────────────────── */
 interface Agent {
@@ -74,33 +88,78 @@ const AGENTS: Agent[] = [
   },
 ];
 
-/* ─── PIXEL CHARACTER ──────────────────────────────────────────────────────── */
-function PixelSprite({ color, accent, x, y }: { color: string; accent: string; x: number; y: number }) {
+/* ─── PARTICLE SYSTEM ────────────────────────────────────────────────────────── */
+interface Particle {
+  x: number; y: number; vx: number; vy: number;
+  life: number; decay: number; size: number; color: string;
+}
+function createParticle(x: number, y: number, color: string): Particle {
+  return {
+    x, y,
+    vx: (Math.random() - 0.5) * 0.8,
+    vy: -Math.random() * 1.2 - 0.3,
+    life: 1,
+    decay: 0.008 + Math.random() * 0.006,
+    size: 2,
+    color,
+  };
+}
+function updateParticle(p: Particle): void {
+  p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+}
+function drawParticle(ctx: CanvasRenderingContext2D, p: Particle): void {
+  const alpha = p.life * 0.7;
+  ctx.fillStyle = p.color + Math.round(alpha * 255).toString(16).padStart(2, '0');
+  ctx.fillRect(p.x, p.y, p.size, p.size);
+}
+
+/* ─── ANIMATED SPRITE ─────────────────────────────────────────────────────── */
+function AnimatedSprite({ color, accent, x, y, isMoving }: {
+  color: string; accent: string; x: number; y: number; isMoving: boolean;
+}) {
   return (
-    <g transform={`translate(${x - 10}, ${y - 28})`} style={{ imageRendering: 'pixelated' }}>
-      {/* Glow */}
-      <ellipse cx="10" cy="30" rx="9" ry="3" fill={color} opacity="0.18" />
+    <g style={{ transform: `translate(${x - 10}px, ${y - 28}px)`, imageRendering: 'pixelated' }}>
+      {/* Outer glow halo — visible when idle */}
+      <ellipse cx="10" cy="15" rx="22" ry="30" fill={color} opacity={isMoving ? 0.04 : 0.12} className={isMoving ? '' : 'cc-halo'} />
+      {/* Ground shadow */}
+      <ellipse
+        cx="10" cy="30"
+        rx={isMoving ? 14 : 11}
+        ry={isMoving ? 2 : 4}
+        fill={color}
+        opacity={isMoving ? 0.08 : 0.22}
+        className={isMoving ? '' : 'cc-shadow-idle'}
+      />
       {/* Legs */}
-      <rect x="5" y="22" width="4" height="8" fill={color} opacity="0.85" />
-      <rect x="11" y="22" width="4" height="8" fill={color} opacity="0.85" />
-      {/* Boots */}
-      <rect x="4" y="28" width="5" height="3" fill={accent} opacity="0.9" />
-      <rect x="11" y="28" width="5" height="3" fill={accent} opacity="0.9" />
+      <g className={isMoving ? 'cc-legs-walk' : 'cc-legs-idle'}>
+        <rect x="5" y="22" width="5" height="9" fill={color} opacity="0.9" />
+        <rect x="11" y="22" width="5" height="9" fill={color} opacity="0.9" />
+        <rect x="3" y="29" width="7" height="4" fill={accent} opacity="1" />
+        <rect x="11" y="29" width="7" height="4" fill={accent} opacity="1" />
+      </g>
       {/* Body */}
-      <rect x="4" y="12" width="12" height="11" fill={color} opacity="0.9" />
-      {/* Chest mark */}
-      <rect x="8" y="14" width="4" height="3" fill={accent} opacity="0.95" />
-      {/* Arms */}
-      <rect x="1" y="13" width="3" height="8" fill={color} opacity="0.8" />
-      <rect x="16" y="13" width="3" height="8" fill={color} opacity="0.8" />
+      <g className={isMoving ? '' : 'cc-bounce'}>
+        <rect x="3" y="11" width="14" height="13" fill={color} opacity="0.95" />
+        <rect x="7" y="14" width="6" height="4" fill={accent} opacity="1" />
+      </g>
+      {/* Left arm */}
+      <g style={{ transformOrigin: '2px 13px' }} className={isMoving ? 'cc-arm-l' : ''}>
+        <rect x="0" y="12" width="4" height="9" fill={color} opacity="0.85" />
+      </g>
+      {/* Right arm */}
+      <g style={{ transformOrigin: '17px 13px' }} className={isMoving ? 'cc-arm-r' : ''}>
+        <rect x="17" y="12" width="4" height="9" fill={color} opacity="0.85" />
+      </g>
       {/* Neck */}
-      <rect x="8" y="9" width="4" height="3" fill={color} opacity="0.85" />
+      <rect x="7" y="8" width="6" height="4" fill={color} opacity="0.9" />
       {/* Head */}
-      <rect x="4" y="1" width="12" height="9" fill={color} opacity="0.95" rx="1" />
+      <g className={isMoving ? '' : 'cc-bounce'}>
+        <rect x="3" y="0" width="14" height="10" fill={color} opacity="1" rx="1" />
+      </g>
       {/* Visor */}
-      <rect x="5" y="3" width="10" height="4" fill={accent} opacity="0.9" rx="0.5" />
-      {/* Visor glow */}
-      <rect x="6" y="4" width="8" height="2" fill="#ffffff" opacity="0.25" />
+      <rect x="4" y="2" width="12" height="5" fill={accent} opacity="1" rx="0.5" className={isMoving ? '' : 'cc-visor-pulse'} />
+      {/* Visor shine */}
+      <rect x="5" y="3" width="10" height="2" fill="#ffffff" opacity="0.4" className={isMoving ? '' : 'cc-visor-pulse'} />
     </g>
   );
 }
@@ -405,10 +464,13 @@ const ROOM_RENDERERS: Record<string, (props: { color: string; accent: string }) 
 };
 
 /* ─── AGENT ROOM PANEL ─────────────────────────────────────────────────────── */
-function AgentRoomPanel({ agent, charPos, onClick }: {
+function AgentRoomPanel({ agent, charPos, onClick, generatedChar, generatedRoom, isMoving }: {
   agent: Agent;
   charPos: { x: number; y: number };
   onClick: () => void;
+  generatedChar?: string;
+  generatedRoom?: string;
+  isMoving: boolean;
 }) {
   const c = agent.themeColor;
   const ca = agent.accentColor;
@@ -429,28 +491,41 @@ function AgentRoomPanel({ agent, charPos, onClick }: {
     >
       {/* Room SVG */}
       <div style={{ position: 'relative', width: '100%', aspectRatio: '280/180', overflow: 'hidden' }}>
-        <svg viewBox="0 0 280 180" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          {ROOM_RENDERERS[agent.roomType]?.({ color: c, accent: ca }) ?? null}
-          {/* Character */}
-          <PixelSprite color={c} accent={ca}
-            x={charPos.x}
-            y={charPos.y} />
-        </svg>
-        {/* Status badge */}
-        <div style={{
-          position: 'absolute', top: 6, left: 6,
-          display: 'flex', alignItems: 'center', gap: 5,
-          padding: '2px 8px', borderRadius: 2,
-          border: `1px solid ${c}44`,
-          background: `${c}11`,
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 9, letterSpacing: '0.1em', color: c,
-        }}>
-          <span style={{ width: 5, height: 5, borderRadius: '50%', background: c,
-            animation: 'cc-pulse 1.5s ease-in-out infinite' }} />
-          {agent.name.toUpperCase()} — ACTIVE
+        <svg viewBox="0 0 280 180" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style={{ position: 'relative' }}>
+            {generatedRoom && generatedRoom.includes('<svg') ? (
+              <g dangerouslySetInnerHTML={{ __html: generatedRoom }} />
+            ) : (
+              ROOM_RENDERERS[agent.roomType]?.({ color: c, accent: ca }) ?? null
+            )}
+            {/* Character — AI generated or fallback */}
+            {generatedChar && generatedChar.includes('<svg') ? (
+              <g dangerouslySetInnerHTML={{ __html: generatedChar }}
+                 transform={`translate(${charPos.x - 12}, ${charPos.y - 36})`}
+                 style={{ imageRendering: 'pixelated' }}
+                 className={isMoving ? 'walking' : ''}
+              />
+            ) : (
+              <AnimatedSprite color={c} accent={ca}
+                x={charPos.x}
+                y={charPos.y}
+                isMoving={isMoving} />
+            )}
+          </svg>
+          {/* Status badge */}
+          <div style={{
+            position: 'absolute', top: 6, left: 6,
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '2px 8px', borderRadius: 2,
+            border: `1px solid ${c}44`,
+            background: `${c}11`,
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 9, letterSpacing: '0.1em', color: c,
+          }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: c,
+              animation: 'cc-pulse 1.5s ease-in-out infinite' }} />
+            {agent.name.toUpperCase()} — ACTIVE
+          </div>
         </div>
-      </div>
 
       {/* Metrics bar */}
       <div style={{
@@ -597,12 +672,20 @@ function StarField() {
 
 /* ─── SUPABASE FETCH ───────────────────────────────────────────────────────── */
 async function sbFetch(table: string, select = 'count', filter?: string) {
-  const url = `${SB_URL}/rest/v1/${table}?select=${select}${filter ? '&' + filter : ''}`;
+  const filterStr = filter ? `&${filter}` : '';
+  const url = `${SB_URL}/rest/v1/${table}?select=${select}${filterStr}`;
   const res = await fetch(url, {
-    headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}`,
-      Prefer: 'count=exact', 'Content-Type': 'application/json' },
+    headers: {
+      apikey: SB_ANON,
+      Authorization: `Bearer ${SB_ANON}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'count=exact'
+    },
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    console.warn(`[sbFetch] ${table} query failed: ${res.status} — ${filter}`);
+    return null;
+  }
   const count = res.headers.get('content-range')?.split('/')?.[1];
   return count ? parseInt(count, 10) : null;
 }
@@ -623,20 +706,83 @@ export default function CommandCenterPage() {
     Object.fromEntries(AGENTS.map(a => [a.id, { x: 140, y: 155 }]))
   );
   const [speed] = useState(1);
-  const waypointIdx = useRef<Record<string, number>>({});
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
   const waypointTimer = useRef<Record<string, number>>({});
+  const waypointIdx = useRef<Record<string, number>>({});
+  const particlesRef = useRef<Record<string, Particle[]>>({});
+  const frameRef = useRef(0);
+  const rafRef = useRef<number>(0);
+  const roomCanvases = useRef<Record<string, HTMLCanvasElement | null>>({});
+  const starsCanvas = useRef<HTMLCanvasElement | null>(null);
+  const charPositionsRef = useRef<Record<string, { x: number; y: number }>>({});
+  const patrolT = useRef<Record<string, number>>({});
 
-  // Real Supabase metrics
+  // Init patrol
+  useEffect(() => {
+    AGENTS.forEach(a => {
+      charPositionsRef.current[a.id] = { x: 140, y: 155 };
+      patrolT.current[a.id] = 0;
+      waypointIdx.current[a.id] = 0;
+      particlesRef.current[a.id] = [];
+    });
+  }, []);
   const [realData, setRealData] = useState({
     brands: 0, activeProducts: 0,
     generationsMonth: 0, mrr: 0,
     agentsOnline: AGENTS.length,
   });
 
+  // AI-generated SVG assets
+  const [generatedCharacters, setGeneratedCharacters] = useState<Record<string, string>>({});
+  const [generatedRooms, setGeneratedRooms] = useState<Record<string, string>>({});
+  const [isGeneratingAssets, setIsGeneratingAssets] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState('');
+  const [isMovingMap, setIsMovingMap] = useState<Record<string, boolean>>({});
+
   // Clock
   useEffect(() => {
     const id = setInterval(() => setClock(new Date().toLocaleTimeString('en-US', { hour12: false })), 1000);
     return () => clearInterval(id);
+  }, []);
+
+  // Generate AI assets on mount
+  useEffect(() => {
+    console.log('[CommandCenter] Starting asset generation via API route...');
+    setIsGeneratingAssets(true);
+    const chars: Record<string, string> = {};
+    const rooms: Record<string, string> = {};
+
+    const generate = async () => {
+      for (const agent of AGENTS) {
+        setGenerationProgress(`Generating ${agent.name}'s character...`);
+        try {
+          const charSVG = await fetchSVGFromAPI(agent.id, 'character');
+          console.log(`[CommandCenter] Character ${agent.name}:`, charSVG.substring(0, 80));
+          if (charSVG.includes('<svg')) chars[agent.id] = charSVG;
+        } catch (e) {
+          console.error(`[CommandCenter] Error generating character for ${agent.name}:`, e);
+        }
+
+        setGenerationProgress(`Generating ${agent.name}'s room...`);
+        try {
+          const roomSVG = await fetchSVGFromAPI(agent.id, 'room');
+          if (roomSVG.includes('<svg')) rooms[agent.id] = roomSVG;
+        } catch (e) {
+          console.error(`[CommandCenter] Error generating room for ${agent.id}:`, e);
+        }
+      }
+
+      setGeneratedCharacters(chars);
+      setGeneratedRooms(rooms);
+      setIsGeneratingAssets(false);
+      setGenerationProgress('');
+      console.log('[CommandCenter] Asset generation complete!');
+      console.log('[CommandCenter] Generated characters:', Object.keys(chars));
+      console.log('[CommandCenter] Generated rooms:', Object.keys(rooms));
+    };
+
+    generate();
   }, []);
 
   // Fetch real Supabase data
@@ -646,7 +792,7 @@ export default function CommandCenterPage() {
         const [brands, products, gens, payments] = await Promise.all([
           sbFetch('brands', 'count'),
           sbFetch('products', 'count', 'is_active=eq.true'),
-          sbFetch('generations', 'count', `created_at=gte.${new Date(Date.now()-30*86400e3).toISOString()}`),
+          sbFetch('generations', 'count', `created_at=gte.${new Date(Date.now()-30*86400e3).toISOString().split('T')[0]}`),
           sbQuery('subscription_payments', 'amount', 'status=eq.completed'),
         ]);
         const mrr = payments?.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0) ?? 0;
@@ -664,74 +810,44 @@ export default function CommandCenterPage() {
     return () => clearInterval(id);
   }, []);
 
-  // Character movement
+  // Character movement + isMoving state (smooth lerp)
   useEffect(() => {
     const id = setInterval(() => {
-      setCharPositions(prev => {
-        const next = { ...prev };
-        for (const agent of AGENTS) {
-          if (agent.patrol.length < 2) continue;
-          const timer = (waypointTimer.current[agent.id] ?? 0) + 1;
-          waypointTimer.current[agent.id] = timer;
-          if (timer < 60 / speed) continue;
-          waypointTimer.current[agent.id] = 0;
-          const idx = (waypointIdx.current[agent.id] ?? 0);
-          const nextIdx = (idx + 1) % agent.patrol.length;
-          waypointIdx.current[agent.id] = nextIdx;
-          const wp = agent.patrol[nextIdx];
-          // Map 0-1 to room pixel coords (280x180 SVG, char visible in lower portion)
-          next[agent.id] = { x: wp.x * 230 + 25, y: wp.y * 120 + 55 };
+      const spd = speedRef.current;
+      const newMoving: Record<string, boolean> = {};
+      const next: Record<string, { x: number; y: number }> = {};
+      for (const agent of AGENTS) {
+        if (agent.patrol.length < 2) { next[agent.id] = charPositionsRef.current[agent.id]; continue; }
+        const t = patrolT.current[agent.id] + 0.003 * spd;
+        if (t >= 1) {
+          patrolT.current[agent.id] = 0;
+          const from = agent.patrol[waypointIdx.current[agent.id] ?? 0];
+          const to = agent.patrol[(waypointIdx.current[agent.id] + 1) % agent.patrol.length];
+          waypointIdx.current[agent.id] = (waypointIdx.current[agent.id] + 1) % agent.patrol.length;
+          next[agent.id] = { x: to.x * 230 + 25, y: to.y * 120 + 55 };
+          newMoving[agent.id] = true;
+        } else {
+          patrolT.current[agent.id] = t;
+          const from = agent.patrol[waypointIdx.current[agent.id] ?? 0];
+          const to = agent.patrol[(waypointIdx.current[agent.id] + 1) % agent.patrol.length];
+          next[agent.id] = {
+            x: (from.x + (to.x - from.x) * t) * 230 + 25,
+            y: (from.y + (to.y - from.y) * t) * 120 + 55,
+          };
+          newMoving[agent.id] = patrolT.current[agent.id] > 0.9;
         }
-        return next;
-      });
-    }, 100);
+      }
+      charPositionsRef.current = next;
+      setCharPositions(next);
+      setIsMovingMap(newMoving);
+    }, 50);
     return () => clearInterval(id);
-  }, [speed]);
+  }, []);
 
   const formatMrr = (n: number) => n > 0 ? `$${n.toLocaleString('es-CO')}` : '—';
 
   return (
     <>
-      {/* Embedded CSS */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #02020a; }
-        .cc-room-panel {
-          background: #050810;
-          border: 1px solid #1e293b;
-          border-radius: 6px;
-          overflow: hidden;
-          width: 100%;
-          text-align: left;
-          cursor: pointer;
-          transition: border-color 0.3s, box-shadow 0.3s, transform 0.15s;
-          display: block;
-        }
-        .cc-room-panel:hover {
-          transform: translateY(-2px);
-          border-color: var(--theme, #334155) !important;
-          box-shadow: 0 0 30px color-mix(in srgb, var(--theme, #64748b) 40%, transparent) !important;
-        }
-        @keyframes cc-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
-        }
-        @keyframes cc-radar-sweep {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        @keyframes cc-blink {
-          0%, 100% { opacity: 0.9; }
-          50% { opacity: 0.1; }
-        }
-        .cc-radar-sweep { animation: cc-radar-sweep 4s linear infinite; }
-        .cc-blink { animation: cc-blink 1.2s ease-in-out infinite; }
-        .cc-code-line { animation: cc-blink 2.5s ease-in-out infinite; }
-        ::-webkit-scrollbar { width: 4px; background: #070a12; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
-      `}</style>
-
       <StarField />
 
       <div style={{
@@ -759,6 +875,9 @@ export default function CommandCenterPage() {
                   LOOKITRY COMMAND CENTER
                 </h1>
                 <span style={{ fontSize: 10, color: '#1e4d2e', letterSpacing: '0.1em' }}>◉ ALL SYSTEMS ACTIVE</span>
+                {isGeneratingAssets && (
+                  <span style={{ fontSize: 9, color: '#00FFFF', marginLeft: 8 }}>[AI GEN: {generationProgress}]</span>
+                )}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 20, fontSize: 11 }}>
                 <span style={{ color: '#00FF41', opacity: 0.7 }}>{clock}</span>
@@ -804,6 +923,9 @@ export default function CommandCenterPage() {
                 agent={agent}
                 charPos={charPositions[agent.id] ?? { x: 140, y: 155 }}
                 onClick={() => setSelectedAgent(agent)}
+                generatedChar={generatedCharacters[agent.id]}
+                generatedRoom={generatedRooms[agent.id]}
+                isMoving={!!isMovingMap[agent.id]}
               />
             ))}
           </div>
