@@ -1,5 +1,143 @@
 # CHANGELOG — Lookitry
 
+## 14 de Abril 2026 (Tarde)
+
+### 🚀 MISSION CONTROL — Dashboard Operacional Completo
+
+**Resumen:** Creación del Mission Control, un dashboard cyberpunk/sci-fi para monitorear todos los agentes, métricas y operaciones de Lookitry en tiempo real.
+
+#### Estructura del Proyecto
+
+```
+frontend/src/app/mission-control/
+├── layout.tsx           # Layout con Google Fonts
+├── page.tsx             # Overview principal
+├── agents/page.tsx      # Panel de 10 agentes
+├── product/page.tsx     # Try-On / Jobs
+├── business/page.tsx    # Business metrics
+├── security/page.tsx    # Cipher's dashboard
+├── growth/page.tsx      # Marlo + Rebecca
+├── trading/page.tsx     # Leo
+├── autolookitry/page.tsx# Beta module
+└── system/page.tsx      # Zephyr + Lina
+```
+
+#### Componentes Creados
+
+| Categoría | Componentes |
+|-----------|-------------|
+| **Atoms** | StatusDot, Badge, StatCard, MonoNumber, LiveClock, ProgressBar, TrendArrow, MetricDelta, GlowButton, IconButton, Separator |
+| **Molecules** | AgentCard, QueueBar, WebhookFeed, AlertItem, ServiceTile, KanbanCard, TimelineNode, EmptyState |
+| **Organisms** | MCHeader, MCSidebar, MCLayout, Section, GridArea, AgentsGrid, TryOnQueue, SystemStatusGrid, BusinessKPIs, SecurityPanel, GrowthPanel, TradingPanel, AutolookitryPanel, OverviewStats |
+
+#### Características Implementadas
+
+| Feature | Descripción |
+|---------|-------------|
+| **10 Agent Cards** | Sammantha, Pixel, Kira, Nadia, Cipher, Zephyr, Marlo, Rebecca, Leo, Lina |
+| **System Status Grid** | Servicios (API, Supabase, MinIO, Traefik, GROQ, OpenRouter, Wompi, Brevo) |
+| **Try-On Queue** | Barra stackeada + webhook feed en tiempo real |
+| **Business KPIs** | MRR, ARR, Trial→Paid, Active Users, Revenue por Plan |
+| **Security Dashboard** | Login fallidos, IPs bloqueadas, audit score |
+| **Trading Panel** | Balance, P&L, posiciones abiertas (Leo) |
+| **Autolookitry [BETA]** | Kanban board, roadmap, métricas |
+| **Real-time Polling** | Hook para datos actualizados cada X segundos |
+
+#### Diseño Visual
+
+| Elemento | Valor |
+|---------|-------|
+| **Primary Color** | #FF5C3A (Naranja Lookitry) |
+| **Background** | #0a0a0a (Negro) |
+| **Card BG** | #111111 |
+| **Fonts** | Plus Jakarta Sans, DM Sans, JetBrains Mono |
+| **Animations** | Framer Motion (fade-up, pulse, scale) |
+
+#### Archivos Creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `MISSION_CONTROL_SPEC.md` | Especificación completa del dashboard |
+| `lib/mission-control/types.ts` | Types e interfaces para todo el sistema |
+| `lib/mission-control/constants.ts` | Mock data, thresholds, formatters |
+| `hooks/useMissionControl.ts` | Polling hook + central data hook |
+| `app/api/mission-control/agents/route.ts` | API endpoint |
+| `app/api/mission-control/tryon-metrics/route.ts` | API endpoint |
+| `tailwind.config.ts` | Actualizado con tokens MC |
+
+#### Próximos Pasos
+
+| # | Feature | Prioridad |
+|---|---------|-----------|
+| 1 | Conectar a Supabase real | ALTA |
+| 2 | WebSocket para real-time | ALTA |
+| 3 | Notificaciones push | MEDIA |
+| 4 | Export CSV | MEDIA |
+| 5 | Mobile responsive | MEDIA |
+
+---
+
+## 14 de Abril 2026
+
+### Configuración Completa de Agentes v2.0
+
+**Resumen:** Sistema de 10 agentes completamente configurado con información real del Cerebro.
+
+#### Modelo Default Estandarizado
+
+| Cambio | Detalle |
+|--------|---------|
+| **Modelo unificado** | `minimax/MiniMax-M2.7` para todos los agentes |
+| **Groq removido** | Ya no aparece en ningún systemPromptOverride |
+| **DeepSeek removido** | Ya no aparece en ningún systemPromptOverride |
+| **Excepciones** | Solo si AGENTS.md lo especifica explícitamente |
+
+#### Agentes Configurados
+
+| Agente | Workspace | Archivos | Status |
+|--------|-----------|----------|--------|
+| **Nadia** | dataalchemist | 8 archivos | ✅ Completo |
+| **Kira** | devguardian | 8 archivos | ✅ Completo |
+| **Marlo** | growthpilot | 8 archivos | ✅ Completo |
+| **Rebecca v3.0** | rebecca | 11 archivos | ✅ Completo |
+| **Cipher** | security-auditor | 8 archivos | ✅ Completo |
+| **Pixel** | webwizard | 8 archivos | ✅ Completo |
+| **Lina** | docs-writer | 8 archivos | ✅ Completo |
+| **Sammantha** | sammy | 8 archivos | ✅ Completo |
+
+#### Rebecca v3.0 — Capacidades de MONEY
+
+| Nueva Capacidad | Descripción |
+|-----------------|-------------|
+| **Automejora continua** | Monitoreo de tendencias TikTok/IG, A/B testing |
+| **Herramientas gratuitas** | CapCut, DaVinci Resolve, Canva, Pexels, ChatGPT |
+| **Conseguir clientes** | SEO Fiverr, DM a tiendas, cold outreach |
+| **Patrocinio** | Solo grants (Google, AWS) — **PROHIBIDO equity** |
+| **Collaboración Leo** | JUNTOS generan ingresos para Lookitry |
+
+#### Documentación Actualizada en Cerebro
+
+| Archivo | Cambios |
+|---------|---------|
+| `AGENTS_CONFIG_MASTER.md` | Nuevo formato, 10 agentes, modelo default |
+| `AGENTS.md` | Roles, invocación, colaboración, personas reales |
+| `REGLAS_IMPORTANTES.md` | Sistema de Agentes v2.0, reglas Rebecca |
+| `Cerebro/memory/2026-04-14.md` | Registro de sesión |
+
+#### Contenido por Agente (líneas)
+
+| Agente | TOOLS.md | USER.md | HEARTBEAT.md | SOUL.md | MEMORY.md |
+|--------|----------|---------|--------------|---------|-----------|
+| Nadia | 158 | 158 | 151 | 94 | 155 |
+| Kira | 171 | 159 | 174 | 120 | 156 |
+| Marlo | 190 | 179 | 200 | 109 | 167 |
+| Rebecca | 120 | 126 | 185 | 260 | 85 |
+| Cipher | 155 | 133 | 159 | 100 | 140 |
+| Pixel | 167 | 154 | 168 | 96 | 180 |
+| Lina | 133 | 105 | 73 | 125 | 53 |
+
+---
+
 ## 13 de Abril 2026 (Continuación)
 
 ### Fix: Sistema de Temas para Mini-Landings

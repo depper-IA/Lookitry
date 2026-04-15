@@ -13,6 +13,8 @@ services:
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
     container_name: lookitry-frontend
     restart: unless-stopped
+    volumes:
+      - /home/travis/.openclaw/agents:/home/travis/.openclaw/agents:ro
     networks:
       - proxy
     labels:

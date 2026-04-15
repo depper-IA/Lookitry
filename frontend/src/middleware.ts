@@ -142,6 +142,16 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // ── Proteger Mission Control ─────────────────────────────────────────────────
+  if (pathname.startsWith('/mission-control')) {
+    if (!adminToken && !token && !allowDevBypass) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+    const response = NextResponse.next();
+    response.headers.set('X-Frame-Options', 'DENY');
+    return response;
+  }
+
   // ── Proteger rutas públicas del Widget (Iframe Whitelist Dinámica) ────────────
   if (
     pathname.startsWith('/embed') || 
