@@ -1,21 +1,24 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
-const execAsync = promisify(exec);
+// Server-side Supabase con service key (sin RLS, datos reales)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+);
 
-// Full OpenClaw Ecosystem Agents
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const GITHUB_REPO = 'depper-IA/lookitry';
+const HEARTBEAT_TIMEOUT_MS = 30_000; // 30s
+
+// Roster de agentes conocidos (fuente de verdad visual)
 const AGENTS_ROSTER = [
   {
     id: 'sammy',
     name: 'Sammy',
     emoji: '🧠',
     specialty: 'Orquestación & Memoria Core',
-    description: 'El cerebro principal. Distribuye tareas en Telegram, gestiona agentes, procesa correos y mantiene la persistencia global del ecosistema OpenClaw.',
-    status: 'ready',
-    lastTask: 'Telegram polling',
+    description: 'El cerebro principal. Distribuye tareas, gestiona agentes y mantiene la persistencia global del ecosistema.',
     color: '#3b82f6',
     gradient: 'from-blue-500 to-indigo-600',
   },
@@ -24,9 +27,7 @@ const AGENTS_ROSTER = [
     name: 'Rebecca',
     emoji: '📲',
     specialty: 'UGC Content & Social Media',
-    description: 'Investiga productos, gestiona bases de Supabase locales y crea/programa tuits asombrosos en Twitter/X con su propio bot.',
-    status: 'ready',
-    lastTask: 'Social content prep',
+    description: 'Investiga productos y crea contenido para Twitter/X con su propio bot.',
     color: '#ec4899',
     gradient: 'from-pink-500 to-rose-600',
   },
@@ -35,20 +36,16 @@ const AGENTS_ROSTER = [
     name: 'Leo',
     emoji: '📈',
     specialty: 'Trading / "The Surgeon"',
-    description: 'Analista financiero frío y calculador. Lee velas Heikin-Ashi y toma decisiones de mercado rigurosas según the-surgeon.md.',
-    status: 'idle',
-    lastTask: 'Market Analysis',
+    description: 'Analista financiero. Lee velas Heikin-Ashi y toma decisiones de mercado rigurosas.',
     color: '#eab308',
     gradient: 'from-yellow-400 to-amber-600',
   },
   {
-    id: 'docs-writer',
+    id: 'docs-writter',
     name: 'DocsWriter',
     emoji: '📝',
     specialty: 'Documentación & Obsidian',
-    description: 'Organizador maestro. Usa la CLI de Obsidian para estructurar y redactar todo lo que pasa en Lookitry_Brain_Vault.',
-    status: 'ready',
-    lastTask: 'Obsidian sync',
+    description: 'Organiza y redacta toda la documentación técnica del proyecto en el Brain Vault.',
     color: '#8b5cf6',
     gradient: 'from-violet-500 to-purple-600',
   },
@@ -57,10 +54,8 @@ const AGENTS_ROSTER = [
     name: 'WebWizard',
     emoji: '🎨',
     specialty: 'Frontend — Next.js 14, Tailwind, Motion',
-    description: 'Crea interfaces nivel Apple. Optimiza SEO y construye el widget del probador virtual de Lookitry.',
-    status: 'ready',
-    lastTask: 'UI redesign',
-    color: '#8b5cf6',
+    description: 'Crea interfaces nivel Apple. Optimiza SEO y construye el widget del probador virtual.',
+    color: '#6366f1',
     gradient: 'from-indigo-500 to-purple-600',
   },
   {
@@ -68,9 +63,7 @@ const AGENTS_ROSTER = [
     name: 'DevGuardian',
     emoji: '🛡️',
     specialty: 'QA & Integridad',
-    description: 'Mantiene los tests en verde y audita la seguridad previniendo fugas o regresiones del sistema.',
-    status: 'ready',
-    lastTask: 'Security audit',
+    description: 'Mantiene los tests en verde y audita la seguridad antes de cada deploy.',
     color: '#ef4444',
     gradient: 'from-red-500 to-rose-600',
   },
@@ -79,9 +72,7 @@ const AGENTS_ROSTER = [
     name: 'DataAlchemist',
     emoji: '🧪',
     specialty: 'Backend & Bases de Datos',
-    description: 'Manipulador de SQL. Gestiona Supabase desde adentro usando la Service Key, flujos n8n y MinIO.',
-    status: 'ready',
-    lastTask: 'Supabase sync',
+    description: 'Gestiona Supabase con la Service Key, flujos n8n y almacenamiento MinIO.',
     color: '#06b6d4',
     gradient: 'from-cyan-500 to-sky-600',
   },
@@ -89,10 +80,8 @@ const AGENTS_ROSTER = [
     id: 'growthpilot',
     name: 'GrowthPilot',
     emoji: '🛰️',
-    specialty: 'Ventas & SMTP Himalayas',
-    description: 'Controla CRM, correos a clientes y programas de referidos directamente desde tu base corporativa.',
-    status: 'ready',
-    lastTask: 'Mailchimp push',
+    specialty: 'Ventas & CRM',
+    description: 'Controla CRM, correos a clientes y programas de referidos desde la base corporativa.',
     color: '#10b981',
     gradient: 'from-emerald-500 to-teal-600',
   },
@@ -101,9 +90,7 @@ const AGENTS_ROSTER = [
     name: 'ArchitectAI',
     emoji: '🏗️',
     specialty: 'DevOps & VPS',
-    description: 'Infraestructura, Docker, systemd. Mantiene rodando OpenClaw-Gateway y todos los servicios VPN.',
-    status: 'ready',
-    lastTask: 'Daemon check',
+    description: 'Infraestructura, Docker, systemd. Mantiene rodando todos los servicios en el VPS.',
     color: '#f59e0b',
     gradient: 'from-amber-500 to-orange-600',
   },
@@ -112,59 +99,176 @@ const AGENTS_ROSTER = [
     name: 'SecurityAuditor',
     emoji: '🔒',
     specialty: 'PenTesting & Audits',
-    description: 'Revisa paquetes npm buscando vulnerabilidades extremas antes de desplegar Lookitry al mundo.',
-    status: 'idle',
-    lastTask: 'NPM scan',
+    description: 'Revisa paquetes npm buscando vulnerabilidades antes de desplegar al mundo.',
     color: '#64748b',
     gradient: 'from-slate-500 to-gray-700',
-  }
+  },
 ];
+
+// Verifica si un servicio responde (server-side, sin CORS)
+async function checkService(url: string, timeout = 5000): Promise<'ok' | 'warn' | 'error'> {
+  try {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    const res = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      cache: 'no-store',
+    });
+    clearTimeout(id);
+    if (res.ok || res.status === 405) return 'ok';
+    if (res.status >= 500) return 'error';
+    return 'warn';
+  } catch {
+    return 'error';
+  }
+}
 
 export async function GET() {
   try {
-    let commits = [];
-    try {
-      const { stdout } = await execAsync('git log -5 --pretty=format:"%h|%s|%an|%ar"', { cwd: process.env.HOME + '/Lookitry' });
-      commits = stdout.split('\\n').filter(Boolean).map(line => {
-        const [hash, message, author, time] = line.split('|');
-        return { hash, message, author, time };
-      });
-    } catch(e) {
-      commits = [{ hash: '00000', message: 'No git repository active', author: 'System', time: 'now' }];
-    }
+    // 1. Heartbeats reales de agentes desde Supabase
+    const { data: heartbeatData } = await supabaseAdmin
+      .from('agent_sessions')
+      .select('agent_name, current_task_description, status, last_heartbeat_at')
+      .order('last_heartbeat_at', { ascending: false });
 
-    let filesCount = 0;
-    try {
-      const { stdout } = await execAsync('find ' + process.env.HOME + '/Lookitry -type f | wc -l');
-      filesCount = parseInt(stdout.trim(), 10);
-    } catch(e) {
-      filesCount = 312;
-    }
+    const heartbeatMap = new Map<string, any>();
+    (heartbeatData ?? []).forEach((s: any) => {
+      heartbeatMap.set(s.agent_name, s);
+    });
 
-    /* Simulate dynamic statuses to give it life */
-    const dynamicAgents = AGENTS_ROSTER.map(agent => ({
-      ...agent,
-      status: Math.random() > 0.85 ? 'busy' : agent.status
+    const now = Date.now();
+    const agents = AGENTS_ROSTER.map((agent) => {
+      const hb = heartbeatMap.get(agent.id);
+      let status: 'ready' | 'busy' | 'idle' | 'error' = 'idle';
+      let lastTask = 'Sin actividad reciente';
+
+      if (hb) {
+        const msSinceHeartbeat = now - new Date(hb.last_heartbeat_at).getTime();
+        const alive = msSinceHeartbeat < HEARTBEAT_TIMEOUT_MS;
+
+        if (alive && hb.status === 'working') status = 'busy';
+        else if (alive) status = 'ready';
+        else if (hb.status === 'error') status = 'error';
+        else status = 'idle';
+
+        lastTask = hb.current_task_description || 'Idle';
+      }
+
+      return { ...agent, status, lastTask };
+    });
+
+    // 2. Stats reales de actividades desde Supabase
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const { data: activitiesRaw } = await supabaseAdmin
+      .from('agent_activities')
+      .select('agent_name, status, duration_ms, task_type, task_description, created_at')
+      .gte('created_at', thirtyDaysAgo.toISOString())
+      .order('created_at', { ascending: false });
+
+    const activities = activitiesRaw ?? [];
+    const completed = activities.filter((a: any) => a.status !== 'running');
+    const successes = completed.filter((a: any) => a.status === 'success');
+    const successRate = completed.length > 0
+      ? Math.round((successes.length / completed.length) * 100)
+      : 0;
+
+    const activeAgentCount = agents.filter(a => a.status === 'ready' || a.status === 'busy').length;
+
+    const stats = {
+      agentsCount: activeAgentCount,
+      totalTasks: activities.length,
+      successRate,
+      commitsWeek: 0, // se llena con GitHub abajo
+      pending: agents.filter(a => a.status === 'busy').length,
+      uptime: successRate > 0 ? `${successRate}%` : '—',
+    };
+
+    // 3. Activity feed — últimas 8 actividades reales
+    const recentActivity = activities.slice(0, 8).map((a: any) => ({
+      icon: a.status === 'success' ? '✅' : a.status === 'failed' ? '❌' : a.status === 'running' ? '⚙️' : '📝',
+      iconBg: a.status === 'success' ? 'bg-emerald-500/20' : a.status === 'failed' ? 'bg-rose-500/20' : 'bg-violet-500/20',
+      title: `${a.agent_name} — ${a.task_type}`,
+      description: a.task_description || a.task_type,
+      time: formatTimeAgo(a.created_at),
+      status: a.status,
     }));
 
-    return NextResponse.json({
-      agents: dynamicAgents,
-      commits,
-      stats: {
-        agentsCount: dynamicAgents.length,
-        filesTracked: filesCount,
-        commitsWeek: commits.length,
-        pending: 0,
-        uptime: '99.9%'
-      },
-      services: {
-        frontend: 'ok',
-        openclaw: 'ok',
-        supabase: 'ok',
-        telegram: 'ok'
+    // 4. Commits recientes desde GitHub API pública
+    let commits: any[] = [];
+    try {
+      const ghRes = await fetch(
+        `https://api.github.com/repos/${GITHUB_REPO}/commits?per_page=5`,
+        {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'Lookitry-MissionControl/1.0',
+          },
+          next: { revalidate: 300 }, // cache 5 min
+        }
+      );
+      if (ghRes.ok) {
+        const ghData = await ghRes.json();
+        commits = ghData.map((c: any) => ({
+          hash: c.sha,
+          message: c.commit.message.split('\n')[0], // solo primera línea
+          author: c.commit.author.name,
+          time: formatTimeAgo(c.commit.author.date),
+        }));
+        stats.commitsWeek = commits.length;
       }
+    } catch {
+      // GitHub no disponible — dejamos commits vacío
+    }
+
+    // 5. Health checks server-side (sin CORS)
+    const [frontendStatus, apiStatus, supabaseStatus, n8nStatus] = await Promise.all([
+      checkService('https://lookitry.com'),
+      checkService('https://api.lookitry.com/api/health'),
+      checkService(`${SUPABASE_URL}/rest/v1/`),
+      checkService('https://n8n.wilkiedevs.com'),
+    ]);
+
+    const services = {
+      frontend: frontendStatus,
+      api: apiStatus,
+      supabase: supabaseStatus,
+      n8n: n8nStatus,
+    };
+
+    return NextResponse.json({
+      agents,
+      commits,
+      stats,
+      services,
+      recentActivity,
+      timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to retrieve agent status' }, { status: 500 });
+
+  } catch (error: any) {
+    console.error('[MissionControl] Error fetching data:', error);
+    return NextResponse.json(
+      { error: 'Error al obtener datos de Mission Control', details: error.message },
+      { status: 500 }
+    );
   }
+}
+
+function formatTimeAgo(dateStr: string): string {
+  if (!dateStr) return '—';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+
+  if (diffSec < 5) return 'ahora';
+  if (diffSec < 60) return `hace ${diffSec}s`;
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `hace ${diffMin}m`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `hace ${diffHr}h`;
+  const diffDay = Math.floor(diffHr / 24);
+  return `hace ${diffDay}d`;
 }
