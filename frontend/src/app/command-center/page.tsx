@@ -7,6 +7,310 @@ import './command-center.css';
 /* ─── CUSTOM ASSETS (Sam's creations) ─────────────────────────────────────── */
 // Assets served from /public/assets/ — copied from repo root
 
+/* ─── HEARTBEAT TYPES ──────────────────────────────────────────────────────── */
+interface HeartbeatData {
+  agents: {
+    id: string;
+    name: string;
+    status: 'ready' | 'busy' | 'idle' | 'error';
+    lastTask: string;
+  }[];
+  stats: {
+    agentsCount: number;
+    totalTasks: number;
+    successRate: number;
+  };
+  services: Record<string, string>;
+}
+
+/* ─── SAMMY ROOM (Immersive + Heartbeat-driven) ─────────────────────────────── */
+function SammyRoom({ agentId }: { agentId: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const radarCanvasRef = useRef<HTMLCanvasElement>(null);
+  const scanRef = useRef(0);
+  const particlesRef = useRef<{ x: number; y: number; vx: number; vy: number; life: number; color: string }[]>([]);
+  const [heartbeat, setHeartbeat] = useState<HeartbeatData | null>(null);
+  const [speechBubble, setSpeechBubble] = useState('');
+  const [taskTyping, setTaskTyping] = useState('');
+  const typingRef = useRef<NodeJS.Timeout | null>(null);
+  const targetTask = useRef('');
+
+  // Fetch heartbeat
+  useEffect(() => {
+    const loadHeartbeat = async () => {
+      try {
+        const res = await fetch('/api/agents/status');
+        if (!res.ok) return;
+        const data: HeartbeatData = await res.json();
+        setHeartbeat(data);
+
+        // Update speech bubble target for Sammy
+        const sammy = data.agents.find(a => a.id === 'sammy');
+        if (sammy) {
+          targetTask.current = sammy.lastTask && sammy.lastTask !== 'Sin actividad reciente'
+            ? sammy.lastTask
+            : 'Monitoreando agentes...';
+        }
+      } catch { /* silent */ }
+    };
+    loadHeartbeat();
+    const id = setInterval(loadHeartbeat, 15_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Typewriter effect for task text
+  useEffect(() => {
+    if (typingRef.current) clearInterval(typingRef.current);
+    if (targetTask.current === taskTyping) return;
+    typingRef.current = setInterval(() => {
+      setTaskTyping(prev => {
+        if (prev.length < targetTask.current.length) {
+          return targetTask.current.slice(0, prev.length + 1);
+        }
+        clearInterval(typingRef.current!);
+        return prev;
+      });
+    }, 40);
+    return () => { if (typingRef.current) clearInterval(typingRef.current); };
+  }, [targetTask.current]);
+
+  const sammyStatus = heartbeat?.agents.find(a => a.id === 'sammy')?.status ?? 'idle';
+  const isBusy = sammyStatus === 'busy';
+  const isError = sammyStatus === 'error';
+
+  // Particle system
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let raf = 0;
+    const spawn = () => {
+      if (particlesRef.current.length < 60) {
+        const count = isBusy ? 3 : 1;
+        for (let i = 0; i < count; i++) {
+          particlesRef.current.push({
+            x: Math.random() * canvas.width,
+            y: canvas.height,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: -(Math.random() * 2.5 + 0.8),
+            life: 1,
+            color: isBusy ? (Math.random() > 0.5 ? '#00FFFF' : '#FF5C3A') : '#00FF41',
+          });
+        }
+      }
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (isBusy) spawn();
+
+      particlesRef.current = particlesRef.current.filter(p => p.life > 0);
+      for (const p of particlesRef.current) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.012;
+        ctx.globalAlpha = p.life * 0.7;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 2, 2);
+      }
+      ctx.globalAlpha = 1;
+      raf = requestAnimationFrame(draw);
+    };
+    raf = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(raf);
+  }, [isBusy]);
+
+  // Radar animation
+  useEffect(() => {
+    const canvas = radarCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const CX = 40, CY = 40, R = 36;
+    let raf = 0;
+    const draw = (t: number) => {
+      ctx.clearRect(0, 0, 80, 80);
+
+      // Grid circles
+      ctx.strokeStyle = '#00FF4133';
+      ctx.lineWidth = 0.5;
+      for (let r = R / 3; r <= R; r += R / 3) {
+        ctx.beginPath();
+        ctx.arc(CX, CY, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      // Crosshairs
+      ctx.beginPath();
+      ctx.moveTo(CX - R, CY); ctx.lineTo(CX + R, CY);
+      ctx.moveTo(CX, CY - R); ctx.lineTo(CX, CY + R);
+      ctx.stroke();
+
+      // Radar sweep
+      const sweep = (t * 0.001) % (Math.PI * 2);
+      const grad = ctx.createConicGradient(sweep, CX, CY);
+      grad.addColorStop(0, '#00FF4133');
+      grad.addColorStop(0.15, '#00FF4100');
+      grad.addColorStop(1, '#00FF4100');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(CX, CY, R, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Agent dots
+      if (heartbeat) {
+        heartbeat.agents.forEach((a, i) => {
+          const angle = (i / heartbeat.agents.length) * Math.PI * 2;
+          const dist = R * 0.5;
+          const dx = CX + Math.cos(angle) * dist - 3;
+          const dy = CY + Math.sin(angle) * dist - 3;
+          ctx.fillStyle = a.status === 'ready' ? '#00FF41' : a.status === 'busy' ? '#FFD700' : a.status === 'error' ? '#FF003C' : '#334155';
+          ctx.beginPath();
+          ctx.arc(dx + 3, dy + 3, 3, 0, Math.PI * 2);
+          ctx.fill();
+          // Blink if error
+          if (a.status === 'error' && Math.sin(t * 0.01) > 0) {
+            ctx.fillStyle = '#FF003C88';
+            ctx.beginPath();
+            ctx.arc(dx + 3, dy + 3, 6, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+      }
+
+      // Center dot (Sammy)
+      ctx.fillStyle = '#00FFFF';
+      ctx.beginPath();
+      ctx.arc(CX, CY, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#00FFFF44';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(CX, CY, 7, 0, Math.PI * 2);
+      ctx.stroke();
+
+      raf = requestAnimationFrame(draw);
+    };
+    raf = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(raf);
+  }, [heartbeat]);
+
+  const statusColor = isError ? '#FF003C' : isBusy ? '#FFD700' : '#00FF41';
+  const statusLabel = isError ? '⚠ ERROR' : isBusy ? '⚡ ACTIVE' : '◉ IDLE';
+
+  return (
+    <div style={{ position: 'relative', width: '100%', aspectRatio: '280/180', overflow: 'hidden',
+      background: '#030508', borderRadius: 6 }}>
+
+      {/* Room image */}
+      <Image src="/assets/Room-sammanta.png" alt="Sammy Room" fill
+        style={{ objectFit: 'cover', imageRendering: 'auto', opacity: isError ? 0.6 : 0.85 }}
+        unoptimized />
+
+      {/* Scan lines overlay */}
+      <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.02) 2px, rgba(0,255,255,0.02) 4px)', pointerEvents: 'none' }} />
+
+      {/* Error flash */}
+      {isError && (
+        <div style={{ position: 'absolute', inset: 0, background: '#FF003C18',
+          animation: 'cc-pulse 0.5s ease-in-out infinite', pointerEvents: 'none' }} />
+      )}
+
+      {/* Particle canvas */}
+      <canvas ref={canvasRef} width={280} height={180}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
+
+      {/* HUD: corner brackets */}
+      <svg viewBox="0 0 280 180" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+        {/* Corner brackets */}
+        {[[0, 0], [280, 0], [0, 180], [280, 180]].map(([cx, cy], i) => {
+          const sx = i % 2 === 0 ? 1 : -1;
+          const sy = i < 2 ? 1 : -1;
+          return (
+            <g key={i} stroke={statusColor} strokeWidth={1.5} fill="none" opacity={0.7}>
+              <path d={`M${cx + sx * 12},${cy} L${cx},${cy} L${cx},${cy + sy * 12}`} />
+            </g>
+          );
+        })}
+        {/* Top data line */}
+        <line x1={16} y1={12} x2={264} y2={12} stroke="#00FFFF" strokeWidth={0.5} opacity={0.3} />
+        <line x1={16} y1={168} x2={264} y2={168} stroke="#00FFFF" strokeWidth={0.5} opacity={0.3} />
+      </svg>
+
+      {/* Mini radar (top right) */}
+      <div style={{ position: 'absolute', top: 8, right: 8, width: 40, height: 40,
+        background: '#00000088', border: '1px solid #00FF4144', borderRadius: 4 }}>
+        <canvas ref={radarCanvasRef} width={80} height={80}
+          style={{ width: '100%', height: '100%' }} />
+      </div>
+
+      {/* Speech bubble (top left) */}
+      <div style={{ position: 'absolute', top: 8, left: 8, maxWidth: 140,
+        background: '#00FFFF11', border: '1px solid #00FFFF44', borderRadius: 4,
+        padding: '4px 8px', backdropFilter: 'blur(4px)' }}>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 7, color: '#00FFFF88', marginBottom: 2 }}>
+          CURRENT_TASK
+        </div>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 7.5, color: '#00FFFF',
+          minHeight: 10, lineHeight: 1.3 }}>
+          {taskTyping}
+          <span style={{ animation: 'cc-blink 0.8s step-end infinite' }}>█</span>
+        </div>
+      </div>
+
+      {/* Stats HUD (bottom left) */}
+      <div style={{ position: 'absolute', bottom: 8, left: 8, display: 'flex', gap: 8 }}>
+        {[
+          { label: 'AGENTS', value: heartbeat ? `${heartbeat.stats.agentsCount}/${heartbeat.agents.length}` : '—/10' },
+          { label: 'TASKS', value: heartbeat?.stats.totalTasks?.toString() ?? '—' },
+          { label: 'SUCCESS', value: heartbeat ? `${heartbeat.stats.successRate}%` : '—' },
+        ].map(({ label, value }) => (
+          <div key={label} style={{ background: '#00000066', border: '1px solid #00FF4122',
+            borderRadius: 3, padding: '2px 6px', textAlign: 'center' }}>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: '#00FF41', fontWeight: 700 }}>{value}</div>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 6, color: '#00FF4177' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Services status (bottom right) */}
+      <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 4, flexDirection: 'column', alignItems: 'flex-end' }}>
+        {heartbeat && Object.entries(heartbeat.services).slice(0, 4).map(([name, status]) => (
+          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 3,
+            fontFamily: "'JetBrains Mono', monospace", fontSize: 6.5, color: status === 'ok' ? '#00FF41' : status === 'warn' ? '#FFD700' : '#FF003C' }}>
+            <span>{status === 'ok' ? '●' : status === 'warn' ? '◐' : '✕'}</span>
+            <span style={{ opacity: 0.7 }}>{name.toUpperCase()}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Status badge */}
+      <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
+        display: 'flex', alignItems: 'center', gap: 5, padding: '2px 10px', borderRadius: 2,
+        border: `1px solid ${statusColor}55`,
+        background: `${statusColor}11`,
+        fontFamily: "'JetBrains Mono', monospace", fontSize: 8, letterSpacing: '0.1em', color: statusColor }}>
+        <span style={{ width: 5, height: 5, borderRadius: '50%', background: statusColor,
+          animation: sammyStatus === 'busy' ? 'cc-pulse 0.5s infinite' : 'cc-pulse 1.5s infinite' }} />
+        SAMMY — {statusLabel}
+      </div>
+
+      {/* Avatar */}
+      <div style={{
+        position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+        width: 48, height: 60, imageRendering: 'pixelated',
+        animation: isBusy ? 'sammy-typing 0.3s steps(2) infinite' : isError ? 'sammy-error 0.5s ease-in-out infinite' : 'sammy-idle 3s ease-in-out infinite',
+      }}>
+        <Image src="/assets/sammy.webp" alt="Sammy Avatar" fill
+          style={{ objectFit: 'contain', imageRendering: 'pixelated' }}
+          unoptimized />
+      </div>
+    </div>
+  );
+}
+
 /* ─── CONFIG ───────────────────────────────────────────────────────────────── */
 const SB_URL  = 'https://vkdooutklowctuudjnkl.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM';
@@ -494,37 +798,9 @@ function AgentRoomPanel({ agent, charPos, onClick, generatedChar, generatedRoom,
     >
       {/* Room SVG / Custom Image */}
       <div style={{ position: 'relative', width: '100%', aspectRatio: '280/180', overflow: 'hidden' }}>
-        {/* SAMMY uses custom assets */}
+        {/* SAMMY gets the immersive room */}
         {agent.id === 'sammy' ? (
-          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-            {/* Room background */}
-            <Image 
-              src="/assets/Room-sammanta.png"
-              alt="Sammy Room"
-              fill
-              style={{ objectFit: 'cover' }}
-              unoptimized
-            />
-            {/* Character sprite overlay */}
-            <div style={{ 
-              position: 'absolute', 
-              left: charPos.x - 20, 
-              top: charPos.y - 50,
-              width: 40, 
-              height: 50,
-              imageRendering: 'pixelated',
-              transform: isMoving ? 'scaleX(-1)' : 'none',
-              transition: 'transform 0.3s'
-            }}>
-              <Image 
-                src="/assets/sammy.webp"
-                alt="Sammy Avatar"
-                fill
-                style={{ objectFit: 'contain', imageRendering: 'pixelated' }}
-                unoptimized
-              />
-            </div>
-          </div>
+          <SammyRoom agentId="sammy" />
         ) : (
           <svg viewBox="0 0 280 180" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style={{ position: 'relative' }}>
             {generatedRoom && generatedRoom.includes('<svg') ? (
