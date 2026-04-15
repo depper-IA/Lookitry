@@ -13,8 +13,9 @@ inclusion: always
 ---
 
 ## 0. Documentacion Viva (Regla de Sincronicidad)
+
 **TODA VEZ que se realicen cambios estructurales en la arquitectura, componentes base, o diseño, es OBLIGATORIO:**
-1. **Usar el agente docs-writter** para documentar los cambios y mantener actualizados los archivos: [[PRD]], [[DESIGN]], [[TECH_STACK]] y [[REGLAS_IMPORTANTES]]
+1. **Usar el agente docs-writter (Lina)** para documentar los cambios y mantener actualizados los archivos: [[PRD]], [[DESIGN]], [[TECH_STACK]] y [[REGLAS_IMPORTANTES]]
 2. Estos documentos deben reflejar inmediatamente la realidad del sistema. Los documentos nunca deben quedar obsoletos.
 
 **REGLA DE ORO: NO ELIMINAR informacion tecnica que siga siendo valida o funcional (versiones de librerias, estructuras de carpetas, reglas previas). Solo se debe incluir la informacion que falta o se actualiza, manteniendo el historial y contexto previo.**
@@ -23,8 +24,8 @@ inclusion: always
 
 ## 1. Reglas de Git
 
-- **NO hacer commits ni push** sin que el usuario lo pida explicitamente
-- **NO hacer deploy** sin autorizacion explicita del usuario
+- **NO hacer commits ni push** sin que el usuario lo pide explicitamente
+- **NO hacer deploy** sin autorizacion explícita del usuario
 
 ### 1.1 Deploy
 
@@ -54,6 +55,109 @@ Cada vez que se realice cualquier cambio en el codigo, la IA DEBE documentarlo e
 - Motivo o contexto del cambio
 
 **Sin actualizar el changelog, la tarea no esta completa.**
+
+---
+
+## 3. Sistema de Agentes IA (Actualizado 2026-04-14)
+
+### 3.1 Modelo Default
+
+```yaml
+modelo_default: "minimax/MiniMax-M2.7"
+
+regla: "Todos los agentes usan este modelo por defecto"
+excepcion: "Solo usar otro modelo si AGENTS.md lo especifica explícitamente"
+```
+
+**AVISO**: Groq y DeepSeek han sido **REMOVIDOS** de todos los systemPromptOverride. Ya no deben aparecer en ningún prompt de agente.
+
+### 3.2 Equipo Completo de Agentes
+
+| Nombre | Workspace | Rol | Modelo |
+|--------|-----------|-----|--------|
+| **Sammantha** | sammy | Orquestadora Maestra | MiniMax-M2.7 |
+| **Pixel** | webwizard | Frontend Magician | MiniMax-M2.7 |
+| **Kira** | devguardian | Guardiana de Calidad | MiniMax-M2.7 |
+| **Nadia** | dataalchemist | Alquimista de Datos | MiniMax-M2.7 |
+| **Marlo** | growthpilot | Piloto de Crecimiento | MiniMax-M2.7 |
+| **Zephyr** | architectai | Arquitecto de Infraestructura | MiniMax-M2.7 |
+| **Lina** | docs-writer | Documentadora | MiniMax-M2.7 |
+| **Cipher** | security-auditor | Hacker Ético | MiniMax-M2.7 |
+| **Rebecca** | rebecca | UGC Creator + Embajadora | MiniMax-M2.7 |
+| **Leo** | leo | Agente de Trading | MiniMax-M2.7 |
+
+### 3.3 Invocación
+
+```
+@Sammantha [tarea] — Procesar y delegar
+@Pixel [tarea] — Frontend directo
+@Kira [tarea] — Code review / debug
+@Nadia [tarea] — Datos / IA
+@Marlo [tarea] — Marketing / CRM
+@Zephyr [tarea] — Infraestructura
+@Lina [tarea] — Documentación
+@Cipher [tarea] — Seguridad
+@Rebecca [tarea] — UGC / contenido
+@Becca [tarea] — Alias para Rebecca
+@Leo [tarea] — Trading
+```
+
+### 3.4 Personas Reales (NO Agentes)
+
+| Nombre | Rol | ID Telegram |
+|--------|-----|------------|
+| **Sam Wilkie** | Founder / Owner | 1049458877 |
+| **Melissa Urbano** | Junior Front-End Developer | 942528796 |
+
+**NOTA**: Melissa es **COLABORADORA** de Pixel, NO subordinada a agentes. Trabaja JUNTO CON Pixel en frontend.
+
+### 3.5 Estructura de Archivos por Agente
+
+Cada agente tiene ahora 6+ archivos de configuración:
+- `SOUL.md` — Personalidad y comportamiento
+- `IDENTITY.md` — Identidad básica
+- `USER.md` — Usuarios y contexto
+- `HEARTBEAT.md` — Protocolo de vida
+- `TOOLS.md` — Herramientas disponibles
+- `MEMORY.md` — Tareas y memoria
+- `AGENTS.md` — Definición del agente
+- `AGENTS_SOUL.md` — Personalidad extendida
+
+### 3.6 Colaboración Entre Agentes
+
+```yaml
+rebecca + leo:
+  - "Generar ingresos para Lookitry"
+  - "Rebecca: leads, clientes, contenido UGC"
+  - "Leo: trading automatizado"
+  
+pixel + melissa:
+  - "Frontend development"
+  - "Melissa es COlaboradora, no subordinada"
+  - "Code review mutuo"
+  
+kira + cipher:
+  - "Seguridad completa"
+  - "Kira: code review"
+  - "Cipher: pentesting"
+  
+nadia + marlo:
+  - "Datos para analytics"
+  - "Nadia: queries y datos"
+  - "Marlo: métricas y campaigns"
+```
+
+### 3.7 TTS / Voz de Sammantha
+
+```yaml
+sammantha_voice:
+  motor: "Gemini 2.5 Flash TTS"
+  ubicacion: "/home/travis/Lookitry/Lookitry/backend/scripts/sammantha_voice.sh"
+  
+  regla: "Solo generar audio cuando Sam ENVÍA audio primero O lo pide explícitamente"
+  
+  estado: "/home/travis/Lookitry/Lookitry/backend/.tts_state"
+```
 
 ---
 
@@ -92,33 +196,57 @@ Para evitar corrupciones de codigo y caidas del sistema:
 
 ---
 
-## 10. Sistema de Agentes IA
-
-| Agente | Archivo | Responsabilidad |
-|--------|---------|----------------|
-| Sammy | [[sammy]] | Orquestador |
-| WebWizard | [[webwizard]] | Frontend y UX |
-| DevGuardian | [[devguardian]] | Calidad y Seguridad |
-| DataAlchemist | [[dataalchemist]] | DB y n8n |
-| GrowthPilot | [[growthpilot]] | CRM y Marketing |
-| ArchitectAI | [[architectai]] | Infra y Deploy |
-
----
-
-## 11. Gestion de Habilidades (Skills)
+## 10. Gestion de Habilidades (Skills)
 
 Para asegurar que los agentes no solo lean guias sino que ejecuten tareas con maestria tecnica:
 
-### 11.1 Instalacion de Skills
+### 10.1 Instalacion de Skills
 - **Ubicacion Obligatoria**: Toda nueva Skill debe crearse como un archivo `.md` en `Lookitry_Brain_Vault/Cerebro/Skills/`.
 - **Registro Central**: Tras crear el archivo, se DEBE indexar en [[Skills|Lookitry_Brain_Vault/Cerebro/Agentes/Skills.md]].
 - **Naming**: Usar `kebab-case` (ej: `marketing-automation.md`). PROHIBIDO emojis en nombres de archivos o dentro de los corchetes de enlaces internos.
 
-### 11.2 Estructura de una Skill
+### 10.2 Estructura de una Skill
 Cada archivo de Skill debe contener:
 1. **Identidad**: Que problema resuelve.
 2. **Protocolo de Ejecucion**: Pasos exactos que el agente debe seguir.
 3. **Indicadores de Exito**: Como saber que la tarea se hizo correctamente.
 
 ---
-**Ultima actualizacion:** Abril 2026 - Sistema de Skills formalizado.
+
+## 11. Reglas Específicas de Rebecca (UGC Creator)
+
+### 11.1 Objetivo: MONEY
+Rebecca y Leo son el **motor de ingresos** de Lookitry:
+- Rebecca genera leads y clientes (Fiverr + Lookitry)
+- Leo hace trading
+- JUNTOS hacen dinero para el proyecto
+
+### 11.2 Herramientas Gratuitas para Contenido
+- Video: CapCut, DaVinci Resolve (gratis)
+- Audio: Audacity, Freesound.org (gratis)
+- Imagen: Canva, Pexels, Pixabay (gratis)
+- AI: ChatGPT/Gemini (gratuitos)
+
+### 11.3 Patrocinio (SOLO Grants)
+**PERMITE**:
+- Angel investors (dinero, NO equity)
+- Grants: Google for Startups, AWS Activate
+- Incubadoras sin equity
+- Awards y competitions
+
+**PROHÍBE (absoluto)**:
+- ❌ CEDER % DE SOCIEDAD
+- ❌ COMPARTIR PROPIEDAD INTELECTUAL
+- ❌ VENDER PARTES DE LOOKITRY
+- ❌ ACUERDOS CON CONTROL COMPARTIDO
+- ❌ INVERSORES CON PODER DE VETO
+
+---
+
+**Ultima actualizacion:** Abril 2026 - Sistema de Agentes v2.0
+**Cambios principales:**
+- 10 agentes con nombres nuevos
+- Modelo default: MiniMax-M2.7 (Groq/DeepSeek removidos)
+- Rebecca v3.0 con foco en MONEY
+- Melissa como colaboradora de Pixel
+- Leo como agente de trading
