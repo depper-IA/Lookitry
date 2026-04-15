@@ -4,6 +4,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import './command-center.css';
 
+/* ─── CUSTOM ASSETS (Sam's creations) ─────────────────────────────────────── */
+// Assets served from /public/assets/ — copied from repo root
+
 /* ─── CONFIG ───────────────────────────────────────────────────────────────── */
 const SB_URL  = 'https://vkdooutklowctuudjnkl.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM';
@@ -489,9 +492,41 @@ function AgentRoomPanel({ agent, charPos, onClick, generatedChar, generatedRoom,
         boxShadow: `0 0 18px ${c}18, inset 0 0 24px #00000066`,
       } as React.CSSProperties}
     >
-      {/* Room SVG */}
+      {/* Room SVG / Custom Image */}
       <div style={{ position: 'relative', width: '100%', aspectRatio: '280/180', overflow: 'hidden' }}>
-        <svg viewBox="0 0 280 180" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style={{ position: 'relative' }}>
+        {/* SAMMY uses custom assets */}
+        {agent.id === 'sammy' ? (
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            {/* Room background */}
+            <Image 
+              src="/assets/Room-sammanta.png"
+              alt="Sammy Room"
+              fill
+              style={{ objectFit: 'cover' }}
+              unoptimized
+            />
+            {/* Character sprite overlay */}
+            <div style={{ 
+              position: 'absolute', 
+              left: charPos.x - 20, 
+              top: charPos.y - 50,
+              width: 40, 
+              height: 50,
+              imageRendering: 'pixelated',
+              transform: isMoving ? 'scaleX(-1)' : 'none',
+              transition: 'transform 0.3s'
+            }}>
+              <Image 
+                src="/assets/sammy.webp"
+                alt="Sammy Avatar"
+                fill
+                style={{ objectFit: 'contain', imageRendering: 'pixelated' }}
+                unoptimized
+              />
+            </div>
+          </div>
+        ) : (
+          <svg viewBox="0 0 280 180" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style={{ position: 'relative' }}>
             {generatedRoom && generatedRoom.includes('<svg') ? (
               <g dangerouslySetInnerHTML={{ __html: generatedRoom }} />
             ) : (
@@ -511,6 +546,7 @@ function AgentRoomPanel({ agent, charPos, onClick, generatedChar, generatedRoom,
                 isMoving={isMoving} />
             )}
           </svg>
+        )}
           {/* Status badge */}
           <div style={{
             position: 'absolute', top: 6, left: 6,
