@@ -180,7 +180,7 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
   const isGrid = variant === 'grid';
   const isThumb = variant === 'thumbnails';
   const isList = variant === 'list';
-  const cardHeight = isGrid ? 'min-h-[480px]' : isThumb ? 'min-h-[380px] md:min-h-[420px]' : '';
+  const cardHeight = isGrid ? 'min-h-[480px]' : isThumb ? 'min-h-[400px] md:min-h-[480px]' : '';
   
   return (
     <motion.div
@@ -215,8 +215,8 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
           <div className="absolute inset-0 pointer-events-none transition-opacity duration-500" style={{ opacity: isHovered ? 0.6 : 0, background: `radial-gradient(ellipse at 30% 70%, ${DESIGN.accentGlow} 0%, transparent 50%)` }} />
 
           {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
-            <ProductBadge type={product.badge || 'nuevo'} />
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+            {product.badge && <ProductBadge type={product.badge} />}
             {!isList && <CategoryBadge category={product.category} />}
           </div>
 
@@ -227,50 +227,74 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="absolute bottom-0 left-0 right-0 p-4" style={{ transform: isHovered ? 'translateY(0)' : 'translateY(100%)', transition: `transform ${DESIGN.normal} ease`, background: 'linear-gradient(to top, var(--overlay-dark) 0%, transparent 100%)' }}>
-            <div className="flex justify-center gap-2">
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onEdit}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white"
-                style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)' }}>
-                <Edit3 size={14} /> Editar
-              </motion.button>
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onDelete}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white"
-                style={{ background: 'rgba(239, 68, 68, 0.8)', border: '1px solid rgba(239, 68, 68, 0.4)' }}>
-                <Trash2 size={14} /> Eliminar
-              </motion.button>
-              {onAddToWidget && (
-                <motion.button
-                  whileHover={{ scale: isInWidget ? 1 : 1.02 }}
-                  whileTap={{ scale: isInWidget ? 1 : 0.98 }}
-                  onClick={(e) => { e.stopPropagation(); onAddToWidget(); }}
-                  disabled={isInWidget || !canAddToWidget}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
-                    isInWidget
-                      ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
-                      : canAddToWidget === false
-                      ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
-                      : 'bg-[#FF5C3A]/80 text-white hover:bg-[#FF5C3A]'
-                  }`}
-                  style={{ border: isInWidget ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,92,58,0.4)' }}
-                >
-                  {isInWidget ? <Check size={14} /> : <Plus size={14} />}
-                  {isInWidget ? 'En Widget' : 'Agregar'}
+          {/* Actions - only show on hover for grid/list, thumbnails use button overlay */}
+          {!isThumb && (
+            <div className="absolute bottom-0 left-0 right-0 p-4" style={{ transform: isHovered ? 'translateY(0)' : 'translateY(100%)', transition: `transform ${DESIGN.normal} ease`, background: 'linear-gradient(to top, var(--overlay-dark) 0%, transparent 100%)' }}>
+              <div className="flex justify-center gap-2">
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onEdit}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white"
+                  style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                  <Edit3 size={14} /> Editar
                 </motion.button>
-              )}
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onDelete}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white"
+                  style={{ background: 'rgba(239, 68, 68, 0.8)', border: '1px solid rgba(239, 68, 68, 0.4)' }}>
+                  <Trash2 size={14} /> Eliminar
+                </motion.button>
+                {onAddToWidget && (
+                  <motion.button
+                    whileHover={{ scale: isInWidget ? 1 : 1.02 }}
+                    whileTap={{ scale: isInWidget ? 1 : 0.98 }}
+                    onClick={(e) => { e.stopPropagation(); onAddToWidget(); }}
+                    disabled={isInWidget || !canAddToWidget}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+                      isInWidget
+                        ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
+                        : canAddToWidget === false
+                        ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
+                        : 'bg-[#FF5C3A]/80 text-white hover:bg-[#FF5C3A]'
+                    }`}
+                    style={{ border: isInWidget ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,92,58,0.4)' }}
+                  >
+                    {isInWidget ? <Check size={14} /> : <Plus size={14} />}
+                    {isInWidget ? 'En Widget' : 'Agregar'}
+                  </motion.button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Thumbnail view: Add to widget button at bottom */}
+          {isThumb && onAddToWidget && (
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
+              <motion.button
+                whileHover={{ scale: isInWidget ? 1 : 1.02 }}
+                whileTap={{ scale: isInWidget ? 1 : 0.98 }}
+                onClick={(e) => { e.stopPropagation(); onAddToWidget(); }}
+                disabled={isInWidget || !canAddToWidget}
+                className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${
+                  isInWidget
+                    ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
+                    : canAddToWidget === false
+                    ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#FF5C3A]/80 text-white hover:bg-[#FF5C3A]'
+                }`}
+              >
+                {isInWidget ? <Check size={12} /> : <Plus size={12} />}
+                {isInWidget ? 'En Widget' : 'Agregar'}
+              </motion.button>
+            </div>
+          )}
         </div>
 
         {/* Content */}
-        <div className="flex flex-col flex-1 justify-between p-4 space-y-2">
+        <div className="flex flex-col flex-1 justify-between p-4 lg:p-5 space-y-2">
           <div className="space-y-2">
-            <h3 className="font-bold uppercase tracking-tight leading-tight line-clamp-2" style={{ color: 'var(--text-primary)', fontSize: isThumb ? '11px' : '13px' }}>
+            <h3 className="font-bold uppercase tracking-tight leading-tight line-clamp-2" style={{ color: 'var(--text-primary)', fontSize: isThumb ? '12px' : '13px' }}>
               {product.name}
             </h3>
             {product.shortDescription && !isThumb && <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{product.shortDescription}</p>}
-            <TechLine attributes={product.attributes || {}} />
+            {!isThumb && <TechLine attributes={product.attributes || {}} />}
             {!isThumb && <AttrPills attributes={product.attributes || {}} />}
           </div>
           <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid var(--card-border)' }}>
@@ -304,7 +328,7 @@ function GridView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
 
 function ThumbnailsView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 lg:gap-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-5 lg:gap-6">
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
           <ProductCard key={product.id} product={product} variant="thumbnails" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx}
