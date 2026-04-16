@@ -24,9 +24,9 @@ export const PLANS: Record<string, Plan> = {
     maxGenerationsPerMonth: 1000,
     price: 0,
   },
-  ENTERPRISE: {
+ENTERPRISE: {
     type: 'ENTERPRISE',
-    maxProducts: 50,
+    maxProducts: Infinity,
     maxGenerationsPerMonth: 2000,
     price: 800000,
   },

@@ -117,12 +117,12 @@ const DEFAULTS: PricingConfig = {
   },
   enterprise: {
     precio_mensual_cop: 800000,
-    productos_max: 50,
+    productos_max: Infinity, // Ilimitado para Enterprise
     generaciones_mensuales: 2000,
     subtitulo: 'Para grandes retailers y operaciones a escala',
     boton_texto: 'Hablar con ventas',
     features: [
-      '+50 productos',
+      'Productos ilimitados en el probador',
       'Volumen a medida',
       'Marca Blanca',
       'Panel de Analítica Avanzado',
