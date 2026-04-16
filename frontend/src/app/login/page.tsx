@@ -15,37 +15,44 @@ export default function LoginPage({
 
   return (
     <AuthGuard redirectTo="/dashboard">
-      {/* Split screen layout - desktop only, hidden on mobile */}
+      {/* Split screen layout - 60/40 premium split */}
       <div className="hidden lg:flex h-dvh overflow-hidden">
-        {/* LEFT SIDE - Promotional Panel */}
-        <div className="w-1/2 relative overflow-hidden flex flex-col">
-          {/* Background gradient with accent glow */}
+        {/* LEFT SIDE - Promotional Panel (60%) */}
+        <div className="w-[60%] relative overflow-hidden flex flex-col">
+          {/* Rich gradient background */}
           <div
             className="absolute inset-0"
             style={{
-              background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0a05 50%, #0a0a0a 100%)',
+              background: 'linear-gradient(145deg, #050505 0%, #0f0a08 25%, #0a0a0a 50%, #080510 75%, #050505 100%)',
             }}
           />
 
-          {/* Decorative accent circles */}
+          {/* Ambient accent glows */}
           <div
-            className="absolute -top-16 -left-16 w-64 h-64 rounded-full opacity-20 blur-3xl"
-            style={{ backgroundColor: '#FF5C3A' }}
+            className="absolute -top-24 -left-24 w-96 h-96 rounded-full opacity-15 blur-[100px]"
+            style={{ background: 'radial-gradient(circle, #FF5C3A 0%, transparent 70%)' }}
           />
           <div
-            className="absolute -bottom-24 -right-12 w-80 h-80 rounded-full opacity-10 blur-3xl"
-            style={{ backgroundColor: '#FF5C3A' }}
+            className="absolute -bottom-32 -right-16 w-[500px] h-[500px] rounded-full opacity-10 blur-[120px]"
+            style={{ background: 'radial-gradient(circle, #FF5C3A 0%, transparent 70%)' }}
+          />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.03] blur-[80px]"
+            style={{ background: 'radial-gradient(circle, #FF5C3A 0%, transparent 70%)' }}
           />
 
-          {/* Grid pattern overlay */}
+          {/* Subtle grid pattern */}
           <div
-            className="absolute inset-0 opacity-[0.03]"
+            className="absolute inset-0 opacity-[0.025]"
             style={{
               backgroundImage:
-                'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-              backgroundSize: '64px 64px',
+                'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
+              backgroundSize: '48px 48px',
             }}
           />
+
+          {/* Glass overlay for premium feel */}
+          <div className="absolute inset-0 backdrop-blur-[1px]" />
 
           {/* Content */}
           <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-12 py-8">
@@ -60,16 +67,16 @@ export default function LoginPage({
                   priority
                 />
               </div>
-              <span className="font-jakarta font-extrabold text-3xl text-white tracking-tight">
+              <span className="font-jakarta font-extrabold text-2xl text-white tracking-tight">
                 Look<span style={{ color: '#FF5C3A' }}>itry</span>
               </span>
             </Link>
 
             {/* Main content */}
-            <div className="max-w-xl text-center">
+            <div className="max-w-lg text-center">
               {/* Headline */}
               <h1
-                className="font-jakarta font-bold text-4xl leading-tight mb-4"
+                className="font-jakarta font-bold text-4xl leading-[1.15] mb-4 tracking-tight"
                 style={{ color: '#ffffff' }}
               >
                 Transforma tu manera de{' '}
@@ -78,131 +85,139 @@ export default function LoginPage({
 
               {/* Subtext */}
               <p
-                className="text-base leading-relaxed mb-8"
-                style={{ color: '#999999' }}
+                className="text-[15px] leading-relaxed mb-8 font-light"
+                style={{ color: '#aaaaaa' }}
               >
                 Prueba virtualmente cualquier prenda antes de comprarla.
-                Aumenta tus ventas, reduce devoluciones y ofrece una
-                experiencia única a tus clientes.
+                Aumenta tus ventas y ofrece una experiencia única.
               </p>
 
-              {/* Features */}
+              {/* Features - refined cards */}
               <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="text-center">
+                <div className="relative group">
                   <div
-                    className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: 'rgba(255,92,58,0.1)' }}
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="#FF5C3A"
-                      viewBox="0 0 24 24"
+                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: 'linear-gradient(135deg, rgba(255,92,58,0.1) 0%, transparent 100%)' }}
+                  />
+                  <div className="relative p-4 rounded-xl border transition-all duration-300" style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                    <div
+                      className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: 'rgba(255,92,58,0.12)' }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="#FF5C3A"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: '#ffffff' }}>
+                      Prueba Virtual
+                    </p>
+                    <p className="text-[12px]" style={{ color: '#666666' }}>
+                      Visualiza
+                    </p>
                   </div>
-                  <p
-                    className="text-sm font-medium"
-                    style={{ color: '#ffffff' }}
-                  >
-                    Prueba Virtual
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: '#666666' }}>
-                    Visualiza antes de comprar
-                  </p>
                 </div>
 
-                <div className="text-center">
+                <div className="relative group">
                   <div
-                    className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: 'rgba(255,92,58,0.1)' }}
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="#FF5C3A"
-                      viewBox="0 0 24 24"
+                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: 'linear-gradient(135deg, rgba(255,92,58,0.1) 0%, transparent 100%)' }}
+                  />
+                  <div className="relative p-4 rounded-xl border transition-all duration-300" style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                    <div
+                      className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: 'rgba(255,92,58,0.12)' }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                      />
-                    </svg>
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="#FF5C3A"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                        />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: '#ffffff' }}>
+                      Más Ventas
+                    </p>
+                    <p className="text-[12px]" style={{ color: '#666666' }}>
+                      Convierte
+                    </p>
                   </div>
-                  <p
-                    className="text-sm font-medium"
-                    style={{ color: '#ffffff' }}
-                  >
-                    Más Ventas
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: '#666666' }}>
-                    Convierte más clientes
-                  </p>
                 </div>
 
-                <div className="text-center">
+                <div className="relative group">
                   <div
-                    className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: 'rgba(255,92,58,0.1)' }}
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="#FF5C3A"
-                      viewBox="0 0 24 24"
+                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: 'linear-gradient(135deg, rgba(255,92,58,0.1) 0%, transparent 100%)' }}
+                  />
+                  <div className="relative p-4 rounded-xl border transition-all duration-300" style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                    <div
+                      className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: 'rgba(255,92,58,0.12)' }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                      />
-                    </svg>
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="#FF5C3A"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                        />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: '#ffffff' }}>
+                      Sin Devoluciones
+                    </p>
+                    <p className="text-[12px]" style={{ color: '#666666' }}>
+                      Menos errores
+                    </p>
                   </div>
-                  <p
-                    className="text-sm font-medium"
-                    style={{ color: '#ffffff' }}
-                  >
-                    Sin Devoluciones
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: '#666666' }}>
-                    Menos errores en tallas
-                  </p>
                 </div>
               </div>
 
-              {/* CTA */}
+              {/* CTA tagline */}
               <p
-                className="text-xs font-medium tracking-wide uppercase"
+                className="text-[11px] font-medium tracking-[0.2em] uppercase"
                 style={{ color: '#FF5C3A' }}
               >
-                Transforma tu experiencia de moda
+                Transforma tu experiencia
               </p>
             </div>
           </div>
         </div>
 
-        {/* RIGHT SIDE - Login Form */}
+        {/* RIGHT SIDE - Login Form (40%) */}
         <div
-          className="w-1/2 flex flex-col justify-center overflow-hidden px-8 lg:px-10 xl:px-12"
-          style={{ backgroundColor: '#0a0a0a' }}
+          className="w-[40%] flex flex-col justify-center overflow-hidden px-8"
+          style={{ backgroundColor: '#080808' }}
         >
-          <div className="w-full max-w-[420px] mx-auto">
-            <LoginForm redirectTo={redirectTo} />
+          <div className="w-full max-w-[420px] mx-auto px-4">
+            <LoginForm redirectTo={redirectTo} compact hideLogo />
           </div>
         </div>
       </div>
