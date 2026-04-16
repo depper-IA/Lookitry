@@ -12,6 +12,7 @@ export interface PlanConfig {
   precio_mensual_cop: number;
   precio_original_cop?: number;
   descuento_porcentaje?: number;
+  productos_min: number;
   productos_max: number;
   generaciones_mensuales: number;
   subtitulo: string;
@@ -69,6 +70,7 @@ const DEFAULTS: PricingConfig = {
   basic: {
     precio_mensual_cop: 180000,
     precio_original_cop: 180000,
+    productos_min: 0,
     productos_max: 5,
     generaciones_mensuales: 400,
     subtitulo: 'Para marcas pequeñas en Instagram y WhatsApp',
@@ -94,6 +96,7 @@ const DEFAULTS: PricingConfig = {
   pro: {
     precio_mensual_cop: 350000,
     precio_original_cop: 350000,
+    productos_min: 0,
     productos_max: 15,
     generaciones_mensuales: 1000,
     subtitulo: 'Para tiendas online con mayor volumen',
@@ -117,12 +120,13 @@ const DEFAULTS: PricingConfig = {
   },
   enterprise: {
     precio_mensual_cop: 800000,
-    productos_max: 50,
+    productos_min: 50, // Minimo 50 productos para Enterprise
+    productos_max: Infinity, // Ilimitado a partir de 50
     generaciones_mensuales: 2000,
     subtitulo: 'Para grandes retailers y operaciones a escala',
     boton_texto: 'Hablar con ventas',
     features: [
-      '+50 productos',
+      'Minimo 50 productos (ilimitado a partir de alli)',
       'Volumen a medida',
       'Marca Blanca',
       'Panel de Analítica Avanzado',

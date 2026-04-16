@@ -61,6 +61,8 @@ export interface Brand {
     [key: string]: unknown;
   } | null;
   onboardingDismissed?: boolean;
+  // Widget playlist (featured products)
+  widgetProductIds?: string[];
 }
 
 export type ReviewStatus = 'pending' | 'approved' | 'rejected';

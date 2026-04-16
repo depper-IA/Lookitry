@@ -261,23 +261,46 @@ export class AuthController {
       if (turnstileEnabled) {
         const token = req.body.turnstileToken;
         if (!token) {
+          console.warn('[Auth] Login attempt without Turnstile token');
           return res.status(400).json({ error: 'CAPTCHA_REQUIRED', message: 'Verificación de seguridad requerida' });
         }
-        const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || '';
-        const formData = new URLSearchParams();
-        formData.append('secret', process.env.TURNSTILE_SECRET_KEY || '');
-        formData.append('response', token);
-        if (ip) formData.append('remoteip', ip);
 
-        const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: formData.toString(),
-        });
-        const verifyData = await verifyRes.json() as { success: boolean; 'error-codes'?: string[] };
-        if (!verifyData.success) {
-          console.error('[Turnstile] Login - Verificación fallida:', verifyData['error-codes']);
-          return res.status(400).json({ error: 'CAPTCHA_FAILED', message: 'Verificación de seguridad fallida. Intenta de nuevo.' });
+        const secret = process.env.TURNSTILE_SECRET_KEY;
+        if (!secret) {
+          console.error('[Auth] TURNSTILE_SECRET_KEY is not configured');
+          if (process.env.NODE_ENV !== 'development') {
+            return res.status(500).json({ error: 'SERVER_CONFIG_ERROR', message: 'Error de configuración de seguridad' });
+          }
+        } else {
+          try {
+            const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || '';
+            const formData = new URLSearchParams();
+            formData.append('secret', secret);
+            formData.append('response', token);
+            if (ip) formData.append('remoteip', ip);
+
+            const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: formData.toString(),
+            });
+
+            const verifyData = await verifyRes.json() as { success: boolean; 'error-codes'?: string[] };
+            if (!verifyData.success) {
+              console.error('[Turnstile] Login - Verificación fallida:', verifyData['error-codes']);
+              return res.status(400).json({ 
+                error: 'CAPTCHA_FAILED', 
+                message: 'Verificación de seguridad fallida. Por favor, intenta de nuevo.',
+                details: verifyData['error-codes']
+              });
+            }
+            console.log('[Auth] Turnstile verification successful');
+          } catch (error) {
+            console.error('[Auth] Turnstile fetch error:', error);
+            if (process.env.NODE_ENV !== 'development') {
+              return res.status(503).json({ error: 'SERVICE_UNAVAILABLE', message: 'No se pudo conectar con el servicio de seguridad' });
+            }
+          }
         }
       }
 
