@@ -16,9 +16,9 @@ export default function LoginPage({
   return (
     <AuthGuard redirectTo="/dashboard">
       {/* Split screen layout - desktop only, hidden on mobile */}
-      <div className="hidden lg:flex min-h-screen">
-        {/* LEFT SIDE - Promotional Panel (70%) */}
-        <div className="w-[70%] relative overflow-hidden">
+      <div className="hidden lg:flex h-dvh overflow-hidden">
+        {/* LEFT SIDE - Promotional Panel */}
+        <div className="w-1/2 relative overflow-hidden flex flex-col">
           {/* Background gradient with accent glow */}
           <div
             className="absolute inset-0"
@@ -29,15 +29,11 @@ export default function LoginPage({
 
           {/* Decorative accent circles */}
           <div
-            className="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-20 blur-3xl"
+            className="absolute -top-16 -left-16 w-64 h-64 rounded-full opacity-20 blur-3xl"
             style={{ backgroundColor: '#FF5C3A' }}
           />
           <div
-            className="absolute -bottom-48 -right-24 w-[500px] h-[500px] rounded-full opacity-10 blur-3xl"
-            style={{ backgroundColor: '#FF5C3A' }}
-          />
-          <div
-            className="absolute top-1/2 left-1/4 w-64 h-64 rounded-full opacity-10 blur-2xl"
+            className="absolute -bottom-24 -right-12 w-80 h-80 rounded-full opacity-10 blur-3xl"
             style={{ backgroundColor: '#FF5C3A' }}
           />
 
@@ -52,9 +48,9 @@ export default function LoginPage({
           />
 
           {/* Content */}
-          <div className="relative z-10 flex flex-col items-center justify-center h-full px-16 py-12">
+          <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-12 py-8">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 mb-16 group">
+            <Link href="/" className="flex items-center gap-3 mb-8 group">
               <div className="relative h-14 w-14 shrink-0">
                 <Image
                   src="/logo.svg"
@@ -73,7 +69,7 @@ export default function LoginPage({
             <div className="max-w-xl text-center">
               {/* Headline */}
               <h1
-                className="font-jakarta font-bold text-5xl leading-tight mb-6"
+                className="font-jakarta font-bold text-4xl leading-tight mb-4"
                 style={{ color: '#ffffff' }}
               >
                 Transforma tu manera de{' '}
@@ -82,7 +78,7 @@ export default function LoginPage({
 
               {/* Subtext */}
               <p
-                className="text-lg leading-relaxed mb-10"
+                className="text-base leading-relaxed mb-8"
                 style={{ color: '#999999' }}
               >
                 Prueba virtualmente cualquier prenda antes de comprarla.
@@ -91,7 +87,7 @@ export default function LoginPage({
               </p>
 
               {/* Features */}
-              <div className="grid grid-cols-3 gap-6 mb-12">
+              <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="text-center">
                   <div
                     className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center"
@@ -191,28 +187,21 @@ export default function LoginPage({
 
               {/* CTA */}
               <p
-                className="text-sm font-medium tracking-wide uppercase"
+                className="text-xs font-medium tracking-wide uppercase"
                 style={{ color: '#FF5C3A' }}
               >
                 Transforma tu experiencia de moda
               </p>
             </div>
-
-            {/* Bottom tagline */}
-            <div className="absolute bottom-8 left-0 right-0 text-center">
-              <p className="text-xs" style={{ color: '#444444' }}>
-                Tecnologia de inteligencia artificial para la industria de la moda
-              </p>
-            </div>
           </div>
         </div>
 
-        {/* RIGHT SIDE - Login Form (30%) */}
+        {/* RIGHT SIDE - Login Form */}
         <div
-          className="w-[30%] flex items-center justify-center p-8"
+          className="w-1/2 flex flex-col justify-center overflow-hidden px-8 lg:px-10 xl:px-12"
           style={{ backgroundColor: '#0a0a0a' }}
         >
-          <div className="w-full max-w-sm">
+          <div className="w-full max-w-[420px] mx-auto">
             <LoginForm redirectTo={redirectTo} />
           </div>
         </div>
