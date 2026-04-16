@@ -133,6 +133,65 @@ router.post('/me/legal-requests', (req, res) => brandsController.createLegalRequ
 // POST /api/brands/me/trial-events - Registrar eventos comerciales de trial
 router.post('/me/trial-events', (req, res) => brandsController.createTrialEvent(req, res));
 
+// GET /api/brands/me/widget-products - Obtener productos del widget
+router.get('/me/widget-products', async (req: any, res) => {
+  try {
+    const brandId = req.brand?.id;
+    if (!brandId) return res.status(401).json({ error: 'No autenticado' });
+
+    const { data: brand } = await supabaseAdmin
+      .from('brands')
+      .select('widget_product_ids')
+      .eq('id', brandId)
+      .single();
+
+    const productIds = brand?.widget_product_ids || [];
+
+    if (productIds.length === 0) {
+      return res.json({ productIds: [], products: [] });
+    }
+
+    const { data: products } = await supabaseAdmin
+      .from('products')
+      .select('*')
+      .in('id', productIds)
+      .eq('is_active', true);
+
+    // Mantener el orden definido en widget_product_ids
+    const orderedProducts = productIds
+      .map(id => products?.find(p => p.id === id))
+      .filter(Boolean);
+
+    return res.json({ productIds, products: orderedProducts });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || 'Error al obtener widget products' });
+  }
+});
+
+// PUT /api/brands/me/widget-products - Actualizar productos del widget
+router.put('/me/widget-products', async (req: any, res) => {
+  try {
+    const brandId = req.brand?.id;
+    if (!brandId) return res.status(401).json({ error: 'No autenticado' });
+
+    const { productIds } = req.body;
+    if (!Array.isArray(productIds)) {
+      return res.status(400).json({ error: 'productIds debe ser un array' });
+    }
+
+    const { error } = await supabaseAdmin
+      .from('brands')
+      .update({ widget_product_ids: productIds })
+      .eq('id', brandId);
+
+    if (error) throw error;
+
+    return res.json({ success: true, productIds });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || 'Error al actualizar widget products' });
+  }
+});
+
 // POST /api/brands/request-plan-change - Solicitar cambio de plan (upgrade o downgrade)
 // Fuera de checkActiveSubscription para que marcas suspendidas/vencidas también puedan solicitarlo
 router.post('/request-plan-change', (req, res) =>
