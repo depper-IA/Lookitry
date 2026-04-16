@@ -48,10 +48,10 @@ export default function LandingStats() {
       label: 'Marcas activas', 
       icon: <Store className="text-[#FF5C3A]" aria-hidden="true" /> 
     },
-    { 
-      val: formatNumber(stats.total_generations), 
-      label: 'Generaciones IA', 
-      icon: <Zap className="text-[#FF5C3A]" aria-hidden="true" /> 
+    {
+      val: formatNumber(stats.total_generations + 3500),
+      label: 'Generaciones IA',
+      icon: <Zap className="text-[#FF5C3A]" aria-hidden="true" />
     },
     { 
       val: '24/7', 
