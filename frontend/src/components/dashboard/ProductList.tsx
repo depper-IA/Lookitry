@@ -287,20 +287,31 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
           )}
         </div>
 
-        {/* Content */}
-        <div className="flex flex-col flex-1 justify-between p-4 lg:p-5 space-y-2">
-          <div className="space-y-2">
-            <h3 className="font-bold uppercase tracking-tight leading-tight line-clamp-2" style={{ color: 'var(--text-primary)', fontSize: isThumb ? '12px' : '13px' }}>
-              {product.name}
-            </h3>
-            {product.shortDescription && !isThumb && <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{product.shortDescription}</p>}
-            {!isThumb && <TechLine attributes={product.attributes || {}} />}
-            {!isThumb && <AttrPills attributes={product.attributes || {}} />}
-          </div>
-          <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid var(--card-border)' }}>
-            <ActiveStatus />
-            {product.price != null && <PriceTag price={product.price} category={product.category} />}
-          </div>
+        {/* Content - compact for thumbnails */}
+        <div className="flex flex-col flex-1 justify-end p-3 lg:p-4">
+          {/* Product name */}
+          <h3 className="font-bold uppercase tracking-tight leading-tight line-clamp-2 mb-1" style={{ color: 'var(--text-primary)', fontSize: isThumb ? '11px' : '13px' }}>
+            {product.name}
+          </h3>
+
+          {/* Category badge */}
+          {!isList && (
+            <div className="mb-2">
+              <span className="text-[9px] font-semibold uppercase tracking-wider opacity-70" style={{ color: 'var(--text-muted)' }}>
+                {product.category}
+              </span>
+            </div>
+          )}
+
+          {/* Price - always visible */}
+          {product.price != null && (
+            <div className="mt-auto pt-2 flex items-center justify-between">
+              <span className="text-sm lg:text-lg font-black tracking-tight" style={{ color: DESIGN.accent, textShadow: `0 0 20px ${DESIGN.accentGlow}` }}>
+                ${Number(product.price).toLocaleString('es-CO')}
+              </span>
+              <ActiveStatus />
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
