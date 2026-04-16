@@ -61,7 +61,7 @@ export function CategoryFilter({
         <div
           className="absolute top-full left-0 mt-2 w-48 rounded-xl overflow-hidden z-50"
           style={{
-            background: 'var(--bg-card-elevated)',
+            background: 'var(--card-bg-elevated)',
             border: '1px solid var(--card-border)',
             boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
           }}

@@ -427,7 +427,7 @@ export default function ProductsPage() {
               </div>
 
               {/* Split Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-12">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 lg:gap-10 xl:gap-12">
 
                 {/* Left: Catalog Panel */}
                 <div className={activeTab === 'widget' ? 'hidden lg:block' : ''}>
