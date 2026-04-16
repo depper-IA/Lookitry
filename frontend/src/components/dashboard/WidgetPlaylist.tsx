@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   DndContext,
@@ -10,6 +10,8 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -121,14 +123,25 @@ export function WidgetPlaylist({
   maxProducts,
   isLoading,
 }: WidgetPlaylistProps) {
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Start drag after 5px movement (prevents accidental drags)
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragId(null);
     const { active, over } = event;
     if (over && active.id !== over.id) {
       const oldIndex = products.findIndex((p) => p.id === active.id);
@@ -137,6 +150,8 @@ export function WidgetPlaylist({
       onReorder(reordered.map((p) => p.id));
     }
   };
+
+  const activeProduct = activeDragId ? products.find(p => p.id === activeDragId) : null;
 
   if (isLoading) {
     return (
@@ -187,6 +202,7 @@ export function WidgetPlaylist({
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={products.map((p) => p.id)} strategy={verticalListSortingStrategy}>
@@ -201,6 +217,17 @@ export function WidgetPlaylist({
               ))}
             </AnimatePresence>
           </SortableContext>
+          <DragOverlay>
+            {activeProduct && (
+              <div className="flex items-center gap-3 p-3 rounded-xl border border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/20 scale-[1.05] cursor-grabbing">
+                <GripVertical size={16} className="text-[#FF5C3A]" />
+                <div className="w-10 h-10 rounded-lg overflow-hidden border border-[var(--card-border)]">
+                  <img src={getProxiedUrl(activeProduct.imageUrl)} alt={activeProduct.name} className="w-full h-full object-cover" />
+                </div>
+                <span className="text-xs font-bold text-[var(--text-primary)]">{activeProduct.name}</span>
+              </div>
+            )}
+          </DragOverlay>
         </DndContext>
       )}
     </div>
