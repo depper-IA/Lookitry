@@ -23,6 +23,7 @@ import {
   AlertCircle,
   X,
   ChevronLeft,
+  ChevronRight,
   Sparkles,
   Zap,
   Tag,
@@ -80,6 +81,10 @@ export default function ProductsPage() {
   // Mobile tabs
   const [activeTab, setActiveTab] = useState<'catalog' | 'widget'>('catalog');
 
+  // Pagination
+  const PRODUCTS_PER_PAGE = 6;
+  const [currentPage, setCurrentPage] = useState(1);
+
   // Get widget limit from plan
   const widgetMaxProducts = PLAN_WIDGET_LIMITS[brandPlan] ?? 5;
   const canAddToWidget = widgetProducts.length < widgetMaxProducts;
@@ -91,6 +96,18 @@ export default function ProductsPage() {
   const filteredProducts = categoryFilter === 'Todas'
     ? products
     : products.filter((p) => p.category === categoryFilter);
+
+  // Paginated products
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * PRODUCTS_PER_PAGE,
+    currentPage * PRODUCTS_PER_PAGE
+  );
+
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryFilter]);
 
   useEffect(() => {
     brandsService.getCurrentBrand().then((brand) => {
@@ -448,8 +465,8 @@ export default function ProductsPage() {
                     )}
                   </div>
 
-                  <ProductList
-                    products={filteredProducts}
+<ProductList
+                    products={paginatedProducts}
                     viewMode={viewMode}
                     onEdit={(p) => { setEditingProduct(p); setShowForm(true); }}
                     onDelete={handleDeleteProduct}
@@ -457,6 +474,45 @@ export default function ProductsPage() {
                     onAddToWidget={handleAddToWidget}
                     canAddToWidget={canAddToWidget}
                   />
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 mt-8 py-4">
+                      <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="p-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--card-border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[#FF5C3A]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        aria-label="Página anterior"
+                      >
+                        <ChevronLeft size={18} />
+                      </button>
+
+                      <div className="flex items-center gap-1.5">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${
+                              currentPage === page
+                                ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20'
+                                : 'bg-[var(--bg-card)] border border-[var(--card-border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[#FF5C3A]/30'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="p-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--card-border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[#FF5C3A]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        aria-label="Página siguiente"
+                      >
+                        <ChevronRight size={18} />
+                      </button>
+                    </div>
+                  )}
 
                   {products.length === 0 && (
                     <div className="py-40 text-center space-y-10 border-2 border-dashed border-[var(--border-color)] rounded-[5rem] bg-[var(--bg-card)]/30">
