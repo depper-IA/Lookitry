@@ -1,3 +1,74 @@
+## [2026-04-15 16:30] - Rework Completo Command Center
+
+### Estructura nueva (antes: 1 archivo de 1421 líneas)
+
+```
+command-center/
+├── page.tsx                    # ~13KB — limpio, usa componentes
+├── command-center.css          # Animaciones CSS
+└── components/
+    ├── index.ts                # Re-export todo
+    ├── types.ts                # Agent, HeartbeatData, AgentStatus interfaces
+    ├── helpers.ts              # AGENTS config, supabase, fetchSVGFromAPI
+    ├── StarField.tsx           # Canvas estrellado
+    ├── DataStream.tsx          # Matrix rain
+    ├── SammyPixelSprite.tsx    # 16x24 pixel art
+    ├── AnimatedSprite.tsx      # Sprite genérico con walk cycle
+    ├── SammyRoom.tsx           # Room inmersivo de Sammy (partículas + radar)
+    ├── AgentRoomPanel.tsx      # Tarjeta de agente + room SVG (renderRoom prop)
+    ├── AgentModal.tsx          # Modal de detalle
+    └── rooms/
+        ├── index.ts
+        ├── ControlTowerRoom.tsx
+        ├── MediaStudioRoom.tsx
+        ├── TradingFloorRoom.tsx
+        ├── DevStationRoom.tsx
+        ├── ServerBayRoom.tsx
+        ├── CrmHubRoom.tsx
+        ├── LabRoom.tsx
+        └── WarRoomRoom.tsx
+```
+
+### Bugs corregidos
+1. `AgentRoomPanel` referenciaba variables undefined (`sammyStatus`, `statusColor`, `taskText`) → Corregido pasando `agentStatus` como prop
+2. Sammy tenía renderizado inline mezclado con lógica de agente → Extraído a `SammyRoom.tsx` + prop `renderRoom`
+
+### Features
+- Cada agent tiene su `renderRoom` opcional para rooms personalizados
+- Heartbeat → `AgentStatusMap` por agente → `AgentRoomPanel` recibe `agentStatus`
+- AI asset generation via `/api/command-center/generate-svg` intacto
+- Supabase data fetching intacto
+- Patrol movement + isMoving state intacto
+- Build: ✅ TypeScript 0 errores, Next.js build exitoso
+
+### Dependencies
+- Todos los exports centralizados en `components/index.ts`
+- `helpers.ts` exporta `AGENTS`, `supabase`, `fetchSVGFromAPI`
+- `types.ts` exporta tipos compartidos
+
+## [2026-04-15 16:00] - Intento Fix Memory Search - SIN ÉXITO
+
+### Problema: memory_search fallaba con error de API Gemini inválida
+
+**Causa raíz:** El plugin `memory-core` y servidor `memory` MCP requieren embeddings (MiniMax NO tiene API de embeddings)
+
+**Intentos:**
+1. Configuré `EMBEDDINGS_PROVIDER=openai` + `OPENAI_API_KEY` en servidor `memory` → Falló (API key inválida)
+2. Desactivé servidor `memory` MCP → `memory-core` plugin seguía usando OpenAI del entorno
+3. La variable `OPENAI_API_KEY` en el sistema está con key inválida: `***REMOVED-SECRET***`
+
+**Estado actual:** Búsqueda semántica DESHABILITADA hasta que Sam consiga una API key válida de OpenAI (con embeddings habilitados)
+
+**Solución temporal:** Usar lectura directa de archivos (`read` tool) para acceder al Cerebro
+
+**API keys inválidas identificadas:**
+- OpenAI entorno: `***REMOVED-SECRET***`
+- Gemini skills: `***REMOVED-SECRET***`
+
+**Nota:** La API key de OpenAI que SÍ funciona es la del workflow RAG en n8n (diferente)
+
+---
+
 ## [2026-04-15] - Sync Completo Agentes Brain Vault
 
 ### Sync: Archivos de Agentes Actualizados

@@ -256,6 +256,50 @@ Rebecca y Leo son el **motor de ingresos** de Lookitry:
 
 ---
 
+---
+## 6. Notificación de Tareas Completadas (OBLIGATORIO)
+
+**REGLA: TODO agente DEBE notificar a Sam Wilkie cuando culmine una tarea.**
+
+### 6.1 Protocolo de Notificación
+
+| Tipo de tarea | Cuándo notificar | Canal |
+|--------------|-------------------|-------|
+| Tarea simple | Al completar | Telegram auto |
+| Tarea larga/async | Al iniciar + al completar | Telegram |
+| Deploy | Antes y después | Telegram |
+| Errores | Inmediatamente | Telegram |
+
+### 6.2 Estructura del Mensaje
+
+```
+✅ [Tarea completada]
+- Descripción breve
+- Resultado/Link si aplica
+- Tiempo total (si relevante)
+```
+
+### 6.3 Agentes Incluidos
+
+- **Sammantha** — Orquestadora (notifica siempre al final)
+- **Pixel** — Frontend
+- **Kira** — Code review
+- **Nadia** — Datos
+- **Marlo** — Marketing
+- **Zephyr** — Infraestructura
+- **Lina** — Documentación
+- **Cipher** — Seguridad
+- **Rebecca** — UGC/Contenido
+- **Leo** — Trading
+
+### 6.4 Excepciones
+
+- NO notificar heartbeats vacíos (solo si hay alertas)
+- NO notificar verificaciones rutinarias (excepto si fallan)
+- SI notificar si la tarea tomó >5 min
+
+---
+
 **Ultima actualizacion:** Abril 2026 - Sistema de Agentes v2.0
 **Cambios principales:**
 - 10 agentes con nombres nuevos
@@ -263,3 +307,4 @@ Rebecca y Leo son el **motor de ingresos** de Lookitry:
 - Rebecca v3.0 con foco en MONEY
 - Melissa como colaboradora de Pixel
 - Leo como agente de trading
+- Regla 6: Notificación obligatoria de tareas
