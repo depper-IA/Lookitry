@@ -54,6 +54,14 @@ function SortableItem({ product, index, onRemove }: SortableItemProps) {
     transition,
   };
 
+  // Prevent click handler from firing after drag
+  const handleClick = (e: React.MouseEvent) => {
+    if (isDragging) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  };
+
   return (
     <motion.div
       ref={setNodeRef}
@@ -65,22 +73,26 @@ function SortableItem({ product, index, onRemove }: SortableItemProps) {
       transition={{ duration: 0.2 }}
       className={`group flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${
         isDragging
-          ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/20 scale-[1.02]'
-          : 'border-[var(--card-border)] bg-[var(--bg-card-elevated)] hover:border-[#FF5C3A]/40'
+          ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/20 scale-[1.02] opacity-90'
+          : 'border-[var(--card-border)] bg-[var(--bg-card-elevated)] hover:border-[#FF5C3A]/40 cursor-grab active:cursor-grabbing'
       }`}
+      onClick={handleClick}
+      {...attributes}
+      {...listeners}
     >
-      {/* Grip Handle */}
-      <button
-        {...attributes}
+      {/* Grip Handle - separate from parent drag */}
+      <div
+        className="p-1.5 rounded-lg hover:bg-[var(--btn-bg)] transition-colors shrink-0"
+        style={{ cursor: 'grab' }}
         {...listeners}
-        className="touch-none p-1.5 rounded-lg hover:bg-[var(--btn-bg)] transition-colors cursor-grab active:cursor-grabbing"
-        aria-label="Reordenar producto"
+        {...attributes}
+        onClick={(e) => e.stopPropagation()}
       >
         <GripVertical size={16} className="text-[var(--text-muted)] group-hover:text-[#FF5C3A] transition-colors" />
-      </button>
+      </div>
 
       {/* Position Number */}
-      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black"
+      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
         style={{ background: 'var(--accent)', color: 'white' }}>
         {index + 1}
       </div>
@@ -106,8 +118,11 @@ function SortableItem({ product, index, onRemove }: SortableItemProps) {
 
       {/* Remove Button */}
       <button
-        onClick={() => onRemove(product.id)}
-        className="p-2 rounded-lg hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-500 transition-all opacity-0 group-hover:opacity-100"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(product.id);
+        }}
+        className="p-2 rounded-lg hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-500 transition-all shrink-0"
         aria-label="Quitar del widget"
       >
         <X size={14} />
@@ -128,7 +143,7 @@ export function WidgetPlaylist({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // Start drag after 5px movement (prevents accidental drags)
+        distance: 8, // Require 8px movement before drag starts (prevents accidental drags)
       },
     }),
     useSensor(KeyboardSensor, {
