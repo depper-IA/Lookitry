@@ -124,26 +124,27 @@ export default function ProductsPage() {
     loadBrandIntegrationState();
   }, []);
 
-  const loadWidgetProducts = useCallback(async () => {
-    if (widgetProductIds.length === 0) {
+  const loadWidgetProducts = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) {
       setWidgetProducts([]);
       return;
     }
     try {
       const allProducts = await productsService.getWidgetProducts();
       // Filter to only widget products and maintain order
-      const ordered = widgetProductIds
+      const ordered = ids
         .map((id) => allProducts.find((p) => p.id === id))
         .filter((p): p is Product => p !== undefined);
       setWidgetProducts(ordered);
     } catch (err) {
       console.error('Error loading widget products:', err);
     }
-  }, [widgetProductIds]);
+  }, []);
 
+  // Load widget products when widgetProductIds changes
   useEffect(() => {
-    loadWidgetProducts();
-  }, [loadWidgetProducts]);
+    loadWidgetProducts(widgetProductIds);
+  }, [widgetProductIds, loadWidgetProducts]);
 
   const handleViewMode = (mode: ViewMode) => {
     setViewMode(mode);
