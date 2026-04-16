@@ -41,11 +41,13 @@ class BrandsService {
       stateProvince: response.data.state_province,
       postalCode: response.data.postal_code,
       billingEmail: response.data.billing_email,
-      apiKey: response.data.api_key,
+apiKey: response.data.api_key,
       socialLinks: response.data.social_links,
       onboardingDismissed: response.data.onboarding_dismissed,
+      // Widget playlist - map from snake_case
+      widgetProductIds: response.data.widget_product_ids || [],
     };
-    
+
     return brandData;
   }
 

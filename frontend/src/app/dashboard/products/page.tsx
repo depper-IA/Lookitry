@@ -273,7 +273,12 @@ export default function ProductsPage() {
   };
 
   const debouncedSaveWidget = useCallback((productIds: string[]) => {
-    if (saveTimeout) clearTimeout(saveTimeout);
+    // Clear any existing timeout
+    setSaveTimeout(prev => {
+      if (prev) clearTimeout(prev);
+      return null;
+    });
+
     setIsSavingWidget(true);
     const timeout = setTimeout(async () => {
       try {
@@ -285,8 +290,9 @@ export default function ProductsPage() {
         setIsSavingWidget(false);
       }
     }, 500);
+
     setSaveTimeout(timeout);
-  }, [saveTimeout]);
+  }, []); // Empty deps - stable callback
 
   const handleClearWidget = async () => {
     setWidgetProductIds([]);
