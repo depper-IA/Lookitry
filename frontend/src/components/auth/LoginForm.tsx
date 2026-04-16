@@ -38,6 +38,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
   const [showResendBtn, setShowResendBtn] = useState(false);
 
   const [googleError, setGoogleError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   // ── Turnstile state ────────────────────────────────────────────────────
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -86,9 +87,9 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
     // Validación de Turnstile en Frontend
     if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
       if (!window.turnstile) {
-        setError('El sistema de seguridad de Cloudflare fue bloqueado. Desactiva tu bloqueador de anuncios y recarga la página.');
+        setLocalError('El sistema de seguridad de Cloudflare fue bloqueado. Desactiva tu bloqueador de anuncios y recarga la página.');
       } else {
-        setError('Por favor, completa la verificación de seguridad.');
+        setLocalError('Por favor, completa la verificación de seguridad.');
       }
       return;
     }
