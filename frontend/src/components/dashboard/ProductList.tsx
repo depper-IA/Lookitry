@@ -11,7 +11,9 @@ import {
   Gauge,
   Check,
   Layers,
-  Star
+  Star,
+  Plus,
+  X
 } from 'lucide-react';
 
 import { getProxiedUrl } from '@/utils/imageProxy';
@@ -23,6 +25,10 @@ interface ProductListProps {
   viewMode?: ViewMode;
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
+  widgetProductIds?: string[];
+  onAddToWidget?: (productId: string) => void;
+  onRemoveFromWidget?: (productId: string) => void;
+  canAddToWidget?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -162,9 +168,12 @@ interface ProductCardProps {
   onEdit: () => void;
   onDelete: () => void;
   index: number;
+  isInWidget?: boolean;
+  onAddToWidget?: () => void;
+  canAddToWidget?: boolean;
 }
 
-function ProductCard({ product, variant, onEdit, onDelete, index }: ProductCardProps) {
+function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, onAddToWidget, canAddToWidget }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   
@@ -231,6 +240,25 @@ function ProductCard({ product, variant, onEdit, onDelete, index }: ProductCardP
                 style={{ background: 'rgba(239, 68, 68, 0.8)', border: '1px solid rgba(239, 68, 68, 0.4)' }}>
                 <Trash2 size={14} /> Eliminar
               </motion.button>
+              {onAddToWidget && (
+                <motion.button
+                  whileHover={{ scale: isInWidget ? 1 : 1.02 }}
+                  whileTap={{ scale: isInWidget ? 1 : 0.98 }}
+                  onClick={(e) => { e.stopPropagation(); onAddToWidget(); }}
+                  disabled={isInWidget || !canAddToWidget}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+                    isInWidget
+                      ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
+                      : canAddToWidget === false
+                      ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
+                      : 'bg-[#FF5C3A]/80 text-white hover:bg-[#FF5C3A]'
+                  }`}
+                  style={{ border: isInWidget ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,92,58,0.4)' }}
+                >
+                  {isInWidget ? <Check size={14} /> : <Plus size={14} />}
+                  {isInWidget ? 'En Widget' : 'Agregar'}
+                </motion.button>
+              )}
             </div>
           </div>
         </div>
@@ -259,31 +287,37 @@ function ProductCard({ product, variant, onEdit, onDelete, index }: ProductCardP
 // VIEWS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
+function GridView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
-          <ProductCard key={product.id} product={product} variant="grid" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx} />
+          <ProductCard key={product.id} product={product} variant="grid" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx}
+            isInWidget={widgetProductIds?.includes(product.id)}
+            onAddToWidget={onAddToWidget ? () => onAddToWidget(product.id) : undefined}
+            canAddToWidget={canAddToWidget} />
         ))}
       </AnimatePresence>
     </div>
   );
 }
 
-function ThumbnailsView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
+function ThumbnailsView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
-          <ProductCard key={product.id} product={product} variant="thumbnails" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx} />
+          <ProductCard key={product.id} product={product} variant="thumbnails" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx}
+            isInWidget={widgetProductIds?.includes(product.id)}
+            onAddToWidget={onAddToWidget ? () => onAddToWidget(product.id) : undefined}
+            canAddToWidget={canAddToWidget} />
         ))}
       </AnimatePresence>
     </div>
   );
 }
 
-function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
+function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: DESIGN.shadowCard }}>
       <div className="h-1" style={{ background: `linear-gradient(to right, ${DESIGN.accent}, transparent)` }} />
@@ -330,6 +364,34 @@ function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
                   <td className="px-6 py-5 text-right"><PriceTag price={product.price ?? 0} category={product.category} /></td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex justify-end gap-2">
+                      {onAddToWidget && (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => onAddToWidget(product.id)}
+                          disabled={widgetProductIds?.includes(product.id) || !canAddToWidget}
+                          className={`p-2.5 rounded-lg transition-all ${
+                            widgetProductIds?.includes(product.id)
+                              ? 'bg-emerald-500/15 cursor-default'
+                              : canAddToWidget === false
+                              ? 'bg-gray-500/10 cursor-not-allowed'
+                              : 'bg-[#FF5C3A]/15 hover:bg-[#FF5C3A]/25'
+                          }`}
+                          style={{
+                            border: widgetProductIds?.includes(product.id)
+                              ? '1px solid rgba(16,185,129,0.25)'
+                              : canAddToWidget === false
+                              ? '1px solid var(--card-border)'
+                              : '1px solid rgba(255,92,58,0.25)',
+                          }}
+                        >
+                          {widgetProductIds?.includes(product.id) ? (
+                            <Check size={16} className="text-emerald-500" />
+                          ) : (
+                            <Plus size={16} className={canAddToWidget === false ? 'text-gray-500' : 'text-[#FF5C3A]'} />
+                          )}
+                        </motion.button>
+                      )}
                       <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)} className="p-2.5 rounded-lg" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
                         <Edit3 size={16} style={{ color: 'var(--text-primary)' }} />
                       </motion.button>
@@ -402,14 +464,14 @@ function EmptyState() {
 // MAIN EXPORT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export function ProductList({ products, viewMode = 'grid', onEdit, onDelete }: ProductListProps) {
+export function ProductList({ products, viewMode = 'grid', onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: ProductListProps) {
   if (products.length === 0) return <EmptyState />;
   return (
     <div className="pb-20">
       <AnimatePresence mode="popLayout">
-        {viewMode === 'list' && <ListView products={products} onEdit={onEdit} onDelete={onDelete} />}
-        {viewMode === 'thumbnails' && <ThumbnailsView products={products} onEdit={onEdit} onDelete={onDelete} />}
-        {viewMode === 'grid' && <GridView products={products} onEdit={onEdit} onDelete={onDelete} />}
+        {viewMode === 'list' && <ListView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} />}
+        {viewMode === 'thumbnails' && <ThumbnailsView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} />}
+        {viewMode === 'grid' && <GridView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} />}
       </AnimatePresence>
     </div>
   );

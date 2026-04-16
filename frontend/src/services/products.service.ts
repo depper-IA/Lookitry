@@ -47,6 +47,16 @@ class ProductsService {
   async deleteProduct(id: string): Promise<void> {
     await api.delete(`/products/${id}`);
   }
+
+  // Widget Playlist (featured products)
+  async getWidgetProducts(): Promise<Product[]> {
+    const response = await api.get<any>('/brands/me/widget-products');
+    return (response.data.products || []).map(mapProduct);
+  }
+
+  async updateWidgetProducts(productIds: string[]): Promise<void> {
+    await api.put('/brands/me/widget-products', { productIds });
+  }
 }
 
 export const productsService = new ProductsService();
