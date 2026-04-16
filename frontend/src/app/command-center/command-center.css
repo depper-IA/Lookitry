@@ -1,146 +1,78 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+/* ══════════════════════════════════════════════════════════════════════════
+   LOOKITRY BRAND — SAMMANTHA COMMAND CENTER
+   Futuristic AI Control Tower
+══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ─── Lookitry Design Tokens ─────────────────────────────────────── */
+:root {
+  --lkt-primary:    #FF5C3A;
+  --lkt-primary-dk: #e84d2c;
+  --lkt-primary-gl: rgba(255, 92, 58, 0.35);
+  --lkt-bg-deep:    #08080c;
+  --lkt-bg:         #0d0d14;
+  --lkt-bg-2:       #13131c;
+  --lkt-surface:    #1a1a24;
+  --lkt-border:     #2a2a38;
+  --lkt-border-hi:  #3a3a50;
+  --lkt-text:      #ffffff;
+  --lkt-text-2:    #b0b0be;
+  --lkt-text-3:     #606070;
+  --lkt-cyan:       #00FFFF;
+  --lkt-green:      #00FF88;
+  --lkt-purple:     #9B6CF9;
+  --lkt-yellow:     #FFD23F;
+  --lkt-red:        #FF3A5C;
+  --lkt-blue:       #4FC3F7;
+  --lkt-teal:       #00D4AA;
+  --lkt-glow-sm:    0 0 8px;
+  --lkt-glow-md:    0 0 15px;
+  --lkt-glow-lg:    0 0 30px;
+}
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #02020a; }
 
-.cc-room-panel {
-  background: #050810;
-  border: 1px solid #1e293b;
-  border-radius: 6px;
-  overflow: hidden;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.3s, box-shadow 0.3s, transform 0.15s;
-  display: block;
-}
-.cc-room-panel:hover {
-  transform: translateY(-2px);
-  border-color: var(--theme, #334155) !important;
-  box-shadow: 0 0 30px color-mix(in srgb, var(--theme, #64748b) 40%, transparent) !important;
-}
+body { background: var(--lkt-bg-deep); font-family: 'Inter', sans-serif; }
 
+/* ─── Animations ────────────────────────────────────────────────── */
 @keyframes cc-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-@keyframes cc-radar-sweep {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.88); }
 }
 @keyframes cc-blink {
-  0%, 100% { opacity: 0.9; }
-  50% { opacity: 0.1; }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
-.cc-radar-sweep { animation: cc-radar-sweep 4s linear infinite; }
-.cc-blink { animation: cc-blink 1.2s ease-in-out infinite; }
-.cc-code-line { animation: cc-blink 2.5s ease-in-out infinite; }
-
-/* ─── Character Animations ─────────────────────────────────────────── */
-@keyframes cc-bounce {
+@keyframes lkt-glow {
+  0%, 100% { box-shadow: 0 0 15px var(--lkt-primary-gl), 0 0 30px var(--lkt-primary-gl); }
+  50%       { box-shadow: 0 0 25px var(--lkt-primary-gl), 0 0 50px var(--lkt-primary-gl); }
+}
+@keyframes lkt-float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
+  50%       { transform: translateY(-4px); }
 }
-@keyframes cc-legs-idle {
-  0%, 100% { transform: translateX(0); opacity: 0.85; }
-  50% { transform: translateX(0.5px); opacity: 0.9; }
+@keyframes lkt-data-stream {
+  0%   { transform: translateY(120%); opacity: 0; }
+  15%  { opacity: 0.8; }
+  85%  { opacity: 0.8; }
+  100% { transform: translateY(-120%); opacity: 0; }
 }
-@keyframes cc-legs-walk {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-2px); }
-  75% { transform: translateX(2px); }
+@keyframes lkt-ripple {
+  0%   { transform: translateX(-50%) scale(0.3); opacity: 0; }
+  30%  { opacity: 0.9; }
+  100% { transform: translateX(-50%) scale(1.6); opacity: 0; }
 }
-@keyframes cc-shadow-idle {
-  0%, 100% { opacity: 0.18; rx: 9; }
-  50% { opacity: 0.28; rx: 10; }
+@keyframes lkt-scan {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
 }
-@keyframes cc-visor-pulse {
-  0%, 100% { opacity: 0.25; }
-  50% { opacity: 0.55; }
-}
-@keyframes cc-arm-swing-l {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(-12deg); }
-}
-@keyframes cc-arm-swing-r {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(12deg); }
-}
-@keyframes cc-char-walk {
-  0%, 100% { transform: translateY(0); }
-  25% { transform: translateY(-1.5px); }
-  75% { transform: translateY(-1.5px); }
-}
-@keyframes cc-halo {
-  0%, 100% { opacity: 0.08; transform: scale(1); }
-  50% { opacity: 0.18; transform: scale(1.06); }
-}
-@keyframes cc-trail-fade {
-  0% { opacity: 0.6; transform: scale(1); }
-  100% { opacity: 0; transform: scale(0.3); }
+@keyframes lkt-pulse-ring {
+  0%   { transform: translateX(-50%) scale(0.8); opacity: 0.8; }
+  100% { transform: translateX(-50%) scale(1.4); opacity: 0; }
 }
 
-.cc-bounce { animation: cc-bounce 2s ease-in-out infinite; }
-.cc-legs-idle { animation: cc-legs-idle 2.5s ease-in-out infinite; }
-.cc-legs-walk { animation: cc-legs-walk 0.35s ease-in-out infinite; }
-.cc-shadow-idle { animation: cc-shadow-idle 2s ease-in-out infinite; }
-.cc-visor-pulse { animation: cc-visor-pulse 1.8s ease-in-out infinite; }
-.cc-halo { animation: cc-halo 2.5s ease-in-out infinite; }
-.cc-arm-l { animation: cc-arm-swing-l 0.35s ease-in-out infinite; }
-.cc-arm-r { animation: cc-arm-swing-r 0.35s ease-in-out infinite; }
-.cc-char-walking { animation: cc-char-walk 0.35s ease-in-out infinite; }
-.cc-trail { animation: cc-trail-fade 0.6s ease-out forwards; }
-
-/* ─── Sammy Room Animations ─────────────────────────────────────────── */
-@keyframes sammy-typing {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  25% { transform: translateX(-50%) translateY(-2px) rotate(-1deg); }
-  75% { transform: translateX(-50%) translateY(-2px) rotate(1deg); }
-}
-@keyframes sammy-idle {
-  0%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
-  50% { transform: translateX(-50%) translateY(-3px) scale(1.02); }
-}
-@keyframes sammy-error {
-  0%, 100% { transform: translateX(-50%); filter: brightness(1) hue-rotate(0deg); }
-  50% { transform: translateX(-50%); filter: brightness(1.5) hue-rotate(-20deg); }
-}
-@keyframes sammy-glow {
-  0%, 100% { box-shadow: 0 0 8px #00FFFF44; }
-  50% { box-shadow: 0 0 20px #00FFFF88; }
-}
-@keyframes sammy-scan {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
-}
-
-::-webkit-scrollbar { width: 4px; background: #070a12; }
-::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
-
-/* ─── Sammy Sprite Animations ───────────────────────────────────────── */
-@keyframes sammy-sprite-busy {
-  0%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
-  25% { transform: translateX(-50%) translateY(-3px) scale(1.02); }
-  75% { transform: translateX(-50%) translateY(-3px) scale(1.02); }
-}
-@keyframes sammy-sprite-idle {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(-2px); }
-}
-@keyframes sammy-sprite-error {
-  0%, 100% { transform: translateX(-50%); filter: hue-rotate(0deg) brightness(1); }
-  25% { transform: translateX(-48%) translateY(-1px); filter: hue-rotate(-20deg) brightness(1.3); }
-  75% { transform: translateX(-52%) translateY(-1px); filter: hue-rotate(20deg) brightness(1.3); }
-}
-@keyframes sammy-ring-spin {
-  from { transform: translateX(-50%) rotate(0deg); }
-  to { transform: translateX(-50%) rotate(360deg); }
-}
-@keyframes sammy-ring-pulse {
-  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
-  50% { transform: translateX(-50%) scale(1.1); opacity: 0.8; }
-}
-
-.sammy-sprite-busy { animation: sammy-sprite-busy 0.4s steps(2) infinite; }
-.sammy-sprite-idle { animation: sammy-sprite-idle 2.5s ease-in-out infinite; }
-.sammy-sprite-error { animation: sammy-sprite-error 0.3s ease-in-out infinite; }
+/* ─── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; background: var(--lkt-bg-2); }
+::-webkit-scrollbar-thumb { background: var(--lkt-border-hi); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--lkt-primary); }
