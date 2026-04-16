@@ -4,13 +4,17 @@ services:
       context: /root/virtual-tryon/frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: https://api.lookitry.com
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.lookitry.com}
         NEXT_PUBLIC_APP_URL: https://lookitry.com
         NEXT_PUBLIC_SUPABASE_URL: https://vkdooutklowctuudjnkl.supabase.co
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
         NEXT_PUBLIC_N8N_DESCRIPTOR_URL: ${NEXT_PUBLIC_N8N_DESCRIPTOR_URL:-https://n8n.wilkiedevs.com/webhook/descriptor}
-        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-0x4AAAAAACsmy7e_yL9iyAXM}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-568746448761-gp9b68r5sf8jdv9t1jsrtightfqjq0j0.apps.googleusercontent.com}
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${NEXT_PUBLIC_GA_MEASUREMENT_ID:-G-F8277E4Z39}
+        NEXT_PUBLIC_GTM_ID: ${NEXT_PUBLIC_GTM_ID:-GTM-KX6L62K3}
+        NEXT_PUBLIC_WOMPI_PUBLIC_KEY: ${NEXT_PUBLIC_WOMPI_PUBLIC_KEY}
+        NEXT_PUBLIC_WOMPI_ENABLED: ${NEXT_PUBLIC_WOMPI_ENABLED:-false}
     container_name: lookitry-frontend
     restart: unless-stopped
     volumes:
