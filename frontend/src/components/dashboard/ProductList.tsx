@@ -180,7 +180,7 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
   const isGrid = variant === 'grid';
   const isThumb = variant === 'thumbnails';
   const isList = variant === 'list';
-  const cardHeight = isGrid ? 'min-h-[480px]' : isThumb ? 'min-h-[320px]' : '';
+  const cardHeight = isGrid ? 'min-h-[480px]' : isThumb ? 'min-h-[380px] md:min-h-[420px]' : '';
   
   return (
     <motion.div
@@ -206,7 +206,7 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
         }}
       >
         {/* Image */}
-        <div className={`relative overflow-hidden ${isList ? 'aspect-[1/1] h-20' : 'aspect-square'} flex-shrink-0`}>
+        <div className={`relative overflow-hidden ${isList ? 'aspect-[1/1] h-20' : isThumb ? 'aspect-[4/5]' : 'aspect-square'} flex-shrink-0`}>
           {!imageLoaded && <div className="absolute inset-0 animate-pulse" style={{ background: 'var(--skeleton-bg)' }} />}
           <img src={getProxiedUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 ease-out"
             style={{ transform: isHovered ? 'scale(1.08)' : 'scale(1)', opacity: imageLoaded ? 1 : 0 }}
@@ -304,7 +304,7 @@ function GridView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
 
 function ThumbnailsView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 lg:gap-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 lg:gap-5">
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
           <ProductCard key={product.id} product={product} variant="thumbnails" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx}
