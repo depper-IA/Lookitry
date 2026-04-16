@@ -13,16 +13,35 @@ Sistema dual que separa **"Mi Catálogo"** (todos los productos creados) de **"M
 
 ---
 
-## 2. Límites de Productos por Plan (CORREGIDO)
+## 2. Límites de Productos por Plan (CORREGIDO v2)
 
-| Plan | Límite de Productos | Notas |
-|------|---------------------|-------|
-| **TRIAL** | 1 | Solo para testing |
-| **BASIC** | 5 | Plan estándar inicial |
-| **PRO** | 15 | Incluye templates premium |
-| **ENTERPRISE** | ∞ (Ilimitado) | Volumen a medida |
+| Plan | Min Productos | Max Productos | Notas |
+|------|---------------|---------------|-------|
+| **TRIAL** | 0 | 1 | Solo para testing |
+| **BASIC** | 0 | 5 | Plan estándar inicial |
+| **PRO** | 0 | 15 | Incluye templates premium |
+| **ENTERPRISE** | 50 | ∞ (Ilimitado) | Minimo 50 productos, ilimitado a partir de alli |
 
-> **Nota:** Los límites se leen desde `pricing_config` en Supabase. El backend usa `PLANS` en `backend/src/config/plans.ts` con la misma jerarquía.
+> **Nota:** Los límites se leen desde `pricing_config` en Supabase. El backend usa `PLANS` en `backend/src/config/plans.ts` con la misma jerarquía. Enterprise requiere minimo 50 productos como base.
+
+### 2.1 Lógica de Validación
+
+```typescript
+function canAddProduct(brand: Brand, productCount: number): boolean {
+  const plan = PLANS[brand.plan];
+  if (productCount >= plan.maxProducts) return false;
+  return true;
+}
+
+function getMinProductsMessage(plan: string): string {
+  switch (plan) {
+    case 'ENTERPRISE':
+      return 'El plan Enterprise requiere un minimo de 50 productos';
+    default:
+      return '';
+  }
+}
+```
 
 ---
 
