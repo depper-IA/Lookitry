@@ -116,9 +116,9 @@ function ActiveStatus() {
 function PriceTag({ price, category }: { price: number; category: string }) {
   const unit = CATEGORY_UNITS[category.toLowerCase()] || CATEGORY_UNITS.default;
   return (
-    <div className="text-right">
-      {unit && <p className="text-[9px] mb-0.5 font-medium" style={{ color: 'var(--text-muted)' }}>{unit}</p>}
-      <p className="text-xl font-black tracking-tight" style={{ color: DESIGN.accent, textShadow: `0 0 20px ${DESIGN.accentGlow}` }}>
+    <div className="text-right shrink-0 min-w-0">
+      {unit && <p className="text-[9px] mb-0.5 font-medium truncate" style={{ color: 'var(--text-muted)' }}>{unit}</p>}
+      <p className="text-lg md:text-xl font-black tracking-tight truncate" style={{ color: DESIGN.accent, textShadow: `0 0 20px ${DESIGN.accentGlow}` }}>
         ${price.toLocaleString('es-CO')}
       </p>
     </div>
@@ -289,7 +289,7 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
 
 function GridView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-8">
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
           <ProductCard key={product.id} product={product} variant="grid" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx}
@@ -304,7 +304,7 @@ function GridView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
 
 function ThumbnailsView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 lg:gap-5">
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
           <ProductCard key={product.id} product={product} variant="thumbnails" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx}
