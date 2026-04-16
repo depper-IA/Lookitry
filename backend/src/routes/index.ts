@@ -24,6 +24,7 @@ import enterpriseRoutes from './enterprise.routes';
 import agentRoutes from './agent.routes';
 import reviewsPublicRoutes from './reviewsPublic.routes';
 import categoryAttributesRoutes from './categoryAttributes.routes';
+import landingStatsRoutes from './landingStats.routes';
 
 const router = Router();
 
@@ -44,6 +45,7 @@ router.use('/images', imageRoutes);
 router.use('/blog', blogRoutes);
 router.use('/trial', trialRoutes);
 router.use('/reviews/public', reviewsPublicRoutes);
+router.use('/landing-stats', landingStatsRoutes);
 router.use('/reviews', reviewsRoutes);
 router.use('/admin/reviews', adminReviewsRoutes);
 router.use('/admin/coupons', couponsRoutes);
