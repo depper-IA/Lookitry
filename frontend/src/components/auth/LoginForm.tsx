@@ -53,8 +53,12 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
     turnstileLoadedRef.current = true;
 
     loadTurnstileWidget(turnstileRef.current, (token) => {
+      console.log('[LoginForm] Turnstile token received');
       setTurnstileToken(token);
     }).then((instance) => {
+      if (!instance) {
+        console.warn('[LoginForm] Turnstile widget could not be initialized');
+      }
       turnstileInstanceRef.current = instance;
     });
 
@@ -78,6 +82,17 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
+
+    // Validación de Turnstile en Frontend
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
+      if (!window.turnstile) {
+        setError('El sistema de seguridad de Cloudflare fue bloqueado. Desactiva tu bloqueador de anuncios y recarga la página.');
+      } else {
+        setError('Por favor, completa la verificación de seguridad.');
+      }
+      return;
+    }
+
     setResendSuccess(null);
     setShowResendBtn(false);
     try {
@@ -298,8 +313,13 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
               </div>
 
               {/* Cloudflare Turnstile widget */}
-              <div className="flex justify-center my-4">
+              <div className="flex flex-col items-center justify-center my-4 space-y-2">
                 <div ref={turnstileRef} className="[&>div]:!mx-auto [&>iframe]:mx-auto" />
+                {!turnstileInstanceRef.current && (
+                  <p className="text-[10px] text-zinc-500 italic max-w-xs text-center">
+                    Si no ves el verificado de seguridad, intenta recargar o desactivar bloqueadores de anuncios.
+                  </p>
+                )}
               </div>
 
               <motion.button
