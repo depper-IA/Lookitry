@@ -11,7 +11,9 @@ import {
   Gauge,
   Check,
   Layers,
-  Star
+  Star,
+  Plus,
+  X
 } from 'lucide-react';
 
 import { getProxiedUrl } from '@/utils/imageProxy';
@@ -23,6 +25,10 @@ interface ProductListProps {
   viewMode?: ViewMode;
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
+  widgetProductIds?: string[];
+  onAddToWidget?: (productId: string) => void;
+  onRemoveFromWidget?: (productId: string) => void;
+  canAddToWidget?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -110,9 +116,9 @@ function ActiveStatus() {
 function PriceTag({ price, category }: { price: number; category: string }) {
   const unit = CATEGORY_UNITS[category.toLowerCase()] || CATEGORY_UNITS.default;
   return (
-    <div className="text-right">
-      {unit && <p className="text-[9px] mb-0.5 font-medium" style={{ color: 'var(--text-muted)' }}>{unit}</p>}
-      <p className="text-xl font-black tracking-tight" style={{ color: DESIGN.accent, textShadow: `0 0 20px ${DESIGN.accentGlow}` }}>
+    <div className="text-right shrink-0 min-w-0">
+      {unit && <p className="text-[9px] mb-0.5 font-medium truncate" style={{ color: 'var(--text-muted)' }}>{unit}</p>}
+      <p className="text-lg md:text-xl font-black tracking-tight truncate" style={{ color: DESIGN.accent, textShadow: `0 0 20px ${DESIGN.accentGlow}` }}>
         ${price.toLocaleString('es-CO')}
       </p>
     </div>
@@ -162,16 +168,19 @@ interface ProductCardProps {
   onEdit: () => void;
   onDelete: () => void;
   index: number;
+  isInWidget?: boolean;
+  onAddToWidget?: () => void;
+  canAddToWidget?: boolean;
 }
 
-function ProductCard({ product, variant, onEdit, onDelete, index }: ProductCardProps) {
+function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, onAddToWidget, canAddToWidget }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   
   const isGrid = variant === 'grid';
   const isThumb = variant === 'thumbnails';
   const isList = variant === 'list';
-  const cardHeight = isGrid ? 'min-h-[480px]' : isThumb ? 'min-h-[320px]' : '';
+  const cardHeight = isGrid ? 'min-h-[480px]' : isThumb ? 'min-h-[400px] md:min-h-[480px]' : '';
   
   return (
     <motion.div
@@ -197,7 +206,7 @@ function ProductCard({ product, variant, onEdit, onDelete, index }: ProductCardP
         }}
       >
         {/* Image */}
-        <div className={`relative overflow-hidden ${isList ? 'aspect-[1/1] h-20' : 'aspect-square'} flex-shrink-0`}>
+        <div className={`relative overflow-hidden ${isList ? 'aspect-[1/1] h-20' : isThumb ? 'aspect-[4/5]' : 'aspect-square'} flex-shrink-0`}>
           {!imageLoaded && <div className="absolute inset-0 animate-pulse" style={{ background: 'var(--skeleton-bg)' }} />}
           <img src={getProxiedUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 ease-out"
             style={{ transform: isHovered ? 'scale(1.08)' : 'scale(1)', opacity: imageLoaded ? 1 : 0 }}
@@ -206,8 +215,8 @@ function ProductCard({ product, variant, onEdit, onDelete, index }: ProductCardP
           <div className="absolute inset-0 pointer-events-none transition-opacity duration-500" style={{ opacity: isHovered ? 0.6 : 0, background: `radial-gradient(ellipse at 30% 70%, ${DESIGN.accentGlow} 0%, transparent 50%)` }} />
 
           {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
-            <ProductBadge type={product.badge || 'nuevo'} />
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+            {product.badge && <ProductBadge type={product.badge} />}
             {!isList && <CategoryBadge category={product.category} />}
           </div>
 
@@ -218,37 +227,91 @@ function ProductCard({ product, variant, onEdit, onDelete, index }: ProductCardP
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="absolute bottom-0 left-0 right-0 p-4" style={{ transform: isHovered ? 'translateY(0)' : 'translateY(100%)', transition: `transform ${DESIGN.normal} ease`, background: 'linear-gradient(to top, var(--overlay-dark) 0%, transparent 100%)' }}>
-            <div className="flex justify-center gap-2">
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onEdit}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white"
-                style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)' }}>
-                <Edit3 size={14} /> Editar
-              </motion.button>
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onDelete}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white"
-                style={{ background: 'rgba(239, 68, 68, 0.8)', border: '1px solid rgba(239, 68, 68, 0.4)' }}>
-                <Trash2 size={14} /> Eliminar
+          {/* Actions - only show on hover for grid/list, thumbnails use button overlay */}
+          {!isThumb && (
+            <div className="absolute bottom-0 left-0 right-0 p-4" style={{ transform: isHovered ? 'translateY(0)' : 'translateY(100%)', transition: `transform ${DESIGN.normal} ease`, background: 'linear-gradient(to top, var(--overlay-dark) 0%, transparent 100%)' }}>
+              <div className="flex justify-center gap-2">
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onEdit}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white"
+                  style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                  <Edit3 size={14} /> Editar
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onDelete}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white"
+                  style={{ background: 'rgba(239, 68, 68, 0.8)', border: '1px solid rgba(239, 68, 68, 0.4)' }}>
+                  <Trash2 size={14} /> Eliminar
+                </motion.button>
+                {onAddToWidget && (
+                  <motion.button
+                    whileHover={{ scale: isInWidget ? 1 : 1.02 }}
+                    whileTap={{ scale: isInWidget ? 1 : 0.98 }}
+                    onClick={(e) => { e.stopPropagation(); onAddToWidget(); }}
+                    disabled={isInWidget || !canAddToWidget}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+                      isInWidget
+                        ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
+                        : canAddToWidget === false
+                        ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
+                        : 'bg-[#FF5C3A]/80 text-white hover:bg-[#FF5C3A]'
+                    }`}
+                    style={{ border: isInWidget ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,92,58,0.4)' }}
+                  >
+                    {isInWidget ? <Check size={14} /> : <Plus size={14} />}
+                    {isInWidget ? 'En Widget' : 'Agregar'}
+                  </motion.button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Thumbnail view: Add to widget button at bottom */}
+          {isThumb && onAddToWidget && (
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
+              <motion.button
+                whileHover={{ scale: isInWidget ? 1 : 1.02 }}
+                whileTap={{ scale: isInWidget ? 1 : 0.98 }}
+                onClick={(e) => { e.stopPropagation(); onAddToWidget(); }}
+                disabled={isInWidget || !canAddToWidget}
+                className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${
+                  isInWidget
+                    ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
+                    : canAddToWidget === false
+                    ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#FF5C3A]/80 text-white hover:bg-[#FF5C3A]'
+                }`}
+              >
+                {isInWidget ? <Check size={12} /> : <Plus size={12} />}
+                {isInWidget ? 'En Widget' : 'Agregar'}
               </motion.button>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Content */}
-        <div className="flex flex-col flex-1 justify-between p-4 space-y-2">
-          <div className="space-y-2">
-            <h3 className="font-bold uppercase tracking-tight leading-tight line-clamp-2" style={{ color: 'var(--text-primary)', fontSize: isThumb ? '11px' : '13px' }}>
-              {product.name}
-            </h3>
-            {product.shortDescription && !isThumb && <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{product.shortDescription}</p>}
-            <TechLine attributes={product.attributes || {}} />
-            {!isThumb && <AttrPills attributes={product.attributes || {}} />}
-          </div>
-          <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid var(--card-border)' }}>
-            <ActiveStatus />
-            {product.price != null && <PriceTag price={product.price} category={product.category} />}
-          </div>
+        {/* Content - compact for thumbnails */}
+        <div className="flex flex-col flex-1 justify-end p-3 lg:p-4">
+          {/* Product name */}
+          <h3 className="font-bold uppercase tracking-tight leading-tight line-clamp-2 mb-1" style={{ color: 'var(--text-primary)', fontSize: isThumb ? '11px' : '13px' }}>
+            {product.name}
+          </h3>
+
+          {/* Category badge */}
+          {!isList && (
+            <div className="mb-2">
+              <span className="text-[9px] font-semibold uppercase tracking-wider opacity-70" style={{ color: 'var(--text-muted)' }}>
+                {product.category}
+              </span>
+            </div>
+          )}
+
+          {/* Price - always visible */}
+          {product.price != null && (
+            <div className="mt-auto pt-2 flex items-center justify-between">
+              <span className="text-sm lg:text-lg font-black tracking-tight" style={{ color: DESIGN.accent, textShadow: `0 0 20px ${DESIGN.accentGlow}` }}>
+                ${Number(product.price).toLocaleString('es-CO')}
+              </span>
+              <ActiveStatus />
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
@@ -259,31 +322,37 @@ function ProductCard({ product, variant, onEdit, onDelete, index }: ProductCardP
 // VIEWS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
+function GridView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-8">
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
-          <ProductCard key={product.id} product={product} variant="grid" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx} />
+          <ProductCard key={product.id} product={product} variant="grid" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx}
+            isInWidget={widgetProductIds?.includes(product.id)}
+            onAddToWidget={onAddToWidget ? () => onAddToWidget(product.id) : undefined}
+            canAddToWidget={canAddToWidget} />
         ))}
       </AnimatePresence>
     </div>
   );
 }
 
-function ThumbnailsView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
+function ThumbnailsView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-5 lg:gap-6">
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
-          <ProductCard key={product.id} product={product} variant="thumbnails" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx} />
+          <ProductCard key={product.id} product={product} variant="thumbnails" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx}
+            isInWidget={widgetProductIds?.includes(product.id)}
+            onAddToWidget={onAddToWidget ? () => onAddToWidget(product.id) : undefined}
+            canAddToWidget={canAddToWidget} />
         ))}
       </AnimatePresence>
     </div>
   );
 }
 
-function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
+function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: DESIGN.shadowCard }}>
       <div className="h-1" style={{ background: `linear-gradient(to right, ${DESIGN.accent}, transparent)` }} />
@@ -330,6 +399,34 @@ function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
                   <td className="px-6 py-5 text-right"><PriceTag price={product.price ?? 0} category={product.category} /></td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex justify-end gap-2">
+                      {onAddToWidget && (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => onAddToWidget(product.id)}
+                          disabled={widgetProductIds?.includes(product.id) || !canAddToWidget}
+                          className={`p-2.5 rounded-lg transition-all ${
+                            widgetProductIds?.includes(product.id)
+                              ? 'bg-emerald-500/15 cursor-default'
+                              : canAddToWidget === false
+                              ? 'bg-gray-500/10 cursor-not-allowed'
+                              : 'bg-[#FF5C3A]/15 hover:bg-[#FF5C3A]/25'
+                          }`}
+                          style={{
+                            border: widgetProductIds?.includes(product.id)
+                              ? '1px solid rgba(16,185,129,0.25)'
+                              : canAddToWidget === false
+                              ? '1px solid var(--card-border)'
+                              : '1px solid rgba(255,92,58,0.25)',
+                          }}
+                        >
+                          {widgetProductIds?.includes(product.id) ? (
+                            <Check size={16} className="text-emerald-500" />
+                          ) : (
+                            <Plus size={16} className={canAddToWidget === false ? 'text-gray-500' : 'text-[#FF5C3A]'} />
+                          )}
+                        </motion.button>
+                      )}
                       <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)} className="p-2.5 rounded-lg" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
                         <Edit3 size={16} style={{ color: 'var(--text-primary)' }} />
                       </motion.button>
@@ -402,14 +499,14 @@ function EmptyState() {
 // MAIN EXPORT
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export function ProductList({ products, viewMode = 'grid', onEdit, onDelete }: ProductListProps) {
+export function ProductList({ products, viewMode = 'grid', onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: ProductListProps) {
   if (products.length === 0) return <EmptyState />;
   return (
     <div className="pb-20">
       <AnimatePresence mode="popLayout">
-        {viewMode === 'list' && <ListView products={products} onEdit={onEdit} onDelete={onDelete} />}
-        {viewMode === 'thumbnails' && <ThumbnailsView products={products} onEdit={onEdit} onDelete={onDelete} />}
-        {viewMode === 'grid' && <GridView products={products} onEdit={onEdit} onDelete={onDelete} />}
+        {viewMode === 'list' && <ListView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} />}
+        {viewMode === 'thumbnails' && <ThumbnailsView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} />}
+        {viewMode === 'grid' && <GridView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} />}
       </AnimatePresence>
     </div>
   );

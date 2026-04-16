@@ -28,7 +28,15 @@ function EyeOffIcon() {
   );
 }
 
-export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: string }) {
+export default function LoginForm({
+  redirectTo = '/dashboard',
+  compact = false,
+  hideLogo = false,
+}: {
+  redirectTo?: string;
+  compact?: boolean;
+  hideLogo?: boolean;
+}) {
   const { login, isLoading, error } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -38,6 +46,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
   const [showResendBtn, setShowResendBtn] = useState(false);
 
   const [googleError, setGoogleError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   // ── Turnstile state ────────────────────────────────────────────────────
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -53,8 +62,12 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
     turnstileLoadedRef.current = true;
 
     loadTurnstileWidget(turnstileRef.current, (token) => {
+      console.log('[LoginForm] Turnstile token received');
       setTurnstileToken(token);
     }).then((instance) => {
+      if (!instance) {
+        console.warn('[LoginForm] Turnstile widget could not be initialized');
+      }
       turnstileInstanceRef.current = instance;
     });
 
@@ -78,6 +91,17 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
+
+    // Validación de Turnstile en Frontend
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
+      if (!window.turnstile) {
+        setLocalError('El sistema de seguridad de Cloudflare fue bloqueado. Desactiva tu bloqueador de anuncios y recarga la página.');
+      } else {
+        setLocalError('Por favor, completa la verificación de seguridad.');
+      }
+      return;
+    }
+
     setResendSuccess(null);
     setShowResendBtn(false);
     try {
@@ -120,33 +144,38 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: 'var(--bg-base)' }}>
+    <div
+      className={`flex items-center justify-center ${compact ? 'px-4 py-6' : 'px-4 py-12'}`}
+      style={{ backgroundColor: 'var(--bg-base)' }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="w-full max-w-md"
+        className={`w-full ${compact ? 'max-w-[340px]' : 'max-w-md'}`}
       >
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative h-11 w-11 shrink-0">
-              <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
-              <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
-            </div>
-            <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
-              Look<span style={{ color: 'var(--accent)' }}>itry</span>
-            </span>
-          </Link>
-        </div>
+        {/* Logo - hidden on desktop split-screen */}
+        {!hideLogo && (
+          <div className={`flex justify-center ${compact ? 'mb-5' : 'mb-8'}`}>
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="relative h-11 w-11 shrink-0">
+                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
+                <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
+              </div>
+              <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
+                Look<span style={{ color: 'var(--accent)' }}>itry</span>
+              </span>
+            </Link>
+          </div>
+        )}
 
         {/* Card */}
         <div
-          className="relative overflow-hidden rounded-[2rem] border p-8 md:p-10"
+          className={`relative overflow-hidden rounded-${compact ? '[1.25rem]' : '[2rem]'} border ${compact ? 'p-5 md:p-6' : 'p-8 md:p-10'}`}
           style={{
             backgroundColor: 'var(--bg-card)',
             borderColor: 'var(--border-color)',
-            boxShadow: '0 25px 60px rgba(0,0,0,0.15)',
+            boxShadow: compact ? '0 8px 32px rgba(0,0,0,0.12)' : '0 25px 60px rgba(0,0,0,0.15)',
           }}
         >
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[var(--accent)]/5 blur-3xl pointer-events-none" />
@@ -156,7 +185,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="font-jakarta font-bold text-[22px] mb-1"
+              className={`font-jakarta font-bold ${compact ? 'text-[18px] mb-0.5' : 'text-[22px] mb-1'}`}
               style={{ color: 'var(--text-primary)' }}
             >
               Iniciar sesión
@@ -165,7 +194,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-[13px] mb-7"
+              className={`${compact ? 'text-[12px] mb-4' : 'text-[13px] mb-7'}`}
               style={{ color: 'var(--text-muted)' }}
             >
               Accede a tu dashboard de probador virtual
@@ -184,13 +213,13 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
             />
 
             {/* Divider */}
-            <div className="flex items-center gap-4 my-5">
+            <div className={`flex items-center gap-3 ${compact ? 'my-3.5' : 'my-5'}`}>
               <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-color)' }} />
-              <span className="text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>o continúa con correo</span>
+              <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>o continúa con correo</span>
               <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-color)' }} />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className={`space-y-${compact ? '3' : '4'}`}>
               {error && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -230,7 +259,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
 
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                <label htmlFor="email" className={`block ${compact ? 'text-[12px] mb-1' : 'text-[13px] font-medium mb-1.5'}`} style={{ color: 'var(--text-secondary)' }}>
                   Email
                 </label>
                 <input
@@ -241,7 +270,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full px-4 py-3 rounded-xl border text-[13px] outline-none transition-colors"
+                  className={`block w-full ${compact ? 'px-3.5 py-2.5 text-[12px]' : 'px-4 py-3 text-[13px]'} rounded-xl border outline-none transition-colors`}
                   style={{
                     backgroundColor: 'var(--bg-input)',
                     borderColor: validationErrors.email ? 'rgba(239,68,68,0.5)' : 'var(--border-color)',
@@ -250,17 +279,17 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                   placeholder="tu@tienda.com"
                 />
                 {validationErrors.email && (
-                  <p className="mt-1 text-[11px] text-red-500">{validationErrors.email}</p>
+                  <p className={`mt-0.5 ${compact ? 'text-[10px]' : 'text-[11px]'} text-red-500`}>{validationErrors.email}</p>
                 )}
               </div>
 
               {/* Password */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label htmlFor="password" className="block text-[13px] font-medium" style={{ color: 'var(--text-secondary)' }}>
+                <div className={`flex items-center justify-between ${compact ? 'mb-1' : 'mb-1.5'}`}>
+                  <label htmlFor="password" className={`block ${compact ? 'text-[12px]' : 'text-[13px] font-medium'}`} style={{ color: 'var(--text-secondary)' }}>
                     Contraseña
                   </label>
-                  <Link href={`/auth/forgot-password${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[12px] transition-colors hover:text-[var(--accent)]" style={{ color: 'var(--text-muted)' }}>
+                  <Link href={`/auth/forgot-password${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className={`${compact ? 'text-[11px]' : 'text-[12px]'} transition-colors hover:text-[var(--accent)]`} style={{ color: 'var(--text-muted)' }}>
                     ¿Olvidaste tu contraseña?
                   </Link>
                 </div>
@@ -273,7 +302,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className="block w-full px-4 py-3 pr-12 rounded-xl border text-[13px] outline-none transition-colors"
+                    className={`block w-full ${compact ? 'px-3.5 py-2.5 pr-10 text-[12px]' : 'px-4 py-3 pr-12 text-[13px]'} rounded-xl border outline-none transition-colors`}
                     style={{
                       backgroundColor: 'var(--bg-input)',
                       borderColor: validationErrors.password ? 'rgba(239,68,68,0.5)' : 'var(--border-color)',
@@ -284,7 +313,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                   <button
                     type="button"
                     onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-[var(--accent)]"
+                    className={`absolute ${compact ? 'right-2.5' : 'right-3'} top-1/2 -translate-y-1/2 transition-colors hover:text-[var(--accent)]`}
                     style={{ color: 'var(--text-muted)' }}
                     tabIndex={-1}
                     aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
@@ -293,13 +322,13 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                   </button>
                 </div>
                 {validationErrors.password && (
-                  <p className="mt-1 text-[11px] text-red-500">{validationErrors.password}</p>
+                  <p className={`mt-0.5 ${compact ? 'text-[10px]' : 'text-[11px]'} text-red-500`}>{validationErrors.password}</p>
                 )}
               </div>
 
-              {/* Cloudflare Turnstile widget */}
-              <div className="flex justify-center my-4">
-                <div ref={turnstileRef} className="[&>div]:!mx-auto [&>iframe]:mx-auto" />
+              {/* Cloudflare Turnstile widget - minimal footprint */}
+              <div className="py-0 my-0">
+                <div ref={turnstileRef} className="[&>div]:!mx-auto [&>iframe]:mx-auto [&>div]:!my-0" />
               </div>
 
               <motion.button
@@ -307,7 +336,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                 disabled={isLoading}
                 whileHover={{ scale: isLoading ? 1 : 1.01 }}
                 whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                className={`w-full flex items-center justify-center gap-2 ${compact ? 'py-2.5 text-[12px]' : 'py-3 text-[13px]'} rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${compact ? 'mt-1' : 'mt-2'}`}
                 style={{ backgroundColor: 'var(--accent)', color: 'white' }}
               >
                 {isLoading && (
@@ -320,7 +349,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
               </motion.button>
             </form>
 
-            <p className="text-center text-[12px] mt-6" style={{ color: 'var(--text-muted)' }}>
+            <p className={`text-center ${compact ? 'text-[11px] mt-4' : 'text-[12px] mt-6'}`} style={{ color: 'var(--text-muted)' }}>
               ¿No tienes cuenta?{' '}
               <Link href="/planes" className="text-[var(--accent)] hover:text-white transition-colors font-semibold">
                 Ver planes

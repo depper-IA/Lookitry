@@ -230,26 +230,44 @@ export default function LandingNav({
                       ))}
                     </div>
 
-                    {/* Columna 2: Hero Image con Branding */}
-                    <div className="col-span-5 flex flex-col items-center justify-center">
-                      <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden">
+                    {/* Columna 2: Imagen con overlay y contenido centrado */}
+                    <div className="col-span-5 flex flex-col justify-center">
+                      <div className="relative w-full rounded-2xl overflow-hidden aspect-[4/3] group">
+                        {/* Imagen de fondo */}
                         <Image
                           src="/hero/promo_landing.png"
                           alt="Lookitry - Transforma tu tienda con IA"
                           fill
-                          className="object-cover"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          unoptimized
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                      </div>
-                      {/* Branding debajo de la imagen */}
-                      <div className="mt-3 flex items-center gap-2">
-                        <div className="relative h-5 w-5">
-                          <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
-                          <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
+                        {/* Overlay degradado premium */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+                        {/* Contenido centrado */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-between py-6 px-5">
+                          {/* Texto de enganche arriba */}
+                          <div className="text-center mt-4">
+                            <h3 className="font-jakarta text-base font-bold text-white mb-2 leading-tight">
+                              Transforma tu tienda con IA
+                            </h3>
+                            <p className="text-[11px] text-white/75 leading-relaxed max-w-[180px] mx-auto">
+                              Permite que tus clientes prueben tu ropa virtualmente y aumenten sus conversiones hasta un 40%
+                            </p>
+                          </div>
+                          {/* CTA abajo */}
+                          <div className="text-center mb-2">
+                            <Link
+                              href="/checkout?plan=TRIAL"
+                              onClick={() => setMegaMenuOpen(false)}
+                              className="inline-flex items-center justify-center rounded-full bg-[#FF5C3A] px-5 py-2.5 text-[11px] font-semibold text-white transition-all hover:opacity-90 hover:scale-105 active:scale-95 shadow-lg shadow-[#FF5C3A]/30"
+                            >
+                              Pruébalo gratis
+                            </Link>
+                            <p className="mt-2 text-[9px] text-white/50">
+                              Sin tarjeta de crédito requerida
+                            </p>
+                          </div>
                         </div>
-                        <span className="font-jakarta text-[11px] font-bold tracking-tight text-[#0a0a0a] dark:text-white">
-                          Look<span className="text-[#FF5C3A]">itry</span>
-                        </span>
                       </div>
                     </div>
                   </div>

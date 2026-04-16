@@ -1,51 +1,14 @@
 /**
- * Módulo de integración con Cloudflare Turnstile (widget invisible/visible anti-bot).
- *
- * Usa el script vanilla de Cloudflare para evitar dependencias extra.
- * Documentación: https://developers.cloudflare.com/turnstile/
- *
- * Uso:
- *   import { loadTurnstileWidget, resetTurnstileWidget } from '@/lib/turnstile';
- *   const widgetId = loadTurnstileWidget(containerRef.current, (token) => {
- *     setTurnstileToken(token);
- *   });
- *   // Para re-renderizar (ej: después de error):
- *   resetTurnstileWidget(widgetId);
+ * Utility to load and interact with Cloudflare Turnstile.
+ * Based on Cloudflare documentation: https://developers.cloudflare.com/turnstile/get-started/
  */
 
-export interface TurnstileInstance {
-  /** Resetea el widget (nuevo challenge) */
-  reset: () => void;
-  /** Elimina el widget del DOM */
-  remove: () => void;
-}
-
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (
-        container: string | HTMLElement,
-        options: {
-          sitekey: string;
-          callback: (token: string) => void;
-          'error-callback'?: () => void;
-          'expired-callback'?: () => void;
-          theme?: 'light' | 'dark' | 'auto';
-          tabindex?: number;
-        }
-      ) => string;
-      reset: (widgetId: string) => void;
-      remove: (widgetId: string) => void;
-    };
-  }
-}
-
-let scriptLoaded = false;
 let scriptLoading = false;
-const loadCallbacks: Array<() => void> = [];
+let scriptLoaded = false;
+let loadCallbacks: (() => void)[] = [];
 
 /**
- * Carga el script de Turnstile una sola vez por página.
+ * Loads the Turnstile script if not already loaded.
  */
 function loadScript(): Promise<void> {
   if (scriptLoaded) return Promise.resolve();
@@ -55,85 +18,115 @@ function loadScript(): Promise<void> {
 
   scriptLoading = true;
 
-  return new Promise<void>((resolve, reject) => {
+  return new Promise((resolve) => {
+    // Check if it already exists in the window
+    if (typeof window !== 'undefined' && window.turnstile) {
+      scriptLoaded = true;
+      scriptLoading = false;
+      resolve();
+      return;
+    }
+
     const script = document.createElement('script');
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
     script.async = true;
     script.defer = true;
+    script.id = 'cloudflare-turnstile-script';
+
     script.onload = () => {
       scriptLoaded = true;
       scriptLoading = false;
+      console.log('[Turnstile] Script loaded successfully');
       loadCallbacks.forEach((cb) => cb());
       loadCallbacks.length = 0;
       resolve();
     };
-    script.onerror = () => {
+
+    script.onerror = (err) => {
       scriptLoading = false;
-      reject(new Error('No se pudo cargar el script de Cloudflare Turnstile'));
+      console.error('[Turnstile] Error loading script. Ad-blocker might be active.', err);
+      // We don't reject here to avoid crashing the caller, 
+      // but the widget won't render.
+      resolve(); 
     };
+
     document.head.appendChild(script);
   });
 }
 
 /**
- * Carga el widget de Turnstile en un contenedor.
- *
- * @param container  - Ref al div donde se renderiza el widget.
- * @param onSuccess   - Callback con el token cuando el usuario resuelve el challenge.
- * @param theme       - 'light' | 'dark' | 'auto' (default: 'auto')
- * @param size        - 'normal' | 'compact' (default: 'normal')
- * @returns Instancia con .reset() y .remove()
+ * Interface for the Turnstile instance returned.
+ */
+export interface TurnstileInstance {
+  reset: () => void;
+  remove: () => void;
+}
+
+/**
+ * Renders the Turnstile widget in the specified container.
+ * @param container The HTML element to render the widget in.
+ * @param onSuccess Callback called when challenge is solved.
+ * @param theme Color theme of the widget.
+ * @param size Size of the widget.
  */
 export async function loadTurnstileWidget(
   container: HTMLElement,
   onSuccess: (token: string) => void,
-  theme: 'light' | 'dark' | 'auto' = 'auto',
+  theme: 'light' | 'dark' | 'auto' = 'light',
   size: 'normal' | 'compact' = 'normal'
 ): Promise<TurnstileInstance | null> {
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-
-  if (!siteKey) {
-    console.warn('[Turnstile] NEXT_PUBLIC_TURNSTILE_SITE_KEY no está configurado. El widget no se renderizará.');
-    return null;
-  }
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAAsmy7e_yL9iyAXM';
 
   try {
+    if (typeof window === 'undefined') return null;
+
     await loadScript();
-  } catch (err) {
-    console.error('[Turnstile] Error al cargar el script:', err);
+
+    if (!window.turnstile) {
+      console.warn('[Turnstile] window.turnstile not available after script load.');
+      return null;
+    }
+
+    // Ensure the container is empty before rendering
+    container.innerHTML = '';
+
+    const widgetId = window.turnstile.render(container, {
+      sitekey: siteKey,
+      callback: (token: string) => {
+        console.log('[Turnstile] Challenge success');
+        onSuccess(token);
+      },
+      'error-callback': (error: any) => {
+        console.error('[Turnstile] Widget error:', error);
+      },
+      'expired-callback': () => {
+        console.warn('[Turnstile] Token expired');
+        onSuccess(''); // Clear token
+      },
+      theme: theme === 'auto' ? 'light' : theme,
+      appearance: 'always',
+      size: size === 'compact' ? 'compact' : 'normal',
+    });
+
+    return {
+      reset: () => window.turnstile?.reset(widgetId),
+      remove: () => window.turnstile?.remove(widgetId),
+    };
+  } catch (error) {
+    console.error('[Turnstile] Unexpected error in loadTurnstileWidget:', error);
     return null;
   }
-
-  if (!window.turnstile) {
-    console.error('[Turnstile] window.turnstile no disponible después de cargar el script.');
-    return null;
-  }
-
-  const widgetId = window.turnstile.render(container, {
-    sitekey: siteKey,
-    callback: onSuccess,
-    'error-callback': () => {
-      console.warn('[Turnstile] Error en el widget.');
-    },
-    'expired-callback': () => {
-      // El token expiró, el usuario debe resolver otro challenge
-      console.debug('[Turnstile] Token expirado.');
-    },
-    theme,
-    tabindex: 0,
-    ...(size === 'compact' ? { size: 'compact' as unknown as undefined } : {}),
-  });
-
-  return {
-    reset: () => window.turnstile?.reset(widgetId),
-    remove: () => window.turnstile?.remove(widgetId),
-  };
 }
 
 /**
- * Resetea un widget existente (nuevo challenge).
- * Útil cuando el usuario intenta reenviar un formulario y el token expiró.
+ * Global type definition for Turnstile.
  */
-export function resetTurnstileWidget(instance: TurnstileInstance | null) {
-  instance?.reset();
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (container: string | HTMLElement, options: any) => string;
+      reset: (widgetId: string) => void;
+      remove: (widgetId: string) => void;
+    };
+  }
 }
