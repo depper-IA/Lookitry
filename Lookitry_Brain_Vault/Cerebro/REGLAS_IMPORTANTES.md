@@ -207,6 +207,32 @@ Para evitar corrupciones de codigo y caidas del sistema:
 - **GROQ**: API oficial directa, NO via OpenRouter
 - **OpenRouter**: Exclusivo para GENERACION DE IMAGENES del WIDGET (Try-On). PROHIBIDO usar sus creditos para otras tareas.
 
+### 5.5 Blindaje contra Overload de MiniMax (CRÍTICO)
+
+**PROBLEMA**: Error 529 `overload` cuando MiniMax recibe demasiadas requests simultáneas de múltiples agentes.
+
+**PROTOCOLO DE RETRY (Obligatorio para TODOS los agentes):**
+```
+1. Si recibes error 529 overload de MiniMax:
+   - ESPERAR 5 segundos
+   - REINTENTAR request original
+   - Si falla de nuevo:
+     - ESPERAR 15 segundos
+     - REINTENTAR
+     - Si falla de nuevo:
+       - ESPERAR 30 segundos
+       - ÚLTIMO intento
+       - Si falla, REPORTAR a Sammantha inmediatamente
+
+2. NO abandonar la sesión por overload
+3. Si la sesión se cierra por overload, Sammantha la reiniciará
+```
+
+**MÉTRICAS A MONITOREAR:**
+- Frecuencia de errores 529
+- Tiempo de recuperación
+- Agentes afectados
+
 ---
 
 ## 10. Gestion de Habilidades (Skills)

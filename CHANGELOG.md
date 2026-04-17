@@ -1,5 +1,35 @@
 # CHANGELOG — Lookitry
 
+## 16 de Abril 2026 (Noche)
+
+### 🛡️ Blindaje contra Overload de MiniMax + Fix Rebecca-Melissa
+
+**Resumen:** Implementamos protección contra errores 529 overload de MiniMax y arreglamos la comunicación Rebecca-Melissa.
+
+#### Cambios Realizados
+
+| Cambio | Descripción |
+|--------|-------------|
+| **Retry Logic MiniMax** | Nueva regla 5.5 en REGLAS_IMPORTANTES.md con protocolo de retry exponencial (5s → 15s → 30s) |
+| **Rebecca → Melissa** | Rebecca ahora puede recibir mensajes de Melissa (942528796) vía Telegram |
+| **Sesión Rebecca** | Sesión reiniciada tras overload que la dejó en estado "done" |
+
+#### Protocolo de Retry Implementado
+
+```
+Error 529 overload → Esperar 5s → Retry → Esperar 15s → Retry → Esperar 30s → Último retry
+Si todo falla → Reportar a Sammantha inmediatamente
+```
+
+#### Archivos Modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md` | Agregada regla 5.5 de retry |
+| `.openclaw/openclaw.json` | allowFrom de Rebecca incluye Melissa |
+
+---
+
 ## 14 de Abril 2026 (Tarde)
 
 ### 🚀 MISSION CONTROL — Dashboard Operacional Completo
