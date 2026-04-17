@@ -51,6 +51,7 @@ class ProductsService {
   // Widget Playlist (featured products)
   async getWidgetProducts(): Promise<Product[]> {
     const response = await api.get<any>('/brands/me/widget-products');
+    // Backend already filters and orders products by widget_product_ids
     return (response.data.products || []).map(mapProduct);
   }
 

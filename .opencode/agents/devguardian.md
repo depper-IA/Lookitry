@@ -20,8 +20,7 @@ Soy el agente responsable de que el código de Lookitry sea seguro, mantenible y
 ## Modelos de Lenguaje
 
 - **Principal:** MiniMax (`minimax-coding-plan/MiniMax-M2.7`)
-- **Fallback (si agotado):** DeepSeek Coder (`deepseek/deepseek-coder-33b-instruct`)
-- **Subagentes (tareas simples):** GROQ (`groq/llama-3.3-70b-instruct`) — tests, reviews rápidos
+- **Subagentes (tareas simples):** Minimax (`minimax-coding-plan/MiniMax-M2.7`) — tests, reviews rápidos
 
 ## MCPs Disponibles
 

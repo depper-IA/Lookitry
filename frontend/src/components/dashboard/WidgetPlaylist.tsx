@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
 import {
   DndContext,
   closestCenter,
@@ -10,8 +9,6 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-  DragStartEvent,
-  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -54,41 +51,23 @@ function SortableItem({ product, index, onRemove }: SortableItemProps) {
     transition,
   };
 
-  // Prevent click handler from firing after drag
-  const handleClick = (e: React.MouseEvent) => {
-    if (isDragging) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  };
-
   return (
-    <motion.div
+    <div
       ref={setNodeRef}
       style={style}
-      layout
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20, scale: 0.96 }}
-      transition={{ duration: 0.2 }}
-      className={`group flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${
+      className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${
         isDragging
-          ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/20 scale-[1.02] opacity-90'
-          : 'border-[var(--card-border)] bg-[var(--bg-card-elevated)] hover:border-[#FF5C3A]/40 cursor-grab active:cursor-grabbing'
+          ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/20 scale-[1.02] opacity-90 z-50'
+          : 'border-[var(--card-border)] bg-[var(--bg-card-elevated)] hover:border-[#FF5C3A]/40'
       }`}
-      onClick={handleClick}
-      {...attributes}
-      {...listeners}
     >
-      {/* Grip Handle - separate from parent drag */}
+      {/* Grip Handle - ONLY element with drag listeners */}
       <div
-        className="p-1.5 rounded-lg hover:bg-[var(--btn-bg)] transition-colors shrink-0"
-        style={{ cursor: 'grab' }}
+        className="p-1.5 rounded-lg hover:bg-[var(--btn-bg)] transition-colors cursor-grab active:cursor-grabbing shrink-0 touch-none"
         {...listeners}
         {...attributes}
-        onClick={(e) => e.stopPropagation()}
       >
-        <GripVertical size={16} className="text-[var(--text-muted)] group-hover:text-[#FF5C3A] transition-colors" />
+        <GripVertical size={16} className="text-[var(--text-muted)] hover:text-[#FF5C3A] transition-colors" />
       </div>
 
       {/* Position Number */}
@@ -118,16 +97,13 @@ function SortableItem({ product, index, onRemove }: SortableItemProps) {
 
       {/* Remove Button */}
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove(product.id);
-        }}
+        onClick={() => onRemove(product.id)}
         className="p-2 rounded-lg hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-500 transition-all shrink-0"
         aria-label="Quitar del widget"
       >
         <X size={14} />
       </button>
-    </motion.div>
+    </div>
   );
 }
 
@@ -138,12 +114,10 @@ export function WidgetPlaylist({
   maxProducts,
   isLoading,
 }: WidgetPlaylistProps) {
-  const [activeDragId, setActiveDragId] = useState<string | null>(null);
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Require 8px movement before drag starts (prevents accidental drags)
+        distance: 5, // 5px before drag starts
       },
     }),
     useSensor(KeyboardSensor, {
@@ -151,12 +125,7 @@ export function WidgetPlaylist({
     })
   );
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveDragId(event.active.id as string);
-  };
-
   const handleDragEnd = (event: DragEndEvent) => {
-    setActiveDragId(null);
     const { active, over } = event;
     if (over && active.id !== over.id) {
       const oldIndex = products.findIndex((p) => p.id === active.id);
@@ -165,8 +134,6 @@ export function WidgetPlaylist({
       onReorder(reordered.map((p) => p.id));
     }
   };
-
-  const activeProduct = activeDragId ? products.find(p => p.id === activeDragId) : null;
 
   if (isLoading) {
     return (
@@ -197,11 +164,7 @@ export function WidgetPlaylist({
 
       {products.length === 0 ? (
         /* Empty State */
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="py-12 px-6 text-center rounded-2xl border-2 border-dashed border-[var(--border-color)]"
-        >
+        <div className="py-12 px-6 text-center rounded-2xl border-2 border-dashed border-[var(--border-color)]">
           <div className="w-12 h-12 mx-auto mb-4 rounded-xl flex items-center justify-center"
             style={{ background: 'var(--accent-subtle)' }}>
             <Star size={24} className="text-[#FF5C3A]" />
@@ -212,37 +175,23 @@ export function WidgetPlaylist({
           <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
             Agrega productos desde el catálogo
           </p>
-        </motion.div>
+        </div>
       ) : (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={products.map((p) => p.id)} strategy={verticalListSortingStrategy}>
-            <AnimatePresence mode="popLayout">
-              {products.map((product, index) => (
-                <SortableItem
-                  key={product.id}
-                  product={product}
-                  index={index}
-                  onRemove={onRemove}
-                />
-              ))}
-            </AnimatePresence>
+            {products.map((product, index) => (
+              <SortableItem
+                key={product.id}
+                product={product}
+                index={index}
+                onRemove={onRemove}
+              />
+            ))}
           </SortableContext>
-          <DragOverlay>
-            {activeProduct && (
-              <div className="flex items-center gap-3 p-3 rounded-xl border border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/20 scale-[1.05] cursor-grabbing">
-                <GripVertical size={16} className="text-[#FF5C3A]" />
-                <div className="w-10 h-10 rounded-lg overflow-hidden border border-[var(--card-border)]">
-                  <img src={getProxiedUrl(activeProduct.imageUrl)} alt={activeProduct.name} className="w-full h-full object-cover" />
-                </div>
-                <span className="text-xs font-bold text-[var(--text-primary)]">{activeProduct.name}</span>
-              </div>
-            )}
-          </DragOverlay>
         </DndContext>
       )}
     </div>
