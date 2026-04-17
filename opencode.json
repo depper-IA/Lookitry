@@ -152,11 +152,8 @@
     "supabase": {
       "type": "local",
       "command": [
-        "pwsh",
-        "-ExecutionPolicy", "Bypass",
-        "-File",
-        "${WORKSPACE_ROOT}/.opencode/run-mcp.ps1",
-        "supabase"
+        "node",
+        "C:/Users/Matt/Lookitry/.opencode/mcp-servers/supabase-mcp/dist/index.js"
       ],
       "enabled": true,
       "environment": {
@@ -167,11 +164,8 @@
     "n8n": {
       "type": "local",
       "command": [
-        "pwsh",
-        "-ExecutionPolicy", "Bypass",
-        "-File",
-        "${WORKSPACE_ROOT}/.opencode/run-mcp.ps1",
-        "n8n"
+        "node",
+        "C:/Users/Matt/Lookitry/.opencode/mcp-servers/n8n-mcp-server/dist/index.js"
       ],
       "enabled": true,
       "environment": {

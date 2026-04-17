@@ -235,7 +235,7 @@ export class PruebaloController {
       throw new NotFoundError('Producto no encontrado');
     }
 
-    if (product.brand_id !== brand.id) {
+    if (product.brandId !== brand.id) {
       throw new NotFoundError('Producto no encontrado para esta marca');
     }
 
@@ -357,17 +357,24 @@ export class PruebaloController {
       // 7.5 Enriquecer con RAG (aprendizaje de errores anteriores) — timeout 4s, no bloquea
       const prompt = await promptRagService.enrichPrompt(finalPrompt, product.category ?? null);
 
-      // 7.6 Encolar job para procesamiento async
-      await generationQueueService.enqueueJob({
-        brand_id: brand.id,
-        product_id: product.id,
-        selfie_url: uploadResult.url,
-        product_image_url: product.image_url,
-        prompt,
-        generation_id: generation.id,
-      });
+      // 7.6 Procesamiento directo (sin Redis) - llamar n8n directamente y esperar resultado
+      console.log(`[pruebalo] Llamando n8n directamente para generación ${generation.id}`);
 
-      // 7.7 Polling hasta que la generación esté lista (máx 90s)
+      let n8nResult: { success: boolean; imageUrl?: string; error?: string } = { success: false };
+      try {
+        n8nResult = await n8nClient.callTryOnWebhook({
+          brand_id: brand.id,
+          product_id: product.id,
+          selfie_url: uploadResult.url,
+          product_image_url: product.imageUrl || '',
+          prompt,
+        });
+      } catch (n8nCallError: any) {
+        console.error('[pruebalo] Error en llamada a n8n:', n8nCallError.message);
+        // Continuar para que el código de abajo maneje el error
+      }
+
+      // 7.7 Polling hasta que la generación esté lista (máx 90s) - por si el worker actualiza
       const maxPolls = 45;
       let pollCount = 0;
       let finalGeneration = generation;
@@ -384,11 +391,36 @@ export class PruebaloController {
           throw new Error(updated.error_message || 'Generación fallida');
         }
 
+        // Si n8n respondió directamente, usar ese resultado
+        if (n8nResult.success && n8nResult.imageUrl) {
+          await generationsService.updateGeneration(generation.id, {
+            status: 'SUCCESS',
+            result_image_url: n8nResult.imageUrl,
+            processing_time: Date.now() - startTime,
+            prompt_used: prompt,
+          });
+          finalGeneration = (await generationsService.getGenerationById(generation.id)) || finalGeneration;
+          break;
+        }
+
         pollCount++;
       }
 
+      // Si después del polling aún no tenemos resultado y n8n dio error, lanzar error de n8n
       if (finalGeneration.status !== 'SUCCESS' || !finalGeneration.result_image_url) {
-        throw new Error('Timeout esperando resultado de generación');
+        if (n8nResult.success && n8nResult.imageUrl) {
+          // n8n tuvo éxito pero el polling no vio el resultado - usar resultado directo
+          finalGeneration.result_image_url = n8nResult.imageUrl;
+          finalGeneration.status = 'SUCCESS';
+        } else if (!n8nResult.success && n8nResult.error) {
+          // Error conocido de n8n
+          throw new ExternalServiceError(
+            n8nResult.error || 'Error al generar la imagen. Por favor intenta de nuevo.',
+            'n8n'
+          );
+        } else {
+          throw new Error('Timeout esperando resultado de generación');
+        }
       }
 
       const processingTime = Date.now() - startTime;

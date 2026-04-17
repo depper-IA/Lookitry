@@ -55,8 +55,9 @@ class ProductsService {
     return (response.data.products || []).map(mapProduct);
   }
 
-  async updateWidgetProducts(productIds: string[]): Promise<void> {
-    await api.put('/brands/me/widget-products', { productIds });
+  async updateWidgetProducts(productIds: string[]): Promise<{ success: boolean; productIds: string[]; removedIds: string[]; message?: string }> {
+    const response = await api.put<any>('/brands/me/widget-products', { productIds });
+    return response.data;
   }
 }
 
