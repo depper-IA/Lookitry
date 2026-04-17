@@ -124,27 +124,22 @@ export default function ProductsPage() {
     loadBrandIntegrationState();
   }, []);
 
-  const loadWidgetProducts = useCallback(async (ids: string[]) => {
-    if (ids.length === 0) {
-      setWidgetProducts([]);
-      return;
-    }
+  const loadWidgetProducts = useCallback(async () => {
     try {
-      const allProducts = await productsService.getWidgetProducts();
-      // Filter to only widget products and maintain order
-      const ordered = ids
-        .map((id) => allProducts.find((p) => p.id === id))
-        .filter((p): p is Product => p !== undefined);
-      setWidgetProducts(ordered);
+      const products = await productsService.getWidgetProducts();
+      setWidgetProducts(products);
     } catch (err) {
       console.error('Error loading widget products:', err);
+      setWidgetProducts([]);
     }
-  }, []);
+  }, []); // No deps - stable callback
 
-  // Load widget products when widgetProductIds changes
+// Load widget products only on INITIAL brand load
   useEffect(() => {
-    loadWidgetProducts(widgetProductIds);
-  }, [widgetProductIds, loadWidgetProducts]);
+    if (brandId) {
+      loadWidgetProducts();
+    }
+  }, [brandId, loadWidgetProducts]);
 
   const handleViewMode = (mode: ViewMode) => {
     setViewMode(mode);
@@ -249,38 +244,60 @@ export default function ProductsPage() {
   };
 
   // Widget handlers
-  const handleAddToWidget = async (productId: string) => {
-    if (widgetProducts.length >= widgetMaxProducts) {
+const handleAddToWidget = (productId: string) => {
+    if (widgetProductIds.length >= widgetMaxProducts) {
       setError(`Máximo ${widgetMaxProducts} productos en widget (plan ${brandPlan})`);
       return;
     }
     if (widgetProductIds.includes(productId)) return;
 
+    // Find the product from catalog and add it directly to widget state
+    const productToAdd = products.find(p => p.id === productId);
+
     const newWidgetIds = [...widgetProductIds, productId];
     setWidgetProductIds(newWidgetIds);
-    await debouncedSaveWidget(newWidgetIds);
+
+    // Add product directly to local widget state (no backend call needed)
+    if (productToAdd) {
+      setWidgetProducts(prev => [...prev, productToAdd]);
+    }
+
+    debouncedSaveWidget(newWidgetIds); // Don't await - debounced
   };
 
-  const handleRemoveFromWidget = async (productId: string) => {
+  const handleRemoveFromWidget = (productId: string) => {
     const newWidgetIds = widgetProductIds.filter((id) => id !== productId);
     setWidgetProductIds(newWidgetIds);
-    await debouncedSaveWidget(newWidgetIds);
+    
+    // Remove from local state directly
+    setWidgetProducts(prev => prev.filter(p => p.id !== productId));
+    
+    debouncedSaveWidget(newWidgetIds); // Don't await - debounced
   };
 
-  const handleReorderWidget = async (newOrder: string[]) => {
+  const handleReorderWidget = (newOrder: string[]) => {
     setWidgetProductIds(newOrder);
-    await debouncedSaveWidget(newOrder);
+    
+    // Reorder local products to match new order
+    setWidgetProducts(prev => {
+      const reordered = newOrder
+        .map(id => prev.find(p => p.id === id))
+        .filter(Boolean);
+      return reordered;
+    });
+    
+    debouncedSaveWidget(newOrder); // Don't await - debounced
   };
 
   const debouncedSaveWidget = useCallback((productIds: string[]) => {
-    // Clear any existing timeout
+    // Clear any existing timeout using functional update
     setSaveTimeout(prev => {
       if (prev) clearTimeout(prev);
       return null;
     });
 
-    setIsSavingWidget(true);
     const timeout = setTimeout(async () => {
+      setIsSavingWidget(true);
       try {
         await productsService.updateWidgetProducts(productIds);
       } catch (err) {
@@ -288,10 +305,11 @@ export default function ProductsPage() {
         setError('Error al guardar widget');
       } finally {
         setIsSavingWidget(false);
+        setSaveTimeout(null); // Clear after execution
       }
     }, 500);
 
-    setSaveTimeout(timeout);
+    // Note: We don't need to setSaveTimeout here because the clear inside setTimeout handles it
   }, []); // Empty deps - stable callback
 
   const handleClearWidget = async () => {

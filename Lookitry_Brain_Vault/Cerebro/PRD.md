@@ -73,10 +73,11 @@
 - Compra de créditos adicionales (addon packages).
 
 ### 3.2 Para Clientes Finales
-- Widget Público: `/pruebalo/[brandSlug]`.
-- Mini-Landing: `/sitio/[brandSlug]`.
-- Widget Embebido: `/embed/[brandSlug]` (legacy — solo para integraciones específicas que el cliente requiera; método principal es `/widget.js`).
-- Marca directa: `/marca/[brandSlug]`.
+- **Mini-Landing:** `/sitio/[brandSlug]` - Página pública con catálogo y probador integrado
+- **Widget Mostrador:** `/marca/[brandSlug]` - Widget Try-On directo de marca (no requiere iframe ni script externo)
+- **Widget Público:** `/pruebalo/[brandSlug]` - Endpoint público del probador
+- **Widget Embebido (legacy):** `/embed/[brandSlug]` - Solo para integraciones específicas que el cliente requiera; método principal es `/widget.js`
+- **Widget Script:** `/widget.js` - Loader JavaScript autocontenido (método principal y recomendado)
 
 ### 3.3 Para Administradores
 - Panel Admin: Gestión global de marcas, pagos, precios y promociones.

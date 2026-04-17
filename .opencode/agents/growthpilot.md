@@ -20,8 +20,7 @@ Soy el agente responsable de que Lookitry crezca. Gestiono el pipeline de prospe
 ## Modelos de Lenguaje
 
 - **Principal:** MiniMax (`minimax-coding-plan/MiniMax-M2.7`)
-- **Fallback (si agotado):** DeepSeek Coder (`deepseek/deepseek-coder-33b-instruct`)
-- **Subagentes (tareas simples):** GROQ (`groq/llama-3.3-70b-instruct`) — prospección, outreach
+- **Subagentes (tareas simples):** Minimax (`minimax-coding-plan/MiniMax-M2.7`) — prospección, outreach
 
 ## MCPs Disponibles
 

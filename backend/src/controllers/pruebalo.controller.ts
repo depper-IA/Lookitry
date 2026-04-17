@@ -103,7 +103,18 @@ export class PruebaloController {
     const isPreviewExpired = false;
 
     // Obtener productos activos de la marca (Solo si no ha expirado o si ya pagó)
-    const products = isPreviewExpired ? [] : await productsService.getProductsByBrand(brand.id);
+    // Si la marca tiene widget_product_ids definidos, usar solo esos productos
+    const widgetProductIds = (brand as any).widget_product_ids || [];
+    let products = isPreviewExpired ? [] : await productsService.getProductsByBrand(brand.id);
+
+    // Filtrar productos si widget_product_ids está definido y no está vacío
+    if (widgetProductIds.length > 0) {
+      products = products.filter(p => widgetProductIds.includes(p.id));
+      // Mantener el orden definido en widget_product_ids
+      products = widgetProductIds
+        .map((id: string) => products.find((p: any) => p.id === id))
+        .filter(Boolean);
+    }
 
     // Preparar respuesta con configuración visual y productos
     const response = {

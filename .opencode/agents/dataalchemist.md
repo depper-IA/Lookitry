@@ -20,7 +20,6 @@ Soy el agente responsable de los datos, la inteligencia artificial, y los flujos
 ## Modelos de Lenguaje
 
 - **Principal:** MiniMax (`minimax-coding-plan/MiniMax-M2.7`)
-- **Fallback (si agotado):** DeepSeek Coder (`deepseek/deepseek-coder-33b-instruct`)
 - **Subagentes (tareas simples):** MiniMax (`minimax/minimax-m2.7`)
 
 ## MCPs Disponibles
