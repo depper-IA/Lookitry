@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "cf06511c7baf847d",
+        "id": "b3b73c539571bce1",
         "type": "tabs",
         "children": [
           {
-            "id": "85bad1c3e5189985",
+            "id": "f8d3d17365b45b34",
             "type": "leaf",
             "state": {
               "type": "graph",
@@ -179,8 +179,17 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "e7555d785d4b6033",
+  "active": "f8d3d17365b45b34",
   "lastOpenFiles": [
+    "Cerebro/MISSION_CONTROL_SPEC.md",
+    "Cerebro/PARRILLA_REDES_SOCIALES.md",
+    "Cerebro/PITCH_DECK_LOOKITRY.md",
+    "Cerebro/PITCH_DECK_LOOKITRY_ES.md",
+    "Cerebro/Agentes/leo_PROJECT.md",
+    "Cerebro/Agentes/rebecca/PROJECT.md",
+    "Cerebro/Agentes/rebecca/FIVERR_KNOWLEDGE.md",
+    "Cerebro/Agentes/rebecca",
+    "Cerebro/README.md",
     "Cerebro/Skills/verification-before-completion.md",
     "Cerebro/Skills/ui-ux-pro-max.md",
     "Cerebro/Skills/subagent-driven-development.md",
@@ -202,21 +211,12 @@
     "Cerebro/Docs/n8n/workflows/workflow_blog_images_FIXED_v2.json",
     "Cerebro/Logs/CHANGELOG_ARCHIVE_2026_Q1.md",
     "Cerebro/Logs/CHANGELOG_ARCHIVE_2026_04_06.md",
-    "Cerebro/Docs/Lookitry_Brain.md",
-    "Cerebro/Docs/VERSION.md",
-    "Cerebro/Docs/OPEN_SOURCE_AUDIT.md",
-    "Cerebro/Agentes/Skills.md",
     "Cerebro/Docs/templates/FACTURA_TEMPLATE.html",
     "Cerebro/Docs/templates",
-    "Cerebro/Docs/superpowers/specs/2026-04-07-megamenu-design.md",
     "Cerebro/Docs/superpowers/specs",
     "Cerebro/Docs/superpowers",
-    "Cerebro/Docs/specs/LOOKITRY_WOOCOMMERCE_PLUGIN_SPEC.md",
     "Cerebro/Docs/specs",
-    "Cerebro/Docs/research/social-verification-api-research.md",
     "Cerebro/Docs/research",
-    "Cerebro/Docs/n8n/workflows/referral-auto-credit.json",
-    "Cerebro/Docs/blog/BLOG_VISUAL_IMPROVEMENT_SPEC.md",
     "Cerebro/Docs/assets/templates-preview/moderno.png",
     "Cerebro/Docs/assets/templates-preview/editorial.png",
     "Cerebro/Docs/assets/templates-preview/clasico.png",
