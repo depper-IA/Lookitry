@@ -35,26 +35,38 @@ export class GenerationConcurrencyService {
   }
 
   private async countActiveSlots(brandId: string): Promise<number> {
-    const key = this.getKey(brandId);
-    const current = await redis.get(key);
-    return parseInt(current || '0', 10);
+    try {
+      const key = this.getKey(brandId);
+      const current = await redis.get(key);
+      return parseInt(current || '0', 10);
+    } catch {
+      return 0;
+    }
   }
 
   private async incrementSlots(brandId: string): Promise<number> {
-    const key = this.getKey(brandId);
-    const result = await redis.incr(key);
-    await redis.expire(key, SLOT_TTL_SECONDS);
-    return result;
+    try {
+      const key = this.getKey(brandId);
+      const result = await redis.incr(key);
+      await redis.expire(key, SLOT_TTL_SECONDS);
+      return result;
+    } catch {
+      return 0;
+    }
   }
 
   private async decrementSlots(brandId: string): Promise<number> {
-    const key = this.getKey(brandId);
-    const result = await redis.decr(key);
-    if (result < 0) {
-      await redis.set(key, '0');
+    try {
+      const key = this.getKey(brandId);
+      const result = await redis.decr(key);
+      if (result < 0) {
+        await redis.set(key, '0');
+        return 0;
+      }
+      return result;
+    } catch {
       return 0;
     }
-    return result;
   }
 
   private generateSlotId(): string {
@@ -65,47 +77,72 @@ export class GenerationConcurrencyService {
     const limit = this.getPlanLimit(plan);
     const startTime = Date.now();
 
-    for (;;) {
-      const currentSlots = await this.countActiveSlots(brandId);
+    try {
+      for (;;) {
+        const currentSlots = await this.countActiveSlots(brandId);
 
-      if (currentSlots < limit.maxConcurrent) {
-        const newCount = await this.incrementSlots(brandId);
+        if (currentSlots < limit.maxConcurrent) {
+          const newCount = await this.incrementSlots(brandId);
 
-        if (newCount <= limit.maxConcurrent) {
-          const slotId = this.generateSlotId();
-          const slotKey = this.getSlotKey(brandId, slotId);
-          await redis.set(slotKey, '1', 'EX', SLOT_TTL_SECONDS * 2);
+          if (newCount <= limit.maxConcurrent) {
+            const slotId = this.generateSlotId();
+            const slotKey = this.getSlotKey(brandId, slotId);
+            await redis.set(slotKey, '1', 'EX', SLOT_TTL_SECONDS * 2);
 
-          return {
-            acquired: true,
-            slotId,
-            waitTimeMs: Date.now() - startTime,
-          };
-        } else {
-          await this.decrementSlots(brandId);
+            return {
+              acquired: true,
+              slotId,
+              waitTimeMs: Date.now() - startTime,
+            };
+          } else {
+            await this.decrementSlots(brandId);
+          }
         }
-      }
 
-      const elapsed = Date.now() - startTime;
-      if (elapsed >= limit.queueTimeoutMs) {
+        const elapsed = Date.now() - startTime;
+        if (elapsed >= limit.queueTimeoutMs) {
+          return {
+            acquired: false,
+            slotId: null,
+            waitTimeMs: elapsed,
+          };
+        }
+
+        const waitMs = Math.min(500, limit.queueTimeoutMs - elapsed);
+        await this.sleep(waitMs);
+      }
+    } catch (error: any) {
+      // Redis no disponible - permitir generación sin control de concurrencia
+      const errorMsg = error.message || '';
+      if (errorMsg.includes('MaxRetriesPerRequestError') ||
+          errorMsg.includes('ECONNREFUSED') ||
+          errorMsg.includes('max retries') ||
+          errorMsg.includes('Connection is closed')) {
+        console.warn('[Concurrency] Redis no disponible, saltando control de concurrencia');
         return {
-          acquired: false,
-          slotId: null,
-          waitTimeMs: elapsed,
+          acquired: true,
+          slotId: `mock_slot_${Date.now()}`,
+          waitTimeMs: 0,
         };
       }
-
-      const waitMs = Math.min(500, limit.queueTimeoutMs - elapsed);
-      await this.sleep(waitMs);
+      throw error;
     }
   }
 
   async releaseSlot(brandId: string, slotId: string | null): Promise<void> {
-    if (slotId) {
-      const slotKey = this.getSlotKey(brandId, slotId);
-      await redis.del(slotKey);
+    try {
+      if (slotId && !slotId.startsWith('mock_')) {
+        const slotKey = this.getSlotKey(brandId, slotId);
+        await redis.del(slotKey);
+      }
+      await this.decrementSlots(brandId);
+    } catch (error: any) {
+      // Silenciar errores de Redis al liberar slot
+      if (!error.message?.includes('MaxRetriesPerRequestError') &&
+          !error.message?.includes('ECONNREFUSED')) {
+        console.warn('[Concurrency] Error liberando slot:', error.message);
+      }
     }
-    await this.decrementSlots(brandId);
   }
 
   async getActiveCount(brandId: string): Promise<number> {

@@ -277,15 +277,15 @@ const handleAddToWidget = (productId: string) => {
 
   const handleReorderWidget = (newOrder: string[]) => {
     setWidgetProductIds(newOrder);
-    
+
     // Reorder local products to match new order
     setWidgetProducts(prev => {
       const reordered = newOrder
         .map(id => prev.find(p => p.id === id))
-        .filter(Boolean);
+        .filter((p): p is Product => p !== undefined);
       return reordered;
     });
-    
+
     debouncedSaveWidget(newOrder); // Don't await - debounced
   };
 
@@ -299,7 +299,11 @@ const handleAddToWidget = (productId: string) => {
     const timeout = setTimeout(async () => {
       setIsSavingWidget(true);
       try {
-        await productsService.updateWidgetProducts(productIds);
+        const response = await productsService.updateWidgetProducts(productIds);
+        // Si el backend removió productos (no pertenecían a la marca), mostrar aviso
+        if (response.removedIds && response.removedIds.length > 0) {
+          setError(`${response.removedIds.length} producto(s) fueron removido(s) del widget (no pertenecían a tu marca)`);
+        }
       } catch (err) {
         console.error('Error saving widget:', err);
         setError('Error al guardar widget');

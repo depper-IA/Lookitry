@@ -65,6 +65,13 @@ export class N8nClient {
 
     try {
       console.log(`🔄 Llamando a n8n webhook para brand_id: ${payload.brand_id}, product_id: ${payload.product_id}`);
+      console.log(`📦 Payload enviado:`, JSON.stringify({
+        brand_id: payload.brand_id,
+        product_id: payload.product_id,
+        selfie_url: payload.selfie_url,
+        product_image_url: payload.product_image_url,
+        prompt: (payload.prompt || '').substring(0, 100) + '...',
+      }, null, 2));
 
       const response = await axios.post<N8nWebhookResponse>(
         this.webhookUrl,

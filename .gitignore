@@ -51,6 +51,9 @@ scripts/opencode.ps1
 # OpenClaw (ubicación correcta: ~/.openclaw/ en HOME del usuario)
 .openclaw/
 
+# OpenCode (skills y agents locales - uso local exclusivo)
+.opencode/
+
 # Python portable y archivos compilados
 python-portable/
 python-portable.zip

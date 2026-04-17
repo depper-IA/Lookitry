@@ -159,7 +159,7 @@ router.get('/me/widget-products', async (req: any, res) => {
 
     // Mantener el orden definido en widget_product_ids
     const orderedProducts = productIds
-      .map(id => products?.find(p => p.id === id))
+      .map((id: string) => products?.find(p => p.id === id))
       .filter(Boolean);
 
     return res.json({ productIds, products: orderedProducts });
@@ -179,14 +179,42 @@ router.put('/me/widget-products', async (req: any, res) => {
       return res.status(400).json({ error: 'productIds debe ser un array' });
     }
 
+    // ✅ NUEVO: Validar que todos los productos pertenezcan a esta marca y estén activos
+    let validIds = productIds;
+    let removedIds: string[] = [];
+
+    if (productIds.length > 0) {
+      const { data: validProducts } = await supabaseAdmin
+        .from('products')
+        .select('id')
+        .in('id', productIds)
+        .eq('brand_id', brandId)
+        .eq('is_active', true);
+
+      const validProductIds = (validProducts || []).map(p => p.id);
+      validIds = validIds.filter(id => validProductIds.includes(id));
+      removedIds = productIds.filter(id => !validProductIds.includes(id));
+
+      if (removedIds.length > 0) {
+        console.warn(`[widget-products] IDs removidos por no pertenecer a la marca: ${removedIds.join(', ')}`);
+      }
+    }
+
     const { error } = await supabaseAdmin
       .from('brands')
-      .update({ widget_product_ids: productIds })
+      .update({ widget_product_ids: validIds })
       .eq('id', brandId);
 
     if (error) throw error;
 
-    return res.json({ success: true, productIds });
+    return res.json({
+      success: true,
+      productIds: validIds,
+      removedIds,
+      message: removedIds.length > 0
+        ? `${removedIds.length} producto(s) removido(s) del widget (no pertenecían a tu marca)`
+        : 'Widget actualizado correctamente'
+    });
   } catch (error: any) {
     return res.status(500).json({ error: error.message || 'Error al actualizar widget products' });
   }
