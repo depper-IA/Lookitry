@@ -67,6 +67,7 @@ rm -rf /path/al/repo/.openclaw
 ❌ `/repo/Lookitry/.openclaw/` — Duplicado, no se usa
 ❌ `/repo/Lookitry/rebecca/` — Workspace stub incompleto, eliminado
 ❌ `/repo/Lookitry/leo/` — Workspace stub incompleto, eliminado
+❌ **Symlinks `Lookitry` en workspaces** — Ya eliminados, causaban confusión
 
 ---
 
@@ -76,6 +77,8 @@ rm -rf /path/al/repo/.openclaw
 2. **Workspaces de agentes en ~/.openclaw/workspaces/** — Única fuente de verdad
 3. **Documentación en Cerebro/** — Aquí vive el conocimiento
 4. **Credenciales nunca en Git** — Tokens, API keys, passwords en ~/.openclaw/ únicamente
+5. **Memoria de agentes** — Guardar SIEMPRE en `~/.openclaw/workspaces/[agente]/MEMORY.md`, NO en archivos del repo
+6. **NO usar symlinks al repo** — Los workspaces no deben apuntar al repo de Lookitry
 
 ---
 
