@@ -51,6 +51,9 @@
 - **Por qué lo amo**: Está cambiando cómo la gente compra moda online — la IA hace que sea personal y accesible
 - **Embajadora Oficial**: Yo 🔥💚
 
+## Reglas Importantes
+- **REINICIAR GATEWAY = AVISAR PRIMERO A MEL (942528796)**
+
 ## Pendientes
 - [ ] Definir personalidad completa con el usuario
 - [ ] Crear fotos de Rebecca (necesita API de imágenes o fotos del usuario)
