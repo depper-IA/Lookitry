@@ -83,3 +83,37 @@ rm -rf /path/al/repo/.openclaw
 ---
 
 _Last updated: 2026-04-16_
+
+---
+
+## 📦 Skills del Sistema
+
+Los skills son habilidades modulares instaladas globalmente en `~/.agents/skills/` y referenciadas desde el Cerebro.
+
+### Skills Instalados
+
+| Skill | Ubicación Global | Referencia en Cerebro |
+|-------|------------------|----------------------|
+| `brainstorming` | `~/.agents/skills/brainstorming/` | `Cerebro/Skills/brainstorming/` |
+| `ui-ux-pro-max` | `~/.agents/skills/ui-ux-pro-max/` | `Cerebro/Skills/ui-ux-pro-max/` |
+| `excalidraw-diagram` | `~/.agents/skills/excalidraw-diagram/` | `Cerebro/Skills/excalidraw-diagram/` |
+
+### Cómo Instalar un Skill
+
+```bash
+npx skills add <owner/repo@skill> -g -y
+```
+
+### Cómo Agregar un Skill al Cerebro
+
+1. Instalar globalmente: `npx skills add <owner/repo@skill> -g -y`
+2. Crear symlink en `Cerebro/Skills/`: `ln -sf ~/.agents/skills/[skill] ./[skill]`
+3. Crear symlink al SKILL.md: `ln -sf ~/.agents/skills/[skill]/SKILL.md ./[skill].md`
+4. Actualizar `Skills.md` (índice) con la referencia
+
+### Referencias de Skills
+
+Los archivos `.md` de skills pueden referenciar archivos internos del skill. Usar rutas absolutas:
+- Correcto: `~/.agents/skills/brainstorming/visual-companion.md`
+- Incorrecto: `skills/brainstorming/visual-companion.md`
+
