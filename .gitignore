@@ -48,6 +48,9 @@ temp/
 /local/
 scripts/opencode.ps1
 
+# OpenClaw (ubicación correcta: ~/.openclaw/ en HOME del usuario)
+.openclaw/
+
 # Python portable y archivos compilados
 python-portable/
 python-portable.zip
