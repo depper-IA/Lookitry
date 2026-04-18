@@ -6,6 +6,7 @@ import { SelfieUploader } from '../SelfieUploader';
 import type { TryOnTemplateProps } from './types';
 import { ErrorBanner, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner, SelfieThumb } from './shared';
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ── Neo-Luxury Modern Sidebar ────────────────────────────────────────────────
 
@@ -97,13 +98,13 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
     ]),
     { 
       num: lockProductSelection ? 1 : 2, 
-      label: isSmall ? 'Foto' : 'Sube tu foto', 
+      label: isSmall ? '1' : 'Sube tu foto', 
       active: step === 'upload', 
       done: step === 'result' 
     },
     { 
       num: lockProductSelection ? 2 : 3, 
-      label: isSmall ? 'Listo' : 'Ve el resultado', 
+      label: isSmall ? '2' : 'Ve el resultado', 
       active: step === 'result', 
       done: false 
     },
@@ -113,7 +114,13 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
     <div 
       ref={containerRef}
       className={`flex font-sans min-h-screen min-h-[100dvh] ${isSmall ? 'flex-col' : 'flex-row'}`} 
-      style={{ backgroundColor: bgColor }}
+      style={{ 
+        backgroundColor: bgColor,
+        paddingLeft: isSmall ? 'max(16px, env(safe-area-inset-left))' : 0,
+        paddingRight: isSmall ? 'max(16px, env(safe-area-inset-right))' : 0,
+        paddingTop: isSmall ? 'max(16px, env(safe-area-inset-top))' : 0,
+        paddingBottom: isSmall ? 'max(16px, env(safe-area-inset-bottom))' : 0,
+      }}
     >
       {/* ── Sidebar / Header ───────────────────────────────────────────── */}
       <div
@@ -122,6 +129,12 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
             ? 'w-full border-b shadow-lg' 
             : 'w-72 border-r shadow-2xl h-screen sticky top-0'
         }`}
+        style={{
+          paddingLeft: isSmall ? 'max(16px, env(safe-area-inset-left))' : 20,
+          paddingRight: isSmall ? 'max(16px, env(safe-area-inset-right))' : 20,
+          paddingTop: isSmall ? 'max(16px, env(safe-area-inset-top))' : 24,
+          paddingBottom: isSmall ? 'max(16px, env(safe-area-inset-bottom))' : 24,
+        }}
         style={{
           background: isSmall 
             ? `linear-gradient(135deg, ${primaryColor}15 0%, ${secondaryColor} 100%)`
@@ -135,8 +148,8 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
         />
 
         {/* Header - Stacked Centered */}
-        <div className={`flex flex-col items-center text-center ${isSmall ? 'px-4 py-8' : 'px-5 py-6'} border-b`} style={{ borderColor: `${primaryColor}20` }}>
-          <div className="relative group mb-4 animate-in zoom-in duration-700">
+        <div className={`flex flex-col items-center text-center ${isSmall ? 'px-3 pt-4 pb-3' : 'px-4 py-4'} border-b`} style={{ borderColor: `${primaryColor}20` }}>
+          <div className="relative group mb-2 animate-in zoom-in duration-700">
             <div 
               className="absolute inset-0 blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 scale-150"
               style={{ background: primaryColor }}
@@ -145,7 +158,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
               <img 
                 src={config.brand.logo} 
                 alt={config.brand.name} 
-                className={`${isSmall ? 'h-16' : 'h-16 lg:h-20'} w-auto object-contain relative z-10 transition-transform duration-700 group-hover:scale-105`} 
+                className={`${isSmall ? 'h-12' : 'h-14 lg:h-16'} w-auto object-contain relative z-10 transition-transform duration-700 group-hover:scale-105`} 
                 onError={e => { e.currentTarget.style.display = 'none'; }} 
               />
             ) : (
@@ -157,13 +170,13 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
             )}
           </div>
           
-          <div className="space-y-1 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
+          <div className="space-y-0.5 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
             <h1 className={`${isSmall ? 'text-xl' : 'text-xl lg:text-2xl'} font-black tracking-tighter uppercase italic leading-tight`} style={{ color: sidebarText }}>
               {config.brand.name}
             </h1>
             <div className="flex flex-col items-center">
-              <div className="w-6 h-1 rounded-full mb-2" style={{ backgroundColor: primaryColor }} />
-              <p className="text-[9px] uppercase tracking-[0.3em] font-black opacity-40 italic" style={{ color: sidebarText }}>
+              <div className="w-5 h-0.5 rounded-full mb-1" style={{ backgroundColor: primaryColor }} />
+              <p className="text-[8px] uppercase tracking-[0.2em] font-black opacity-35 italic" style={{ color: sidebarText }}>
                 {welcomeMessage ? 'Tu Probador' : 'Tu Estilo'}
               </p>
             </div>
@@ -171,10 +184,11 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
         </div>
         
         {isSmall && step !== 'select' && (
-          <div className="px-4 pb-4">
-            <button 
+          <div className="px-3 pb-2.5">
+            <motion.button 
               onClick={onReset} 
-              className="w-full text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95"
+              whileTap={{ scale: 0.97 }}
+              className="w-full text-[9px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-[1.02]"
               style={{ 
                 color: sidebarMuted,
                 backgroundColor: sidebarLuminance ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
@@ -182,15 +196,15 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
               }}
             >
               Reiniciar
-            </button>
+            </motion.button>
           </div>
         )}
 
         {/* Progress Steps */}
         <div 
           className={`${isSmall 
-            ? 'flex items-center justify-between gap-2 px-4 py-3 border-t border-b' 
-            : 'px-4 py-5 space-y-2'
+            ? 'flex items-center justify-between gap-2 px-3 py-2 border-t border-b' 
+            : 'px-3 py-2.5 space-y-1'
           }`}
           style={{ borderColor: `${primaryColor}20` }}
         >
@@ -218,7 +232,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
               {/* Step indicator */}
               <div 
                 className={`flex-shrink-0 rounded-full flex items-center justify-center font-black transition-all ${
-                  isSmall ? 'w-6 h-6 text-[10px]' : 'w-7 h-7 text-xs'
+                  isSmall ? 'w-5 h-5 text-[9px]' : 'w-6 h-6 text-xs'
                 } ${s.active ? 'text-white' : s.done ? (sidebarLuminance ? 'text-black/80' : 'text-white/80') : (sidebarLuminance ? 'text-black/40' : 'text-white/40')}`}
                 style={{ 
                   backgroundColor: s.active 
@@ -260,8 +274,8 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
         {/* Product List (Desktop Sidebar) */}
         {!isSmall && step === 'select' && (
           <div className="flex-1 overflow-y-auto px-3 pb-8 space-y-2 relative scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
-            <div className="sticky top-0 z-20 py-3 px-2 mb-2" style={{ backgroundColor: secondaryColor }}>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5" style={{ color: sidebarMuted }}>
+            <div className="sticky top-0 z-20 py-2 px-2 mb-1.5" style={{ backgroundColor: secondaryColor }}>
+              <p className="text-[9px] font-bold uppercase tracking-[0.15em] flex items-center gap-1" style={{ color: sidebarMuted }}>
                 <svg className="w-3 h-3" style={{ color: primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>
@@ -348,11 +362,19 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
       </div>
 
       {/* ── Main Content ──────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-hidden relative">
+      <div 
+        className="flex-1 flex flex-col overflow-hidden relative"
+        style={{
+          paddingLeft: isSmall ? 'max(16px, env(safe-area-inset-left))' : 0,
+          paddingRight: isSmall ? 'max(16px, env(safe-area-inset-right))' : 0,
+          paddingTop: isSmall ? 'max(16px, env(safe-area-inset-top))' : 0,
+          paddingBottom: isSmall ? 'max(16px, env(safe-area-inset-bottom))' : 0,
+        }}
+      >
         {/* Top bar (desktop) */}
         {!isSmall && (
           <div 
-            className="sticky top-0 z-20 px-6 py-4 border-b backdrop-blur-xl transition-all duration-300 shrink-0"
+            className="sticky top-0 z-20 px-5 py-3 border-b backdrop-blur-xl transition-all duration-300 shrink-0"
             style={{ 
               backgroundColor: bgLuminance ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)',
               borderColor: mainBorderColor,
@@ -362,16 +384,16 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
               <div className="flex items-center gap-3">
                 {/* Step badge */}
                 <div 
-                  className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                  className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
                   style={{ 
                     backgroundColor: `${primaryColor}20`,
                     color: primaryColor,
                     boxShadow: `0 2px 10px ${primaryGlow}`
                   }}
                 >
-                  {step === 'select' && `Paso 1/${lockProductSelection ? 2 : 3}`}
-                  {step === 'upload' && `Paso ${lockProductSelection ? 1 : 2}/${lockProductSelection ? 2 : 3}`}
-                  {step === 'result' && `Paso ${lockProductSelection ? 2 : 3}/${lockProductSelection ? 2 : 3}`}
+                  {step === 'select' && `Paso 1/3`}
+                  {step === 'upload' && `Paso 2/3`}
+                  {step === 'result' && `Paso 3/3`}
                 </div>
                 
                 <h2 className="text-base font-bold tracking-tight" style={{ color: mainTextPrimary }}>
@@ -394,7 +416,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
         )}
 
         {/* Content Area */}
-        <div className={`flex-1 ${isSmall ? 'p-4' : 'p-6 lg:p-8 overflow-y-auto'}`}>
+        <div className={`flex-1 ${isSmall ? 'p-4 w-full' : 'p-6 lg:p-8 overflow-y-auto'} max-w-full`}>
           <ErrorBanner 
             error={error} 
             isService={errorIsService} 
@@ -408,12 +430,12 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
 
           {/* Welcome Message Header (PRO) */}
           {(step === 'upload' || step === 'select') && (
-            <div className={`mb-8 ${isSmall ? 'text-left' : 'text-center'} animate-in fade-in slide-in-from-top-4 duration-700`}>
-              <h3 className={`${isSmall ? 'text-2xl' : 'text-4xl'} font-black tracking-tighter italic uppercase`} style={{ color: mainTextPrimary }}>
+            <div className={`mb-4 ${isSmall ? 'text-left' : 'text-center'} animate-in fade-in slide-in-from-top-4 duration-700`}>
+              <h3 className={`${isSmall ? 'text-lg' : 'text-2xl'} font-black tracking-tighter italic uppercase leading-tight`} style={{ color: mainTextPrimary }}>
                 {step === 'upload' ? 'Sube tu foto' : 'Elige un look'}
               </h3>
               {welcomeMessage && (
-                <p className="mt-2 text-sm font-medium opacity-60 uppercase tracking-widest" style={{ color: mainTextPrimary }}>
+                <p className="mt-1 text-xs font-medium opacity-50 uppercase tracking-widest" style={{ color: mainTextPrimary }}>
                   {welcomeMessage}
                 </p>
               )}
@@ -421,12 +443,12 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
           )}
 
           {step === 'upload' && (
-            <div className="max-w-xl mx-auto space-y-6">
+            <div className="max-w-xl mx-auto space-y-4">
               {/* Back Button (to selection) */}
-              <div className="flex justify-start mb-2">
+              <div className="flex justify-start mb-1">
                 <button
                   onClick={props.onBack}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all hover:bg-white/5"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all hover:bg-white/5"
                   style={{ color: mainTextMuted }}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -448,20 +470,33 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
               />
               {/* Generar Action */}
               {selfiePreview && selectedProduct && (
-                <div className="sticky bottom-4 pt-4 mt-6 z-20">
-                  <button
+                <div className="sticky bottom-4 pt-3 mt-4 z-20">
+                  <motion.button
                     onClick={onGenerate}
-                    className="w-full py-4 rounded-2xl font-black uppercase tracking-[0.15em] text-sm text-white shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                    whileTap={{ scale: 0.97 }}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className="w-full py-3.5 rounded-xl font-black uppercase tracking-[0.1em] text-xs text-white shadow-xl hover:shadow-2xl transition-all duration-200 flex items-center justify-center gap-2"
                     style={{ 
                       backgroundColor: primaryColor,
                       boxShadow: `0 8px 30px ${primaryGlow}`,
                     }}
                   >
-                    {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={generatedProducts.has(selectedProduct.id) ? 'result' : 'generate'}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
+                      </motion.span>
+                    </AnimatePresence>
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
-                  </button>
+                  </motion.button>
                   <p className="text-center text-[10px] mt-3 font-medium" style={{ color: mainTextMuted }}>
                     {generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
                   </p>
@@ -471,32 +506,32 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
           )}
 
           {step === 'select' && (
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="max-w-4xl mx-auto space-y-4">
               {/* Mobile Product Grid */}
               {isSmall && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {/* Selfie Preview Card */}
                   {selfiePreview && (
                     <div 
-                      className="relative p-4 rounded-2xl shadow-lg"
+                      className="relative p-3 rounded-xl shadow-md"
                       style={{ 
                         background: `linear-gradient(135deg, ${primarySubtle} 0%, ${mainCardBg} 100%)`,
                         border: `1px solid ${primaryColor}30`
                       }}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
                         <img 
                           src={selfiePreview} 
                           alt="Tu foto" 
-                          className="w-14 h-14 rounded-xl object-cover shadow-md ring-2 ring-white/20" 
+                          className="w-11 h-11 rounded-lg object-cover shadow ring-2 ring-white/20" 
                         />
                         <div className="flex-1">
-                          <p className="text-xs font-black uppercase italic" style={{ color: primaryColor }}>Foto lista</p>
-                          <p className="text-[10px] font-medium mt-0.5" style={{ color: mainTextMuted }}>Selecciona un producto</p>
+                          <p className="text-[10px] font-black uppercase italic" style={{ color: primaryColor }}>Foto lista</p>
+                          <p className="text-[9px] font-medium mt-0.5" style={{ color: mainTextMuted }}>Selecciona un producto</p>
                         </div>
                         <button
                           onClick={onReset}
-                          className="text-[9px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg"
+                          className="text-[8px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg"
                           style={{ 
                             color: mainTextMuted,
                             backgroundColor: 'rgba(0,0,0,0.05)'
@@ -521,31 +556,37 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                   </div>
 
                   {/* Products Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 gap-2">
                     {config.products.length > 0 ? (
                       config.products.map((p, idx) => {
                         const isSelected = selectedProduct?.id === p.id;
                         const wasGenerated = generatedProducts.has(p.id);
                         
                         return (
-                          <button
+                          <motion.button
                             key={p.id}
                             onClick={() => onProductSelect(p)}
+                            whileTap={{ scale: 0.97 }}
+                            whileHover={{ scale: 1.02 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
                             className={`relative rounded-2xl overflow-hidden transition-all duration-300 ${
-                              isSelected ? 'ring-2 scale-[1.03] shadow-xl' : 'hover:scale-[1.01] active:scale-[0.98]'
+                              isSelected ? 'ring-2 shadow-xl' : ''
                             }`}
                             style={{
                               animationDelay: `${idx * 40}ms`,
                               '--ring-color': primaryColor,
+                              scale: isSelected ? 1.03 : 1,
                             } as React.CSSProperties}
                           >
                             {/* Glow effect when selected */}
                             {isSelected && (
-                              <div 
+                              <motion.div 
                                 className="absolute inset-0 -z-10"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
                                 style={{ 
                                   background: `radial-gradient(circle at center, ${primaryGlow}, transparent 70%)`,
-                                  filter: 'blur(10px)'
+                                  filter: 'blur(15px)'
                                 }}
                               />
                             )}
@@ -588,7 +629,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                                 )}
                               </div>
                               
-                              <div className="p-2.5">
+                              <div className="p-2">
                                 <div className="flex items-center justify-between gap-1">
                                   <p 
                                     className="text-[11px] font-black uppercase italic truncate tracking-tight flex-1"
@@ -631,7 +672,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                                 )}
                               </div>
                             </div>
-                          </button>
+                          </motion.button>
                         );
                       })
                     ) : (
@@ -648,27 +689,48 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
 
                   {/* Floating "Siguiente" Button for Mobile */}
                   {selectedProduct && (
-                    <div className="sticky bottom-4 left-0 right-0 z-50 flex justify-center px-0 mt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                      <button
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2, type: "spring", stiffness: 300, damping: 25 }}
+                      className="sticky bottom-4 left-0 right-0 z-50 flex justify-center px-4 mt-4"
+                      style={{
+                        paddingLeft: 'calc(1rem + env(safe-area-inset-left))',
+                        paddingRight: 'calc(1rem + env(safe-area-inset-right))',
+                      }}
+                    >
+                      <motion.button
                         onClick={onProceedToUpload}
-                        className="w-full flex items-center justify-between px-6 py-4 rounded-2xl font-black uppercase italic tracking-wider text-sm text-white shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all relative overflow-hidden group"
+                        whileTap={{ scale: 0.97 }}
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        className="w-full flex items-center justify-between px-6 py-4 rounded-2xl font-black uppercase italic tracking-wider text-sm text-white shadow-2xl transition-all duration-200 relative overflow-hidden group"
                         style={{ 
                           backgroundColor: primaryColor,
                           boxShadow: `0 10px 40px ${primaryGlow}`,
                         }}
                       >
-                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                        <motion.div 
+                          className="absolute inset-0 bg-white/20"
+                          initial={{ y: "100%" }}
+                          whileHover={{ y: "0%" }}
+                          transition={{ duration: 0.3 }}
+                        />
                         <div className="flex flex-col items-start leading-tight min-w-0 relative z-10">
                           <span className="text-[10px] opacity-70 not-italic">Siguiente paso</span>
                           <span className="truncate max-w-[140px] font-bold">{buttonText || 'Continuar'}</span>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0 relative z-10">
+                        <motion.div 
+                          className="flex items-center gap-2 flex-shrink-0 relative z-10"
+                          whileHover={{ x: 4 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                        >
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7-7 7" />
                           </svg>
-                        </div>
-                      </button>
-                    </div>
+                        </motion.div>
+                      </motion.button>
+                    </motion.div>
                   )}
                 </div>
               )}
@@ -676,7 +738,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
               {/* Selected Product Card (Desktop) */}
               {!isSmall && selectedProduct && (
                 <div 
-                  className="relative p-6 rounded-3xl shadow-2xl overflow-hidden"
+                  className="relative p-5 rounded-2xl shadow-xl overflow-hidden"
                   style={{ 
                     background: `linear-gradient(135deg, ${mainCardBg} 0%, ${primarySubtle} 100%)`,
                     border: `1px solid ${primaryColor}30`,
@@ -714,20 +776,36 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                       )}
                     </div>
                     
-                    <button
+                    <motion.button
                       onClick={onProceedToUpload}
-                      className="px-6 py-3.5 rounded-2xl font-black uppercase tracking-[0.1em] text-xs text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-100 transition-all flex items-center gap-2 relative overflow-hidden group"
+                      whileTap={{ scale: 0.97 }}
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      className="px-5 py-3 rounded-xl font-black uppercase tracking-[0.1em] text-xs text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 relative overflow-hidden group"
                       style={{ 
                         backgroundColor: primaryColor,
                         boxShadow: `0 8px 30px ${primaryGlow}`
                       }}
                     >
-                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                      <motion.div 
+                        className="absolute inset-0 bg-white/20"
+                        initial={{ y: "100%" }}
+                        whileHover={{ y: "0%" }}
+                        transition={{ duration: 0.3 }}
+                      />
                       <span className="relative z-10">{buttonText || 'Siguiente'}</span>
-                      <svg className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <motion.svg 
+                        className="w-4 h-4 relative z-10" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor" 
+                        strokeWidth={2.5}
+                        whileHover={{ x: 4 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                      </motion.svg>
+                    </motion.button>
                   </div>
                 </div>
               )}
@@ -735,16 +813,16 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
               {/* Desktop Empty State */}
               {!isSmall && !selectedProduct && (
                 <div 
-                  className="p-12 text-center rounded-3xl border-2 border-dashed"
+                  className="p-8 text-center rounded-2xl border-2 border-dashed"
                   style={{ borderColor: `${primaryColor}30`, backgroundColor: `${primarySubtle}` }}
                 >
-                  <div className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: `${primaryColor}10` }}>
+                  <div className="w-16 h-16 mx-auto rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: `${primaryColor}10` }}>
                     <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: primaryColor }}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-bold mb-2" style={{ color: mainTextPrimary }}>Selecciona un producto</h3>
-                  <p className="text-sm font-medium" style={{ color: mainTextMuted }}>Toca cualquier producto en el panel izquierdo para comenzar</p>
+                  <h3 className="text-base font-bold mb-1.5" style={{ color: mainTextPrimary }}>Selecciona un producto</h3>
+                  <p className="text-xs font-medium" style={{ color: mainTextMuted }}>Toca cualquier producto en el panel izquierdo para comenzar</p>
                 </div>
               )}
             </div>

@@ -8,7 +8,9 @@ Este es el catalogo de habilidades reales que los agentes utilizan para construi
 
 ## 🎨 Diseño y Frontend
 - [[./ui-ux-pro-max]]: Manual para interfaces de clase mundial. Implementa estetica premium. ( Instalar: `npx skills add nextlevelbuilder/ui-ux-pro-max-skill@ui-ux-pro-max -g -y` )
-- [[./frontend-design]]: Reglas de diseño reactivo y visual.
+- [[./emil-design-eng]]: Filosofía de UI polish y detalles invisibles de Emil Kowalski. ( Instalar: `npx skills add emilkowalski/skill -g -y` )
+- [[./impeccable]]: Suite de polish: layout, optimize, overdrive, polish, quieter, shape, typeset. ( Instalar: `npx skills add pbakaus/impeccable -g -y` )
+- [[./taste]]: Colección de skills de diseño: gpt-taste, minimalist-ui, industrial-brutalist-ui, high-end-visual-design, stitch-design-taste, design-taste-frontend, redesign-existing-projects, full-output-enforcement. ( Instalar: `npx skills add Leonxlnx/taste-skill -g -y` )
 
 ## 🛡️ Calidad y Control
 - [[./verification-before-completion]]: Garantia de que todo funcione antes de entregarlo.

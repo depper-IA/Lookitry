@@ -27,9 +27,12 @@ export const publicRateLimiter = rateLimit({
   },
   // Omitir rate limiting para ciertas condiciones
   skip: (req: Request) => {
-    // En desarrollo, podemos omitir rate limiting para localhost
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
-      return true;
+    // Omitir rate limiting para localhost en desarrollo (::1, 127.0.0.1, ::ffff:127.0.0.1)
+    if (process.env.NODE_ENV === 'development') {
+      const ip = req.ip || '';
+      if (ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127.') || ip === 'localhost') {
+        return true;
+      }
     }
     return false;
   },
