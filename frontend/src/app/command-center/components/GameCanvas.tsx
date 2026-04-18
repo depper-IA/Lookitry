@@ -552,7 +552,7 @@ interface GameCanvasProps {
   speechBubble: string | null;
   floorEffect: string;
   onArrived?: () => void;
-  charRef?: React.RefObject<Character | null>; // Ref pasado desde el componente padre
+charRef?: React.RefObject<Character | null>; // Ref pasado desde el componente padre
 }
 
 export function GameCanvas({ state, speechBubble, floorEffect, onArrived, charRef: externalCharRef }: GameCanvasProps) {
@@ -591,7 +591,7 @@ export function GameCanvas({ state, speechBubble, floorEffect, onArrived, charRe
       speechBubble,
       bubbleTimer: 0,
       lastUpdate: Date.now(),
-      _spriteImg: null,
+      _spriteImg: undefined,
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

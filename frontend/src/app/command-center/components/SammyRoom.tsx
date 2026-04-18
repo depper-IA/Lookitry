@@ -438,12 +438,18 @@ export function SammyRoom({ agentStatus, heartbeatData }: Props) {
         zIndex: 15,
       }}>
         <SammySprite
-          status={agentStatus.status}
-          heartbeat={{
-            lastPing: displayHeartbeat?.timestamp ? Date.now() - new Date(displayHeartbeat.timestamp).getTime() : 0,
-            messagesProcessed: displayHeartbeat?.stats?.totalTasks ?? 0,
-            tasksCompleted: displayHeartbeat?.stats?.completedTasks ?? 0,
-          }}
+          mood={
+            agentStatus.status === 'sleep' ? 'tired' :
+            agentStatus.status === 'busy' ? 'working' :
+            agentStatus.status === 'error' ? 'alert' : 'idle'
+          }
+          action={
+            agentStatus.status === 'sleep' ? 'sleeping' :
+            agentStatus.status === 'busy' ? 'typing' :
+            agentStatus.status === 'error' ? 'alert' : 'standing'
+          }
+          response={agentStatus.task || "Sistemas listos."}
+          confidence={0.95}
         />
       </div>
 
