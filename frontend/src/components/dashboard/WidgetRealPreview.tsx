@@ -91,6 +91,7 @@ export function WidgetRealPreview({
     brandSlug: 'preview',
     isEmbed: false,
     pluginView: false,
+    forcedLayout: 'mobile', // Forzar siempre modo móvil para que el preview sea fiel
     primaryColor,
     secondaryColor,
     buttonText,
