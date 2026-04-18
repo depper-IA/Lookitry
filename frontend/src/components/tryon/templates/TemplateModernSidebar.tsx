@@ -334,7 +334,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                       )}
                     </div>
                     {p.shortDescription && (
-                      <p className="text-[8px] text-gray-500 truncate mt-0.5">{p.shortDescription}</p>
+                      <p className="text-[8px] truncate mt-0.5" style={{ color: sidebarMuted }}>{p.shortDescription}</p>
                     )}
                     {p.badge && (
                       <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest text-white"
@@ -652,7 +652,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                                   </p>
                                 )}
                                 {p.shortDescription && (
-                                  <p className="text-[8px] text-gray-500 truncate mt-0.5">{p.shortDescription}</p>
+                                  <p className="text-[8px] truncate mt-0.5" style={{ color: mainTextMuted }}>{p.shortDescription}</p>
                                 )}
                                 {p.badge && (
                                   <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest text-white"
@@ -663,10 +663,10 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                                 {p.attributes && Object.keys(p.attributes).length > 0 && (
                                   <div className="mt-1.5 flex flex-wrap gap-1">
                                     {p.attributes.material && (
-                                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.material}</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded" style={{ color: mainTextMuted, backgroundColor: 'rgba(0,0,0,0.05)' }}>{p.attributes.material}</span>
                                     )}
                                     {p.attributes.medida_pulgadas && (
-                                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.medida_pulgadas}&quot;</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded" style={{ color: mainTextMuted, backgroundColor: 'rgba(0,0,0,0.05)' }}>{p.attributes.medida_pulgadas}&quot;</span>
                                     )}
                                   </div>
                                 )}
