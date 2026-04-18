@@ -441,7 +441,7 @@ export default function CommandCenterPage() {
                 SAMMY RESPONSE
               </div>
               <div style={{ fontSize: 11, color: 'var(--lkt-text-2)', lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
-                "{response}"
+                &ldquo;{response}&rdquo;
                 <span style={{ color: accentColor, animation: 'cc-blink 0.8s step-end infinite', marginLeft: 2 }}>▌</span>
               </div>
             </div>
