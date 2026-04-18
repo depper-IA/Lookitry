@@ -155,18 +155,18 @@ export function StepBar({ step, primaryColor }: { step: Step; primaryColor: stri
 // ── Selector de productos amigable ────────────────────────────────────────────
 // ── Selector de productos amigable (con toda la información del editor) ────────
 export function FriendlyProductSelector({
-  products, selected, onSelect, primaryColor, generatedProducts,
+  products, selected, onSelect, primaryColor, generatedProducts, textColor, textMutedColor,
 }: {
   products: Product[];
   selected: Product | null;
   onSelect: (p: Product) => void;
   primaryColor: string;
   generatedProducts: Map<string, string>;
+  textColor?: string;
+  textMutedColor?: string;
 }) {
-  // Determinar si el fondo es claro u oscuro para ajustar colores
-  const bgLuminance = typeof window !== 'undefined' 
-    ? isLightBg(getComputedStyle(document.documentElement).getPropertyValue('--secondary-bg').trim() || '#ffffff')
-    : false;
+  const textMain = textColor || (bgLuminance ? '#050505' : '#ffffff');
+  const textMuted = textMutedColor || (bgLuminance ? '#666666' : '#ffffff99');
   
   if (products.length === 0) {
     return (
@@ -193,10 +193,10 @@ export function FriendlyProductSelector({
       transition={{ duration: 0.3 }}
     >
       <div className="mb-3 md:mb-4 text-center">
-        <p className="text-sm md:text-base font-black text-gray-900 uppercase italic tracking-tight">¿Qué quieres probarte?</p>
-        <p className="text-[10px] md:text-sm text-gray-500 font-medium uppercase tracking-widest mt-0.5">Toca el producto que más te guste</p>
+        <p className="text-sm font-black uppercase italic tracking-tight" style={{ color: textMain }}>¿Qué quieres probarte?</p>
+        <p className="text-[10px] font-medium uppercase tracking-widest mt-0.5" style={{ color: textMuted }}>Toca el producto que más te guste</p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 gap-2">
         {products.map((p, index) => {
           const sel = selected?.id === p.id;
           const alreadyGenerated = generatedProducts.has(p.id);
@@ -223,11 +223,11 @@ export function FriendlyProductSelector({
               aria-label={`Seleccionar ${p.name}`}
             >
               {/* Image Container */}
-              <div className="relative bg-gray-50 aspect-square">
+              <div className="relative bg-gray-100">
                 <img
                   src={p.imageUrl}
                   alt={p.name}
-                  className="w-full h-full object-contain p-2"
+                  className="w-full h-full object-contain p-1.5"
                 />
                 
                 {/* Selection/Generated Badge */}
@@ -235,7 +235,7 @@ export function FriendlyProductSelector({
                   {alreadyGenerated && !sel && (
                     <motion.div 
                       className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center shadow-md" 
-                      style={{ backgroundColor: '#10b981' }}
+                      style={{ backgroundColor: primaryColor }}
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 25 }}
@@ -276,8 +276,8 @@ export function FriendlyProductSelector({
               </div>
               
               {/* Product Info */}
-              <div className="p-3">
-                <p className="font-black text-[10px] md:text-[11px] text-gray-900 uppercase tracking-tight truncate leading-tight">
+              <div className="p-2">
+                <p className="font-black text-[10px] uppercase tracking-tight truncate leading-tight" style={{ color: textMain }}>
                   {p.name}
                 </p>
                 
@@ -285,7 +285,7 @@ export function FriendlyProductSelector({
                 <div className="mt-1.5 flex items-center justify-between gap-1">
                   {p.category && <CategoryBadge category={p.category} />}
                   {p.shortDescription && (
-                    <span className="text-[8px] text-gray-500 truncate max-w-[60%]">{p.shortDescription}</span>
+                    <span className="text-[8px] truncate max-w-[60%]" style={{ color: textMuted }}>{p.shortDescription}</span>
                   )}
                 </div>
                 
@@ -330,7 +330,7 @@ export function BrandHeader({ config, onReset, showReset }: {
         {showReset && (
           <motion.button
             onClick={onReset}
-            className="text-[10px] md:text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-gray-100"
+            className="text-[10px] hover:text-gray-600 transition-colors flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-gray-100" style={{ color: textMuted }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             aria-label="Reiniciar proceso"
@@ -357,12 +357,12 @@ export function SelfieThumb({ preview, onReset }: { preview: string | null; onRe
     >
       <img src={preview} alt="Tu foto" className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl object-cover flex-shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] md:text-sm font-black text-gray-900 uppercase italic leading-none">Foto lista</p>
-        <p className="text-[9px] md:text-xs text-gray-500 mt-0.5 font-medium uppercase tracking-widest leading-none">Elige un producto</p>
+        <p className="text-[11px] font-black uppercase italic leading-none" style={{ color: primaryColor }}>Foto lista</p>
+        <p className="text-[9px] mt-0.5 font-medium uppercase tracking-widest leading-none" style={{ color: textMuted }}>Elige un producto</p>
       </div>
       <motion.button 
         onClick={onReset} 
-        className="text-[9px] md:text-xs font-black uppercase text-gray-400 hover:text-[#FF5C3A] transition-colors px-2 py-1 rounded-lg hover:bg-[#FF5C3A]/5"
+        className="text-[9px] font-black uppercase hover:opacity-80 transition-colors px-2 py-1 rounded-lg hover:bg-gray-100" style={{ color: textMuted }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Cambiar foto"

@@ -33,7 +33,7 @@ export function WidgetRealPreview({
   
   // Estado local para la selfie en el preview
   const [previewSelfie, setPreviewSelfie] = useState<string | null>(null);
-  const [step, setStep] = useState<'upload' | 'select' | 'generating' | 'result'>('upload');
+  const [step, setStep] = useState<'upload' | 'select' | 'generating' | 'result'>('select');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Configuración de escalado para que el preview se vea EXACTO a un móvil real
@@ -44,6 +44,9 @@ export function WidgetRealPreview({
   const INTERNAL_HEIGHT = 520 / SCALE; // Aprox 750px
 
   // Construir configuración mínima
+  // Solo mostrar hasta 6 productos en el preview para que se vea bien
+  const previewProducts = products.slice(0, 6);
+
   const config: TryOnConfigResponse = {
     brand: {
       id: 'preview',
@@ -57,7 +60,7 @@ export function WidgetRealPreview({
       welcomeMessage,
       plan: isPro ? 'PRO' : 'BASIC'
     },
-    products: products.map(p => ({
+    products: previewProducts.map(p => ({
       id: p.id,
       name: p.name,
       imageUrl: p.imageUrl,
@@ -78,7 +81,7 @@ export function WidgetRealPreview({
 
   const handleReset = () => {
     setPreviewSelfie(null);
-    setStep('upload');
+    setStep('select');
     setSelectedProduct(null);
   };
 
@@ -134,7 +137,8 @@ export function WidgetRealPreview({
           transform: `scale(${SCALE})`,
           transformOrigin: 'top left',
           flexShrink: 0,
-          pointerEvents: 'none' // Desactivar interacciones para que sea solo visual
+          pointerEvents: 'none',
+          overflow: 'hidden'
         }}
       >
         {renderTemplate()}
