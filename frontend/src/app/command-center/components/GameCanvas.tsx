@@ -552,7 +552,7 @@ interface GameCanvasProps {
   speechBubble: string | null;
   floorEffect: string;
   onArrived?: () => void;
-charRef?: React.RefObject<Character | null>; // Ref pasado desde el componente padre
+  charRef?: React.MutableRefObject<Character | null>; // Ref pasado desde el componente padre
 }
 
 export function GameCanvas({ state, speechBubble, floorEffect, onArrived, charRef: externalCharRef }: GameCanvasProps) {
@@ -564,8 +564,10 @@ export function GameCanvas({ state, speechBubble, floorEffect, onArrived, charRe
 
   /* ── Sync charRef to parent ─────────────────────────────────── */
   useEffect(() => {
-    if (externalCharRef) externalCharRef.current = charRef.current;
-  });
+    if (externalCharRef && charRef.current) {
+      externalCharRef.current = charRef.current;
+    }
+  }, [externalCharRef]);
 
   /* ── Load sprite ──────────────────────────────────────────────── */
   useEffect(() => {
