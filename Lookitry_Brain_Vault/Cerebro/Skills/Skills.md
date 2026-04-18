@@ -16,6 +16,9 @@ Este es el catalogo de habilidades reales que los agentes utilizan para construi
 - [[./verification-before-completion]]: Garantia de que todo funcione antes de entregarlo.
 - [[./code-reviewer]]: Estandares de limpieza y modularidad de codigo.
 
+## 📱 Marketing y Redes Sociales
+- [[./social-automation-buffer]]: Automatización de publicaciones en Twitter, Facebook, Instagram y LinkedIn usando Buffer API.
+
 ## 🏢 Habilidades Propias de la IA
 - [[./mcp-builder]]: Creacion de herramientas personalizadas.
 - [[./claude-code-expert]]: Maestria en el desarrollo de IA.
