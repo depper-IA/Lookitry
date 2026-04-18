@@ -552,6 +552,7 @@ interface GameCanvasProps {
   speechBubble: string | null;
   floorEffect: string;
   onArrived?: () => void;
+  charRef?: React.MutableRefObject<Character | null>;
 }
 
 export function GameCanvas({ state, speechBubble, floorEffect, onArrived, charRef: externalCharRef }: GameCanvasProps) {
