@@ -147,7 +147,10 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
                                 <img
                                   src={review.avatar_url}
                                   alt={review.reviewer_name}
-                                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-contain shrink-0 bg-white"
+                                  className={review.reviewer_name === 'Wilkie Devs' 
+                                    ? 'h-8 sm:h-9 w-auto object-contain shrink-0 bg-white rounded-md p-1' 
+                                    : 'h-9 w-9 sm:h-10 sm:w-10 rounded-full object-contain shrink-0 bg-white'
+                                  }
                                   loading="lazy"
                                 />
                               ) : (
