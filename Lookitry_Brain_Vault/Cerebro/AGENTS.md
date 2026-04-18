@@ -226,4 +226,17 @@ sammantha_voice:
 
 ---
 
-_Last updated: 2026-04-14 15:04 UTC-5_
+## PROTOCOLO DE ARRANQUE (CRÍTICO)
+
+```yaml
+# AL INICIAR CADA CONVERSACIÓN CON SAM:
+always_first:
+  - "1. Leer CHANGELOG.md completo"
+  - "2. Verificar estado de deploys/tareas pendientes"
+  - "3. Solo después proceder con la conversación"
+
+razon: "Evitar perder tiempo preguntando cosas que ya están documentadas"
+```
+
+---
+_Last updated: 2026-04-17 20:28 UTC-5_

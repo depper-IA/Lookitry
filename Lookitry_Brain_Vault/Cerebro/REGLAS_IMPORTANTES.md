@@ -12,6 +12,17 @@ inclusion: always
 
 ---
 
+## 0. PROTOCOLO DE ARRANQUE (CRÍTICO)
+
+**AL INICIAR CADA CONVERSACIÓN CON SAM:**
+1. Leer CHANGELOG.md completo
+2. Verificar estado de deploys/tareas pendientes
+3. Solo después proceder con la conversación
+
+**RAZÓN**: Evitar perder tiempo preguntando cosas que ya están documentadas
+
+---
+
 ## 0. Documentacion Viva (Regla de Sincronicidad)
 
 **TODA VEZ que se realicen cambios estructurales en la arquitectura, componentes base, o diseño, es OBLIGATORIO:**
