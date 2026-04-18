@@ -206,12 +206,12 @@ if do_backend:
             check=False,
         )
 
-    run(
-        ssh,
+    build_cmd_backend = (
         f"cd {REPO} && docker compose -f docker-compose.backend.yml down && "
-        f"docker compose -f docker-compose.backend.yml build {build_flag} 2>&1 | tail -15",
-        timeout=300,
+        f"docker compose -f docker-compose.backend.yml build {build_flag} > docker_build_backend.log 2>&1 || "
+        f"{{ tail -20 docker_build_backend.log; exit 1; }}"
     )
+    run(ssh, build_cmd_backend, timeout=300)
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.backend.yml up -d")
 
 if do_frontend:
@@ -229,13 +229,14 @@ if do_frontend:
             f"cat > {REPO}/frontend/.env.production << 'FRONTENDEOF'\n{frontend_env_content}\nFRONTENDEOF",
             check=False,
         )
-        # Extraer solo variables NEXT_PUBLIC_* para crear .env que docker-compose usa
+        # Extraer solo variables NEXT_PUBLIC_* y permitidas para crear .env que docker-compose usa
+        ALLOWED_SERVER_KEYS = ["SUPABASE_SERVICE_KEY", "TURNSTILE_SECRET_KEY"]
         env_lines = []
         for line in frontend_env_content.splitlines():
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 key = line.split("=")[0]
-                if key.startswith("NEXT_PUBLIC_"):
+                if key.startswith("NEXT_PUBLIC_") or key in ALLOWED_SERVER_KEYS:
                     env_lines.append(line)
         env_file_content = "\n".join(env_lines)
         print(
@@ -248,7 +249,8 @@ if do_frontend:
         )
     build_cmd = (
         f"cd {REPO} && docker compose -f docker-compose.frontend.yml down && "
-        f"docker compose -f docker-compose.frontend.yml build {build_flag} 2>&1 | tail -20"
+        f"docker compose -f docker-compose.frontend.yml build {build_flag} > docker_build_frontend.log 2>&1 || "
+        f"{{ tail -20 docker_build_frontend.log; exit 1; }}"
     )
     run(ssh, build_cmd, timeout=600)
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml up -d")
