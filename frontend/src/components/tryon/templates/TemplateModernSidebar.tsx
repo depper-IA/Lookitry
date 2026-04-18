@@ -134,8 +134,6 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
           paddingRight: isSmall ? 'max(16px, env(safe-area-inset-right))' : 20,
           paddingTop: isSmall ? 'max(16px, env(safe-area-inset-top))' : 24,
           paddingBottom: isSmall ? 'max(16px, env(safe-area-inset-bottom))' : 24,
-        }}
-        style={{
           background: isSmall 
             ? `linear-gradient(135deg, ${primaryColor}15 0%, ${secondaryColor} 100%)`
             : `linear-gradient(180deg, ${primaryColor}08 0%, ${secondaryColor} 100%)`,

@@ -286,7 +286,7 @@ export function SammySprite({ mood, action, response, confidence, floorEffect = 
           maxWidth: 160, backdropFilter: 'blur(8px)', zIndex: 10,
         }}>
           <div style={{ fontSize: 7, color: cfg.color, fontFamily: 'monospace', textShadow: `0 0 3px ${cfg.color}` }}>
-            "{response}"
+            &ldquo;{response}&rdquo;
           </div>
         </div>
       </div>
