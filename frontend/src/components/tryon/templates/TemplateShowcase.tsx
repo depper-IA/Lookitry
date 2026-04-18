@@ -240,6 +240,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                 bgLuminance={bgLuminance}
                 textPrimary={textPrimary}
                 textMuted={textMuted}
+                isSmall={isSmall}
               />
             </div>
           </div>
@@ -424,6 +425,7 @@ function ProductGridEditorial({
   bgLuminance,
   textPrimary,
   textMuted,
+  isSmall,
 }: {
   products: Product[];
   selected: Product | null;
@@ -434,6 +436,7 @@ function ProductGridEditorial({
   bgLuminance: boolean;
   textPrimary: string;
   textMuted: string;
+  isSmall: boolean;
 }) {
   if (products.length === 0) {
     return (
@@ -448,8 +451,12 @@ function ProductGridEditorial({
     );
   }
 
+  const gridClasses = isSmall 
+    ? "grid-cols-2 gap-3" 
+    : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6";
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 pb-32">
+    <div className={`w-full grid ${gridClasses} pb-32`}>
       {products.map((p, index) => {
         const sel = selected?.id === p.id;
         const alreadyGenerated = generatedProducts.has(p.id);
@@ -459,7 +466,7 @@ function ProductGridEditorial({
             key={p.id}
             onClick={() => onSelect(p)}
             className={`
-              group relative rounded-2xl overflow-hidden text-left transition-all duration-300
+              group relative w-full rounded-2xl overflow-hidden text-left transition-all duration-300
               ${sel ? 'ring-2 scale-[1.02]' : 'hover:scale-[1.01] active:scale-[0.99]'}
             `}
             style={{ 

@@ -1,5 +1,30 @@
 # CHANGELOG — Lookitry
 
+## 18 de Abril 2026
+
+### 🎨 UI Fix + 🤖 GCP Imagen Planning + ⚙️ Model Config
+
+**Resumen:** Corregimos la visualización del Template Showcase, ajustamos la configuración de modelos en OpenCode y documentamos la futura integración de Imagen 3 (GCP).
+
+#### Cambios Realizados
+
+| Cambio | Descripción |
+|--------|-------------|
+| **UI Fix (Showcase)** | Se añadió `w-full` al grid y tarjetas en `TemplateShowcase.tsx` para evitar que se vean comprimidas en móvil. |
+| **Model Config** | Corregida la capitalización de `minimax/MiniMax-M2.7` en `opencode.json` para cumplir con el esquema oficial. |
+| **GCP Imagen Documentation** | Creada guía completa en `Protocolos/CONFIGURACION_IMAGEN3_GCP.md` para rotación de 4 cuentas de GCP. |
+
+#### Archivos Modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/components/tryon/templates/TemplateShowcase.tsx` | Fix en ProductGridEditorial y product buttons. |
+| `opencode.json` | Actualización de IDs de modelos y claves de proveedor. |
+| `Lookitry_Brain_Vault/Cerebro/Protocolos/CONFIGURACION_IMAGEN3_GCP.md` | **[NUEVO]** Protocolo de integración Imagen 3. |
+
+---
+
+
 ## 16 de Abril 2026 (Noche)
 
 ### 🛡️ Blindaje contra Overload de MiniMax + Fix Rebecca-Melissa
