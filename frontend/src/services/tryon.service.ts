@@ -56,6 +56,11 @@ class TryOnService {
           imageUrl: p?.image_url || '',
           category: p?.category ?? '',
           description: p?.description ?? '',
+          shortDescription: p?.short_description ?? '',
+          price: p?.price ?? null,
+          badge: p?.badge ?? null,
+          externalId: p?.external_id ?? null,
+          attributes: p?.attributes ?? {},
         })),
       };
     } catch (error: any) {
