@@ -552,7 +552,7 @@ interface GameCanvasProps {
   speechBubble: string | null;
   floorEffect: string;
   onArrived?: () => void;
-  charRef?: React.MutableRefObject<Character | null>;
+  charRef?: React.MutableRefObject<Character | null>; // Ref pasado desde el componente padre
 }
 
 export function GameCanvas({ state, speechBubble, floorEffect, onArrived, charRef: externalCharRef }: GameCanvasProps) {
