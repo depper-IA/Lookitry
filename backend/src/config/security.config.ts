@@ -14,7 +14,7 @@ export const helmetConfig = helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://challenges.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:", "https://minio.wilkiedevs.com", "https://vkdooutklowctuudjnkl.supabase.co"],
-      connectSrc: ["'self'", "https://api.lookitry.com", "https://n8n.wilkiedevs.com", "http://localhost:3001"],
+      connectSrc: ["'self'", "https://api.lookitry.com", "https://n8n.wilkiedevs.com", "http://localhost:3001", "http://100.85.125.102:3001", "http://100.85.125.102:3000"],
       fontSrc: ["'self'", "https:", "data:"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],

@@ -200,9 +200,8 @@ export function FriendlyProductSelector({
         {products.map((p, index) => {
           const sel = selected?.id === p.id;
           const alreadyGenerated = generatedProducts.has(p.id);
-          const isDark = !bgLuminance;
-          const cardBg = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)';
-          const borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+          const cardBg = 'rgba(255,255,255,0.1)';
+          const borderColor = 'rgba(255,255,255,0.15)';
           
           return (
             <motion.button
