@@ -165,6 +165,7 @@ export function FriendlyProductSelector({
   textColor?: string;
   textMutedColor?: string;
 }) {
+  const bgLuminance = isLightBg(primaryColor);
   const textMain = textColor || (bgLuminance ? '#050505' : '#ffffff');
   const textMuted = textMutedColor || (bgLuminance ? '#666666' : '#ffffff99');
   
@@ -313,6 +314,7 @@ export function BrandHeader({ config, onReset, showReset }: {
   onReset: () => void;
   showReset: boolean;
 }) {
+  const textMuted = '#666666';
   return (
     <div className="bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-lg mx-auto px-4 py-2 md:py-3 flex items-center justify-between min-h-[48px] md:min-h-[56px]">
@@ -345,7 +347,17 @@ export function BrandHeader({ config, onReset, showReset }: {
   );
 }
 
-export function SelfieThumb({ preview, onReset }: { preview: string | null; onReset: () => void }) {
+export function SelfieThumb({ 
+  preview, 
+  onReset, 
+  primaryColor = '#FF5C3A', 
+  textMuted = '#666666' 
+}: { 
+  preview: string | null; 
+  onReset: () => void;
+  primaryColor?: string;
+  textMuted?: string;
+}) {
   if (!preview) return null;
   return (
     <motion.div 
