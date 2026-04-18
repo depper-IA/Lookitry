@@ -23,6 +23,7 @@ export interface TryOnTemplateProps {
   isEmbed: boolean;
   pluginView: boolean;
   lockProductSelection?: boolean;
+  forcedLayout?: 'mobile' | 'desktop'; // Para preview en frameworks de móvil
 
   primaryColor: string;
   secondaryColor: string;

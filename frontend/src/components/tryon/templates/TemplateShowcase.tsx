@@ -50,14 +50,21 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
   useEffect(() => {
     if (!containerRef.current) return;
     
+    // Si forcedLayout está definido, usar ese valor directamente
+    if (props.forcedLayout) {
+      setIsSmall(props.forcedLayout === 'mobile');
+      return;
+    }
+    
     const obs = new ResizeObserver((entries) => {
       const { width } = entries[0].contentRect;
       setIsSmall(width < 768);
     });
 
+
     obs.observe(containerRef.current);
     return () => obs.disconnect();
-  }, []);
+  }, [props.forcedLayout]);
 
   const bgLuminance = isLightBg(secondaryColor || '#ffffff');
   const textPrimary = bgLuminance ? '#1a1a1a' : '#ffffff';
@@ -113,9 +120,9 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
         <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
 
         {step === 'upload' && (
-          <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 sm:px-6 md:px-8 lg:px-12 py-12">
+          <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 sm:px-6 md:px-8 lg:px-12 py-12 w-full max-w-3xl mx-auto">
             {/* Hero / Welcome - Stacked Centered Editorial */}
-            <div className={`${isSmall ? 'mb-12' : 'mb-20'} flex flex-col items-center text-center animate-in fade-in slide-in-from-top-8 duration-1000`}>
+            <div className={`${isSmall ? 'mb-12' : 'mb-16'} flex flex-col items-center text-center animate-in fade-in slide-in-from-top-8 duration-1000 w-full`}>
               {/* Logo with Fashion Aura */}
               <div className={`relative group ${isSmall ? 'mb-8' : 'mb-10'}`}>
                 <div 
@@ -127,11 +134,11 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                     <img
                       src={config.brand.logo}
                       alt={config.brand.name}
-                      className={`${isSmall ? 'h-20' : 'h-32'} w-auto object-contain`}
+                      className={`${isSmall ? 'h-20' : 'h-24 sm:h-28 md:h-32'} w-auto object-contain`}
                       onError={e => { e.currentTarget.style.display = 'none'; }}
                     />
                   ) : (
-                    <div className={`${isSmall ? 'h-20 w-20' : 'h-32 w-32'} flex items-center justify-center`}>
+                    <div className={`${isSmall ? 'h-20 w-20' : 'h-24 sm:h-28 md:h-32 w-24 sm:w-28 md:w-32'} flex items-center justify-center`}>
                       <span className="font-black text-6xl italic" style={{ color: primaryColor }}>
                         {config.brand.name.charAt(0)}
                       </span>
@@ -141,9 +148,9 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
               </div>
               
               {/* Refined Brand Identity */}
-              <div className="space-y-4 max-w-2xl px-4">
+              <div className="space-y-4 px-4">
                 <h1 
-                  className={`${isSmall ? 'text-3xl' : 'text-6xl'} font-black tracking-[-0.05em] uppercase italic leading-none`}
+                  className={`${isSmall ? 'text-3xl' : 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl'} font-black tracking-[-0.05em] uppercase italic leading-none`}
                   style={{ color: textPrimary }}
                 >
                   {config.brand.name}
@@ -157,7 +164,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                   </div>
                   
                   <p 
-                    className={`${isSmall ? 'text-xs' : 'text-base'} font-black uppercase tracking-[0.4em] opacity-40 italic max-w-xs mx-auto`}
+                    className={`${isSmall ? 'text-xs' : 'text-xs sm:text-sm md:text-base'} font-black uppercase tracking-[0.4em] opacity-40 italic max-w-xs mx-auto`}
                     style={{ color: textPrimary }}
                   >
                     Digital Experience
@@ -167,7 +174,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
             </div>
 
             {/* Back Button (Floating or Integrated) */}
-            <div className="w-full max-w-lg mb-8 flex justify-center">
+            <div className="w-full mb-8 flex justify-center">
               <button
                 onClick={props.onBack}
                 className="group flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-white/5 hover:bg-white/5 active:scale-95"
@@ -180,24 +187,26 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
               </button>
             </div>
 
-            <SelfieUploader
-              onUpload={onSelfieUpload}
-              primaryColor={primaryColor}
-              privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al instante"
-              textColor={textPrimary}
-              mutedColor={textMuted}
-              cardBg={cardBg}
-              cardBorder={bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)'}
-            />
+            <div className="w-full max-w-md px-4">
+              <SelfieUploader
+                onUpload={onSelfieUpload}
+                primaryColor={primaryColor}
+                privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al instante"
+                textColor={textPrimary}
+                mutedColor={textMuted}
+                cardBg={cardBg}
+                cardBorder={bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)'}
+              />
+            </div>
           </div>
         )}
 
         {step === 'select' && (
-          <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-4 sm:pt-6 space-y-6 sm:space-y-8">
+          <div className="w-full flex flex-col items-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-4 sm:pt-6">
             {/* Hero de selección - Editorial Accent */}
-            <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 mb-12">
+            <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 mb-8 sm:mb-12 w-full max-w-3xl">
               <div className="inline-block relative">
-                <h2 className={`${isSmall ? 'text-3xl' : 'text-7xl'} font-black tracking-tighter italic uppercase relative z-10`} style={{ color: textPrimary }}>
+                <h2 className={`${isSmall ? 'text-3xl' : 'text-5xl lg:text-6xl'} font-black tracking-tighter italic uppercase relative z-10`} style={{ color: textPrimary }}>
                   {welcomeMessage || 'Colección Real'}
                 </h2>
                 <div className="absolute -bottom-2 -right-4 w-12 h-12 rounded-full blur-2xl opacity-40 animate-pulse" style={{ backgroundColor: primaryColor }} />
@@ -209,16 +218,18 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
 
             {/* Selfie preview si existe */}
             {selfiePreview && (
-              <SelfiePreviewEditorial 
-                preview={selfiePreview} 
-                onReset={onReset} 
-                primaryColor={primaryColor}
-                textMuted={textMuted}
-              />
+              <div className="w-full max-w-xl mb-6 sm:mb-8">
+                <SelfiePreviewEditorial 
+                  preview={selfiePreview} 
+                  onReset={onReset} 
+                  primaryColor={primaryColor}
+                  textMuted={textMuted}
+                />
+              </div>
             )}
 
-            {/* Grid de productos estilo magazine */}
-            <div className="relative">
+            {/* Grid de productos estilo magazine - Centrado */}
+            <div className="w-full max-w-7xl mx-auto">
               <ProductGridEditorial
                 products={config.products}
                 selected={selectedProduct}
@@ -438,7 +449,7 @@ function ProductGridEditorial({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2 pb-32">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 pb-32">
       {products.map((p, index) => {
         const sel = selected?.id === p.id;
         const alreadyGenerated = generatedProducts.has(p.id);
