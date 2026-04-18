@@ -59,13 +59,13 @@ export function TemplateBare(props: TryOnTemplateProps) {
       style={{ backgroundColor: secondaryColor }}
     >
       {/* Header con Marca */}
-      <div className="pt-8 px-6 text-center animate-in fade-in duration-700">
+      <div className="pt-4 px-4 text-center animate-in fade-in duration-700 flex-shrink-0">
         <div className="flex flex-col items-center gap-2">
           {config.brand.logo ? (
             <img 
               src={config.brand.logo} 
               alt={config.brand.name} 
-              className="h-10 w-auto object-contain mb-1" 
+              className="h-12 w-auto object-contain mb-1" 
             />
           ) : (
              <div className="text-xl font-black italic uppercase tracking-tighter" style={{ color: textPrimary }}>
@@ -102,12 +102,12 @@ export function TemplateBare(props: TryOnTemplateProps) {
 
             {/* Paso 1: Selección de Producto */}
             {step === 'select' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="text-center space-y-2 mb-8 mt-4">
-                  <h2 className="text-2xl font-black italic uppercase tracking-tighter" style={{ color: textPrimary }}>
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="text-center space-y-1 mb-4 mt-2">
+                  <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: textPrimary }}>
                     ¿Qué quieres probarte?
                   </h2>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: textMuted }}>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: textMuted }}>
                     Toca el producto que más te guste
                   </p>
                 </div>
@@ -120,6 +120,8 @@ export function TemplateBare(props: TryOnTemplateProps) {
                   }}
                   primaryColor={primaryColor}
                   generatedProducts={generatedProducts}
+                  textColor={textPrimary}
+                  textMutedColor={textMuted}
                 />
 
                 {selectedProduct && (

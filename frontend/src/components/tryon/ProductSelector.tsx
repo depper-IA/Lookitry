@@ -66,7 +66,7 @@ export function ProductSelector({ products, selectedProduct, onSelect, primaryCo
         <p className="text-sm text-gray-500 mt-0.5">{products.length} producto{products.length !== 1 ? 's' : ''} disponible{products.length !== 1 ? 's' : ''}</p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         {products.map((product) => {
           const isSelected = selectedProduct?.id === product.id;
           return (

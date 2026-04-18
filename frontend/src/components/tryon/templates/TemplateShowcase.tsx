@@ -438,7 +438,7 @@ function ProductGridEditorial({
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5 pb-32 sm:pb-40">
+    <div className="grid grid-cols-2 gap-2 pb-32">
       {products.map((p, index) => {
         const sel = selected?.id === p.id;
         const alreadyGenerated = generatedProducts.has(p.id);
