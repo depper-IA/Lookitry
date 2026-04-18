@@ -284,30 +284,30 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                               
                               {/* Categoría */}
                               {p.category && (
-                                <span className="mt-1 px-1.5 py-0.5 rounded text-[7px] font-semibold uppercase tracking-wider text-white/80 bg-black/30">
+                                <span className="mt-1 px-1.5 py-0.5 rounded text-[7px] font-semibold uppercase tracking-wider shadow" style={{ color: textMuted, backgroundColor: 'rgba(0,0,0,0.3)' }}>
                                   {p.category}
                                 </span>
                               )}
                               
                               {/* Descripción corta */}
                               {p.shortDescription && (
-                                <p className="mt-1 text-[8px] text-gray-500 truncate max-w-full px-1 hidden sm:block">{p.shortDescription}</p>
+                                <p className="mt-1 text-[8px] truncate max-w-full px-1 hidden sm:block" style={{ color: textMuted }}>{p.shortDescription}</p>
                               )}
                               
                               {/* Atributos */}
                               {p.attributes && Object.keys(p.attributes).length > 0 && (
                                 <div className="mt-1.5 flex flex-wrap justify-center gap-1 px-1">
                                   {p.attributes.material && (
-                                    <span className="text-[7px] text-gray-600">{p.attributes.material}</span>
+                                    <span className="text-[7px]" style={{ color: textMuted }}>{p.attributes.material}</span>
                                   )}
                                   {p.attributes.medida_pulgadas && (
-                                    <span className="text-[7px] text-gray-600">{p.attributes.medida_pulgadas}&quot;</span>
+                                    <span className="text-[7px]" style={{ color: textMuted }}>{p.attributes.medida_pulgadas}&quot;</span>
                                   )}
                                   {p.attributes.marca && (
-                                    <span className="text-[7px] text-gray-600">{p.attributes.marca}</span>
+                                    <span className="text-[7px]" style={{ color: textMuted }}>{p.attributes.marca}</span>
                                   )}
                                   {p.attributes.tallas && Array.isArray(p.attributes.tallas) && (
-                                    <span className="text-[7px] text-gray-600">{p.attributes.tallas.slice(0, 3).join(', ')}</span>
+                                    <span className="text-[7px]" style={{ color: textMuted }}>{p.attributes.tallas.slice(0, 3).join(', ')}</span>
                                   )}
                                 </div>
                               )}

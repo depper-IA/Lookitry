@@ -546,28 +546,28 @@ function ProductGridEditorial({
                 
                 <div className="flex items-center justify-between gap-1 mt-1">
                   {p.category && (
-                    <span className="px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wider bg-black/10 text-black/70">
+                    <span className="px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wider bg-black/10" style={{ color: textMuted }}>
                       {p.category}
                     </span>
                   )}
                   {p.shortDescription && (
-                    <span className="text-[8px] text-gray-500 truncate max-w-[60%]">{p.shortDescription}</span>
+                    <span className="text-[8px] truncate max-w-[60%]" style={{ color: textMuted }}>{p.shortDescription}</span>
                   )}
                 </div>
                 
                 {p.attributes && Object.keys(p.attributes).length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {p.attributes.material && (
-                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.material}</span>
+                      <span className="text-[8px] px-1.5 py-0.5 rounded" style={{ color: textMuted, backgroundColor: 'rgba(0,0,0,0.05)' }}>{p.attributes.material}</span>
                     )}
                     {p.attributes.medida_pulgadas && (
-                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.medida_pulgadas}&quot;</span>
+                      <span className="text-[8px] px-1.5 py-0.5 rounded" style={{ color: textMuted, backgroundColor: 'rgba(0,0,0,0.05)' }}>{p.attributes.medida_pulgadas}&quot;</span>
                     )}
                     {p.attributes.marca && (
-                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.marca}</span>
+                      <span className="text-[8px] px-1.5 py-0.5 rounded" style={{ color: textMuted, backgroundColor: 'rgba(0,0,0,0.05)' }}>{p.attributes.marca}</span>
                     )}
                     {p.attributes.tallas && Array.isArray(p.attributes.tallas) && (
-                      <span className="text-[8px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{p.attributes.tallas.slice(0, 3).join(', ')}</span>
+                      <span className="text-[8px] px-1.5 py-0.5 rounded" style={{ color: textMuted, backgroundColor: 'rgba(0,0,0,0.05)' }}>{p.attributes.tallas.slice(0, 3).join(', ')}</span>
                     )}
                   </div>
                 )}
