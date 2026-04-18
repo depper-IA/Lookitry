@@ -47,6 +47,11 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
   useEffect(() => {
     if (!containerRef.current) return;
     
+    if (props.forcedLayout) {
+      setIsSmall(props.forcedLayout === 'mobile');
+      return;
+    }
+    
     const obs = new ResizeObserver((entries) => {
       const { width } = entries[0].contentRect;
       setIsSmall(width < 600);
@@ -54,7 +59,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
 
     obs.observe(containerRef.current);
     return () => obs.disconnect();
-  }, []);
+  }, [props.forcedLayout]);
 
   // Colores adaptativos según el fondo
   const bgLuminance = isLightBg(secondaryColor || '#050505');

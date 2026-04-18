@@ -41,6 +41,11 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
   useEffect(() => {
     if (!containerRef.current) return;
     
+    if (props.forcedLayout) {
+      setIsSmall(props.forcedLayout === 'mobile');
+      return;
+    }
+    
     const obs = new ResizeObserver((entries) => {
       const { width } = entries[0].contentRect;
       setIsSmall(width < 768);
@@ -48,7 +53,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
 
     obs.observe(containerRef.current);
     return () => obs.disconnect();
-  }, []);
+  }, [props.forcedLayout]);
 
   const isLightBg = (hex: string): boolean => {
     const clean = hex.replace('#', '');
