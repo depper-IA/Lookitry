@@ -90,15 +90,17 @@ async function checkEmail(): Promise<ServiceResult> {
 
 async function checkMinio(): Promise<ServiceResult> {
   const start = Date.now();
-  const endpoint = process.env.MINIO_ENDPOINT;
-
-  if (!endpoint) return { status: 'degraded', latency: 0 };
+  // Use internal Docker hostname for MinIO health check
+  // The public endpoint (minio.wilkiedevs.com) is not reachable from within containers
+  const minioHost = 'http://minio:9000';
 
   try {
-    await axios.get(`${endpoint}/minio/health/live`, { timeout: 3000, validateStatus: () => true });
+    await axios.get(`${minioHost}/minio/health/live`, { timeout: 5000, validateStatus: () => true });
     return { status: 'ok', latency: Date.now() - start };
-  } catch {
-    return { status: 'down', latency: Date.now() - start };
+  } catch (err: any) {
+    // MinIO failure is degraded, not down - it's not critical for basic API operation
+    console.error(`[HealthCheck] MinIO degraded:`, err.message);
+    return { status: 'degraded', latency: Date.now() - start };
   }
 }
 
