@@ -116,8 +116,20 @@ const DEFAULT_SETTINGS: PaymentSettings = {
 export class PaymentSettingsService {
   private readonly TABLE = 'payment_settings';
   private readonly SINGLETON_ID = 1; // Solo hay una fila de configuración
+  
+  // Cache simple para evitar múltiples lecturas a la BD
+  private cache: { data: PaymentSettings | null; timestamp: number } = {
+    data: null,
+    timestamp: 0
+  };
+  private readonly CACHE_TTL_MS = 10000; // 10 segundos
 
   async getSettings(): Promise<PaymentSettings> {
+    // Verificar cache primero
+    if (this.cache.data && (Date.now() - this.cache.timestamp) < this.CACHE_TTL_MS) {
+      return this.cache.data;
+    }
+    
     const { data, error } = await supabaseAdmin
       .from(this.TABLE)
       .select('*')
@@ -128,6 +140,7 @@ export class PaymentSettingsService {
       return DEFAULT_SETTINGS;
     }
 
+    this.cache = { data: data as PaymentSettings, timestamp: Date.now() };
     return data as PaymentSettings;
   }
 
@@ -165,6 +178,8 @@ export class PaymentSettingsService {
       result = data;
     }
 
+    // Invalidar cache al actualizar
+    this.cache.data = null;
     return result as PaymentSettings;
   }
 

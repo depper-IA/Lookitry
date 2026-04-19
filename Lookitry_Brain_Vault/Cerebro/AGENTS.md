@@ -1,6 +1,6 @@
 # AGENTS.md - Equipo de Agentes Lookitry
-**Última actualización**: 2026-04-14
-**Versión**: 2.0
+**Última actualización**: 2026-04-19
+**Versión**: 3.0
 
 ---
 
@@ -13,53 +13,100 @@ regla: "Todos los agentes usan este modelo por defecto"
 excepcion: "Solo usar otro modelo si AGENTS.md lo especifica explícitamente"
 ```
 
-### Modelos Anteriores (Ya No Usar en Prompts)
+---
 
-```yaml
-groq/llama-3.3-70b-versatile:
-  status: "REMOVIDO de systemPromptOverride"
-  razon: "Groq ya no debe estar en ningún prompt"
-  
-deepseek/deepseek-reasoner:
-  status: "REMOVIDO de systemPromptOverride"
-  razon: "DeepSeek ya no debe estar en ningún prompt"
+## MODELO DE DELEGACIÓN (V3.0)
+
+### Regla de Oro — SAMMANTHA NUNCA hace trabajo de otro agente
+
 ```
+❌ SAMMANTHA: "Voy a revisar el código del frontend..."
+✅ SAMMANTHA: "Spawneo a Pixel para que revise el frontend"
+```
+
+### Flujo de Trabajo
+
+```
+Sam describe problema → Sammantha identifica tipo → Sammantha delega al especializado → Agente reporta → Sammantha notifica a Sam
+```
+
+### Sammantha es la Orquestadora Inteligente
+
+Sammantha NO ejecuta código de frontend, backend, DB, etc. Sammantha:
+1. Recibe problemas de Sam
+2. Identifica el tipo de problema
+3. Delega al agente especializado
+4. Supervisa y notifica resultados
+
+---
+
+## TABLA DE DELEGACIÓN POR PROBLEMA
+
+| Problema Descrito | Tipo | Agente Encargado |
+|-------------------|------|------------------|
+| "El checkout falla en mobile" | Frontend/UI/Responsive | Pixel |
+| "Elwidget de try-on no carga" | Frontend/Componente | Pixel |
+| "Hay errores en el build" | Frontend/Debug | Pixel |
+| "Los webhooks de Wompi no funcionan" | Pagos/Backend | Kira |
+| "El login está fallando" | Auth/Seguridad | Kira |
+| "Hay errores de TypeScript" | Code Review | Kira |
+| "Las búsquedas están lentas" | DB/Queries | Nadia |
+| "El RAG no responde bien" | IA/Embeddings | Nadia |
+| "El workflow de n8n está caído" | Automatización/n8n | Nadia |
+| "Quiero un reporte de leads" | Marketing/CRM | Marlo |
+| "La campaña de email no envía" | Email/Marketing | Marlo |
+| "El servidor está caído" | Infraestructura/VPS | Zephyr |
+| "Necesito hacer deploy" | DevOps/Deploy | Zephyr |
+| "Docker no arranca" | Docker/Infra | Zephyr |
+| "El CHANGELOG está desactualizado" | Documentación | Lina |
+| "Necesito documentar X" | Documentación | Lina |
+| "Hay vulnerabilidades en el código" | Seguridad/Auditoría | Cipher |
+| "Quiero hacer pentesting" | Seguridad | Cipher |
+| "El trading automatizado falló" | Trading | Leo |
+| "Quiero revisar portafolio" | Trading | Leo |
+| "Crear posts para Instagram" | UGC/Contenido | Rebecca |
+| "Generar contenido para TikTok" | UGC/Contenido | Rebecca |
+| "Responder leads de Fiverr" | UGC/Cliente | Rebecca |
 
 ---
 
 ## EQUIPO COMPLETO (10 AGENTES)
 
-| Nombre | Workspace | Rol Original | Modelo | Permisos |
-|--------|-----------|--------------|--------|----------|
-| **Sammantha** | sammy | Orquestadora | MiniMax-M2.7 | read, bash |
-| **Pixel** | webwizard | Frontend | MiniMax-M2.7 | read, edit, write, bash |
-| **Kira** | devguardian | Seguridad | MiniMax-M2.7 | read, edit, bash |
-| **Nadia** | dataalchemist | Datos/IA | MiniMax-M2.7 | read, edit, write, bash |
-| **Marlo** | growthpilot | Marketing | MiniMax-M2.7 | read, edit, write, bash |
-| **Zephyr** | architectai | Infraestructura | MiniMax-M2.7 | read, edit, write |
-| **Lina** | docs-writer | Documentación | MiniMax-M2.7 | read, edit, write |
-| **Cipher** | security-auditor | Auditoría | MiniMax-M2.7 | read, edit, write |
-| **Rebecca** | rebecca | UGC Creator | MiniMax-M2.7 | read, edit, write, bash |
-| **Leo** | leo | Trading | MiniMax-M2.7 | read, edit, write, bash |
+| Nombre | Workspace | Rol | Especialidad | Permisos |
+|--------|-----------|-----|--------------|----------|
+| **Sammantha** | sammy | Orquestadora | Coordinar, identificar, delegar | read, bash |
+| **Pixel** | webwizard | Frontend Magician | UI/UX, componentes, responsive | read, edit, write, bash |
+| **Kira** | devguardian | Guardiana de Calidad | Code review, testing, pagos, auth | read, edit, bash |
+| **Nadia** | dataalchemist | Alquimista de Datos | DB, IA, n8n, embeddings | read, edit, write, bash |
+| **Marlo** | growthpilot | Piloto de Crecimiento | CRM, marketing, leads | read, edit, write, bash |
+| **Zephyr** | architectai | Arquitecto de Infra | DevOps, Docker, VPS | read, edit, write |
+| **Lina** | docs-writer | Documentadora | Docs, CHANGELOG | read, edit, write |
+| **Cipher** | security-auditor | Hacker Ético | Pentesting, vulnerabilidades | read, edit, write |
+| **Rebecca** | rebecca | UGC Creator | Contenido, redes, Fiverr | read, edit, write, bash |
+| **Leo** | leo | Agente de Trading | Trading automatizado | read, edit, write, bash |
 
 ---
 
 ## ROLES Y RESPONSABILIDADES
 
+### Sammantha — Orquestadora Maestra
+
+```yaml
+responsabilidad: "Coordinar equipo, identificar problemas, delegar"
+NUNCA hace: "Código frontend, queries DB, deploys, testing"
+SIEMPRE hace: "Recibir problemas → Identificar tipo → Delegar al agente correcto → Supervisar"
+```
+
 ### Agentes de Operación
 
 ```yaml
-sammantha:
-  rol: "Orquestadora Maestra"
-  responsabilidad: "Coordinar equipo, recibir tareas, delegar"
-  
 pixel:
   rol: "Frontend Magician"
-  responsabilidad: "UI/UX, componentes, landing pages, widget Try-On"
+  responsabilidad: "UI/UX, componentes, landing pages, widget Try-On, responsive"
   
 kira:
   rol: "Guardiana de Calidad"
-  responsabilidad: "Code review, testing, debugging, seguridad"
+  responsabilidad: "Code review, testing, debugging, seguridad, pagos, auth"
 ```
 
 ### Agentes de Datos y Backend
@@ -67,7 +114,7 @@ kira:
 ```yaml
 nadia:
   rol: "Alquimista de Datos"
-  responsabilidad: "DB, IA, n8n, embeddings, RAG"
+  responsabilidad: "DB, IA, n8n, embeddings, RAG, queries"
   
 cipher:
   rol: "Hacker Ético"
@@ -108,24 +155,39 @@ lina:
 
 ## INVOCACIÓN DE AGENTES
 
+### Modelo Antiguo (usar SOLO si Sam especifica agente):
 ```yaml
 sintaxis: "@NombreAgent [tarea]"
 
 ejemplos:
-  - "@Sammantha [tarea]" — Procesar y delegar
-  - "@Pixel [tarea]" — Frontend directo
+  - "@Pixel [tarea]" — Frontend directo (si Sam lo pide explícitamente)
   - "@Kira [tarea]" — Code review / debug
-  - "@Nadia [tarea]" — Datos / IA
-  - "@Marlo [tarea]" — Marketing / CRM
-  - "@Zephyr [tarea]" — Infraestructura
-  - "@Lina [tarea]" — Documentación
-  - "@Cipher [tarea]" — Seguridad
-  - "@Rebecca [tarea]" — UGC / contenido
-  - "@Becca [tarea]" — Alias para Rebecca
-  - "@Leo [tarea]" — Trading
+  - etc.
 ```
 
+### Modelo Nuevo (RECOMENDADO):
+```
+Tú → "El panel de checkout está fallando en mobile"
+Yo → Identifico problema → Delego a Pixel automáticamente
+```
+
+Sammantha detecta el tipo de problema y delega sin que Sam tenga que especificar el agente.
+
 ---
+
+## CANALES DE TELEGRAM
+
+```yaml
+sammantha:
+  bot: "@SamDevsBot"
+  account_id: "default"
+  activo: true
+
+rebecca:
+  bot: "@Rebecca_lookitrybot"
+  account_id: "rebecca"
+  activo: true
+```
 
 ## PERSONAS REALES (NO Agentes)
 
@@ -145,87 +207,6 @@ melissa_urbano:
 
 ---
 
-## REGLAS DE CONFIGURACIÓN
-
-### Estructura de Archivos por Agente
-
-Cada agente debe tener:
-1. `SOUL.md` — Personalidad y comportamiento
-2. `IDENTITY.md` — Identidad básica
-3. `USER.md` — Usuarios y contexto
-4. `HEARTBEAT.md` — Protocolo de vida
-5. `TOOLS.md` — Herramientas disponibles
-6. `MEMORY.md` — Tareas y memoria
-7. `AGENTS.md` — Definición del agente
-8. `AGENTS_SOUL.md` — Personalidad extendida (opcional)
-
-### Contenido Válido
-
-**✅ USAR**:
-- Información real del Cerebro (AGENTS.md, TECH_STACK.md, REGLAS_IMPORTANTES.md)
-- APIs y endpoints reales del backend
-- Librerías y versiones reales de package.json
-- Comandos npm/yarn reales
-- Personas y agentes reales
-
-**❌ EVITAR**:
-- "TU_NOMBRE", "TU_EMAIL", "placeholder"
-- Información genérica copiada de templates
-- Contenido inventado no verificable
-
----
-
-## COLABORACIÓN ENTRE AGENTES
-
-```yaml
-colaboraciones_clave:
-
-  rebecca + leo:
-    - "Generar ingresos para Lookitry"
-    - "Rebecca: leads y clientes"
-    - "Leo: trading"
-    
-  pixel + melissa:
-    - "Frontend development"
-    - "Melissa es COlaboradora, no subordinada"
-    - "Code review mutuo"
-    
-  kira + cipher:
-    - "Seguridad completa"
-    - "Kira: code review"
-    - "Cipher: pentesting"
-    
-  nadia + marlo:
-    - "Datos para analytics"
-    - "Nadia: queries y datos"
-    - "Marlo: métricas y campaigns"
-```
-
----
-
-## TTS / VOZ DE SAMMANTHA
-
-```yaml
-sammantha_voice:
-  motor: "Gemini 2.5 Flash TTS"
-  ubicacion: "/home/travis/Lookitry/Lookitry/backend/scripts/sammantha_voice.sh"
-  
-  regla: "Solo generar audio cuando Sam ENVÍA audio primero O lo pide explícitamente"
-  
-  estado: "/home/travis/Lookitry/Lookitry/backend/.tts_state"
-```
-
----
-
-## PRÓXIMOS PASOS
-
-- [ ] Completar configuración de Zephyr
-- [ ] Revisar configuración de Leo
-- [ ] Actualizar CHANGELOG.md con cambios de hoy
-- [ ] Verificar Telegram connectivity
-
----
-
 ## PROTOCOLO DE ARRANQUE (CRÍTICO)
 
 ```yaml
@@ -239,4 +220,17 @@ razon: "Evitar perder tiempo preguntando cosas que ya están documentadas"
 ```
 
 ---
-_Last updated: 2026-04-17 20:28 UTC-5_
+
+## PROTOCOLO DE DELEGACIÓN
+
+Ver: `Cerebro/Protocolos/DELEGATION_PROTOCOL.md`
+
+---
+
+## DASHBOARD DE ESTADO
+
+Ver: `Cerebro/Protocolos/AGENT_STATUS_DASHBOARD.md`
+
+---
+
+_Last updated: 2026-04-19 11:58 UTC-5_

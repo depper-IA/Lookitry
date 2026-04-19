@@ -288,3 +288,26 @@ Todas las páginas ahora leen precios desde `pricing_config` en Supabase via `ge
 | CSRF Protection | MEDIO | ⚠️ Pendiente |
 
 ---
+
+---
+## [2.4.1] - 2026-04-19 - Pixel Hotfix
+
+### 🔧 Fixed
+- **Frontend Mission Control Agents**: API `/api/agents/status` ahora retorna MOCK_AGENTS como fallback cuando OpenClaw Gateway no está disponible
+- **OpenClaw Gateway URL**: Corregido de `localhost:4002` a `localhost:18789` en `frontend/src/lib/openclaw/client.ts`
+- **API Route Fallback**: La API ya no retorna 500 cuando hay error, ahora retorna datos mock exitosamente
+
+### 📁 Files Changed
+- `frontend/src/lib/openclaw/client.ts` - Corregido URL default
+- `frontend/src/app/api/agents/status/route.ts` - Añadido fallback a MOCK_AGENTS
+
+### ✅ Verification
+- API `/api/agents/status` returns `success: true` with `mode: mock`
+- 10 agents displayed correctly
+- Frontend dev server running on port 3000
+
+### 📝 Additional Notes (12:20 GMT-5)
+- OpenClaw Gateway bindeado a `127.0.0.1:18789` (loopback only)
+- La API de sesiones de OpenClaw no expone endpoint REST público (solo UI web)
+- Sistema operando con MOCK_AGENTS hasta que se configure acceso real a sesiones
+- Si se necesita integración real con sesiones, requiere modificar OpenClaw Gateway

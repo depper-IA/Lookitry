@@ -1,0 +1,41 @@
+{
+  "instagram": {
+    "carousel_id": "inauguracion_20260418_201032_instagram",
+    "platform": "instagram",
+    "slides": [
+      {
+        "number": 1,
+        "raw": "/home/travis/Lookitry/Lookitry/social-os/images/raw/inauguracion_20260418_201032_instagram_slide1.png",
+        "branded": "/home/travis/Lookitry/Lookitry/social-os/slideshows/output/inauguracion_20260418_201032_instagram/slide1_branded.png",
+        "caption": "\ud83c\udf89 \u00a1LOOKITRY YA EST\u00c1 AQU\u00cd!"
+      },
+      {
+        "number": 2,
+        "raw": "/home/travis/Lookitry/Lookitry/social-os/images/raw/inauguracion_20260418_201032_instagram_slide2.png",
+        "branded": "/home/travis/Lookitry/Lookitry/social-os/slideshows/output/inauguracion_20260418_201032_instagram/slide2_branded.png",
+        "caption": "Imagina que tus clientes pueden probarse la ropa ANTES de comprar"
+      },
+      {
+        "number": 3,
+        "raw": "/home/travis/Lookitry/Lookitry/social-os/images/raw/inauguracion_20260418_201032_instagram_slide3.png",
+        "branded": "/home/travis/Lookitry/Lookitry/social-os/slideshows/output/inauguracion_20260418_201032_instagram/slide3_branded.png",
+        "caption": "Sin devoluciones. Sin dudas. Solo ventas."
+      },
+      {
+        "number": 4,
+        "raw": "/home/travis/Lookitry/Lookitry/social-os/images/raw/inauguracion_20260418_201032_instagram_slide4.png",
+        "branded": "/home/travis/Lookitry/Lookitry/social-os/slideshows/output/inauguracion_20260418_201032_instagram/slide4_branded.png",
+        "caption": "\ud83c\udf1f Reduce devoluciones hasta un 40%"
+      },
+      {
+        "number": 5,
+        "raw": "/home/travis/Lookitry/Lookitry/social-os/images/raw/inauguracion_20260418_201032_instagram_slide5.png",
+        "branded": "/home/travis/Lookitry/Lookitry/social-os/slideshows/output/inauguracion_20260418_201032_instagram/slide5_branded.png",
+        "caption": "\u00bfQuieres ser de las primeras marcas en usarlo?"
+      }
+    ],
+    "caption": "\ud83c\udf89 \u00a1LOOKITRY YA EST\u00c1 AQU\u00cd!\n\nImagina que tus clientes pueden probarse la ropa ANTES de comprar\n\nSin devoluciones. Sin dudas. Solo ventas.\n\n\ud83c\udf1f Reduce devoluciones hasta un 40%\n\n\u00bfQuieres ser de las primeras marcas en usarlo?\n\n#Lookitry #Inauguraci\u00f3n #ProbadorVirtual #ModaTech #FashionInnovation #Ecommerce #Startup",
+    "aspect_ratio": "1:1",
+    "output_dir": "/home/travis/Lookitry/Lookitry/social-os/slideshows/output/inauguracion_20260418_201032_instagram"
+  }
+}

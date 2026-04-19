@@ -3,7 +3,7 @@ import paramiko
 from dotenv import load_dotenv
 
 # Use absolute path to avoid confusion
-load_dotenv("c:/Users/Matt/Lookitry/backend/.env")
+load_dotenv("/home/travis/Lookitry/Lookitry/backend/.env")
 
 HOST = "31.220.18.39"
 USER = "root"
