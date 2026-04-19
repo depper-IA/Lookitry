@@ -1,283 +1,245 @@
+// Lookitry Mission Control - Agents Status API
+// Real-time agent status from OpenClaw sessions + active tracking
+// v1.0 | Abril 2026
+
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { sessions_list } from '@/lib/openclaw/sessions';
+import { readFileSync } from 'fs';
+import path from 'path';
 
-// Server-side Supabase con service key (sin RLS, datos reales) — lazy init para evitar error en build
-let _supabaseAdmin: ReturnType<typeof createClient> | null = null;
-function getSupabaseAdmin() {
-  if (!_supabaseAdmin) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_KEY;
-    if (!url || !key) return null;
-    _supabaseAdmin = createClient(url, key);
-  }
-  return _supabaseAdmin;
-}
+export const dynamic = 'force-dynamic';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const GITHUB_REPO = 'depper-IA/lookitry';
-const HEARTBEAT_TIMEOUT_MS = 30_000; // 30s
-
-// Roster de agentes conocidos (fuente de verdad visual)
-const AGENTS_ROSTER = [
-  {
-    id: 'sammy',
-    name: 'Sammy',
-    emoji: '🧠',
-    specialty: 'Orquestación & Memoria Core',
-    description: 'El cerebro principal. Distribuye tareas, gestiona agentes y mantiene la persistencia global del ecosistema.',
-    color: '#3b82f6',
-    gradient: 'from-blue-500 to-indigo-600',
-  },
-  {
-    id: 'rebecca',
-    name: 'Rebecca',
-    emoji: '📲',
-    specialty: 'UGC Content & Social Media',
-    description: 'Investiga productos y crea contenido para Twitter/X con su propio bot.',
-    color: '#ec4899',
-    gradient: 'from-pink-500 to-rose-600',
-  },
-  {
-    id: 'leo',
-    name: 'Leo',
-    emoji: '📈',
-    specialty: 'Trading / "The Surgeon"',
-    description: 'Analista financiero. Lee velas Heikin-Ashi y toma decisiones de mercado rigurosas.',
-    color: '#eab308',
-    gradient: 'from-yellow-400 to-amber-600',
-  },
-  {
-    id: 'docs-writter',
-    name: 'DocsWriter',
-    emoji: '📝',
-    specialty: 'Documentación & Obsidian',
-    description: 'Organiza y redacta toda la documentación técnica del proyecto en el Brain Vault.',
-    color: '#8b5cf6',
-    gradient: 'from-violet-500 to-purple-600',
-  },
-  {
-    id: 'webwizard',
-    name: 'WebWizard',
-    emoji: '🎨',
-    specialty: 'Frontend — Next.js 14, Tailwind, Motion',
-    description: 'Crea interfaces nivel Apple. Optimiza SEO y construye el widget del probador virtual.',
-    color: '#6366f1',
-    gradient: 'from-indigo-500 to-purple-600',
-  },
-  {
-    id: 'devguardian',
-    name: 'DevGuardian',
-    emoji: '🛡️',
-    specialty: 'QA & Integridad',
-    description: 'Mantiene los tests en verde y audita la seguridad antes de cada deploy.',
-    color: '#ef4444',
-    gradient: 'from-red-500 to-rose-600',
-  },
-  {
-    id: 'dataalchemist',
-    name: 'DataAlchemist',
-    emoji: '🧪',
-    specialty: 'Backend & Bases de Datos',
-    description: 'Gestiona Supabase con la Service Key, flujos n8n y almacenamiento MinIO.',
-    color: '#06b6d4',
-    gradient: 'from-cyan-500 to-sky-600',
-  },
-  {
-    id: 'growthpilot',
-    name: 'GrowthPilot',
-    emoji: '🛰️',
-    specialty: 'Ventas & CRM',
-    description: 'Controla CRM, correos a clientes y programas de referidos desde la base corporativa.',
-    color: '#10b981',
-    gradient: 'from-emerald-500 to-teal-600',
-  },
-  {
-    id: 'architectai',
-    name: 'ArchitectAI',
-    emoji: '🏗️',
-    specialty: 'DevOps & VPS',
-    description: 'Infraestructura, Docker, systemd. Mantiene rodando todos los servicios en el VPS.',
-    color: '#f59e0b',
-    gradient: 'from-amber-500 to-orange-600',
-  },
-  {
-    id: 'security-auditor',
-    name: 'SecurityAuditor',
-    emoji: '🔒',
-    specialty: 'PenTesting & Audits',
-    description: 'Revisa paquetes npm buscando vulnerabilidades antes de desplegar al mundo.',
-    color: '#64748b',
-    gradient: 'from-slate-500 to-gray-700',
-  },
+const AGENTS_CONFIG = [
+  { id: 'sammantha', name: 'Sammantha', role: 'Orquestadora', icon: '🎯', defaultStatus: 'online' },
+  { id: 'pixel', name: 'Pixel', role: 'Frontend Magician', icon: '🎨', defaultStatus: 'busy' },
+  { id: 'kira', name: 'Kira', role: 'Guardiana de Calidad', icon: '🔬', defaultStatus: 'busy' },
+  { id: 'nadia', name: 'Nadia', role: 'Alquimista de Datos', icon: '🧬', defaultStatus: 'busy' },
+  { id: 'cipher', name: 'Cipher', role: 'Hacker Ético', icon: '🛡️', defaultStatus: 'busy' },
+  { id: 'zephyr', name: 'Zephyr', role: 'Arquitecto de Infra', icon: '⚡', defaultStatus: 'busy' },
+  { id: 'marlo', name: 'Marlo', role: 'Piloto de Crecimiento', icon: '📈', defaultStatus: 'busy' },
+  { id: 'rebecca', name: 'Rebecca', role: 'UGC Creator', icon: '📸', defaultStatus: 'busy' },
+  { id: 'leo', name: 'Leo', role: 'Agente de Trading', icon: '💹', defaultStatus: 'busy' },
+  { id: 'lina', name: 'Lina', role: 'Documentadora', icon: '📚', defaultStatus: 'busy' },
 ];
 
-// Verifica si un servicio responde (server-side, sin CORS)
-async function checkService(url: string, timeout = 5000): Promise<'ok' | 'warn' | 'error'> {
+// Leer agentes activos desde archivo de tracking
+function getActiveAgentsFromTracking(): string[] {
   try {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-    const res = await fetch(url, {
-      method: 'HEAD',
-      signal: controller.signal,
-      cache: 'no-store',
-    });
-    clearTimeout(id);
-    if (res.ok || res.status === 405) return 'ok';
-    if (res.status >= 500) return 'error';
-    return 'warn';
+    const trackingPath = path.join(process.cwd(), '..', 'Lookitry_Brain_Vault', 'Cerebro', 'Estado', 'active_agents.json');
+    const data = readFileSync(trackingPath, 'utf-8');
+    const parsed = JSON.parse(data);
+    return parsed.activeAgents?.map((a: any) => a.agentId) || [];
   } catch {
-    return 'error';
+    return [];
   }
+}
+
+function getAgentStatus(agentId: string, sessions: any[]): 'online' | 'busy' | 'offline' {
+  const activeSessions = sessions.filter((s: any) => {
+    const key = s.key?.toLowerCase() || '';
+    const label = s.label?.toLowerCase() || '';
+    return (
+      (key.includes(agentId) || label.includes(agentId)) &&
+      s.status === 'running'
+    );
+  });
+
+  if (activeSessions.length > 0) {
+    const hasActiveTask = activeSessions.some((s: any) => {
+      const label = s.label?.toLowerCase() || '';
+      return label.includes('working') || label.includes('task') || label.includes('job');
+    });
+    return hasActiveTask ? 'busy' : 'online';
+  }
+  return 'offline';
+}
+
+function getAgentLastActivity(agentId: string, sessions: any[]): string {
+  const agentSessions = sessions.filter((s: any) => {
+    const key = s.key?.toLowerCase() || '';
+    const label = s.label?.toLowerCase() || '';
+    return key.includes(agentId) || label.includes(agentId);
+  });
+
+  if (agentSessions.length === 0) return 'hace más de 1 hora';
+
+  const mostRecent = agentSessions.reduce((latest: any, s: any) => {
+    if (!latest || s.updatedAt > latest.updatedAt) return s;
+    return latest;
+  }, null);
+
+  if (!mostRecent) return 'hace más de 1 hora';
+
+  const now = Date.now();
+  const diffMs = now - mostRecent.updatedAt;
+  const diffMin = Math.floor(diffMs / 60000);
+
+  if (diffMin < 1) return 'justo ahora';
+  if (diffMin < 60) return `hace ${diffMin} min`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `hace ${diffHours}h`;
+  return `hace ${Math.floor(diffHours / 24)}d`;
+}
+
+function getStatusMessage(agentId: string, status: string): string {
+  if (status === 'online') return 'Activo y listo para recibir tareas';
+  if (status === 'busy') return 'Procesando tarea asignada';
+  return 'Sin actividad reciente';
 }
 
 export async function GET() {
   try {
-    const sbAdmin = getSupabaseAdmin();
-    // 1. Heartbeats reales de agentes desde Supabase
-    const heartbeatData = sbAdmin
-      ? (await sbAdmin.from('agent_sessions')
-        .select('agent_name, current_task_description, status, last_heartbeat_at')
-        .order('last_heartbeat_at', { ascending: false })).data
-      : null;
-
-    const heartbeatMap = new Map<string, any>();
-    (heartbeatData ?? []).forEach((s: any) => {
-      heartbeatMap.set(s.agent_name, s);
-    });
-
-    const now = Date.now();
-    const agents = AGENTS_ROSTER.map((agent) => {
-      const hb = heartbeatMap.get(agent.id);
-      let status: 'ready' | 'busy' | 'idle' | 'error' = 'idle';
-      let lastTask = 'Sin actividad reciente';
-
-      if (hb) {
-        const msSinceHeartbeat = now - new Date(hb.last_heartbeat_at).getTime();
-        const alive = msSinceHeartbeat < HEARTBEAT_TIMEOUT_MS;
-
-        if (alive && hb.status === 'working') status = 'busy';
-        else if (alive) status = 'ready';
-        else if (hb.status === 'error') status = 'error';
-        else status = 'idle';
-
-        lastTask = hb.current_task_description || 'Idle';
-      }
-
-      return { ...agent, status, lastTask };
-    });
-
-    // 2. Stats reales de actividades desde Supabase
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const activitiesRaw = sbAdmin
-      ? (await sbAdmin.from('agent_activities')
-        .select('agent_name, status, duration_ms, task_type, task_description, created_at')
-        .gte('created_at', thirtyDaysAgo.toISOString())
-        .order('created_at', { ascending: false })).data
-      : [];
-
-    const activities = activitiesRaw ?? [];
-    const completed = activities.filter((a: any) => a.status !== 'running');
-    const successes = completed.filter((a: any) => a.status === 'success');
-    const successRate = completed.length > 0
-      ? Math.round((successes.length / completed.length) * 100)
-      : 0;
-
-    const activeAgentCount = agents.filter(a => a.status === 'ready' || a.status === 'busy').length;
-
-    const stats = {
-      agentsCount: activeAgentCount,
-      totalTasks: activities.length,
-      successRate,
-      commitsWeek: 0, // se llena con GitHub abajo
-      pending: agents.filter(a => a.status === 'busy').length,
-      uptime: successRate > 0 ? `${successRate}%` : '—',
-    };
-
-    // 3. Activity feed — últimas 8 actividades reales
-    const recentActivity = activities.slice(0, 8).map((a: any) => ({
-      icon: a.status === 'success' ? '✅' : a.status === 'failed' ? '❌' : a.status === 'running' ? '⚙️' : '📝',
-      iconBg: a.status === 'success' ? 'bg-emerald-500/20' : a.status === 'failed' ? 'bg-rose-500/20' : 'bg-violet-500/20',
-      title: `${a.agent_name} — ${a.task_type}`,
-      description: a.task_description || a.task_type,
-      time: formatTimeAgo(a.created_at),
-      status: a.status,
-    }));
-
-    // 4. Commits recientes desde GitHub API pública
-    let commits: any[] = [];
+    // Obtener agentes activos desde tracking
+    const activeAgentsTracking = getActiveAgentsFromTracking();
+    
+    // Intentar obtener sesiones de OpenClaw
+    let sessionData: any[] = [];
     try {
-      const ghRes = await fetch(
-        `https://api.github.com/repos/${GITHUB_REPO}/commits?per_page=5`,
-        {
-          headers: {
-            'Accept': 'application/vnd.github.v3+json',
-            'User-Agent': 'Lookitry-MissionControl/1.0',
-          },
-          next: { revalidate: 300 }, // cache 5 min
-        }
-      );
-      if (ghRes.ok) {
-        const ghData = await ghRes.json();
-        commits = ghData.map((c: any) => ({
-          hash: c.sha,
-          message: c.commit.message.split('\n')[0], // solo primera línea
-          author: c.commit.author.name,
-          time: formatTimeAgo(c.commit.author.date),
-        }));
-        stats.commitsWeek = commits.length;
-      }
-    } catch {
-      // GitHub no disponible — dejamos commits vacío
+      const sessions = await sessions_list({
+        limit: 100,
+        messageLimit: 1,
+      });
+      sessionData = sessions?.sessions || [];
+    } catch (openclawError) {
+      console.warn('[Agents API] OpenClaw no disponible:', openclawError);
     }
 
-    // 5. Health checks server-side (sin CORS)
-    const [frontendStatus, apiStatus, supabaseStatus, n8nStatus] = await Promise.all([
-      checkService('https://lookitry.com'),
-      checkService('https://api.lookitry.com/api/health'),
-      checkService(`${SUPABASE_URL}/rest/v1/`),
-      checkService('https://n8n.wilkiedevs.com'),
+    // Combinar: agentes activos del tracking + sesiones de OpenClaw
+    const activeAgentIds = new Set([
+      ...activeAgentsTracking,
+      ...sessionData
+        .filter((s: any) => s.status === 'running')
+        .map((s: any) => {
+          const key = s.key?.toLowerCase() || '';
+          const label = s.label?.toLowerCase() || '';
+          // Detectar agente por session key o label
+          for (const config of AGENTS_CONFIG) {
+            if (key.includes(config.id) || label.includes(config.id)) {
+              return config.id;
+            }
+          }
+          return null;
+        })
+        .filter(Boolean),
     ]);
 
-    const services = {
-      frontend: frontendStatus,
-      api: apiStatus,
-      supabase: supabaseStatus,
-      n8n: n8nStatus,
-    };
+    // Si no hay sesiones reales, retornar agentes como OFFLINE
+    if (activeAgentIds.size === 0) {
+      console.log('[Agents API] Sin agentes activos, retornando OFFLINE');
+      const offlineAgents = AGENTS_CONFIG.map((config) => ({
+        id: config.id,
+        name: config.name,
+        role: config.role,
+        status: 'offline' as const,
+        lastActivity: 'Sin actividad',
+        statusMessage: 'Esperando tareas',
+        icon: config.icon,
+        metrics: buildMetrics(config.id, 'offline'),
+      }));
+      return NextResponse.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        agents: offlineAgents,
+        totalSessions: sessionData.length,
+        activeSessions: 0,
+        mode: 'offline',
+      });
+    }
 
-    return NextResponse.json({
-      agents,
-      commits,
-      stats,
-      services,
-      recentActivity,
-      timestamp: new Date().toISOString(),
+    // Build agent data con estado real
+    const agents = AGENTS_CONFIG.map((config) => {
+      const isActive = activeAgentIds.has(config.id);
+      const status = isActive ? 'busy' : 'offline';
+      const statusMessage = isActive ? 'Trabajando en tarea asignada' : 'Esperando tareas';
+
+      return {
+        id: config.id,
+        name: config.name,
+        role: config.role,
+        status,
+        lastActivity: isActive ? 'Activo ahora' : 'Sin actividad',
+        statusMessage,
+        icon: config.icon,
+        metrics: buildMetrics(config.id, status),
+      };
     });
 
-  } catch (error: any) {
-    console.error('[MissionControl] Error fetching data:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener datos de Mission Control', details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      agents,
+      totalSessions: sessionData.length,
+      activeSessions: activeAgentIds.size,
+      activeAgentsList: Array.from(activeAgentIds),
+      mode: 'live',
+    });
+  } catch (error) {
+    console.error('[Agents API] Error:', error);
+    // En caso de error, retornar agentes como OFFLINE
+    const offlineAgents = AGENTS_CONFIG.map((config) => ({
+      id: config.id,
+      name: config.name,
+      role: config.role,
+      status: 'offline' as const,
+      lastActivity: 'Error de conexión',
+      statusMessage: 'Gateway no disponible',
+      icon: config.icon,
+      metrics: buildMetrics(config.id, 'offline'),
+    }));
+    return NextResponse.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      agents: offlineAgents,
+      totalSessions: 0,
+      activeSessions: 0,
+      mode: 'error-offline',
+    });
   }
 }
 
-function formatTimeAgo(dateStr: string): string {
-  if (!dateStr) return '—';
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
+function buildMetrics(agentId: string, status: string): any[] {
+  const baseMetrics = {
+    sammantha: [
+      { label: 'Tareas', value: 0, trend: '0%' },
+      { label: 'Delegaciones', value: 0, trend: '0%' },
+    ],
+    pixel: [
+      { label: 'Build', value: 'OK', type: 'status' },
+      { label: 'Components', value: 0, trend: '0' },
+    ],
+    kira: [
+      { label: 'Tests Pass', value: '0%', type: 'percent' },
+      { label: 'Lint Errors', value: 0, type: 'count' },
+    ],
+    nadia: [
+      { label: 'Queries/hora', value: 0, trend: '0%' },
+      { label: 'AI Calls', value: 0, trend: '0%' },
+    ],
+    cipher: [
+      { label: 'Alertas', value: 0, type: 'count' },
+      { label: 'Audit Score', value: '0%', type: 'percent' },
+    ],
+    zephyr: [
+      { label: 'Services Up', value: '0/0', type: 'ratio' },
+      { label: 'Uptime', value: '0%', type: 'percent' },
+    ],
+    marlo: [
+      { label: 'Leads Hoy', value: 0, trend: '0%' },
+      { label: 'Open Rate', value: '0%', type: 'percent' },
+    ],
+    rebecca: [
+      { label: 'Posts', value: 0, trend: '0%' },
+      { label: 'Fiverr Orders', value: 0, type: 'count' },
+    ],
+    leo: [
+      { label: 'PnL Hoy', value: 0, type: 'currency' },
+      { label: 'Trades', value: 0, type: 'count' },
+    ],
+    lina: [
+      { label: 'Docs Updated', value: 0, trend: '0%' },
+      { label: 'Completeness', value: '0%', type: 'percent' },
+    ],
+  };
 
-  if (diffSec < 5) return 'ahora';
-  if (diffSec < 60) return `hace ${diffSec}s`;
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `hace ${diffMin}m`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `hace ${diffHr}h`;
-  const diffDay = Math.floor(diffHr / 24);
-  return `hace ${diffDay}d`;
+  return baseMetrics[agentId as keyof typeof baseMetrics] || [];
 }

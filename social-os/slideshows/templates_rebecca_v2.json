@@ -1,0 +1,150 @@
+{
+  "templates": {
+    "inauguracion": {
+      "name": "Inauguración Lookitry",
+      "description": "Post announcement para lanzamiento de Lookitry",
+      "slides": 5,
+      "captions": [
+        "🔥 LOOKITRY: El probador virtual con IA que transforma tu tienda de moda online",
+        "Tus clientes ven cómo les queda la ropa ANTES de comprar. Sin devoluciones. Sin dudas.",
+        "Reduce devoluciones hasta un 40%. Aumenta conversiones hasta un 25%.",
+        "Integración en minutos. Sin complicaciones técnicas. Compatible con cualquier plataforma.",
+        "¿Listo para la revolución del retail fashion? 👉 lookitry.com"
+      ],
+      "prompts": [
+        "Professional Instagram post for Lookitry AI virtual try-on launch, modern tech aesthetic, sleek fashion e-commerce, orange and black brand colors #FF5C3A, luxury lifestyle photography",
+        "Stylish woman using smartphone with virtual clothing overlay technology, AI fashion visualization, modern elegant bedroom setting, warm golden lighting, professional photography",
+        "Fashion boutique owner smiling confidently with tablet showing e-commerce dashboard, modern retail store interior, professional portrait photography",
+        "Close-up of virtual try-on app interface on smartphone, clothing selection screen, sleek modern UI design, professional product photography",
+        "Team celebration with confetti, diverse professionals in modern tech office, Lookitry branding visible, energetic startup atmosphere, professional team photo"
+      ],
+      "hashtags": "#Lookitry #ProbadorVirtual #ModaOnline #FashionTech #Ecommerce #RetailTech #IA #VirtualTryOn #Innovation"
+    },
+    "educativo": {
+      "name": "Contenido Educativo",
+      "description": "Posts que educan sobre el problema de devoluciones en moda online",
+      "slides": 5,
+      "captions": [
+        "¿Sabías que el 30% de las devoluciones en moda online son por tallas incorrectas?",
+        "El problema: Tus clientes compran 2-3 tallas 'por si acaso'. Devuelven las que no servían.",
+        "El costo: Envíos de vuelta, tiempo perdido, clientes frustrados... y perdidos para siempre.",
+        "La solución: Lookitry - probador virtual con IA. Tus clientes eligen la talla correcta desde el inicio.",
+        "Menos devoluciones = más ganancias = clientes felices ✅"
+      ],
+      "prompts": [
+        "Educational infographic about fashion e-commerce returns problem, clean modern design with coral orange accent #FF5C3A, professional statistics visualization, minimalist aesthetic",
+        "Visual comparison showing traditional online shopping frustration versus seamless virtual fitting experience, split screen concept, modern clean design",
+        "Statistics chart showing 30% returns due to wrong size, professional infographic style with orange and black color scheme, clean data visualization",
+        "Step-by-step tutorial showing how virtual try-on works: upload photo, select clothes, see fit - clean instructional graphics with numbered steps, modern design",
+        "Happy confident woman shopping online with smartphone, satisfied expression, modern stylish outfit, warm inviting atmosphere, lifestyle photography"
+      ],
+      "hashtags": "#ModaOnline #Devoluciones #EcommerceFashion #FashionTips #ProbadorVirtual #VirtualTryOn #RetailTips #FashionBusiness"
+    },
+    "producto": {
+      "name": "Showcase de Producto",
+      "description": "Posts que muestran cómo funciona Lookitry en una tienda",
+      "slides": 5,
+      "captions": [
+        "Así funciona Lookitry en tu tienda 👇",
+        "Paso 1: Tu cliente sube una foto o usa su avatar",
+        "Paso 2: Selecciona la ropa de tu catálogo",
+        "Paso 3: Ve cómo le queda INSTANTÁNEAMENTE con IA",
+        "¿Tu tienda ya ofrece esto a tus clientes? → lookitry.com"
+      ],
+      "prompts": [
+        "Product demonstration of Lookitry virtual try-on widget embedded in fashion e-commerce website, sleek modern UI, professional software interface screenshot",
+        "Fashion model browsing clothing collection on elegant e-commerce site, selecting items with confident expression, modern minimalist aesthetic, orange accents",
+        "Close-up of AI virtual fitting visualization showing how clothes look on person, realistic rendering, professional technology demo screenshot",
+        "Fashion boutique owner reviewing analytics dashboard showing reduced returns, confident smile, modern office setting, professional business portrait",
+        "Satisfied female customer with shopping bags, confident pose, modern retail store background, professional lifestyle photography with warm lighting"
+      ],
+      "hashtags": "#LookitryDemo #VirtualTryOn #FashionTech #Ecommerce #ShoppingOnline #MobileCommerce #ProductShowcase #RetailInnovation"
+    },
+    "testimonial": {
+      "name": "Social Proof",
+      "description": "Posts con casos de éxito y resultados reales",
+      "slides": 5,
+      "captions": [
+        "Caso de éxito: Tienda de moda femenina",
+        "Problema inicial: 35% de las ventas eran devueltas. Eso es perder dinero en cada pedido.",
+        "Después de implementar Lookitry: Solo 8% de devoluciones.",
+        "Resultado: Ahorro de $2,000+ mensuales en logística. Clientes más felices.",
+        "¿Cuánto podrías ahorrar tú? Conversemos → lookitry.com"
+      ],
+      "prompts": [
+        "Professional portrait of confident fashion boutique owner, warm smile, modern elegant clothing, natural lighting, professional headshot style",
+        "Successful fashion e-commerce workspace with stylish clothing items, organized professional environment, modern aesthetic, overhead flat lay composition",
+        "Clean data visualization showing returns drop from 35% to 8% with Lookitry, professional business infographic, orange and black brand colors, clear bar chart",
+        "Money savings concept with fashion clothing and dollar signs, professional still life photography, warm lighting, clean modern composition",
+        "Diverse team of fashion retail professionals celebrating success, modern office setting, confetti, professional team photo with warm natural lighting"
+      ],
+      "hashtags": "#CasoExito #EcommerceSuccess #FashionBusiness #RetailGrowth #SmallBusiness #Entrepreneur #Lookitry #BusinessResults"
+    },
+    "cta": {
+      "name": "Llamado a la Acción",
+      "description": "Posts que invitan a probar Lookitry",
+      "slides": 3,
+      "captions": [
+        "¿Listo para reducir devoluciones y aumentar ventas en tu tienda?",
+        "Agenda una demo personalizada y ve Lookitry en acción. Sin compromiso.",
+        "→ Resuelve este formulario y te contactamos: lookitry.com/demo 🔥"
+      ],
+      "prompts": [
+        "Bold call to action Instagram post for Lookitry virtual try-on platform, vibrant coral orange #FF5C3A and black colors, modern luxury design, professional advertisement aesthetic",
+        "Professional demo promotion concept showing AI virtual fitting technology, stylish fashion setting, confident business woman with tablet, modern lifestyle photography",
+        "Action-oriented CTA with arrow pointing to website link concept, professional product photography style, clean minimal design with orange accent elements"
+      ],
+      "hashtags": "#DemoGratis #Lookitry #ProbadorVirtual #Ecommerce #FashionTech #RetailTech #CTA #StartNow"
+    },
+    "beneficios": {
+      "name": "Beneficios Clave",
+      "description": "Posts destacando los 3-4 beneficios principales de Lookitry",
+      "slides": 4,
+      "captions": [
+        "Los 3 beneficios de Lookitry que tu tienda necesita 👇",
+        "✅ Reduce devoluciones hasta un 40% - Ahorra en logística",
+        "✅ Aumenta conversiones hasta un 25% - Más ventas reales",
+        "✅ Clientes más felices - Compran con confianza",
+        "Todo esto integrado en tu tienda en minutos → lookitry.com"
+      ],
+      "prompts": [
+        "Clean modern infographic showing 3 key benefits of Lookitry virtual try-on: reduced returns, increased conversions, happier customers, professional design with coral orange #FF5C3A accents",
+        "Professional fashion e-commerce concept showing happy customers and shopping success, diverse group of stylish people, modern lifestyle photography with warm lighting",
+        "Data visualization showing business growth and customer satisfaction metrics, clean professional infographic with orange and black color scheme",
+        "Professional product showcase of fashion e-commerce technology, modern minimal design with orange accent elements, luxury aesthetic"
+      ],
+      "hashtags": "#Lookitry #Beneficio #ProbadorVirtual #Ecommerce #FashionTech #Retail #Ventas #Business"
+    }
+  },
+  "design_rules": {
+    "colors": {
+      "primary": "#FF5C3A",
+      "secondary": "#111111",
+      "text_light": "#FFFFFF",
+      "text_dark": "#111111",
+      "background": "#FAFAFA"
+    },
+    "fonts": {
+      "title": "Poppins Bold, 48-60px",
+      "subtitle": "Poppins Semibold, 32-40px",
+      "body": "Inter Regular, 24-28px",
+      "hashtag": "Inter Regular, 18-22px"
+    },
+    "layout": {
+      "text_safe_area": "10% from edges",
+      "title_position": "center, upper third",
+      "cta_position": "center, lower third",
+      "branding": "bottom right corner"
+    },
+    "logo": {
+      "required": true,
+      "position": "bottom right",
+      "file": "Content/Graphics/lookitry_logo_real.png"
+    }
+  },
+  "usage_rules": {
+    "workflow": "1. Elegir template según objetivo 2. Generar slides con IA 3. Enviar a Sam para approval 4. Publicar en Buffer si approved",
+    "always_include": ["Logo Lookitry", "Colores corporativos #FF5C3A", "Website lookitry.com"],
+    "never_include": ["Precios inventados", "Características no confirmadas", "App para descargar", "Pruebas gratis"]
+  }
+}

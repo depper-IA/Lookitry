@@ -82,7 +82,7 @@ Cada vez que se realice cualquier cambio en el codigo, la IA DEBE documentarlo e
 
 ---
 
-## 3. Sistema de Agentes IA (Actualizado 2026-04-14)
+## 3. Sistema de Agentes IA (Actualizado 2026-04-19) — v3.0
 
 ### 3.1 Modelo Default
 
@@ -93,9 +93,82 @@ regla: "Todos los agentes usan este modelo por defecto"
 excepcion: "Solo usar otro modelo si AGENTS.md lo especifica explícitamente"
 ```
 
-**AVISO**: Groq y DeepSeek han sido **REMOVIDOS** de todos los systemPromptOverride. Ya no deben aparecer en ningún prompt de agente.
+### 3.2 REGLA DE ORO — Sammantha NUNCA hace trabajo de otro agente
 
-### 3.2 Equipo Completo de Agentes
+```
+❌ SAMMANTHA: "Voy a revisar el código del frontend..."
+✅ SAMMANTHA: "Spawneo a Pixel para que revise el frontend"
+```
+
+
+**Sammantha es orquestadora INTELIGENTE:**
+- Recibe problemas de Sam
+- Identifica el tipo de problema
+- Delega al agente especializado
+- Supervisa y notifica resultados
+
+**Sammantha NUNCA:**
+- Código frontend (eso es de Pixel)
+- Queries de DB (eso es de Nadia)
+- Deploys directos (eso es de Zephyr)
+- Code review (eso es de Kira)
+
+
+### 3.3 Tabla de Delegación por Problema
+
+| Problema Descrito | Tipo | Agente |
+|-------------------|------|--------|
+| "El checkout falla en mobile" | Frontend/UI/Responsive | Pixel |
+| "El widget de try-on no carga" | Frontend/Componente | Pixel |
+| "Hay errores en el build" | Frontend/Debug | Pixel |
+| "Los webhooks de Wompi no funcionan" | Pagos/Backend | Kira |
+| "El login está fallando" | Auth/Seguridad | Kira |
+| "Hay errores de TypeScript" | Code Review | Kira |
+| "Las búsquedas están lentas" | DB/Queries | Nadia |
+| "El RAG no responde bien" | IA/Embeddings | Nadia |
+| "El workflow de n8n está caído" | Automatización/n8n | Nadia |
+| "Quiero un reporte de leads" | Marketing/CRM | Marlo |
+| "La campaña de email no envía" | Email/Marketing | Marlo |
+| "El servidor está caído" | Infraestructura/VPS | Zephyr |
+| "Necesito hacer deploy" | DevOps/Deploy | Zephyr |
+| "Docker no arranca" | Docker/Infra | Zephyr |
+| "El CHANGELOG está desactualizado" | Documentación | Lina |
+| "Necesito documentar X" | Documentación | Lina |
+
+### 3.4 Tracking Automático de Agentes (CRÍTICO)
+
+**ARCHIVO DE ESTADO:** `Cerebro/Estado/active_agents.json`
+
+**CADA VEZ que Sammantha delega una tarea:**
+1. Actualizar JSON con agente como `busy`
+2. Incluir `sessionKey` del subagent spawneado
+
+**CADA VEZ que llega notificación de tarea completada:**
+1. Marcar al agente como `offline` inmediatamente
+
+**Sammantha SIEMPRE debe:**
+- Mostrarse como `busy` cuando habla con Sam
+- Mostrar agentes delegados como `busy`
+
+**REGLA:** Sin tracking automático, el Mission Control muestra datos incorrectos.
+
+**Script de actualización:** `Cerebro/Scripts/update_agent_status.sh`
+
+**Flujo de tracking:**
+```
+Sammantha recibe tarea → Marca agente como busy → Spawnea agente
+→ Agente completa → Marca agente como offline → Sammantha notifica a Sam
+```
+
+
+### 3.4 Flujo de Trabajo
+
+```
+Sam describe problema → Sammantha identifica tipo → Sammantha delega → Agente reporta → Sammantha notifica
+```
+
+
+### 3.5 Equipo Completo de Agentes
 
 | Nombre | Workspace | Rol | Modelo |
 |--------|-----------|-----|--------|
@@ -345,3 +418,25 @@ Rebecca y Leo son el **motor de ingresos** de Lookitry:
 - Melissa como colaboradora de Pixel
 - Leo como agente de trading
 - Regla 6: Notificación obligatoria de tareas
+---
+## 🔧 VPS PRODUCCIÓN - INFO IMPORTANTE
+
+### Credenciales VPS (Guardadas en backend/.env)
+- **VPS IP**: 31.220.18.39
+- **SSH**: root@31.220.18.39:22
+- **Contraseña**: Travis18456916#
+
+### n8n Task Runner - PROBLEMA CONOCIDO
+- **Síntoma**: n8n consume 600-800% CPU en loop infinito
+- **Error**: "Task runner connection attempt failed: invalid or expired grant token"
+- **Causa**: Task Runner embebido en n8n v2.x no se puede deshabilitar fácilmente
+- **Solución temporal**: Limitar CPU con docker update
+- **Solución permanente**: Revisar workflows que usan Code nodes
+
+### Workflows Activos Identificados (problemáticos):
+- ID: FIdLhfE1md7YYU2c - AI Marketing Report
+- ID: 7D9mWt3zJePCco3Q - Scrape Business Emails
+
+### MCPs Configurados
+- **n8n**: https://n8n.wilkiedevs.com (API key en config)
+- **VPS SSH**: Usar sshpass para automatización

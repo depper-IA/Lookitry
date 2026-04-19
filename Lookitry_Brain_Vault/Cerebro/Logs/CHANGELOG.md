@@ -2378,3 +2378,51 @@ Nuevo componente HalfStarRating permite puntuación con media estrella (4.5, 3.5
 
 5. **Importaciones Actualizadas:**
    - Agregado `AnimatePresence` de framer-motion
+
+## 2026-04-18 - 18:05 Colombia
+
+### 🎉 Nuevo: GCP Vertex AI Imagen Integrado
+
+**Problema resuelto:**
+- Service Account `lookitry-67844@appspot.gserviceaccount.com` conectado exitosamente
+- Generó primera imagen profesional (1024x1024, 1.2MB)
+- Usa billing $5 de Sam (R5YFTJBL6DY2YVMU)
+
+### 📁 Archivos Creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `Skills/gcp-rate-limits.md` | Rate limits y budget tracking |
+| `Skills/social-automation-buffer.md` | Guía completa de automatización |
+| `Logs/gcp_usage_log.md` | Historial de generaciones |
+| `backend/scripts/gcp_image_generator.py` | Script automático para Rebecca |
+
+### 💰 Budget Config
+
+| Parámetro | Valor |
+|-----------|-------|
+| Crédito total | $5.00 |
+| Costo imagen 1024x1024 | $0.035 |
+| Imágenes disponibles | ~140 |
+| Alertar cuando | < $2.00 remaining |
+
+### 🔧 Para Rebecca
+
+Rebecca ahora puede:
+1. ✅ Generar imágenes profesionales con GCP
+2. ✅ Trackear el budget automáticamente
+3. ✅ Programar en Buffer vía MCP
+4. ✅ Alertar si el budget está bajo
+
+**Flujo completo:**
+```
+Sam: "Rebecca, genera post para Instagram"
+→ Rebecca genera imagen con GCP
+→ Sam revisa y aprueba
+→ Rebecca programa en Buffer
+→ Budget tracking actualizado
+```
+
+### 📝 Commit
+`dce73c3` - Buffer MCP + GCP Imagen setup completo
+

@@ -1,0 +1,37 @@
+{
+  "name": "Inauguración Lookitry",
+  "platform": "instagram",
+  "slides": [
+    {
+      "slide_number": 1,
+      "type": "hook",
+      "image_prompt": "Professional fashion photography of a modern clothing store interior with digital holographic display showing virtual clothes fitting on customers, dark sophisticated atmosphere with dramatic lighting, luxury retail environment, photorealistic style, high-end fashion tech",
+      "caption_number": "1/5"
+    },
+    {
+      "slide_number": 2,
+      "type": "problem",
+      "image_prompt": "Close-up professional photography of woman looking frustrated at fitting room mirror with pile of clothes nearby, soft natural lighting, candid emotional fashion shot, realistic editorial style",
+      "caption_number": "2/5"
+    },
+    {
+      "slide_number": 3,
+      "type": "solution",
+      "image_prompt": "Futuristic fashion photography showing elegant woman using smartphone with augmented reality clothing overlay, modern minimalist background, professional studio lighting, fashion tech concept, photorealistic",
+      "caption_number": "3/5"
+    },
+    {
+      "slide_number": 4,
+      "type": "features",
+      "image_prompt": "Clean modern flat lay photography of professional fashion accessories and clothing items on dark surface, minimal elegant composition, soft shadows, luxury product photography style",
+      "caption_number": "4/5"
+    },
+    {
+      "slide_number": 5,
+      "type": "cta",
+      "image_prompt": "Elegant fashion boutique exterior at night with warm golden lighting, modern sophisticated storefront, luxury shopping atmosphere, professional architectural photography, photorealistic",
+      "caption_number": "5/5"
+    }
+  ],
+  "caption": "🎉 ¡LOOKITRY YA ESTÁ AQUÍ!\n\nImagina que tus clientes pueden probarse la ropa ANTES de comprar 🛍️\n\nSin devoluciones. Sin dudas. Solo ventas.\n\n🌟 Reduce devoluciones hasta un 40%\n\n¿Puedes ser de las primeras marcas en usarlo?\n\n#Lookitry #Inauguración #ProbadorVirtual #ModaTech #FashionInnovation"
+}

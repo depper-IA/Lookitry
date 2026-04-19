@@ -72,7 +72,7 @@ export async function middleware(request: NextRequest) {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       if (!apiUrl) return NextResponse.next();
       const res = await fetch(`${apiUrl}/api/payment-settings/public`, {
-        next: { revalidate: 60 }
+        next: { revalidate: 300 } // Cachear por 5 minutos
       } as any);
       
       if (res.ok) {

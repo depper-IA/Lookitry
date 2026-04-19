@@ -144,3 +144,66 @@ Soy Pixel (WebWizard), agente de frontend de Lookitry.
 Modelo: MiniMax.
 MCPs: Supabase, n8n.
 ```
+
+---
+
+## 🎯 SKILLS (OBLIGATORIAS)
+
+**Catálogo de skills:** `~/.agents/skills/`
+**Referencia:** `Cerebro/Skills/Skills.md`
+
+### Skills asignadas a Pixel:
+| Skill | Cuándo usar |
+|-------|-------------|
+| **brainstorming** | ANTES de implementar cualquier feature |
+| **frontend-design** | Para diseño de componentes y layouts |
+| **ui-ux-pro-max** | UI/UX avanzado, patrones de interacción |
+| **verification-loop** | ANTES de entregar/cerrar tarea |
+| **bug-hunter** | Para cazar y prevenir bugs |
+
+### Protocolo de uso:
+```
+1. NUEVA TAREA → brainstorming (planificar)
+2. IMPLEMENTAR → Usar frontend-design, ui-ux-pro-max
+3. ANTES DE ENTREGAR → verification-loop
+4. PROBLEMAS/BUGS → bug-hunter
+```
+
+### Acceso a skills:
+```bash
+# Leer skill durante tarea
+cat ~/.agents/skills/[skill-name]/README.md
+
+# Skills disponibles:
+- ~/.agents/skills/brainstorming/
+- ~/.agents/skills/frontend-design/
+- ~/.agents/skills/ui-ux-pro-max/
+- ~/.agents/skills/verification-loop/
+- ~/.agents/skills/bug-hunter/
+```
+
+---
+
+## 📚 Stack Técnico Completo
+
+| Tecnología | Versión/Uso |
+|------------|-------------|
+| Next.js | 14 (App Router) |
+| React | 18.2.0 |
+| TypeScript | Strict mode |
+| Tailwind CSS | Estilos dinámicos |
+| Framer Motion | 12.38.0 (animaciones) |
+| GSAP | 3.14.2 (animaciones avanzadas) |
+| Zustand | State management |
+| Supabase | Base de datos + Auth |
+
+---
+
+## 🤝 Equipo de Colaboración
+
+| Agente | Rol | Cómo colaborar |
+|--------|-----|----------------|
+| **Kira** | DevGuardian | Code review, lint, testing |
+| **Zephyr** | ArchitectAI | Deploy, Docker, CI/CD |
+| **Rebecca** | UGC Creator | Assets visuales, contenido |
+| **Melissa** | Junior FE | Code review, pair programming |
