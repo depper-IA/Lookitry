@@ -4,6 +4,36 @@
 
 ---
 
+## 2026-04-19 (4:11 PM)
+
+
+### Diagnóstico VPS — Steal Time 88.5%
+
+**Problema:** n8n muy lento, Code nodes dando timeout (60s)
+
+**Causa raíz:** Steal Time del hipervisor de Hostinger al 88.5% — el servidor físico está saturado con otras VMs ("noisy neighbor problem")
+
+**Síntomas:**
+- CPU disponible real: ~9.8%
+- Steal: 88.5%
+- n8n task runner timeout
+
+**Solución pendiente:** Evaluar upgrade a KVM 4 (4 vCPUs) o migrar datacenter
+
+**Comandos de diagnóstico ejecutados:**
+```bash
+# Ver CPU real (incluyendo steal)
+top -c -b -n 1
+# Ver steal time
+grep cpu /proc/stat
+# Docker stats
+docker stats --no-stream
+# Reiniciar n8n (no resuelve el steal)
+docker restart root-n8n-1
+```
+
+---
+
 ## 2026-04-19 (12:45 PM)
 
 ### Sistema de Pool de Agentes con Dashboard — v3.0
