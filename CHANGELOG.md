@@ -1,5 +1,66 @@
 # CHANGELOG — Lookitry
 
+## 20 de Abril 2026 (Auditoría + Fixes Widget Try-On)
+
+### 🐛 Fixes Críticos P0 — Widget Try-On
+
+**Resumen:** Auditoría completa del sistema de generación de imagen con 5 fixes P0 y 6 fixes P1 implementados.
+
+#### Cambios Realizados
+
+| # | Problema | Severidad | Solución |
+|---|----------|-----------|----------|
+| 1 | **No había polling** — generaciones async nunca retornaban resultado | P0 | Implementado polling con exponential backoff en `handleGenerate` |
+| 2 | **TemplateLandingEmbed** no renderizaba paso 'select' | P0 | Agregado bloque para `step === 'select'` con ProductSelector |
+| 3 | **Cache localStorage** sin hash de selfie | P0 | Key ahora incluye SHA-256 del archivo: `tryon_gen_${brand}_${hash}` |
+| 4 | **Cola Redis deshabilitada** — código huérfano | P0 | Eliminado import de `generationQueueService` |
+| 5 | **Race condition** en `acquireSlot()` | P0 | Ya estaba arreglado con script Lua atómico |
+
+#### Mejoras de UX — ImageEditor Premium Mobile
+
+| Feature | Descripción |
+|---------|-------------|
+| **Selector de formatos** | Original, 1:1, 3:4, 16:9 (vertical) |
+| **UI Mobile-first** | Toolbar flotante inferior con `pb-safe` para notch |
+| **Zoom controls** | Botones +/- y slider con gradient |
+| **Rotación** | Botones -90°/+90° más visibles |
+| **Touch targets** | Mínimo 44x44px para todos los botones |
+| **Animaciones** | Framer-motion con `whileTap: scale` para feedback háptico |
+
+#### Fixes P1 Frontend
+
+| Fix | Descripción |
+|-----|-------------|
+| **Drag-and-drop** | Implementados handlers `onDragEnter/Leave/Over/Drop` en SelfieUploader |
+| **ResizeObserver** | Cleanup correcto en TemplateModernSidebar y TemplateShowcase |
+| **EMBED_ORIGIN** | Ahora usa `useMemo` envuelto en try-catch |
+
+#### Fixes Backend
+
+| Fix | Descripción |
+|-----|-------------|
+| **Retry n8n** | Exponential backoff (2s, 4s, 8s) para errores transitorios |
+| **Ruta duplicada** | Eliminada `/session-token` duplicada en pruebalo.routes.ts |
+| **Timeout removido** | Eliminado parámetro `timeout` no funcional de `tryon.service.ts` |
+
+#### Endpoint Nuevo
+
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/pruebalo/:brandSlug/generation/:generationId` | GET | Consulta estado de generación (para polling) |
+
+#### Commits Realizados
+
+```
+9a267ef fix: remove unused timeout parameter from tryon.service.ts
+7158242 feat: premium mobile ImageEditor with format selector, zoom controls, and improved UX
+abb6e54 fix: P1 fixes - drag-drop handlers, ResizeObserver cleanup, EMBED_ORIGIN memoization
+7b311c6 fix(tryon): P0/P1 backend fixes - remove orphan queue import, duplicate route, add n8n retry
+4c4b1c9 fix: P0-2/P0-3 - TemplateLandingEmbed handle step=select + selfie hash cache
+```
+
+---
+
 ## 20 de Abril 2026
 
 ### 🐛 Fix: Imágenes del Dashboard no cargaban
