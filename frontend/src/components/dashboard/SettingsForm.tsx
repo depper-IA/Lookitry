@@ -62,6 +62,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     widgetTemplate: isPro ? (brand.widgetTemplate || 'bare') : 'bare',
     buttonText: brand.buttonText || 'Probarme esto',
     welcomeMessage: brand.welcomeMessage || '',
+    shareMessage: brand.shareMessage || '',
   });
 
   useEffect(() => {
@@ -278,6 +279,27 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                 <input name="welcomeMessage" value={formData.welcomeMessage || ''} onChange={handleChange} className={inputClass} placeholder="¡Pruébate!" />
               </div>
             </div>
+
+            {/* Custom share message - PRO/ENTERPRISE only */}
+            {isPro && (
+              <div className="mb-10">
+                <div className="flex items-center gap-2 mb-3">
+                  <label className="block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Mensaje para compartir en redes</label>
+                  <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-full">Premium</span>
+                </div>
+                <textarea
+                  name="shareMessage"
+                  value={formData.shareMessage || ''}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[#FF5C3A] resize-none"
+                  placeholder="¿Qué tal me queda este {producto} de {marca}? ¿Me lo llevo?"
+                />
+                <p className="mt-2 text-[10px] text-[var(--text-muted)]">
+                  Usa {'{producto}'} y {'{marca}'} como variables. Ejemplo: &quot;Mira cómo me queda este {'{producto}'} de {'{marca}'} — ¿me lo llevo?&quot;
+                </p>
+              </div>
+            )}
             
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-6 border-t border-[var(--border-color)]">
               {!isPro ? (

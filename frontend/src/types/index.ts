@@ -61,6 +61,7 @@ export interface Brand {
     [key: string]: unknown;
   } | null;
   onboardingDismissed?: boolean;
+  shareMessage?: string | null;
   // Widget playlist (featured products)
   widgetProductIds?: string[];
 }
@@ -208,6 +209,7 @@ export interface UpdateBrandConfigDto {
   widgetTemplate?: string;
   buttonText?: string;
   welcomeMessage?: string;
+  shareMessage?: string; // Custom share text for social media (PRO/ENTERPRISE)
   headerColor?: string | null;
   customDomain?: string | null;
   onboardingDismissed?: boolean;
@@ -239,6 +241,7 @@ export interface TryOnConfigResponse {
     widgetTemplate?: string;
     buttonText?: string;
     welcomeMessage?: string;
+    shareMessage?: string | null; // Custom share text for social media (PRO/ENTERPRISE)
     plan?: BrandPlan;
     brandDescription?: string | null;
     whatsappContact?: string | null;

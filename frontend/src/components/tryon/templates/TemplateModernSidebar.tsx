@@ -19,6 +19,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
     secondaryColor,
     buttonText,
     welcomeMessage,
+    shareMessage,
     selfiePreview,
     selectedProduct,
     resultImageUrl,
@@ -842,6 +843,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                 brandSlug={brandSlug}
                 brandName={config.brand.name}
                 brandPlan={config.brand.plan}
+                shareMessage={shareMessage}
                 textColor={mainTextPrimary}
                 mutedColor={mainTextMuted}
                 cardBg={mainCardBg}

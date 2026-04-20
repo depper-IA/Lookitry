@@ -50,6 +50,7 @@ export interface UpdateBrandDto {
   show_brand_name?: boolean | null;
   custom_domain?: string | null;
   onboarding_dismissed?: boolean;
+  share_message?: string | null;
 }
 
 export class BrandsService {

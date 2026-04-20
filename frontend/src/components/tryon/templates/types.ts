@@ -29,6 +29,7 @@ export interface TryOnTemplateProps {
   secondaryColor: string;
   buttonText: string;
   welcomeMessage: string;
+  shareMessage?: string | null; // Custom share message (PRO/ENTERPRISE)
   privacyNotice?: string;
 
   selfiePreview: string | null;
