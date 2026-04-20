@@ -336,9 +336,10 @@ export class ProductsController {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.N8N_BEARER_TOKEN || ''}`
         },
-        body: JSON.stringify({ 
-          imageUrl: finalImageUrl, 
-          productName: product_name 
+        body: JSON.stringify({
+          image_url: finalImageUrl,
+          product_name,
+          category,
         }),
       });
 
@@ -365,6 +366,30 @@ export class ProductsController {
 
       return res.status(200).json(data);
     } catch (error: any) {
+      const statusCode = error?.statusCode || error?.response?.status;
+      const n8nMessage = error?.n8nBody?.message || error?.n8nBody?.error;
+
+      // Distinguir tipos de error para debugging más fácil
+      if (statusCode === 400) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: sanitizeError(error, 'Solicitud inválida al servicio de IA') });
+      }
+      if (statusCode === 404) {
+        return res.status(502).json({ error: 'WEBHOOK_NOT_FOUND', message: sanitizeError(error, 'Workflow de IA no encontrado') });
+      }
+      if (statusCode === 408 || error?.message?.includes('timeout')) {
+        return res.status(504).json({ error: 'TIMEOUT', message: sanitizeError(error, 'El servicio de IA tardó demasiado') });
+      }
+      if (statusCode === 429) {
+        return res.status(429).json({ error: 'RATE_LIMIT', message: sanitizeError(error, 'Demasiadas solicitudes al servicio de IA') });
+      }
+      if (statusCode >= 500) {
+        return res.status(502).json({ error: 'AI_SERVICE_ERROR', message: sanitizeError(error, 'Error del servicio de IA') });
+      }
+      if (n8nMessage) {
+        console.error('[AI-Descriptor] Error de n8n:', n8nMessage);
+        return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, n8nMessage) });
+      }
+
       console.error('[AI-Descriptor] Error general:', error);
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
