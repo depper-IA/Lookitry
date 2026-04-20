@@ -10,7 +10,7 @@ import { requestLogger } from './middleware/requestLogger';
 import { helmetConfig, publicCorsConfig, globalCorsConfig } from './config/security.config';
 
 // Importación de rutas
-import pruebaloRoutes from './routes/pruebalo.routes';
+import promotionsRoutes from './routes/promotions.routes';
 import embedRoutes from './routes/embed.routes';
 import reviewsPublicRoutes from './routes/reviewsPublic.routes';
 import apiRouter from './routes/index';
@@ -86,6 +86,7 @@ app.use('/api', apiRouter);
 
 // Endpoints Sueltos
 app.get('/api/payment-settings/public', publicCors, getPublicPaymentSettings);
+app.use('/api/promotions', publicCors, promotionsRoutes);
 app.post('/api/upload', authMiddleware, (req, res) => uploadImage(req as any, res));
 app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => uploadSelfie(req, res));
 app.delete('/api/upload/cleanup-temp', (req, res) => cleanupTempSelfies(req, res));
