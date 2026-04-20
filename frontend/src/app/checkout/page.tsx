@@ -208,6 +208,17 @@ function CheckoutContent() {
       setCurrency(savedCurrency);
       if (savedCurrency === 'USD') setPaymentMethod('paypal');
     }
+
+    const handleCurrencyChange = () => {
+      const current = localStorage.getItem('currency') as 'COP' | 'USD';
+      if (current) {
+        setCurrency(current);
+        if (current === 'USD') setPaymentMethod('paypal');
+      }
+    };
+
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
   }, []);
 
   useEffect(() => {
