@@ -45,35 +45,27 @@ async function checkSupabase(): Promise<ServiceResult> {
 
 async function checkN8n(): Promise<ServiceResult> {
   const start = Date.now();
-  const webhookUrl = process.env.N8N_WEBHOOK_URL;
-  // n8n requires the bearer token usually
+  const n8nUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.wilkiedevs.com';
   const apiKey = process.env.N8N_BEARER_TOKEN || process.env.N8N_API_KEY || '';
 
-  if (!webhookUrl) {
-    return { status: 'degraded', latency: 0 };
-  }
-
   try {
-    // Usar GET request o HEAD, pero n8n a veces rechaza HEAD
-    // Intentamos un GET simple que suele estar permitido en webhooks si se configura
-    // O simplemente validamos que el host responda
+    // Usar /healthz en lugar del webhook para evitar 404s en logs de n8n
+    // El health endpoint no requiere autenticación y responde 200 si n8n está vivo
     await withTimeout(
-      axios.get(webhookUrl, { 
-        timeout: 5000, 
-        validateStatus: () => true, // Cualquier status (incluyendo 401/405) significa que el servicio vive
-        headers: apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}
+      axios.get(`${n8nUrl}/healthz`, {
+        timeout: 5000,
+        validateStatus: (status) => status >= 200 && status < 300,
       }),
       5000
     );
     return { status: 'ok', latency: Date.now() - start };
   } catch (err: any) {
-    // Si falla por timeout o red, está caído. Si responde algo (incluso error 4xx/5xx de n8n), está "vivo"
-    if (err.response || err.code === 'ECONNREFUSED') {
-       console.error(`[HealthCheck] n8n responded with error but is alive:`, err.message);
-       return { status: 'degraded', latency: Date.now() - start };
+    if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') {
+      console.error(`[HealthCheck] n8n network error:`, err.message);
+      return { status: 'down', latency: Date.now() - start };
     }
-    console.error(`[HealthCheck] n8n failed completely:`, err.message);
-    return { status: 'down', latency: Date.now() - start };
+    console.error(`[HealthCheck] n8n health check failed:`, err.message);
+    return { status: 'degraded', latency: Date.now() - start };
   }
 }
 
