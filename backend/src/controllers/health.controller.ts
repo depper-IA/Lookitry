@@ -45,14 +45,14 @@ async function checkSupabase(): Promise<ServiceResult> {
 
 async function checkN8n(): Promise<ServiceResult> {
   const start = Date.now();
-  const n8nUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.wilkiedevs.com';
-  const apiKey = process.env.N8N_BEARER_TOKEN || process.env.N8N_API_KEY || '';
+  // Usar siempre el health endpoint público de n8n, NO el webhook de producción
+  // El webhook de tryon es: https://n8n.wilkiedevs.com/webhook/tryon
+  // El health endpoint es: https://n8n.wilkiedevs.com/healthz
+  const n8nHealthUrl = 'https://n8n.wilkiedevs.com/healthz';
 
   try {
-    // Usar /healthz en lugar del webhook para evitar 404s en logs de n8n
-    // El health endpoint no requiere autenticación y responde 200 si n8n está vivo
     await withTimeout(
-      axios.get(`${n8nUrl}/healthz`, {
+      axios.get(n8nHealthUrl, {
         timeout: 5000,
         validateStatus: (status) => status >= 200 && status < 300,
       }),
