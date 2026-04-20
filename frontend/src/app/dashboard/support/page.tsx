@@ -90,17 +90,16 @@ export default function SupportPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      params.set('page', String(page));
+      params.set('offset', String((page - 1) * limit));
       params.set('limit', String(limit));
       if (filterStatus) params.set('status', filterStatus);
 
-      const response = await api.get<{ tickets: Ticket[]; total: number; stats?: TicketStats }>(
-        `/api/admin/tickets?${params.toString()}`
+      const response = await api.get<{ data: Ticket[]; total: number }>(
+        `/api/brands/me/tickets?${params.toString()}`
       );
       const data = response.data;
-      setTickets(data.tickets || []);
+      setTickets(data.data || []);
       setTotal(data.total || 0);
-      if (data.stats) setStats(data.stats);
     } catch (err: any) {
       setToast({ message: err.message || 'Error al cargar tickets', type: 'error' });
     } finally {
@@ -111,6 +110,25 @@ export default function SupportPage() {
   useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await api.get<{ total_open: number; in_progress: number; resolved: number }>(
+        '/api/brands/me/tickets/stats'
+      );
+      setStats({
+        total_open: response.data.total_open,
+        in_progress: response.data.in_progress,
+        resolved: response.data.resolved,
+      });
+    } catch (err: any) {
+      // Stats are non-critical, silently fail
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   useEffect(() => {
     fetchPublicPaymentSettings()
@@ -127,7 +145,7 @@ export default function SupportPage() {
   const handleCreateTicket = async (formData: { subject: string; description: string; priority: TicketPriority; category: TicketCategory }) => {
     setSaving(true);
     try {
-      await api.post('/api/admin/tickets', {
+      await api.post('/api/brands/me/tickets', {
         subject: formData.subject,
         description: formData.description,
         priority: formData.priority,
@@ -136,6 +154,7 @@ export default function SupportPage() {
       setToast({ message: 'Ticket enviado. Te responderemos pronto.', type: 'success' });
       setShowCreateModal(false);
       fetchTickets();
+      fetchStats();
     } catch (err: any) {
       setToast({ message: err.message || 'Error al crear ticket', type: 'error' });
     } finally {
