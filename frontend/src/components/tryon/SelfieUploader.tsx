@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { compressImage, validateImageFile } from '@/utils/imageCompression';
 import { ImageEditor } from './ImageEditor';
-import { Camera, Image as ImageIcon, Lightbulb, User, Eye, X, Loader2, ChevronRight, Upload } from 'lucide-react';
+import { Camera, Image as ImageIcon, Lightbulb, User, Eye, X, Loader2, ChevronRight, Upload, Clipboard } from 'lucide-react';
 
 interface SelfieUploaderProps {
   onUpload: (file: File, preview: string) => void;
@@ -44,6 +44,24 @@ export function SelfieUploader({
 
   useEffect(() => {
     setIsMobile(/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent));
+  }, []);
+
+  // ── Bloquear pegar desde portapapeles (el modelo de IA no lo soporta) ─────
+  // El error "Cannot read clipboard" viene cuando el usuario intenta Ctrl+V / Cmd+V
+  // con una imagen en el portapapeles. Bloqueamos ANTES de que llegue al modelo.
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      // Si hay datos de imagen en el portapapeles, prevenir y mostrar mensaje
+      const hasImage = e.clipboardData?.items?.some(
+        (item) => item.type.startsWith('image/')
+      );
+      if (hasImage) {
+        e.preventDefault();
+        setError('No puedes pegar imágenes directamente. Sube la foto desde tu galería usando el botón "Elegir de galería".');
+      }
+    };
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
   }, []);
 
   const handleFile = useCallback(async (file: File) => {
