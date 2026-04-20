@@ -224,6 +224,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
                 <ResultDisplay
                   imageUrl={resultImageUrl}
                   productName={selectedProduct?.name || ''}
+                  productPrice={selectedProduct?.price}
                   selfiePreview={selfiePreview}
                   onReset={onReset}
                   primaryColor={primaryColor}
@@ -237,6 +238,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
                   mutedColor={textMuted}
                   cardBg={cardBg}
                   cardBorder={borderColor}
+                  whatsappContact={config.brand.whatsappContact ?? null}
                 />
               </div>
             )}

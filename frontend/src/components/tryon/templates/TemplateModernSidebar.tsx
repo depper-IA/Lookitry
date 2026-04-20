@@ -836,6 +836,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
               <ResultDisplay
                 imageUrl={resultImageUrl}
                 productName={selectedProduct?.name || ''}
+                productPrice={selectedProduct?.price}
                 selfiePreview={selfiePreview}
                 onReset={onReset}
                 primaryColor={primaryColor}
@@ -844,10 +845,12 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                 brandName={config.brand.name}
                 brandPlan={config.brand.plan}
                 shareMessage={shareMessage}
+                pluginView={props.pluginView}
                 textColor={mainTextPrimary}
                 mutedColor={mainTextMuted}
                 cardBg={mainCardBg}
                 cardBorder={mainBorderColor}
+                whatsappContact={config.brand.whatsappContact ?? null}
               />
             </div>
           )}
