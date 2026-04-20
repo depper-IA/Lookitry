@@ -184,6 +184,16 @@ export class PaymentSettingsService {
   }
 
   /**
+   * Enmascara números de cuenta mostrando solo los últimos 4 dígitos
+   */
+  private maskAccountNumber(accountNumber: string): string {
+    if (!accountNumber || accountNumber.length < 4) {
+      return accountNumber || '';
+    }
+    return '****' + accountNumber.slice(-4);
+  }
+
+  /**
    * Retorna solo los campos públicos seguros (sin claves privadas)
    * para exponer al frontend de la marca.
    * Si wompi_test_mode=false, expone la llave pública de producción.
@@ -227,7 +237,13 @@ export class PaymentSettingsService {
       ? s.wompi_public_key
       : (s.wompi_prod_public_key || s.wompi_public_key);
 
-    const { trm } = await pricingService.getEffectiveTrm();
+    let trm = 4000; // Fallback seguro
+    try {
+      const trmResult = await pricingService.getEffectiveTrm();
+      trm = trmResult.trm;
+    } catch (err) {
+      console.error('[PaymentSettings] Error al obtener TRM, usando fallback:', err instanceof Error ? err.message : err);
+    }
 
     const { data: metaRow } = await supabaseAdmin
       .from('pricing_config')
@@ -256,7 +272,7 @@ export class PaymentSettingsService {
       socialYoutube: String(meta.social_youtube ?? ''),
       transferEnabled: s.transfer_enabled,
       transferBankName: s.transfer_bank_name,
-      transferAccountNumber: s.transfer_account_number,
+      transferAccountNumber: this.maskAccountNumber(s.transfer_account_number),
       transferAccountType: s.transfer_account_type,
       transferAccountHolder: s.transfer_account_holder,
       currency: s.currency,
