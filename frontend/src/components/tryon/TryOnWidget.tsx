@@ -381,6 +381,7 @@ export function TryOnWidget({
     secondaryColor,
     buttonText,
     welcomeMessage,
+    shareMessage: config.brand.shareMessage,
     selfiePreview,
     selectedProduct,
     resultImageUrl,

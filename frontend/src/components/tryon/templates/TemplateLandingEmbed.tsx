@@ -27,6 +27,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
     secondaryColor,
     buttonText,
     welcomeMessage,
+    shareMessage,
     selfiePreview,
     selectedProduct,
     resultImageUrl,
@@ -210,6 +211,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
                   brandSlug={brandSlug}
                   brandName={config.brand.name}
                   brandPlan={config.brand.plan}
+                  shareMessage={shareMessage}
                   pluginView={pluginView}
                   textColor={textPrimary}
                   mutedColor={textMuted}

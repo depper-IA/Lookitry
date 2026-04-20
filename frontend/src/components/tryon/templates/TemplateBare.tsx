@@ -27,6 +27,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
     secondaryColor,
     buttonText,
     welcomeMessage,
+    shareMessage,
     selfiePreview,
     selectedProduct,
     resultImageUrl,
@@ -230,6 +231,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
                   brandSlug={brandSlug}
                   brandName={config.brand.name}
                   brandPlan={config.brand.plan}
+                  shareMessage={props.shareMessage}
                   pluginView={pluginView}
                   textColor={textPrimary}
                   mutedColor={textMuted}

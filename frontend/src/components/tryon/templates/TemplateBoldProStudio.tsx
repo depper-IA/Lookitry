@@ -26,6 +26,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
     secondaryColor,
     buttonText,
     welcomeMessage,
+    shareMessage,
     selfiePreview,
     selectedProduct,
     resultImageUrl,
@@ -336,6 +337,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                   brandSlug={brandSlug}
                   brandName={config.brand.name}
                   brandPlan={config.brand.plan}
+                  shareMessage={shareMessage}
                   textColor={textPrimary}
                   mutedColor={textMuted}
                   cardBg="transparent"

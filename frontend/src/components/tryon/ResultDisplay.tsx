@@ -171,6 +171,7 @@ interface ResultDisplayProps {
   brandSlug?: string;
   brandName?: string;
   brandPlan?: string;
+  shareMessage?: string | null; // Custom share message from PRO/ENTERPRISE brands
   pluginView?: boolean;
   textColor?: string;
   mutedColor?: string;
@@ -188,6 +189,7 @@ export function ResultDisplay({
   brandSlug,
   brandName,
   brandPlan,
+  shareMessage,
   pluginView = false,
   textColor = '#1a1a1a',
   mutedColor = '#666666',
@@ -215,9 +217,17 @@ export function ResultDisplay({
     window.location.href = downloadUrl;
   };
 
-  // Mensaje de compartir personalizado — orientado a conversión y 자연스러운
-  // PRO: solo pregunta. BASIC/TRIAL: incluye branding al final.
+  // Mensaje de compartir: usar custom del backend (PRO/ENTERPRISE) o generar dinámicamente
+  // Custom message puede usar {producto} y {marca} como variables
   const getShareText = (productName: string, brandName?: string | null, brandPlan?: string) => {
+    // Si hay mensaje personalizado configurado desde el panel (PRO/ENTERPRISE)
+    if (shareMessage) {
+      return shareMessage
+        .replace(/\{producto\}/gi, productName)
+        .replace(/\{marca\}/gi, brandName ?? '')
+        .replace(/\{brand\}/gi, brandName ?? '');
+    }
+    // Fallback: mensaje dinámico predeterminado
     const base = `¿Qué tal me queda este ${productName} de ${brandName ?? ''}? ¿Me lo llevo?`;
     if (brandPlan === 'BASIC' || brandPlan === 'TRIAL') {
       return `${base}\n\nGenerado con Lookitry`;

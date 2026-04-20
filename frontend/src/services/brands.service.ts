@@ -44,6 +44,7 @@ class BrandsService {
 apiKey: response.data.api_key,
       socialLinks: response.data.social_links,
       onboardingDismissed: response.data.onboarding_dismissed,
+      shareMessage: response.data.share_message,
       // Widget playlist - map from snake_case
       widgetProductIds: response.data.widget_product_ids || [],
     };
@@ -87,6 +88,7 @@ apiKey: response.data.api_key,
       widget_template: data.widgetTemplate,
       button_text: data.buttonText,
       welcome_message: data.welcomeMessage,
+      share_message: data.shareMessage,
       header_color: data.headerColor,
     };
     
