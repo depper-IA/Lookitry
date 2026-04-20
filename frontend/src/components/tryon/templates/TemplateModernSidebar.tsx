@@ -43,7 +43,6 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
     
     if (props.forcedLayout) {
       setIsSmall(props.forcedLayout === 'mobile');
-      return;
     }
     
     const obs = new ResizeObserver((entries) => {

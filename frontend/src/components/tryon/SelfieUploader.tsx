@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { compressImage, validateImageFile } from '@/utils/imageCompression';
 import { ImageEditor } from './ImageEditor';
-import { Camera, Image as ImageIcon, Lightbulb, User, Eye, X, Loader2, ChevronRight } from 'lucide-react';
+import { Camera, Image as ImageIcon, Lightbulb, User, Eye, X, Loader2, ChevronRight, Upload } from 'lucide-react';
 
 interface SelfieUploaderProps {
   onUpload: (file: File, preview: string) => void;
@@ -87,6 +87,38 @@ export function SelfieUploader({
     cameraRef.current.click();
   }, []);
 
+  // Drag-and-drop handlers
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only deactivate if leaving the drop zone entirely
+    if (e.currentTarget === dropRef.current) {
+      setDragActive(false);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    const files = e.dataTransfer.files;
+    if (files?.[0]) {
+      handleFile(files[0]);
+    }
+  }, [handleFile]);
+
   return (
     <>
       {editingSrc && (
@@ -98,7 +130,37 @@ export function SelfieUploader({
         />
       )}
 
-      <div className="max-w-md mx-auto space-y-6">
+      <div 
+        ref={dropRef}
+        className="max-w-md mx-auto space-y-6 relative"
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        {/* Drag overlay feedback */}
+        <AnimatePresence>
+          {dragActive && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 rounded-[2.5rem] border-2 border-dashed flex items-center justify-center pointer-events-none"
+              style={{ 
+                borderColor: primaryColor,
+                backgroundColor: `${primaryColor}15`
+              }}
+            >
+              <div className="flex flex-col items-center gap-3">
+                <Upload className="w-8 h-8 animate-bounce" style={{ color: primaryColor }} />
+                <p className="text-sm font-black uppercase tracking-widest" style={{ color: primaryColor }}>
+                  Soltar para subir
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Decisión principal: Cámara vs Galería */}
         <div className="space-y-3">
           <AnimatePresence mode="wait">

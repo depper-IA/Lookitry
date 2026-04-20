@@ -53,7 +53,6 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
     // Si forcedLayout está definido, usar ese valor directamente
     if (props.forcedLayout) {
       setIsSmall(props.forcedLayout === 'mobile');
-      return;
     }
     
     const obs = new ResizeObserver((entries) => {
