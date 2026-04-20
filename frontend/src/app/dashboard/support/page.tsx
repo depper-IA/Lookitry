@@ -211,9 +211,9 @@ export default function SupportPage() {
             <Mail className="h-4 w-4" />
             info@lookitry.com
           </a>
-          <a 
-            href="https://wa.me/573001234567" 
-            target="_blank" 
+          <a
+            href={process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || 'https://wa.me/573001234567'}
+            target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[var(--accent)]"
             style={{ color: 'var(--accent)' }}
@@ -221,16 +221,18 @@ export default function SupportPage() {
             <MessageSquare className="h-4 w-4" />
             WhatsApp
           </a>
-          <a 
-            href="https://stats.uptimerobot.com/CTEnSD7d1j" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[var(--accent)]"
-            style={{ color: 'var(--accent)' }}
-          >
-            <Globe className="h-4 w-4" />
-            Estado del servicio
-          </a>
+          {process.env.NEXT_PUBLIC_STATUS_URL && (
+            <a
+              href={process.env.NEXT_PUBLIC_STATUS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[var(--accent)]"
+              style={{ color: 'var(--accent)' }}
+            >
+              <Globe className="h-4 w-4" />
+              Estado del servicio
+            </a>
+          )}
         </div>
       </div>
 

@@ -342,7 +342,9 @@ export function LookitryLogoText({ className = "" }: { className?: string }) {
 // ── Componentes Auxiliares Compartidos ────────────────────────────────────────
 
 export function BrandLogo({ src, alt, className, priority = false }: { src?: string | null; alt: string; className?: string; priority?: boolean }) {
-  if (!src) return null;
+  const [hasError, setHasError] = useState(false);
+
+  if (!src || hasError) return null;
 
   const blurDataURL = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="#e5e7eb" width="100" height="100"/></svg>').toString('base64');
 
@@ -358,6 +360,7 @@ export function BrandLogo({ src, alt, className, priority = false }: { src?: str
         placeholder="blur"
         blurDataURL={blurDataURL}
         priority={priority}
+        onError={() => setHasError(true)}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import type { Brand, UpdateBrandConfigDto, WidgetTemplate, Product } from '@/types';
 import { Code2, Upload } from 'lucide-react';
 import { uploadService } from '@/services/upload.service';
@@ -51,6 +52,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   const isPro = brand.plan === 'PRO';
   const [activeTab, setActiveTab] = useState<SettingsTab>('design');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [proPrice, setProPrice] = useState<number | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [formData, setFormData] = useState<UpdateBrandConfigDto>({
@@ -79,12 +81,12 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
           if (data[0].data.precio_mensual_cop) setProPrice(data[0].data.precio_mensual_cop);
         }
       })
-      .catch(() => {});
+      .catch((err) => console.warn('Error cargando precio PRO:', err));
 
     // 2. Cargar productos REALES para el visualizador
     productsService.getProducts()
       .then(res => setProducts(res.products))
-      .catch(err => console.error('Error cargando productos para preview:', err));
+      .catch((err) => console.warn('Error cargando productos para preview:', err));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -96,13 +98,30 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = (reader.result as string).split(',')[1];
-      const url = await uploadService.uploadImage(base64, `logo-${Date.now()}.${file.name.split('.').pop()}`, false);
+    setIsUploading(true);
+    try {
+      const reader = new FileReader();
+      const url = await new Promise<string>((resolve, reject) => {
+        reader.onload = async () => {
+          try {
+            const base64 = (reader.result as string).split(',')[1];
+            const uploadedUrl = await uploadService.uploadImage(base64, `logo-${Date.now()}.${file.name.split('.').pop()}`, false);
+            resolve(uploadedUrl);
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
       setFormData((prev) => ({ ...prev, logo: url }));
-    };
-    reader.readAsDataURL(file);
+      toast.success('Logo actualizado correctamente');
+    } catch (err) {
+      console.error('Error subiendo logo:', err);
+      toast.error('Error al subir el logo. Intenta de nuevo.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -201,9 +220,9 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                   {formData.logo ? <img src={formData.logo} alt="Logo" className="h-full w-full object-contain" /> : <Upload size={20} className="text-[var(--text-muted)]" />}
                 </div>
                 <div className="space-y-2">
-                  <label className="inline-block rounded-2xl bg-[var(--text-primary)] px-4 py-2.5 sm:px-6 sm:py-3 text-xs font-black uppercase tracking-[0.18em] text-[var(--bg-card)] cursor-pointer hover:opacity-90 transition-opacity">
-                    Subir logo
-                    <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
+                  <label className={`inline-block rounded-2xl bg-[var(--text-primary)] px-4 py-2.5 sm:px-6 sm:py-3 text-xs font-black uppercase tracking-[0.18em] text-[var(--bg-card)] cursor-pointer transition-opacity ${isUploading ? 'opacity-50 pointer-events-none' : 'hover:opacity-90'}`}>
+                    {isUploading ? 'Subiendo...' : 'Subir logo'}
+                    <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={isUploading} />
                   </label>
                   <p className="text-[10px] text-[var(--text-muted)] px-1">Se recomienda fondo transparente (.png)</p>
                 </div>
