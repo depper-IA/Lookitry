@@ -11,6 +11,7 @@ import { helmetConfig, publicCorsConfig, globalCorsConfig } from './config/secur
 
 // Importación de rutas
 import promotionsRoutes from './routes/promotions.routes';
+import pruebaloRoutes from './routes/pruebalo.routes';
 import embedRoutes from './routes/embed.routes';
 import reviewsPublicRoutes from './routes/reviewsPublic.routes';
 import apiRouter from './routes/index';
