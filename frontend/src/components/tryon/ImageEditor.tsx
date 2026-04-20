@@ -1,17 +1,28 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import Cropper, { Point, Area } from 'react-easy-crop';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, RotateCw, RotateCcw, Maximize, Crop as CropIcon, Check, MousePointer2, RefreshCcw } from 'lucide-react';
+import { 
+  X, RotateCw, RotateCcw, ZoomIn, ZoomOut, 
+  Check, RefreshCcw, Maximize2
+} from 'lucide-react';
+
+type AspectFormat = 'original' | '1:1' | '3:4' | '16:9';
 
 interface ImageEditorProps {
   src: string;
   onConfirm: (file: File, preview: string) => void;
   onCancel: () => void;
   primaryColor?: string;
-  aspectRatio?: number; // Optional initial aspect ratio
 }
+
+const FORMAT_OPTIONS: { label: string; value: AspectFormat; aspect: number | undefined }[] = [
+  { label: 'Original', value: 'original', aspect: undefined },
+  { label: '1:1', value: '1:1', aspect: 1 },
+  { label: '3:4', value: '3:4', aspect: 3 / 4 },
+  { label: '16:9', value: '16:9', aspect: 16 / 9 },
+];
 
 export function ImageEditor({ 
   src, 
@@ -22,7 +33,7 @@ export function ImageEditor({
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [aspect, setAspect] = useState<number | undefined>(undefined); // undefined = free crop
+  const [aspectFormat, setAspectFormat] = useState<AspectFormat>('original');
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
@@ -46,7 +57,6 @@ export function ImageEditor({
     const image = await createImage(imageSrc);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-
     if (!ctx) return null;
 
     const rotRad = (rotation * Math.PI) / 180;
@@ -57,19 +67,12 @@ export function ImageEditor({
 
     canvas.width = bWidth;
     canvas.height = bHeight;
-
     ctx.translate(bWidth / 2, bHeight / 2);
     ctx.rotate(rotRad);
     ctx.translate(-image.width / 2, -image.height / 2);
     ctx.drawImage(image, 0, 0);
 
-    const data = ctx.getImageData(
-      pixelCrop.x,
-      pixelCrop.y,
-      pixelCrop.width,
-      pixelCrop.height
-    );
-
+    const data = ctx.getImageData(pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height);
     canvas.width = pixelCrop.width;
     canvas.height = pixelCrop.height;
     ctx.putImageData(data, 0, 0);
@@ -78,7 +81,7 @@ export function ImageEditor({
       canvas.toBlob((blob) => {
         if (!blob) return;
         const url = URL.createObjectURL(blob);
-        const file = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' });
+        const file = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg', lastModified: Date.now() });
         resolve({ file, url });
       }, 'image/jpeg', 0.95);
     });
@@ -88,191 +91,198 @@ export function ImageEditor({
     setCrop({ x: 0, y: 0 });
     setZoom(1);
     setRotation(0);
-    setAspect(undefined);
+    setAspectFormat('original');
   };
+
+  const handleFormatChange = (fmt: AspectFormat) => {
+    setAspectFormat(fmt);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+  };
+
+  const rotate90 = () => setRotation(r => (r + 90) % 360);
+  const zoomIn = () => setZoom(z => Math.min(z + 0.25, 3));
+  const zoomOut = () => setZoom(z => Math.max(z - 0.25, 1));
 
   const handleConfirm = async () => {
     if (!croppedAreaPixels) return;
     try {
       const result = await getCroppedImg(src, croppedAreaPixels, rotation);
-      if (result) {
-        onConfirm(result.file, result.url);
-      }
+      if (result) onConfirm(result.file, result.url);
     } catch (e) {
-      console.error(e);
+      console.error('[ImageEditor] Error:', e);
     }
   };
 
-  const ASPECT_RATIOS = [
-    { label: 'Libre', value: undefined, icon: MousePointer2 },
-    { label: '1:1', value: 1, icon: SquareIcon },
-    { label: '3:4', value: 3/4, icon: VerticalIcon },
-  ];
+  const currentAspect = FORMAT_OPTIONS.find(f => f.value === aspectFormat)?.aspect ?? undefined;
 
   return (
     <motion.div 
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl"
+      className="fixed inset-0 z-[100] flex flex-col bg-[#0a0a0a]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="relative w-full h-full flex flex-col max-w-4xl mx-auto overflow-hidden">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 z-10">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 md:p-6 z-20">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={onCancel}
+            className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors active:scale-95"
+          >
+            <X className="w-5 h-5 text-white" />
+          </button>
+          <div>
+            <h3 className="text-base font-black italic uppercase tracking-tight text-white">Editar Imagen</h3>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Ajusta el encuadre</p>
+          </div>
+        </div>
+        <button 
+          onClick={resetAll}
+          className="px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-colors active:scale-95"
+        >
+          <RefreshCcw className="w-3.5 h-3.5 text-white/60" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Reset</span>
+        </button>
+      </div>
+
+      {/* Cropper Area */}
+      <div className="relative flex-1 overflow-hidden min-h-0">
+        <Cropper
+          image={src}
+          crop={crop}
+          zoom={zoom}
+          rotation={rotation}
+          aspect={currentAspect}
+          onCropChange={setCrop}
+          onRotationChange={setRotation}
+          onCropComplete={onCropComplete}
+          onZoomChange={setZoom}
+          classes={{
+            containerClassName: 'bg-[#0a0a0a]',
+            mediaClassName: 'bg-[#0a0a0a]',
+          }}
+        />
+      </div>
+
+      {/* Bottom Toolbar - Mobile Optimized */}
+      <div className="bg-gradient-to-t from-black via-black/95 to-black/90 backdrop-blur-xl border-t border-white/5 p-4 pb-safe z-20">
+        {/* Format Selector */}
+        <div className="mb-5">
+          <div className="flex gap-2 justify-center">
+            {FORMAT_OPTIONS.map((fmt) => (
+              <motion.button
+                key={fmt.value}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => handleFormatChange(fmt.value)}
+                className={`relative min-w-[60px] min-h-[44px] px-3 py-2.5 rounded-2xl flex flex-col items-center gap-1 transition-all duration-200 ${
+                  aspectFormat === fmt.value 
+                    ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/25' 
+                    : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'
+                }`}
+                style={{
+                  backgroundColor: aspectFormat === fmt.value ? primaryColor : undefined,
+                  boxShadow: aspectFormat === fmt.value ? `0 8px 24px -8px ${primaryColor}40` : undefined,
+                }}
+              >
+                <span className="text-[11px] font-black uppercase tracking-wide">{fmt.label}</span>
+                {aspectFormat === fmt.value && (
+                  <motion.div 
+                    className="absolute inset-0 rounded-2xl border-2"
+                    layoutId="format-indicator"
+                    style={{ borderColor: primaryColor }}
+                  />
+                )}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
+        {/* Zoom & Rotation Controls */}
+        <div className="space-y-4 mb-5">
+          {/* Zoom Row */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-              <CropIcon className="w-5 h-5 text-white/70" />
+            <button 
+              onClick={zoomOut}
+              className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors active:scale-90"
+            >
+              <ZoomOut className="w-4 h-4 text-white/70" />
+            </button>
+            <div className="flex-1 relative">
+              <input 
+                type="range" 
+                min={1} 
+                max={3} 
+                step={0.05} 
+                value={zoom} 
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, ${primaryColor} 0%, ${primaryColor} ${((zoom - 1) / 2) * 100}%, rgba(255,255,255,0.1) ${((zoom - 1) / 2) * 100}%, rgba(255,255,255,0.1) 100%)`,
+                }}
+              />
             </div>
-            <div>
-              <h3 className="text-lg font-black italic uppercase tracking-tight text-white">Editar Imagen</h3>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Ajusta el encuadre y rotación</p>
+            <button 
+              onClick={zoomIn}
+              className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors active:scale-90"
+            >
+              <ZoomIn className="w-4 h-4 text-white/70" />
+            </button>
+            <div className="w-12 text-right">
+              <span className="text-[10px] font-bold text-white/50">{Math.round(zoom * 100)}%</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          {/* Rotation Row */}
+          <div className="flex items-center gap-3">
             <button 
-              onClick={resetAll}
-              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-colors text-[10px] font-black uppercase tracking-widest text-white/60"
+              onClick={() => setRotation(r => (r - 90 + 360) % 360)}
+              className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors active:scale-90"
             >
-              <RefreshCcw className="w-3 h-3" />
-              Restablecer
+              <RotateCcw className="w-4 h-4 text-white/70" />
+            </button>
+            <button
+              onClick={rotate90}
+              className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 hover:bg-white/10 transition-colors active:scale-95"
+            >
+              <RotateCw className="w-4 h-4 text-white/70" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">90°</span>
             </button>
             <button 
-              onClick={onCancel}
-              className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
+              onClick={() => setRotation(r => (r + 90) % 360)}
+              className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors active:scale-90"
             >
-              <X className="w-5 h-5 text-white" />
+              <RotateCw className="w-4 h-4 text-white/70" />
             </button>
+            <div className="w-12 text-right">
+              <span className="text-[10px] font-bold text-white/50">{rotation}°</span>
+            </div>
           </div>
         </div>
 
-        {/* Cropper Container */}
-        <div className="relative flex-1 bg-[#0a0a0a] overflow-hidden">
-          <Cropper
-            image={src}
-            crop={crop}
-            zoom={zoom}
-            rotation={rotation}
-            aspect={aspect}
-            onCropChange={setCrop}
-            onRotationChange={setRotation}
-            onCropComplete={onCropComplete}
-            onZoomChange={setZoom}
-            classes={{
-              containerClassName: 'bg-[#0a0a0a]',
-              mediaClassName: 'bg-[#0a0a0a]'
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <motion.button 
+            whileTap={{ scale: 0.97 }}
+            onClick={onCancel}
+            className="flex-1 h-14 rounded-[1.5rem] border-2 border-white/10 text-white font-black italic uppercase text-xs tracking-widest hover:bg-white/5 transition-all"
+          >
+            Cancelar
+          </motion.button>
+          <motion.button 
+            whileTap={{ scale: 0.97 }}
+            onClick={handleConfirm}
+            className="flex-1 h-14 rounded-[1.5rem] text-white font-black italic uppercase text-xs tracking-widest shadow-xl flex items-center justify-center gap-2"
+            style={{ 
+              backgroundColor: primaryColor,
+              boxShadow: `0 12px 32px -8px ${primaryColor}50`
             }}
-          />
-        </div>
-
-        {/* Controls Footer */}
-        <div className="p-6 space-y-8 bg-[#0a0a0a]/80 backdrop-blur-md border-t border-white/5 z-10">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
-            
-            {/* Aspect Ratios */}
-            <div className="space-y-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 text-center md:text-left">Proporción</p>
-              <div className="flex gap-2 justify-center md:justify-start">
-                {ASPECT_RATIOS.map((r) => (
-                  <button
-                    key={r.label}
-                    onClick={() => setAspect(r.value)}
-                    className="group relative flex flex-col items-center gap-2 px-4 py-3 rounded-2xl border transition-all duration-300"
-                    style={{ 
-                      borderColor: aspect === r.value ? primaryColor : 'rgba(255,255,255,0.05)',
-                      backgroundColor: aspect === r.value ? `${primaryColor}15` : 'rgba(255,255,255,0.03)'
-                    }}
-                  >
-                    <r.icon className="w-4 h-4 transition-colors" style={{ color: aspect === r.value ? primaryColor : 'white' }} />
-                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: aspect === r.value ? primaryColor : 'rgba(255,255,255,0.4)' }}>
-                      {r.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Zoom & Rotation Sliders */}
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-white/40 px-1">
-                  <div className="flex items-center gap-2"><Maximize className="w-3 h-3" /> Zoom</div>
-                  <span className="text-white/60">{Math.round(zoom * 100)}%</span>
-                </div>
-                <input 
-                  type="range" min={1} max={3} step={0.1} value={zoom} 
-                  onChange={(e) => setZoom(Number(e.target.value))}
-                  className="w-full accent-[#FF5C3A] cursor-pointer"
-                  style={{ accentColor: primaryColor }}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-white/40 px-1">
-                  <div className="flex items-center gap-2"><RotateCw className="w-3 h-3" /> Rotación</div>
-                  <span className="text-white/60">{rotation}°</span>
-                </div>
-                <input 
-                  type="range" min={0} max={360} step={1} value={rotation} 
-                  onChange={(e) => setRotation(Number(e.target.value))}
-                  className="w-full accent-[#FF5C3A] cursor-pointer"
-                  style={{ accentColor: primaryColor }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Rotation Buttons */}
-          <div className="flex justify-center gap-4">
-             <button onClick={() => setRotation(r => (r - 1) % 360)} className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-               <RotateCcw className="w-5 h-5 text-white/20" />
-             </button>
-             <button onClick={() => setRotation(r => (r - 90) % 360)} className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-               <RotateCcw className="w-5 h-5 text-white/60" />
-             </button>
-             <button onClick={() => setRotation(r => (r + 90) % 360)} className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-               <RotateCw className="w-5 h-5 text-white/60" />
-             </button>
-             <button onClick={() => setRotation(r => (r + 1) % 360)} className="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-               <RotateCw className="w-5 h-5 text-white/20" />
-             </button>
-          </div>
-
-          {/* Confirm Actions */}
-          <div className="flex gap-4 pt-4">
-            <button 
-              onClick={onCancel}
-              className="flex-1 py-4 px-6 rounded-[2rem] border-2 border-white/10 text-white font-black italic uppercase text-xs tracking-widest hover:bg-white/5 transition-all"
-            >
-              Cancelar
-            </button>
-            <button 
-              onClick={handleConfirm}
-              className="flex-1 py-4 px-6 rounded-[2rem] text-white font-black italic uppercase text-xs tracking-widest shadow-xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
-              style={{ 
-                backgroundColor: primaryColor,
-                boxShadow: `0 20px 40px -12px ${primaryColor}40`
-              }}
-            >
-              <Check className="w-4 h-4" strokeWidth={3} />
-              Usar esta foto
-            </button>
-          </div>
+          >
+            <Check className="w-4 h-4" strokeWidth={3} />
+            Aplicar
+          </motion.button>
         </div>
       </div>
     </motion.div>
   );
 }
-
-const SquareIcon = ({ className, style }: { className?: string, style?: any }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className} style={style}>
-    <rect x="4" y="4" width="16" height="16" rx="1" />
-  </svg>
-);
-
-const VerticalIcon = ({ className, style }: { className?: string, style?: any }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className} style={style}>
-    <rect x="6" y="2" width="12" height="20" rx="1" />
-  </svg>
-);
