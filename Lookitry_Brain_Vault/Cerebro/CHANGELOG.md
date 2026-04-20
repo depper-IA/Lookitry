@@ -6,6 +6,21 @@
 
 ## 2026-04-20
 
+### fix(products): Auditoría completa + fixes P0/P1/P2 en sección describe-ai
+
+**Problemas identificados:**
+- **P0 SSRF Block**: `ALLOWED_IMAGE_PROXY_DOMAINS` no incluía `minio.wilkiedevs.com`, causando errores 500 en imágenes de productos de MinIO
+- **P1 Field Mismatch**: `describeProductWithAI` re-enviaba campos en camelCase (`imageUrl`, `productName`) pero n8n esperaba snake_case (`image_url`, `product_name`, `category`)
+- **P2 Error Genérico**: El catch lanzaba 500 sin distinguir tipo de error (timeout, 404, rate limit)
+
+**Archivos modificados:**
+- `backend/src/controllers/pruebalo.controller.ts` — Agregado `minio.wilkiedevs.com` y `cdn.minio.wilkiedevs.com` a la allowlist SSRF
+- `backend/src/controllers/products.controller.ts` — Corregido mapping de campos + mejorado error handling con códigos específicos (400, 404, 408, 429, 5xx)
+
+**Commits:** `c297ce2`
+
+---
+
 ### fix(n8n): SyntaxError en nodo "Validar Input" del workflow Try-On (`wPLypk7KhBcFLicX`)
 
 **Problema:** El workflow de Try-On fallaba al ejecutar el nodo Code "Validar Input" con:
