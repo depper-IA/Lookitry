@@ -1,5 +1,27 @@
 # CHANGELOG — Lookitry
 
+## 20 de Abril 2026
+
+### 🐛 Fix: Imágenes del Dashboard no cargaban
+
+**Problema:** Las imágenes en el dashboard no cargaban porque MinIO no tenía configuración de Traefik, dejando `minio.wilkiedevs.com` inalcanzable desde el exterior.
+
+**Causa raíz:** El contenedor de MinIO en `vps-docker-compose.yml` no tenía labels de Traefik, por lo que el tráfico a `minio.wilkiedevs.com` no se enrutaba al contenedor.
+
+**Solución aplicada:**
+- Añadidos labels de Traefik al servicio `minio` en `vps-docker-compose.yml`:
+  - Ruta principal: `Host(minio.wilkiedevs.com)` → puerto 9000
+  - Ruta consola: `Host(minio.wilkiedevs.com) && PathPrefix(/ui)` → puerto 9001
+
+**Nota:** El deploy del compose falló porque el contenedor `virtual-tryon-frontend` no existe en el registry (la imagen se genera localmente en VPS). El archivo `vps-docker-compose.yml` fue pusheado a GitHub y necesita ser aplicado manualmente en el VPS, O se necesita hacer rebuild de las imágenes.
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `vps-docker-compose.yml` | Añadidas labels de Traefik para MinIO |
+
+---
+
 ## 18 de Abril 2026
 
 ### 🎨 UI Fix + 🤖 GCP Imagen Planning + ⚙️ Model Config
