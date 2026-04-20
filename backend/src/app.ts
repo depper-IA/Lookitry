@@ -85,7 +85,7 @@ app.use(globalRateLimiter);
 app.use('/api', apiRouter);
 
 // Endpoints Sueltos
-app.get('/api/payment-settings/public', getPublicPaymentSettings);
+app.get('/api/payment-settings/public', publicCors, getPublicPaymentSettings);
 app.post('/api/upload', authMiddleware, (req, res) => uploadImage(req as any, res));
 app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => uploadSelfie(req, res));
 app.delete('/api/upload/cleanup-temp', (req, res) => cleanupTempSelfies(req, res));
