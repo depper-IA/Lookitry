@@ -34,6 +34,10 @@ import {
   asyncHandler,
 } from '../middleware/errorHandler';
 import { getBrandSocialLinks, recordTrialEvent } from '../utils/brandLifecycle';
+import {
+  sanitizePromptForGeneration,
+  addAntiInjectionInstructions,
+} from '../utils/promptSecurity';
 
 const brandsService = new BrandsService();
 const productsService = new ProductsService();
@@ -341,23 +345,44 @@ export class PruebaloController {
         .eq('id', 1)
         .single();
 
-      // 7.2 Construir prompt base con reglas de categoría
-      let finalPrompt = buildTryOnPrompt(product);
+      // 7.2 Validate and sanitize all prompt inputs (security)
+      const sanitized = sanitizePromptForGeneration(
+        product.name,
+        product.category ?? null,
+        product.description,
+        globalSettings?.ai_prompt_master,
+        globalSettings?.ai_prompt_negative
+      );
 
-      // 7.3 Aplicar refinamientos globales del Administrador (Master Prompt)
-      if (globalSettings?.ai_prompt_master) {
-        finalPrompt += `\n\n[ADMIN MASTER RULES — HIGHEST PRIORITY]\n- ${globalSettings.ai_prompt_master}`;
+      // Log injection warnings but don't block (admin should fix their prompts)
+      if (sanitized.injectionWarnings.length > 0) {
+        console.warn('[PromptSecurity] Injection warnings detected:', sanitized.injectionWarnings);
       }
 
-      // 7.4 Aplicar prompt negativo global
-      if (globalSettings?.ai_prompt_negative) {
-        finalPrompt += `\n\n[NEGATIVE PROMPT — DO NOT GENERATE]\n${globalSettings.ai_prompt_negative}`;
+      // 7.3 Build prompt with category rules
+      let finalPrompt = buildTryOnPrompt({
+        name: sanitized.safeName,
+        category: product.category,
+        description: sanitized.safeDescription,
+      });
+
+      // 7.4 Apply sanitized admin prompts
+      if (sanitized.safeMaster) {
+        finalPrompt += `\n\n[ADMIN MASTER RULES — HIGHEST PRIORITY]\n- ${sanitized.safeMaster}`;
       }
 
-      // 7.5 Enriquecer con RAG (aprendizaje de errores anteriores) — timeout 4s, no bloquea
+      // 7.5 Apply sanitized negative prompt
+      if (sanitized.safeNegative) {
+        finalPrompt += `\n\n[NEGATIVE PROMPT — DO NOT GENERATE]\n${sanitized.safeNegative}`;
+      }
+
+      // 7.7 Add anti-injection instructions to final prompt
+      finalPrompt = addAntiInjectionInstructions(finalPrompt);
+
+      // 7.8 Enrich with RAG (learning from previous errors) — timeout 4s, non-blocking
       const prompt = await promptRagService.enrichPrompt(finalPrompt, product.category ?? null);
 
-      // 7.6 Procesamiento directo (sin Redis) - llamar n8n directamente y esperar resultado
+      // 7.9 Direct processing (no Redis) — call n8n directly and wait for result
       console.log(`[pruebalo] Llamando n8n directamente para generación ${generation.id}`);
 
       let n8nResult: { success: boolean; imageUrl?: string; error?: string } = { success: false };
@@ -374,7 +399,7 @@ export class PruebaloController {
         // Continuar para que el código de abajo maneje el error
       }
 
-      // 7.7 Polling hasta que la generación esté lista (máx 90s) - por si el worker actualiza
+      // 7.10 Polling until generation is ready (max 90s) — in case worker updates the record
       const maxPolls = 45;
       let pollCount = 0;
       let finalGeneration = generation;
