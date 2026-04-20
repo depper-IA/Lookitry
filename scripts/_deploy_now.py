@@ -192,7 +192,7 @@ if do_backend:
     )
     if os.path.exists(sammy_env_local):
         print(f"[INFO] Subiendo sammy/.env.production al VPS...")
-        with open(sammy_env_local, "r") as f:
+        with open(sammy_env_local, "r", encoding="utf-8") as f:
             sammy_env_content = f.read()
         run(
             ssh,
@@ -222,7 +222,7 @@ if do_frontend:
     )
     if os.path.exists(frontend_env_local):
         print(f"[INFO] Subiendo frontend/.env.production al VPS...")
-        with open(frontend_env_local, "r") as f:
+        with open(frontend_env_local, "r", encoding="utf-8") as f:
             frontend_env_content = f.read()
         run(
             ssh,

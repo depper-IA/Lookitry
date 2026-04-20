@@ -215,9 +215,20 @@ export function ResultDisplay({
     window.location.href = downloadUrl;
   };
 
+  // Mensaje de compartir personalizado — orientado a conversión y 자연스러운
+  // PRO: solo pregunta. BASIC/TRIAL: incluye branding al final.
+  const getShareText = (productName: string, brandName?: string | null, brandPlan?: string) => {
+    const base = `¿Qué tal me queda este ${productName} de ${brandName ?? ''}? ¿Me lo llevo?`;
+    if (brandPlan === 'BASIC' || brandPlan === 'TRIAL') {
+      return `${base}\n\nGenerado con Lookitry`;
+    }
+    return base;
+  };
+
   const handleShare = async () => {
     setShareError(null);
     setSharing(true);
+    const shareText = getShareText(productName, brandName, brandPlan);
     try {
       const shareTargetUrl = pluginView ? imageUrl : getProxiedImageUrl(imageUrl, brandPlan);
 
@@ -234,7 +245,7 @@ export function ResultDisplay({
           if (pluginView) {
             await navigator.share({
               title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
-              text: `Mira cómo me queda este producto: ${productName}`,
+              text: shareText,
               url: shareTargetUrl,
             });
           } else {
@@ -244,7 +255,7 @@ export function ResultDisplay({
 
             await navigator.share({
               title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
-              text: `Mira cómo me queda este producto: ${productName}`,
+              text: shareText,
               files: [file],
             });
           }
@@ -253,7 +264,7 @@ export function ResultDisplay({
           try {
             await navigator.share({
               title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
-              text: `Mira cómo me queda este producto: ${productName}`,
+              text: shareText,
               url: shareTargetUrl,
             });
             return;
@@ -270,8 +281,10 @@ export function ResultDisplay({
       }
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(shareTargetUrl);
-        setShareError('Enlace copiado. Ya puedes compartir la imagen.');
+        // Copiar texto + URL para que el usuario pueda pegar en WhatsApp u otra red
+        const clipboardText = `${shareText}\n\n${shareTargetUrl}`;
+        await navigator.clipboard.writeText(clipboardText);
+        setShareError('Mensaje copiado. Pégalo en WhatsApp u otra red social.');
         return;
       }
 
