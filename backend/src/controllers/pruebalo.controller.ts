@@ -1100,6 +1100,8 @@ export class PruebaloController {
     'images.lookitry.com',
     'wilkiedevs.com',
     'www.wilkiedevs.com',
+    'minio.wilkiedevs.com',
+    'cdn.minio.wilkiedevs.com',
   ];
 
   /**
