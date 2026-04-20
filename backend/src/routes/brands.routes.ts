@@ -7,6 +7,7 @@ import { getReferralInfo, validateReferralCode, claimReferralBonus } from '../co
 import { asyncHandler } from '../middleware/errorHandler';
 import { publicRateLimiter } from '../middleware/rateLimiter';
 import { supabaseAdmin } from '../config/supabase';
+import { getMyTickets, createMyTicket, getMyTicketsStats } from '../controllers/brands/tickets.brands.controller';
 
 function slugify(value: string): string {
   return value
@@ -132,6 +133,15 @@ router.post('/me/legal-requests', (req, res) => brandsController.createLegalRequ
 
 // POST /api/brands/me/trial-events - Registrar eventos comerciales de trial
 router.post('/me/trial-events', (req, res) => brandsController.createTrialEvent(req, res));
+
+// GET /api/brands/me/tickets - Listar tickets de la marca autenticada
+router.get('/me/tickets', (req, res) => getMyTickets(req, res));
+
+// POST /api/brands/me/tickets - Crear un nuevo ticket
+router.post('/me/tickets', (req, res) => createMyTicket(req, res));
+
+// GET /api/brands/me/tickets/stats - Estadísticas de tickets de la marca
+router.get('/me/tickets/stats', (req, res) => getMyTicketsStats(req, res));
 
 // GET /api/brands/me/widget-products - Obtener productos del widget
 router.get('/me/widget-products', async (req: any, res) => {
