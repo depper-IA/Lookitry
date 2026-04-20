@@ -1067,6 +1067,8 @@ export class PruebaloController {
     'lookitry.net',
     'cdn.lookitry.com',
     'images.lookitry.com',
+    'wilkiedevs.com',
+    'www.wilkiedevs.com',
   ];
 
   /**
