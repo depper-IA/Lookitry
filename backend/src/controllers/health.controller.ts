@@ -5,6 +5,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { emailService } from '../services/email.service';
 import { N8nClient } from '../services/n8n.client';
 import { createAdminNotification } from '../utils/adminNotifications';
+import { redis } from '../config/redis';
 
 type ServiceStatus = 'ok' | 'degraded' | 'down';
 
@@ -104,6 +105,21 @@ async function checkMinio(): Promise<ServiceResult> {
   }
 }
 
+async function checkRedis(): Promise<ServiceResult> {
+  const start = Date.now();
+  try {
+    const result = await redis.ping();
+    const latency = Date.now() - start;
+    if (result === 'PONG') {
+      return { status: 'ok', latency };
+    }
+    return { status: 'degraded', latency };
+  } catch (err: any) {
+    console.error(`[HealthCheck] Redis error:`, err.message);
+    return { status: 'down', latency: Date.now() - start };
+  }
+}
+
 const previousStatus: Record<string, ServiceStatus> = {};
 
 function overallStatus(services: Record<string, ServiceResult>): 'healthy' | 'degraded' | 'down' {
@@ -118,6 +134,7 @@ const SERVICE_LABELS: Record<string, string> = {
   n8n: 'Automatizaciones (n8n)',
   email: 'Servicio de email (SMTP)',
   minio: 'Almacenamiento (MinIO)',
+  redis: 'Redis',
 };
 
 const SERVICE_NOTIF_TYPE: Record<string, { down: string; recovered: string }> = {
@@ -125,6 +142,7 @@ const SERVICE_NOTIF_TYPE: Record<string, { down: string; recovered: string }> = 
   n8n:      { down: 'service_down', recovered: 'service_recovered' },
   email:    { down: 'smtp_down',    recovered: 'smtp_recovered' },
   minio:    { down: 'service_down', recovered: 'service_recovered' },
+  redis:    { down: 'service_down', recovered: 'service_recovered' },
 };
 
 async function notifyServiceChange(name: string, prev: ServiceStatus, current: ServiceStatus) {
@@ -150,11 +168,12 @@ async function notifyServiceChange(name: string, prev: ServiceStatus, current: S
 }
 
 export async function getHealthStatus(_req: Request, res: Response): Promise<void> {
-  const [supabaseResult, n8nResult, emailResult, minioResult] = await Promise.allSettled([
+  const [supabaseResult, n8nResult, emailResult, minioResult, redisResult] = await Promise.allSettled([
     checkSupabase(),
     checkN8n(),
     checkEmail(),
     checkMinio(),
+    checkRedis(),
   ]);
 
   const servicesMap = {
@@ -162,6 +181,7 @@ export async function getHealthStatus(_req: Request, res: Response): Promise<voi
     n8n: n8nResult.status === 'fulfilled' ? n8nResult.value : { status: 'down' as ServiceStatus, latency: 0 },
     email: emailResult.status === 'fulfilled' ? emailResult.value : { status: 'down' as ServiceStatus, latency: 0 },
     minio: minioResult.status === 'fulfilled' ? minioResult.value : { status: 'down' as ServiceStatus, latency: 0 },
+    redis: redisResult.status === 'fulfilled' ? redisResult.value : { status: 'down' as ServiceStatus, latency: 0 },
   };
 
   const status = overallStatus(servicesMap);
@@ -200,7 +220,7 @@ export async function getHealthStatus(_req: Request, res: Response): Promise<voi
     },
     memory,
     redis: {
-      status: 'disconnected', // Redis not currently used in compose
+      status: servicesMap.redis.status === 'ok' ? 'connected' : 'disconnected',
     }
   };
 
