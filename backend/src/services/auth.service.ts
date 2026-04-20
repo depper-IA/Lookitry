@@ -32,56 +32,6 @@ function campaignRequiresTrialPayment(campaign: {
   return campaign.require_card_verification !== false;
 }
 
-async function isTrialAbuse(ip: string, fingerprint: string | null): Promise<boolean> {
-  // Verificar bypass y whitelist en payment_settings
-  const { data: psData } = await supabaseAdmin
-    .from('payment_settings')
-    .select('bypass_ip_protection, ip_whitelist')
-    .eq('id', 1)
-    .single();
-
-  if (psData?.bypass_ip_protection === true) {
-    return false;
-  }
-
-  // Verificar si la IP está en la whitelist
-  if (psData?.ip_whitelist) {
-    const whitelist = psData.ip_whitelist.split(',').map((s: string) => s.trim()).filter(Boolean);
-    if (whitelist.includes(ip)) {
-      return false;
-    }
-  }
-
-  // Verificar si la IP ya tiene un trial registrado en los últimos 30 días
-  const since = new Date();
-  since.setDate(since.getDate() - 30);
-
-  const { data: byIp } = await supabaseAdmin
-    .from('trial_registrations')
-    .select('id')
-    .eq('ip_address', ip)
-    .gte('created_at', since.toISOString())
-    .limit(1)
-    .single();
-
-  if (byIp) return true;
-
-  // Verificar fingerprint si se proporcionó
-  if (fingerprint) {
-    const { data: byFp } = await supabaseAdmin
-      .from('trial_registrations')
-      .select('id')
-      .eq('fingerprint', fingerprint)
-      .gte('created_at', since.toISOString())
-      .limit(1)
-      .single();
-
-    if (byFp) return true;
-  }
-
-  return false;
-}
-
 async function recordTrialRegistration(brandId: string, ip: string, fingerprint: string | null, campaignId: string) {
   await supabaseAdmin.from('trial_registrations').insert({
   brand_id: brandId,
