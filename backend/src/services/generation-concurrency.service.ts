@@ -44,6 +44,29 @@ export class GenerationConcurrencyService {
     }
   }
 
+  /**
+   * Atomically try to acquire a slot using Lua script.
+   * Returns the new count if successful, or -1 if at capacity.
+   */
+  private async tryAtomicIncrement(key: string, maxConcurrent: number, ttlSeconds: number): Promise<number> {
+    const luaScript = `
+      local current = tonumber(redis.call('GET', KEYS[1]) or '0')
+      local maxAllowed = tonumber(ARGV[1])
+      if current < maxAllowed then
+        redis.call('INCR', KEYS[1])
+        redis.call('EXPIRE', KEYS[1], ARGV[2])
+        return current + 1
+      end
+      return -1
+    `;
+    try {
+      const result = await redis.eval(luaScript, 1, key, String(maxConcurrent), String(ttlSeconds));
+      return Number(result);
+    } catch {
+      return -1;
+    }
+  }
+
   private async incrementSlots(brandId: string): Promise<number> {
     try {
       const key = this.getKey(brandId);
@@ -76,27 +99,23 @@ export class GenerationConcurrencyService {
   async acquireSlot(brandId: string, plan: string): Promise<GenerationSlot> {
     const limit = this.getPlanLimit(plan);
     const startTime = Date.now();
+    const key = this.getKey(brandId);
 
     try {
       for (;;) {
-        const currentSlots = await this.countActiveSlots(brandId);
+        // Use atomic Lua script to avoid race conditions
+        const newCount = await this.tryAtomicIncrement(key, limit.maxConcurrent, SLOT_TTL_SECONDS);
 
-        if (currentSlots < limit.maxConcurrent) {
-          const newCount = await this.incrementSlots(brandId);
+        if (newCount > 0) {
+          const slotId = this.generateSlotId();
+          const slotKey = this.getSlotKey(brandId, slotId);
+          await redis.set(slotKey, '1', 'EX', SLOT_TTL_SECONDS * 2);
 
-          if (newCount <= limit.maxConcurrent) {
-            const slotId = this.generateSlotId();
-            const slotKey = this.getSlotKey(brandId, slotId);
-            await redis.set(slotKey, '1', 'EX', SLOT_TTL_SECONDS * 2);
-
-            return {
-              acquired: true,
-              slotId,
-              waitTimeMs: Date.now() - startTime,
-            };
-          } else {
-            await this.decrementSlots(brandId);
-          }
+          return {
+            acquired: true,
+            slotId,
+            waitTimeMs: Date.now() - startTime,
+          };
         }
 
         const elapsed = Date.now() - startTime;

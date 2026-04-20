@@ -52,6 +52,13 @@ router.post(
   pruebaloController.generateTryOn
 );
 
+// GET /api/pruebalo/:brandSlug/generation/:generationId - Obtener estado de una generación (polling público)
+router.get(
+  '/:brandSlug/generation/:generationId',
+  publicRateLimiter,
+  pruebaloController.getGenerationStatus
+);
+
 // POST /api/pruebalo/:brandSlug/generation/:generationId/feedback - Reportar error de generación
 router.post(
   '/:brandSlug/generation/:generationId/feedback',

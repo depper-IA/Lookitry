@@ -70,35 +70,66 @@ class TryOnService {
     }
   }
 
+  /**
+   * Obtener estado de una generación por ID
+   * Endpoint público — no requiere auth (el generationId actúa como token)
+   */
+  async getGenerationStatus(generationId: string): Promise<{
+    status: 'PENDING' | 'SUCCESS' | 'FAILED';
+    imageUrl?: string;
+    error?: string;
+    processingTime?: number;
+  }> {
+    try {
+      const response = await api.get<any>(`/generations/${generationId}`);
+      return {
+        status: response.data?.status ?? 'PENDING',
+        imageUrl: response.data?.imageUrl ?? response.data?.result_image_url,
+        error: response.data?.error ?? response.data?.error_message,
+        processingTime: response.data?.processingTime ?? response.data?.processing_time,
+      };
+    } catch (err: any) {
+      // 404 = la generación aún se está creando, treat as PENDING
+      if (err?.response?.status === 404) {
+        return { status: 'PENDING' };
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Generar imagen de try-on
+   * Si el backend retorna solo generationId (sin imageUrl), activa modo polling.
+   * Si retorna imageUrl directamente, usa ese resultado sin polling.
+   */
   async generate(brandSlug: string, data: GenerateTryOnDto): Promise<GenerateTryOnResponse> {
     const formData = new FormData();
     formData.append('productId', data.productId);
     formData.append('selfie', data.selfieFile);
 
     try {
-      // Usamos el cliente api centralizado que ya maneja /api y credentials
       const response = await api.post<GenerateTryOnResponse>(
-        `/pruebalo/${brandSlug}/generate`, 
-        formData
+        `/pruebalo/${brandSlug}/generate`,
+        formData,
+        { timeout: GENERATION_TIMEOUT_MS }
       );
 
       return response.data;
     } catch (err: any) {
       const json = err?.response?.data || {};
-      
+
       if (err?.response?.status === 429) {
         throw new Error(json.message || 'Límite de generaciones excedido');
       }
 
       const msg: string = json.message || 'Error al generar la imagen';
-      
-      // Marcar errores de servicio (créditos agotados / saldo insuficiente)
+
       if (isCreditsExhaustedErrorPayload(json)) {
         const serviceErr = new Error('SERVICE_CREDITS_EXHAUSTED') as any;
         serviceErr.isServiceError = true;
         throw serviceErr;
       }
-      
+
       throw new Error(msg);
     }
   }

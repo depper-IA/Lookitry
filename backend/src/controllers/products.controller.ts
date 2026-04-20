@@ -337,9 +337,8 @@ export class ProductsController {
           'Authorization': `Bearer ${process.env.N8N_BEARER_TOKEN || ''}`
         },
         body: JSON.stringify({ 
-          image_url: finalImageUrl, 
-          product_name, 
-          category: category || 'General' 
+          imageUrl: finalImageUrl, 
+          productName: product_name 
         }),
       });
 

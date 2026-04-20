@@ -15,8 +15,6 @@ import { PromptRagService } from '../services/prompt-rag.service';
 import { UploadService } from '../services/upload.service';
 import { buildCategoryRulesBlock, getPromptRules } from '../config/prompt-rules';
 import { createAdminNotification } from '../utils/adminNotifications';
-import { generationConcurrencyService } from '../services/generation-concurrency.service';
-import { generationQueueService } from '../services/generation-queue.service';
 import {
   getBrandAllowedOrigins,
   getExpectedStoreHost,
@@ -658,6 +656,38 @@ export class PruebaloController {
       success: true,
       id: feedback.id,
       message: 'Gracias por tu reporte. Lo usaremos para mejorar las generaciones.',
+    });
+  });
+
+  /**
+   * GET /api/pruebalo/:brandSlug/generation/:generationId
+   * Endpoint público para consultar el estado de una generación (polling del widget).
+   * No requiere autenticación — el generationId actúa como token de acceso.
+   */
+  getGenerationStatus = asyncHandler(async (req: Request, res: Response) => {
+    const { brandSlug, generationId } = req.params;
+
+    // Verificar que la marca existe (para validar ownership)
+    const brand = await brandsService.getBrandBySlug(brandSlug);
+    if (!brand) throw new NotFoundError('Marca no encontrada');
+
+    // Obtener la generación
+    const generation = await generationsService.getGenerationById(generationId);
+    if (!generation) {
+      // 404 si no existe — frontend treat as PENDING
+      return res.status(404).json({ error: 'Generación no encontrada' });
+    }
+
+    // Verificar que pertenece a esta marca
+    if (generation.brand_id !== brand.id) {
+      return res.status(404).json({ error: 'Generación no encontrada' });
+    }
+
+    return res.status(200).json({
+      status: generation.status,
+      imageUrl: generation.status === 'SUCCESS' ? generation.result_image_url : undefined,
+      error: generation.status === 'FAILED' ? generation.error_message : undefined,
+      processingTime: generation.processing_time ?? null,
     });
   });
 

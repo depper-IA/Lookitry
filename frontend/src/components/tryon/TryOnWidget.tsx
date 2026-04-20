@@ -64,11 +64,24 @@ export function TryOnWidget({
   const [loading, setLoading] = useState(true);
   // Productos ya generados en esta sesión: productId → imageUrl
   const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
+  // Hash de la selfie actual para cachear resultados por selfie específica
+  const [selfieHash, setSelfieHash] = useState<string>('');
+
+  // Generar hash SHA-256 de un archivo
+  const generateFileHash = async (file: File): Promise<string> => {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
+  // Key del caché incluye hash de selfie para evitar resultados de selfies distintas
+  const getCacheKey = (slug: string, hash: string) => `tryon_gen_${slug}_${hash.substring(0, 8)}`;
 
   // Cargar productos generados previos de localStorage al montar o cambiar selfie
   useEffect(() => {
-    if (!brandSlug) return;
-    const key = `tryon_gen_${brandSlug}`;
+    if (!brandSlug || !selfieHash) return;
+    const key = getCacheKey(brandSlug, selfieHash);
     const saved = localStorage.getItem(key);
     if (saved) {
       try {
@@ -79,18 +92,18 @@ export function TryOnWidget({
         localStorage.removeItem(key);
       }
     }
-  }, [brandSlug]);
+  }, [brandSlug, selfieHash]);
 
   // Guardar productos generados en localStorage
   useEffect(() => {
-    if (!brandSlug || generatedProducts.size === 0) return;
-    const key = `tryon_gen_${brandSlug}`;
+    if (!brandSlug || generatedProducts.size === 0 || !selfieHash) return;
+    const key = getCacheKey(brandSlug, selfieHash);
     try {
       localStorage.setItem(key, JSON.stringify({ products: Object.fromEntries(generatedProducts) }));
     } catch (e) {
       console.warn('[TryOnWidget] localStorage lleno, no se pudo guardar caché de generaciones.', e);
     }
-  }, [generatedProducts, brandSlug]);
+  }, [generatedProducts, brandSlug, selfieHash]);
 
   const loadConfig = useCallback(async () => {
     try {
@@ -131,8 +144,10 @@ export function TryOnWidget({
   }, [selfiePreview]);
 
   const handleReset = useCallback(() => {
-    const key = `tryon_gen_${brandSlug}`;
-    localStorage.removeItem(key);
+    if (selfieHash) {
+      const key = getCacheKey(brandSlug, selfieHash);
+      localStorage.removeItem(key);
+    }
     
     setSelfiePreview(prev => {
       if (prev) URL.revokeObjectURL(prev);
@@ -140,15 +155,16 @@ export function TryOnWidget({
     });
 
     setSelfieFile(null);
+    setSelfieHash('');
     setSelectedProduct(prev => (hasLockedProduct ? prev : null));
     setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
     setNotice(null);
     setGeneratedProducts(new Map());
     // Nuevo flujo: Reset vuelve a select, a menos que el producto esté bloqueado, entonces vuelve a upload
     setStep(hasLockedProduct ? 'upload' : 'select');
-  }, [brandSlug, hasLockedProduct]);
+  }, [brandSlug, selfieHash, hasLockedProduct]);
 
-  const handleSelfieUpload = (file: File, preview: string) => {
+  const handleSelfieUpload = async (file: File, preview: string) => {
     setSelfiePreview(prev => {
       if (prev) URL.revokeObjectURL(prev);
       return preview;
@@ -157,9 +173,18 @@ export function TryOnWidget({
     setNotice(null);
     setUploadPrivacyNotice('Tu selfie solo se usa en tu navegador y se elimina al subir una nueva foto');
     
-    // Invalida el caché cuando se sube una COMPLETAMENTE NUEVA selfie
-    const key = `tryon_gen_${brandSlug}`;
-    localStorage.removeItem(key);
+    // Generar hash de la selfie para cachear resultados específicos por selfie
+    let newHash = '';
+    try {
+      newHash = await generateFileHash(file);
+      setSelfieHash(newHash);
+      
+      // Invalida el caché cuando se sube una COMPLETAMENTE NUEVA selfie
+      const key = getCacheKey(brandSlug, newHash);
+      localStorage.removeItem(key);
+    } catch (e) {
+      console.warn('[TryOnWidget] No se pudo generar hash de selfie', e);
+    }
     setGeneratedProducts(new Map());
     
     if (selectedProduct) {
@@ -178,11 +203,42 @@ export function TryOnWidget({
     // Es mejor dejar que el botón "Siguiente" lo haga para mejorar UX.
   };
 
+  /**
+   * Hacer polling del estado de una generación hasta que esté lista
+   * Maximum ~135s (15 polls × ~9s average with exponential backoff)
+   */
+  const pollGeneration = useCallback(async (generationId: string) => {
+    const MAX_POLLS = 15;
+    for (let i = 0; i < MAX_POLLS; i++) {
+      // Espera inicial 3s, luego +1s por cada poll adicional (3s, 4s, 5s…)
+      const delay = (i + 3) * 1000;
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      let status;
+      try {
+        status = await tryonService.getGenerationStatus(generationId);
+      } catch (pollErr: any) {
+        // Error de red — continuar polleando
+        console.warn('[TryOnWidget] Error en polling, reintento…', pollErr.message);
+        continue;
+      }
+
+      if (status.status === 'SUCCESS' && status.imageUrl) {
+        return status;
+      }
+      if (status.status === 'FAILED') {
+        throw new Error(status.error || 'La generación falló. Por favor intenta de nuevo.');
+      }
+      // PENDING — seguir esperando
+    }
+    throw new Error('Timeout esperando resultado. Por favor intenta de nuevo.');
+  }, []);
+
   const handleGenerate = async (fileOverride?: File, productOverride?: Product, force = false) => {
     const activeFile = fileOverride || selfieFile;
     const activeProduct = productOverride || selectedProduct;
     if (!activeFile || !activeProduct) return;
-    
+
     const cached = generatedProducts.get(activeProduct.id);
     if (cached && !force) {
       setNotice('Ya habías probado este producto con tu foto actual. Te mostramos el resultado guardado para que sigas sin costo adicional.');
@@ -190,27 +246,62 @@ export function TryOnWidget({
       setStep('result');
       return;
     }
-    
+
     try {
       setStep('generating');
       setError(null);
       setErrorIsService(false);
       setNotice(null);
-      const result = await tryonService.generate(brandSlug, { productId: activeProduct.id, selfieFile: activeFile });
-      setResultImageUrl(result.imageUrl);
-      setGenerationId(result.generationId ?? null);
-      if (result.reused) {
-        setNotice(result.message || 'Ya existía un resultado para esta foto y este producto. Te mostramos el guardado sin costo adicional.');
+
+      let imageUrl: string | undefined;
+      let genId: string | null = null;
+      let reused = false;
+      let processingTime: number | undefined;
+
+      try {
+        const result = await tryonService.generate(brandSlug, { productId: activeProduct.id, selfieFile: activeFile });
+        imageUrl = result.imageUrl;
+        genId = result.generationId ?? null;
+        reused = result.reused ?? false;
+        processingTime = result.processingTime;
+      } catch (err: any) {
+        const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
+        setErrorIsService(isService);
+        setError(isService ? 'SERVICE_CREDITS_EXHAUSTED' : (err.message || 'Algo salió mal. Intenta de nuevo.'));
+        setStep('upload');
+        if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, EMBED_ORIGIN);
+        return;
       }
-      setGeneratedProducts(prev => new Map(prev).set(activeProduct.id, result.imageUrl));
+
+      // Si el backend nos dio imageUrl directamente, usar directamente
+      if (imageUrl) {
+        setResultImageUrl(imageUrl);
+        setGenerationId(genId);
+        if (reused) {
+          setNotice('Ya existía un resultado para esta foto y este producto. Te mostramos el guardado sin costo adicional.');
+        }
+        setGeneratedProducts(prev => new Map(prev).set(activeProduct.id, imageUrl!));
+        setStep('result');
+        if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl, productId: activeProduct.id, productName: activeProduct.name, generationId: genId, processingTime } }, EMBED_ORIGIN);
+        return;
+      }
+
+      // Backend devolvió solo generationId — hacer polling
+      if (!genId) {
+        throw new Error('No se pudo iniciar la generación. Intenta de nuevo.');
+      }
+
+      setGenerationId(genId);
+      const finalResult = await pollGeneration(genId);
+      setResultImageUrl(finalResult.imageUrl!);
+      setGeneratedProducts(prev => new Map(prev).set(activeProduct.id, finalResult.imageUrl!));
       setStep('result');
-      if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl: result.imageUrl, productId: activeProduct.id, productName: activeProduct.name, generationId: result.generationId, processingTime: result.processingTime } }, EMBED_ORIGIN);
+      if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl: finalResult.imageUrl, productId: activeProduct.id, productName: activeProduct.name, generationId: genId, processingTime: finalResult.processingTime } }, EMBED_ORIGIN);
     } catch (err: any) {
       const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
       setErrorIsService(isService);
       setNotice(null);
-      setError(isService ? 'SERVICE_CREDITS_EXHAUSTED' : (err.message || 'Algo salió mal. Intenta de nuevo.'));
-      // Volver a upload para que reintente
+      setError(err.message || 'Algo salió mal. Intenta de nuevo.');
       setStep('upload');
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, EMBED_ORIGIN);
     }
