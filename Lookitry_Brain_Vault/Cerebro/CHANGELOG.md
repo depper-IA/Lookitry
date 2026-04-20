@@ -4,6 +4,35 @@
 
 ---
 
+## 2026-04-20
+
+### fix(n8n): SyntaxError en nodo "Validar Input" del workflow Try-On (`wPLypk7KhBcFLicX`)
+
+**Problema:** El workflow de Try-On fallaba al ejecutar el nodo Code "Validar Input" con:
+```
+"names": ["brand_id", "product_id", "selfie_url", "product_image_url", "prompt"],
+         ^
+SyntaxError: Unexpected token ':'
+```
+
+**Causa raíz:** El campo `jsCode` del nodo contenía un **JSON stringificado anidado** en lugar del código JavaScript directo. La estructura real era:
+```json
+jsCode = "{ \"names\": [...], \"constantValues\": [], \"jsCode\": \"// código real...\" }"
+```
+Cuando n8n intentaba ejecutar ese string como JavaScript, el engine veía `"names": [...]` — sintaxis JSON, no JS válido — y lanzaba `SyntaxError: Unexpected token ':'`.
+
+**Fix aplicado (vía n8n API):**
+- Parseado el JSON wrapper del campo `jsCode`
+- Extraído el código JavaScript real anidado en `.jsCode`
+- Reemplazado `parameters.jsCode` con el código JS limpio (1999 chars)
+- Verificado que el workflow quedó `active: true` y sin wrapper
+
+**Nodo afectado:** "Validar Input" — `n8n-nodes-base.code`
+**Workflow:** Virtual Try-On - Flujo Completo (`wPLypk7KhBcFLicX`)
+**Estado:** Workflow activo y funcional
+
+---
+
 ## 2026-04-19 (4:11 PM)
 
 

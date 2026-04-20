@@ -1,0 +1,440 @@
+{
+    "updatedAt":  "2026-04-20T07:17:02.311Z",
+    "createdAt":  "2026-03-15T19:00:16.452Z",
+    "id":  "ZjVTV3QxoPEi60GX",
+    "name":  "Describir con IA",
+    "description":  null,
+    "active":  true,
+    "isArchived":  false,
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "httpMethod":  "POST",
+                                         "path":  "descriptor",
+                                         "responseMode":  "responseNode",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       1392,
+                                       640
+                                   ],
+                      "id":  "94148234-8c7d-46ce-a0cb-9ec4dd1b91b7",
+                      "name":  "Webhook",
+                      "webhookId":  "c51d8213-cc3e-4f79-a19a-6f20c832c6ae"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const body = $input.first().json.body;\nconst imageUrl = (body?.image_url || \u0027\u0027).trim();\nconst productName = (body?.product_name || \u0027\u0027).trim();\nconst category = (body?.category || \u0027\u0027).trim();\nif (!imageUrl) throw new Error(\u0027image_url es requerido\u0027);\nif (!imageUrl.startsWith(\u0027http\u0027)) throw new Error(\u0027image_url invalida: \u0027 + imageUrl.substring(0, 80));\nreturn [{ json: { imageUrl, productName, category } }];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1584,
+                                       640
+                                   ],
+                      "id":  "90d50a0e-217c-4bc0-88b8-ce1a48962cab",
+                      "name":  "Extraer parametros"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "image",
+                                         "operation":  "analyze",
+                                         "modelId":  {
+                                                         "__rl":  true,
+                                                         "value":  "models/gemma-4-31b-it",
+                                                         "mode":  "list",
+                                                         "cachedResultName":  "models/gemma-4-31b-it"
+                                                     },
+                                         "text":  "=Eres un sistema de visión especializado en moda. Analiza esta imagen del producto \"{{ $json.productName }}\" (categoría: {{ $json.category }}) y responde ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto adicional, sin bloques de código markdown:\n\n{\n  \"garment_type\": \"tipo de prenda\",\n  \"silhouette\": \"silueta/corte\",\n  \"primary_color\": \"color principal en nombre y hex aproximado\",\n  \"secondary_colors\": [\"color1\", \"color2\"],\n  \"patterns\": \"descripción de estampados, logos o gráficos visibles, o null si no hay\",\n  \"materials\": \"materiales o texturas aparentes\",\n  \"design_details\": {\n    \"neckline\": \"tipo de cuello\",\n    \"sleeves\": \"tipo de mangas\",\n    \"closures\": \"cierres o botones\",\n    \"pockets\": \"bolsillos visibles o null\",\n    \"other\": \"otros detalles relevantes o null\"\n  },\n  \"fit\": \"ajustado | regular | holgado | oversize\",\n  \"suggested_category\": \"Camiseta | Hoodie | Chaqueta | Pantalones | Zapatos | Accesorios | Otros | Rines\"\n}\n\nPara suggested_category elige SOLO una de estas opciones exactas: Camiseta, Hoodie, Chaqueta, Pantalones, Zapatos, Accesorios, Otros.\nResponde solo con el JSON, sin explicaciones.",
+                                         "inputType":  "=url",
+                                         "imageUrls":  "={{ $json.imageUrl }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.googleGemini",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       1808,
+                                       640
+                                   ],
+                      "id":  "e83540ac-7073-4d51-9b06-587c51f5b8f6",
+                      "name":  "Analyze an image",
+                      "credentials":  {
+                                          "googlePalmApi":  {
+                                                                "id":  "ReWa7OVkhJwwgxXG",
+                                                                "name":  "Info.sam API"
+                                                            }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const response = $input.first().json;\n\n// Extraer texto del nodo nativo de Gemini\nconst rawText = response?.content?.parts?.[0]?.text || response?.text || \u0027\u0027;\nif (!rawText) throw new Error(\u0027Gemini no devolvio texto\u0027);\n\n// Parsear JSON\nconst clean = rawText.replace(/```json|```/g, \u0027\u0027).trim();\nlet d;\ntry {\n  d = JSON.parse(clean);\n} catch (e) {\n  throw new Error(\u0027JSON invalido: \u0027 + e.message + \u0027 | Raw: \u0027 + clean.substring(0, 200));\n}\n\nconst { productName, category: originalCategory } = $(\u0027Extraer parametros\u0027).first().json;\n\nconst dd = d.design_details || {};\n\n// Construir enrichedPrompt\nconst enrichedPrompt = [\n  \u0027Photorealistic virtual try-on image.\u0027,\n  `Product: ${productName}${originalCategory ? \u0027 (\u0027 + originalCategory + \u0027)\u0027 : \u0027\u0027}.`,\n  `Garment type: ${d.garment_type}, ${d.silhouette} silhouette, ${d.fit} fit.`,\n  `Primary color: ${d.primary_color}.`,\n  d.secondary_colors?.length ? `Secondary colors: ${d.secondary_colors.join(\u0027, \u0027)}.` : \u0027\u0027,\n  d.patterns ? `Patterns and graphics: ${d.patterns}.` : \u0027\u0027,\n  `Material/texture: ${d.materials}.`,\n  `Design details - neckline: ${dd.neckline || \u0027n/a\u0027}, sleeves: ${dd.sleeves || \u0027n/a\u0027}, closures: ${dd.closures || \u0027n/a\u0027}${dd.pockets ? \u0027, pockets: \u0027 + dd.pockets : \u0027\u0027}${dd.other ? \u0027, other: \u0027 + dd.other : \u0027\u0027}.`,\n  \u0027CRITICAL RULES:\u0027,\n  \u00271. Reproduce the product EXACTLY: same colors, patterns, textures, logos, cuts and design details.\u0027,\n  \u00272. Keep the persons face, skin tone, hair and body proportions identical to the selfie.\u0027,\n  \u00273. The product must fit naturally on the persons body, respecting their pose and lighting.\u0027,\n  \u00274. Maintain photorealistic quality with consistent lighting between person and product.\u0027,\n  \u00275. Output only the final LOOKITRY image.\u0027,\n].filter(Boolean).join(\u0027 \u0027);\n\n// Resolver categoría\nconst VALID_CATEGORIES = [\u0027Camiseta\u0027, \u0027Hoodie\u0027, \u0027Chaqueta\u0027, \u0027Pantalones\u0027, \u0027Zapatos\u0027, \u0027Accesorios\u0027, \u0027Otros\u0027];\nconst isValidOriginal = VALID_CATEGORIES.includes(originalCategory);\nconst category = isValidOriginal\n  ? originalCategory\n  : (VALID_CATEGORIES.includes(d.suggested_category) ? d.suggested_category : \u0027Otros\u0027);\n\n// REGRESAMOS EL OBJETO DE LA DESCRIPCIÓN \u0027d\u0027 INTACTO PARA QUE EL ÚLTIMO NODO LO PROCESE:\nreturn [{ json: { description: d, category, enrichedPrompt } }];\n"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2032,
+                                       640
+                                   ],
+                      "id":  "31c4bfc4-9dba-4d6a-a376-cd39b53f047d",
+                      "name":  "Construir prompt enriquecido"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const { enrichedPrompt, description: d } = $input.first().json;\n\nconst parts = [];\nif (d.garment_type) parts.push(d.garment_type + (d.silhouette ? \u0027 de silueta \u0027 + d.silhouette : \u0027\u0027));\nif (d.primary_color) parts.push(\u0027Color principal: \u0027 + d.primary_color);\nif (d.secondary_colors?.length) parts.push(\u0027Colores secundarios: \u0027 + d.secondary_colors.join(\u0027, \u0027));\nif (d.patterns) parts.push(\u0027Estampado: \u0027 + d.patterns);\nif (d.materials) parts.push(\u0027Material: \u0027 + d.materials);\nconst dd = d.design_details || {};\nconst details = [\n  dd.neckline \u0026\u0026 \u0027cuello \u0027 + dd.neckline,\n  dd.sleeves \u0026\u0026 \u0027mangas \u0027 + dd.sleeves,\n  dd.closures \u0026\u0026 \u0027cierre \u0027 + dd.closures,\n  dd.pockets \u0026\u0026 \u0027bolsillos: \u0027 + dd.pockets,\n  dd.other || null\n].filter(Boolean);\nif (details.length) parts.push(\u0027Detalles: \u0027 + details.join(\u0027, \u0027));\nif (d.fit) parts.push(\u0027Fit: \u0027 + d.fit);\n\nconst CATEGORY_MAP = {\n  vestido: \u0027VESTIDO\u0027, dress: \u0027VESTIDO\u0027,\n  camisa: \u0027CAMISA\u0027, shirt: \u0027CAMISA\u0027, top: \u0027TOP\u0027, blusa: \u0027BLUSA\u0027, blouse: \u0027BLUSA\u0027,\n  pantalon: \u0027PANTALON\u0027, \u0027pantalón\u0027: \u0027PANTALON\u0027, pants: \u0027PANTS\u0027, jeans: \u0027JEANS\u0027,\n  falda: \u0027FALDA\u0027, skirt: \u0027FALDA\u0027,\n  zapatos: \u0027ZAPATOS\u0027, shoes: \u0027ZAPATOS\u0027, calzado: \u0027ZAPATOS\u0027, footwear: \u0027ZAPATOS\u0027,\n  conjunto: \u0027CONJUNTO\u0027, set: \u0027SET\u0027, outfit: \u0027CONJUNTO\u0027,\n  chaqueta: \u0027CHAQUETA\u0027, jacket: \u0027JACKET\u0027, abrigo: \u0027ABRIGO\u0027, coat: \u0027ABRIGO\u0027,\n  hoodie: \u0027HOODIE\u0027, sudadera: \u0027HOODIE\u0027,\n  accesorio: \u0027ACCESSORY\u0027, accessory: \u0027ACCESSORY\u0027, accessories: \u0027ACCESSORY\u0027,\n  casco: \u0027HELMET\u0027, helmet: \u0027HELMET\u0027,\n};\n\nconst rawType = (d.garment_type || \u0027\u0027).toLowerCase().trim();\nconst category = CATEGORY_MAP[rawType] || d.garment_type?.toUpperCase() || null;\n\nreturn [{ json: { description: parts.join(\u0027. \u0027) + \u0027.\u0027, category, enrichedPrompt } }];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2256,
+                                       640
+                                   ],
+                      "id":  "85a7c89c-b256-4093-9821-7f761f105996",
+                      "name":  "Formatear respuesta"
+                  },
+                  {
+                      "parameters":  {
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.5,
+                      "position":  [
+                                       2480,
+                                       640
+                                   ],
+                      "id":  "3b4979f0-b22f-4f15-96e5-1aa3a3f8f3e5",
+                      "name":  "Respond to Webhook"
+                  }
+              ],
+    "connections":  {
+                        "Webhook":  {
+                                        "main":  [
+                                                     [
+                                                         {
+                                                             "node":  "Extraer parametros",
+                                                             "type":  "main",
+                                                             "index":  0
+                                                         }
+                                                     ]
+                                                 ]
+                                    },
+                        "Extraer parametros":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Analyze an image",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Analyze an image":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Construir prompt enriquecido",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Construir prompt enriquecido":  {
+                                                             "main":  [
+                                                                          [
+                                                                              {
+                                                                                  "node":  "Formatear respuesta",
+                                                                                  "type":  "main",
+                                                                                  "index":  0
+                                                                              }
+                                                                          ]
+                                                                      ]
+                                                         },
+                        "Formatear respuesta":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Respond to Webhook",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "binaryMode":  "separate",
+                     "availableInMCP":  true,
+                     "callerPolicy":  "workflowsFromSameOwner",
+                     "timeSavedMode":  "fixed"
+                 },
+    "staticData":  null,
+    "meta":  {
+                 "templateCredsSetupCompleted":  true
+             },
+    "pinData":  {
+                    "Webhook":  [
+                                    {
+                                        "json":  {
+                                                     "headers":  {
+                                                                     "host":  "n8n.wilkiedevs.com",
+                                                                     "user-agent":  "node",
+                                                                     "content-length":  "156",
+                                                                     "accept":  "*/*",
+                                                                     "accept-encoding":  "br, gzip, deflate",
+                                                                     "accept-language":  "*",
+                                                                     "authorization":  "Bearer Travis2305**",
+                                                                     "content-type":  "application/json",
+                                                                     "sec-fetch-mode":  "cors",
+                                                                     "x-forwarded-for":  "161.18.87.45",
+                                                                     "x-forwarded-host":  "n8n.wilkiedevs.com",
+                                                                     "x-forwarded-port":  "443",
+                                                                     "x-forwarded-proto":  "https",
+                                                                     "x-forwarded-server":  "34e0943f10ea",
+                                                                     "x-real-ip":  "161.18.87.45"
+                                                                 },
+                                                     "params":  {
+
+                                                                },
+                                                     "query":  {
+
+                                                               },
+                                                     "body":  {
+                                                                  "image_url":  "https://minio.wilkiedevs.com/images/products/1776117065197-e4d537780d54.webp",
+                                                                  "product_name":  "Ruedas Black Rhino Warlord",
+                                                                  "category":  "tshirt"
+                                                              },
+                                                     "webhookUrl":  "https://n8n.wilkiedevs.com/webhook/descriptor",
+                                                     "executionMode":  "production"
+                                                 },
+                                        "pairedItem":  {
+                                                           "item":  0
+                                                       }
+                                    }
+                                ]
+                },
+    "versionId":  "8876dd61-8f7d-48c7-bc9a-952b47f24ee9",
+    "activeVersionId":  "8876dd61-8f7d-48c7-bc9a-952b47f24ee9",
+    "versionCounter":  298,
+    "triggerCount":  1,
+    "shared":  [
+                   {
+                       "updatedAt":  "2026-03-15T19:00:16.459Z",
+                       "createdAt":  "2026-03-15T19:00:16.459Z",
+                       "role":  "workflow:owner",
+                       "workflowId":  "ZjVTV3QxoPEi60GX",
+                       "projectId":  "ZwHHlnZoKhyDqulQ",
+                       "project":  {
+                                       "updatedAt":  "2025-09-11T15:11:06.112Z",
+                                       "createdAt":  "2025-09-11T14:54:34.020Z",
+                                       "id":  "ZwHHlnZoKhyDqulQ",
+                                       "name":  "Samuel Wilkie \u003csamwilkiedevs@gmail.com\u003e",
+                                       "type":  "personal",
+                                       "icon":  null,
+                                       "description":  null,
+                                       "creatorId":  "54e1e62b-dcc4-4bde-9ace-690f2010b200"
+                                   }
+                   }
+               ],
+    "tags":  [
+                 {
+                     "updatedAt":  "2026-03-15T19:05:45.164Z",
+                     "createdAt":  "2026-03-15T19:05:45.164Z",
+                     "id":  "bidpNCaxW9N10X8S",
+                     "name":  "SaaS"
+                 }
+             ],
+    "activeVersion":  {
+                          "updatedAt":  "2026-04-20T07:17:19.000Z",
+                          "createdAt":  "2026-04-20T07:17:02.112Z",
+                          "versionId":  "8876dd61-8f7d-48c7-bc9a-952b47f24ee9",
+                          "workflowId":  "ZjVTV3QxoPEi60GX",
+                          "nodes":  [
+                                        {
+                                            "parameters":  {
+                                                               "httpMethod":  "POST",
+                                                               "path":  "descriptor",
+                                                               "responseMode":  "responseNode",
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "type":  "n8n-nodes-base.webhook",
+                                            "typeVersion":  2.1,
+                                            "position":  [
+                                                             1392,
+                                                             640
+                                                         ],
+                                            "id":  "94148234-8c7d-46ce-a0cb-9ec4dd1b91b7",
+                                            "name":  "Webhook",
+                                            "webhookId":  "c51d8213-cc3e-4f79-a19a-6f20c832c6ae"
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "jsCode":  "const body = $input.first().json.body;\nconst imageUrl = (body?.image_url || \u0027\u0027).trim();\nconst productName = (body?.product_name || \u0027\u0027).trim();\nconst category = (body?.category || \u0027\u0027).trim();\nif (!imageUrl) throw new Error(\u0027image_url es requerido\u0027);\nif (!imageUrl.startsWith(\u0027http\u0027)) throw new Error(\u0027image_url invalida: \u0027 + imageUrl.substring(0, 80));\nreturn [{ json: { imageUrl, productName, category } }];"
+                                                           },
+                                            "type":  "n8n-nodes-base.code",
+                                            "typeVersion":  2,
+                                            "position":  [
+                                                             1584,
+                                                             640
+                                                         ],
+                                            "id":  "90d50a0e-217c-4bc0-88b8-ce1a48962cab",
+                                            "name":  "Extraer parametros"
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "resource":  "image",
+                                                               "operation":  "analyze",
+                                                               "modelId":  {
+                                                                               "__rl":  true,
+                                                                               "value":  "models/gemma-4-31b-it",
+                                                                               "mode":  "list",
+                                                                               "cachedResultName":  "models/gemma-4-31b-it"
+                                                                           },
+                                                               "text":  "=Eres un sistema de visión especializado en moda. Analiza esta imagen del producto \"{{ $json.productName }}\" (categoría: {{ $json.category }}) y responde ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto adicional, sin bloques de código markdown:\n\n{\n  \"garment_type\": \"tipo de prenda\",\n  \"silhouette\": \"silueta/corte\",\n  \"primary_color\": \"color principal en nombre y hex aproximado\",\n  \"secondary_colors\": [\"color1\", \"color2\"],\n  \"patterns\": \"descripción de estampados, logos o gráficos visibles, o null si no hay\",\n  \"materials\": \"materiales o texturas aparentes\",\n  \"design_details\": {\n    \"neckline\": \"tipo de cuello\",\n    \"sleeves\": \"tipo de mangas\",\n    \"closures\": \"cierres o botones\",\n    \"pockets\": \"bolsillos visibles o null\",\n    \"other\": \"otros detalles relevantes o null\"\n  },\n  \"fit\": \"ajustado | regular | holgado | oversize\",\n  \"suggested_category\": \"Camiseta | Hoodie | Chaqueta | Pantalones | Zapatos | Accesorios | Otros | Rines\"\n}\n\nPara suggested_category elige SOLO una de estas opciones exactas: Camiseta, Hoodie, Chaqueta, Pantalones, Zapatos, Accesorios, Otros.\nResponde solo con el JSON, sin explicaciones.",
+                                                               "inputType":  "=url",
+                                                               "imageUrls":  "={{ $json.imageUrl }}",
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "type":  "@n8n/n8n-nodes-langchain.googleGemini",
+                                            "typeVersion":  1.1,
+                                            "position":  [
+                                                             1808,
+                                                             640
+                                                         ],
+                                            "id":  "e83540ac-7073-4d51-9b06-587c51f5b8f6",
+                                            "name":  "Analyze an image",
+                                            "credentials":  {
+                                                                "googlePalmApi":  {
+                                                                                      "id":  "ReWa7OVkhJwwgxXG",
+                                                                                      "name":  "Info.sam API"
+                                                                                  }
+                                                            }
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "jsCode":  "const response = $input.first().json;\n\n// Extraer texto del nodo nativo de Gemini\nconst rawText = response?.content?.parts?.[0]?.text || response?.text || \u0027\u0027;\nif (!rawText) throw new Error(\u0027Gemini no devolvio texto\u0027);\n\n// Parsear JSON\nconst clean = rawText.replace(/```json|```/g, \u0027\u0027).trim();\nlet d;\ntry {\n  d = JSON.parse(clean);\n} catch (e) {\n  throw new Error(\u0027JSON invalido: \u0027 + e.message + \u0027 | Raw: \u0027 + clean.substring(0, 200));\n}\n\nconst { productName, category: originalCategory } = $(\u0027Extraer parametros\u0027).first().json;\n\nconst dd = d.design_details || {};\n\n// Construir enrichedPrompt\nconst enrichedPrompt = [\n  \u0027Photorealistic virtual try-on image.\u0027,\n  `Product: ${productName}${originalCategory ? \u0027 (\u0027 + originalCategory + \u0027)\u0027 : \u0027\u0027}.`,\n  `Garment type: ${d.garment_type}, ${d.silhouette} silhouette, ${d.fit} fit.`,\n  `Primary color: ${d.primary_color}.`,\n  d.secondary_colors?.length ? `Secondary colors: ${d.secondary_colors.join(\u0027, \u0027)}.` : \u0027\u0027,\n  d.patterns ? `Patterns and graphics: ${d.patterns}.` : \u0027\u0027,\n  `Material/texture: ${d.materials}.`,\n  `Design details - neckline: ${dd.neckline || \u0027n/a\u0027}, sleeves: ${dd.sleeves || \u0027n/a\u0027}, closures: ${dd.closures || \u0027n/a\u0027}${dd.pockets ? \u0027, pockets: \u0027 + dd.pockets : \u0027\u0027}${dd.other ? \u0027, other: \u0027 + dd.other : \u0027\u0027}.`,\n  \u0027CRITICAL RULES:\u0027,\n  \u00271. Reproduce the product EXACTLY: same colors, patterns, textures, logos, cuts and design details.\u0027,\n  \u00272. Keep the persons face, skin tone, hair and body proportions identical to the selfie.\u0027,\n  \u00273. The product must fit naturally on the persons body, respecting their pose and lighting.\u0027,\n  \u00274. Maintain photorealistic quality with consistent lighting between person and product.\u0027,\n  \u00275. Output only the final LOOKITRY image.\u0027,\n].filter(Boolean).join(\u0027 \u0027);\n\n// Resolver categoría\nconst VALID_CATEGORIES = [\u0027Camiseta\u0027, \u0027Hoodie\u0027, \u0027Chaqueta\u0027, \u0027Pantalones\u0027, \u0027Zapatos\u0027, \u0027Accesorios\u0027, \u0027Otros\u0027];\nconst isValidOriginal = VALID_CATEGORIES.includes(originalCategory);\nconst category = isValidOriginal\n  ? originalCategory\n  : (VALID_CATEGORIES.includes(d.suggested_category) ? d.suggested_category : \u0027Otros\u0027);\n\n// REGRESAMOS EL OBJETO DE LA DESCRIPCIÓN \u0027d\u0027 INTACTO PARA QUE EL ÚLTIMO NODO LO PROCESE:\nreturn [{ json: { description: d, category, enrichedPrompt } }];\n"
+                                                           },
+                                            "type":  "n8n-nodes-base.code",
+                                            "typeVersion":  2,
+                                            "position":  [
+                                                             2032,
+                                                             640
+                                                         ],
+                                            "id":  "31c4bfc4-9dba-4d6a-a376-cd39b53f047d",
+                                            "name":  "Construir prompt enriquecido"
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "jsCode":  "const { enrichedPrompt, description: d } = $input.first().json;\n\nconst parts = [];\nif (d.garment_type) parts.push(d.garment_type + (d.silhouette ? \u0027 de silueta \u0027 + d.silhouette : \u0027\u0027));\nif (d.primary_color) parts.push(\u0027Color principal: \u0027 + d.primary_color);\nif (d.secondary_colors?.length) parts.push(\u0027Colores secundarios: \u0027 + d.secondary_colors.join(\u0027, \u0027));\nif (d.patterns) parts.push(\u0027Estampado: \u0027 + d.patterns);\nif (d.materials) parts.push(\u0027Material: \u0027 + d.materials);\nconst dd = d.design_details || {};\nconst details = [\n  dd.neckline \u0026\u0026 \u0027cuello \u0027 + dd.neckline,\n  dd.sleeves \u0026\u0026 \u0027mangas \u0027 + dd.sleeves,\n  dd.closures \u0026\u0026 \u0027cierre \u0027 + dd.closures,\n  dd.pockets \u0026\u0026 \u0027bolsillos: \u0027 + dd.pockets,\n  dd.other || null\n].filter(Boolean);\nif (details.length) parts.push(\u0027Detalles: \u0027 + details.join(\u0027, \u0027));\nif (d.fit) parts.push(\u0027Fit: \u0027 + d.fit);\n\nconst CATEGORY_MAP = {\n  vestido: \u0027VESTIDO\u0027, dress: \u0027VESTIDO\u0027,\n  camisa: \u0027CAMISA\u0027, shirt: \u0027CAMISA\u0027, top: \u0027TOP\u0027, blusa: \u0027BLUSA\u0027, blouse: \u0027BLUSA\u0027,\n  pantalon: \u0027PANTALON\u0027, \u0027pantalón\u0027: \u0027PANTALON\u0027, pants: \u0027PANTS\u0027, jeans: \u0027JEANS\u0027,\n  falda: \u0027FALDA\u0027, skirt: \u0027FALDA\u0027,\n  zapatos: \u0027ZAPATOS\u0027, shoes: \u0027ZAPATOS\u0027, calzado: \u0027ZAPATOS\u0027, footwear: \u0027ZAPATOS\u0027,\n  conjunto: \u0027CONJUNTO\u0027, set: \u0027SET\u0027, outfit: \u0027CONJUNTO\u0027,\n  chaqueta: \u0027CHAQUETA\u0027, jacket: \u0027JACKET\u0027, abrigo: \u0027ABRIGO\u0027, coat: \u0027ABRIGO\u0027,\n  hoodie: \u0027HOODIE\u0027, sudadera: \u0027HOODIE\u0027,\n  accesorio: \u0027ACCESSORY\u0027, accessory: \u0027ACCESSORY\u0027, accessories: \u0027ACCESSORY\u0027,\n  casco: \u0027HELMET\u0027, helmet: \u0027HELMET\u0027,\n};\n\nconst rawType = (d.garment_type || \u0027\u0027).toLowerCase().trim();\nconst category = CATEGORY_MAP[rawType] || d.garment_type?.toUpperCase() || null;\n\nreturn [{ json: { description: parts.join(\u0027. \u0027) + \u0027.\u0027, category, enrichedPrompt } }];"
+                                                           },
+                                            "type":  "n8n-nodes-base.code",
+                                            "typeVersion":  2,
+                                            "position":  [
+                                                             2256,
+                                                             640
+                                                         ],
+                                            "id":  "85a7c89c-b256-4093-9821-7f761f105996",
+                                            "name":  "Formatear respuesta"
+                                        },
+                                        {
+                                            "parameters":  {
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "type":  "n8n-nodes-base.respondToWebhook",
+                                            "typeVersion":  1.5,
+                                            "position":  [
+                                                             2480,
+                                                             640
+                                                         ],
+                                            "id":  "3b4979f0-b22f-4f15-96e5-1aa3a3f8f3e5",
+                                            "name":  "Respond to Webhook"
+                                        }
+                                    ],
+                          "connections":  {
+                                              "Webhook":  {
+                                                              "main":  [
+                                                                           [
+                                                                               {
+                                                                                   "node":  "Extraer parametros",
+                                                                                   "type":  "main",
+                                                                                   "index":  0
+                                                                               }
+                                                                           ]
+                                                                       ]
+                                                          },
+                                              "Extraer parametros":  {
+                                                                         "main":  [
+                                                                                      [
+                                                                                          {
+                                                                                              "node":  "Analyze an image",
+                                                                                              "type":  "main",
+                                                                                              "index":  0
+                                                                                          }
+                                                                                      ]
+                                                                                  ]
+                                                                     },
+                                              "Analyze an image":  {
+                                                                       "main":  [
+                                                                                    [
+                                                                                        {
+                                                                                            "node":  "Construir prompt enriquecido",
+                                                                                            "type":  "main",
+                                                                                            "index":  0
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                   },
+                                              "Construir prompt enriquecido":  {
+                                                                                   "main":  [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "node":  "Formatear respuesta",
+                                                                                                        "type":  "main",
+                                                                                                        "index":  0
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                               },
+                                              "Formatear respuesta":  {
+                                                                          "main":  [
+                                                                                       [
+                                                                                           {
+                                                                                               "node":  "Respond to Webhook",
+                                                                                               "type":  "main",
+                                                                                               "index":  0
+                                                                                           }
+                                                                                       ]
+                                                                                   ]
+                                                                      }
+                                          },
+                          "authors":  "Samuel Wilkie",
+                          "name":  "Version 8876dd61",
+                          "description":  "",
+                          "autosaved":  false,
+                          "workflowPublishHistory":  [
+                                                         {
+                                                             "createdAt":  "2026-04-20T07:17:19.097Z",
+                                                             "id":  950,
+                                                             "workflowId":  "ZjVTV3QxoPEi60GX",
+                                                             "versionId":  "8876dd61-8f7d-48c7-bc9a-952b47f24ee9",
+                                                             "event":  "activated",
+                                                             "userId":  "54e1e62b-dcc4-4bde-9ace-690f2010b200"
+                                                         }
+                                                     ]
+                      }
+}

@@ -47,7 +47,7 @@ services:
       - PORT=3001
 
       # === N8N ===
-      - N8N_WEBHOOK_URL=http://root-n8n-1:5678/webhook/wPLypk7KhBcFLicX
+      - N8N_WEBHOOK_URL=https://n8n.wilkiedevs.com/webhook/wPLypk7KhBcFLicX
       - N8N_API_KEY=***REMOVED-SECRET***
       - N8N_BEARER_TOKEN=Travis2305**
       - N8N_TIMEOUT=90000

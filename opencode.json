@@ -153,7 +153,7 @@
         "npx",
         "-y",
         "tsx",
-        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/supabase-mcp/src/index.ts"
+        "C:\\Users\\Matt\\Lookitry\\.opencode\\mcp-servers\\supabase-mcp\\src\\index.ts"
       ],
       "enabled": true,
       "environment": {
@@ -165,7 +165,7 @@
       "type": "local",
       "command": [
         "node",
-        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/n8n-mcp-server/dist/index.js"
+        "C:\\Users\\Matt\\Lookitry\\.opencode\\mcp-servers\\n8n-mcp-server\\dist\\index.js"
       ],
       "enabled": true,
       "environment": {

@@ -60,7 +60,60 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
           <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
         </div>
       )}
-      {step !== 'generating' && (
+
+      {/* Paso Select: re-dirigir a upload si ya hay producto, sino mostrar selector minimalista */}
+      {step === 'select' && (
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 overflow-y-auto overflow-x-hidden">
+          <div className="max-w-md mx-auto w-full">
+            <ErrorBanner 
+              error={error} 
+              isService={errorIsService} 
+              onDismiss={props.onDismissError}
+              textColor={textPrimary}
+              mutedColor={textMuted}
+              cardBg={cardBg}
+              cardBorder={borderColor}
+            />
+            <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
+
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              {/* Selector de producto simple */}
+              <FriendlyProductSelector
+                products={config.products}
+                selected={selectedProduct}
+                onSelect={(p) => {
+                  onProductSelect(p);
+                }}
+                primaryColor={primaryColor}
+                generatedProducts={generatedProducts}
+                textColor={textPrimary}
+                textMutedColor={textMuted}
+              />
+
+              {selectedProduct && (
+                <div className="pt-4 pb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  <button
+                    onClick={props.onProceedToUpload}
+                    className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group"
+                    style={{ 
+                      backgroundColor: primaryColor,
+                      boxShadow: `0 8px 32px ${primaryGlow}`
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                    <span className="relative z-10">Siguiente paso</span>
+                    <svg className="w-4 h-4 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {step !== 'generating' && step !== 'select' && (
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 overflow-y-auto overflow-x-hidden">
           <div className={`${centerUploadInEmbed ? 'w-full max-w-md' : (pluginView && step === 'result' ? 'mx-auto w-full max-w-5xl' : 'max-w-md mx-auto w-full')}`}>
             <ErrorBanner 
