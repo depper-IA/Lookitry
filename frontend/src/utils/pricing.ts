@@ -43,25 +43,21 @@ export async function fetchDynamicPricing(): Promise<DynamicPricing> {
     error: true,
   };
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.warn('[fetchDynamicPricing] Missing Supabase config, using fallbacks');
-    return fallback;
-  }
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
   try {
-    const data = await fetchWithRetry<any[]>(
-      `${supabaseUrl}/rest/v1/pricing_config?id=in.(basic,pro,trial)&select=id,data`,
-      {
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`,
-        },
-      },
-      MAX_RETRIES
-    );
+    // Use backend endpoint to avoid broken anon key
+    const response = await fetch(`${apiUrl}/api/pricing-config`, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      console.warn('[fetchDynamicPricing] Backend returned HTTP', response.status);
+      return fallback;
+    }
+
+    const result = await response.json();
+    const data = result?.data || [];
 
     if (!Array.isArray(data) || data.length === 0) {
       console.warn('[fetchDynamicPricing] No pricing data found, using fallbacks');

@@ -73,8 +73,7 @@
     },
     "devguardian": {
       "description": "Agente de Calidad, Debugging y Seguridad",
-      "model": "deepseek/deepseek-reasoner",
-      "fallback": "minimax/MiniMax-M2.7",
+      "model": "minimax/MiniMax-M2.7",
       "prompt": "DevGuardian es el guardián de la calidad y seguridad, guiado por Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Revisa seguridad, pagos, auth JWT y webhooks. Usa razonamiento profundo para validar que ninguna implementación viole las reglas de seguridad o arquitectura del proyecto. NUNCA expone API keys. Backend usa supabaseAdmin. Usa maybeSingle() por seguridad de datos.",
       "permissions": {
         "read": "allow",
@@ -107,8 +106,7 @@
     },
     "architectai": {
       "description": "Agente de Infraestructura, DevOps y Arquitectura de Sistema",
-      "model": "deepseek/deepseek-reasoner",
-      "fallback": "minimax/MiniMax-M2.7",
+      "model": "minimax/MiniMax-M2.7",
       "prompt": "ArchitectAI maneja Infra, DevOps y Arquitectura basándose en Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Administra Docker, VPS, Traefik y despliegues. PROHIBIDO realizar cambios de infraestructura sin validar contra las reglas de despliegue y arquitectura. Usa el script de deploy oficial. Razona paso a paso antes de actuar.",
       "permissions": {
         "read": "allow",

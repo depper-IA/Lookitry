@@ -11,6 +11,7 @@ import { helmetConfig, publicCorsConfig, globalCorsConfig } from './config/secur
 
 // Importación de rutas
 import promotionsRoutes from './routes/promotions.routes';
+import pricingConfigRoutes from './routes/pricingConfig.routes';
 import pruebaloRoutes from './routes/pruebalo.routes';
 import embedRoutes from './routes/embed.routes';
 import reviewsPublicRoutes from './routes/reviewsPublic.routes';
@@ -88,6 +89,7 @@ app.use('/api', apiRouter);
 // Endpoints Sueltos
 app.get('/api/payment-settings/public', publicCors, getPublicPaymentSettings);
 app.use('/api/promotions', publicCors, promotionsRoutes);
+app.use('/api/pricing-config', publicCors, pricingConfigRoutes);
 app.post('/api/upload', authMiddleware, (req, res) => uploadImage(req as any, res));
 app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => uploadSelfie(req, res));
 app.delete('/api/upload/cleanup-temp', (req, res) => cleanupTempSelfies(req, res));
