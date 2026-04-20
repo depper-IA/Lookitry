@@ -204,6 +204,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
                 <ResultDisplay
                   imageUrl={resultImageUrl}
                   productName={selectedProduct?.name || ''}
+                  productPrice={selectedProduct?.price}
                   selfiePreview={selfiePreview}
                   onReset={onReset}
                   primaryColor={primaryColor}
@@ -217,6 +218,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
                   mutedColor={textMuted}
                   cardBg={cardBg}
                   cardBorder={borderColor}
+                  whatsappContact={config.brand.whatsappContact ?? null}
                 />
               </div>
             )}

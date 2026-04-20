@@ -21,6 +21,18 @@
 
 ---
 
+### fix(csp): agregar minio.wilkiedevs.com a connect-src CSP directive
+
+**Problema:** Error CSP "Connecting to 'https://minio.wilkiedevs.com/...' violates... connect-src directive" en el editor de productos al subir imágenes.
+
+**Fix:** Agregado `https://minio.wilkiedevs.com` a la directive `connect-src` en:
+- `src/middleware.ts` (línea 207)
+- `next.config.js` (línea 36)
+
+**Commit:** `21e0328`
+
+---
+
 ### fix(n8n): SyntaxError en nodo "Validar Input" del workflow Try-On (`wPLypk7KhBcFLicX`)
 
 **Problema:** El workflow de Try-On fallaba al ejecutar el nodo Code "Validar Input" con:

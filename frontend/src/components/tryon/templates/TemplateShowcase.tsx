@@ -251,6 +251,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
             <ResultDisplay
               imageUrl={resultImageUrl}
               productName={selectedProduct?.name || ''}
+              productPrice={selectedProduct?.price}
               selfiePreview={selfiePreview}
               onReset={onReset}
               primaryColor={primaryColor}
@@ -264,6 +265,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
               mutedColor={textMuted}
               cardBg={cardBg}
               cardBorder={bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)'}
+              whatsappContact={config.brand.whatsappContact ?? null}
             />
           </div>
         )}
