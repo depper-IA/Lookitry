@@ -1,5 +1,41 @@
 # CHANGELOG — Lookitry
 
+## 20 de Abril 2026 (Fixes Críticos Health Check + n8n)
+
+### 🔧 Fix: Health Check de n8n — YA NO hace GET al webhook de producción
+
+**Problema:** El health controller enviaba GET a `https://n8n.wilkiedevs.com/webhook/tryon` cada 30 segundos, causando:
+- 404s en logs de n8n
+- Logs de spam llenando el terminal de n8n
+- Posible impacto en rendimiento
+
+**Solución:**
+- Cambiado a usar `/healthz` endpoint público de n8n
+- URL hardcodeada: `https://n8n.wilkiedevs.com/healthz`
+- Respuesta esperada: `{"status":"ok"}` con HTTP 200
+
+**Archivo Modificado:**
+- `backend/src/controllers/health.controller.ts` — checkN8n() ahora usa `/healthz`
+
+### 🔧 Fix: CORS_ORIGIN actualizado en .env.production
+
+**Problema:** `.env.production` tenía placeholder `https://tu-dominio.com`.
+
+**Solución:**
+```
+CORS_ORIGIN=https://wilkie-devs.lookitry.com,https://lookitry.com,https://www.lookitry.com,https://wilkie-devs.com,https://www.wilkie-devs.com
+```
+
+**Nota:** `.env.production` no está trackeado en git (contiene secretos). El cambio se sincroniza via deploy script.
+
+### ✅ Verificación: N8N_API_KEY es válido
+
+- Probado vía API `/api/v1/workflows` con el key actual → **OK**
+- `/healthz` de n8n responde `{"status":"ok"}` → **OK**
+- Health check post-deploy: n8n status=up, latency_ms=47
+
+---
+
 ## 20 de Abril 2026 (Auditoría + Fixes Widget Try-On)
 
 ### 🔧 Fix: Sistema de Marca de Agua (Watermark) — CORREGIDO
