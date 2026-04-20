@@ -4,8 +4,55 @@ import React, { useState, useEffect } from 'react';
 import { getProxiedImageUrl } from '@/utils/imageProxy';
 
 // ── Marca de agua dinámica (Visual Overlay) ──────────────────────────────────
+// Lógica: Los planes BASIC y TRIAL muestran marca de agua "Powered by Lookitry"
+// Los planes PRO y ENTERPRISE no muestran marca (beneficio de suscripción premium)
 function Watermark({ plan }: { plan?: string }) {
-  return null;
+  const PREMIUM_PLANS = ['PRO', 'ENTERPRISE'];
+  const showWatermark = !plan || !PREMIUM_PLANS.includes(plan.toUpperCase());
+
+  if (!showWatermark) return null;
+
+  return (
+    <div
+      className="absolute bottom-3 right-3 z-10 pointer-events-none select-none"
+      aria-hidden="true"
+    >
+      <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1.5 rounded-full">
+        {/* Logo SVG mini de Lookitry */}
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="shrink-0"
+        >
+          <path
+            d="M12 2L2 7L12 12L22 7L12 2Z"
+            fill="#FF5C3A"
+            stroke="#FF5C3A"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M2 17L12 22L22 17"
+            stroke="#FF5C3A"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M2 12L12 17L22 12"
+            stroke="#FF5C3A"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="text-white/90 text-[9px] font-black uppercase tracking-wider whitespace-nowrap">
+          Lookitry AI
+        </span>
+      </div>
+    </div>
+  );
 }
 
 // ── Imagen con skeleton de carga ──────────────────────────────────────────────

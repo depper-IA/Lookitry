@@ -2,6 +2,26 @@
 
 ## 20 de Abril 2026 (Auditoría + Fixes Widget Try-On)
 
+### ✨ Feature: Sistema de Marca de Agua (Watermark)
+
+**Resumen:** Implementado sistema de marca de agua "Powered by Lookitry AI" en imágenes generadas.
+
+#### Lógica Implementada
+
+| Plan | Marca de Agua |
+|------|---------------|
+| TRIAL | Visible |
+| BASIC | Visible |
+| PRO | Oculta |
+| ENTERPRISE | Oculta |
+
+#### Archivos Modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/components/tryon/ResultDisplay.tsx` | Función Watermark implementada (líneas 7-45) |
+| `Lookitry_Brain_Vault/Cerebro/Docs/Guias/WIDGET_GUIDE.md` | Documentación de la lógica |
+
 ### 🐛 Fixes Críticos P0 — Widget Try-On
 
 **Resumen:** Auditoría completa del sistema de generación de imagen con 5 fixes P0 y 6 fixes P1 implementados.

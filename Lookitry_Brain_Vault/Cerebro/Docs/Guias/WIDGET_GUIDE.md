@@ -174,4 +174,59 @@ El middleware de Next.js configura:
 
 ---
 
+## Sistema de Marca de Agua (Watermark)
+
+### Lógica de Visibilidad
+
+El widget incluye un sistema de marca de agua "Powered by Lookitry AI" que aparece en las imágenes generadas según el plan del cliente:
+
+| Plan | Marca de Agua | Detalle |
+|------|---------------|---------|
+| **TRIAL** | Visible | "Lookitry AI" badge en esquina inferior derecha |
+| **BASIC** | Visible | "Lookitry AI" badge en esquina inferior derecha |
+| **PRO** | Oculta | Sin marca — beneficio premium |
+| **ENTERPRISE** | Oculta | Sin marca — beneficio premium |
+
+### Implementación
+
+```tsx
+// En ResultDisplay.tsx
+function Watermark({ plan }: { plan?: string }) {
+  const PREMIUM_PLANS = ['PRO', 'ENTERPRISE'];
+  const showWatermark = !plan || !PREMIUM_PLANS.includes(plan.toUpperCase());
+
+  if (!showWatermark) return null;
+
+  return (
+    <div className="absolute bottom-3 right-3 z-10 pointer-events-none">
+      <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1.5 rounded-full">
+        {/* Logo SVG mini de Lookitry */}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#FF5C3A"/>
+          <path d="M2 17L12 22L22 17" stroke="#FF5C3A" strokeWidth="1.5"/>
+          <path d="M2 12L12 17L22 12" stroke="#FF5C3A" strokeWidth="1.5"/>
+        </svg>
+        <span className="text-white/90 text-[9px] font-black uppercase tracking-wider">
+          Lookitry AI
+        </span>
+      </div>
+    </div>
+  );
+}
+```
+
+### Propósito
+
+1. **Branding** — Cada imagen generada incluye atribución a Lookitry
+2. **Monetización** — Incentivo para upgrade a PRO/ENTERPRISE
+3. **Viralidad** — Usuarios comparten imágenes "con marca", difundiendo el producto
+
+### Archivo
+
+- **Ubicación:** `frontend/src/components/tryon/ResultDisplay.tsx`
+- **Línea:** ~55 (invocación), ~7-45 (definición)
+- **Prop:** `brandPlan` se pasa desde el componente padre
+
+---
+
 **Última actualización:** Abril 2026
