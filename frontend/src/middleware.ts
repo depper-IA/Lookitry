@@ -105,7 +105,7 @@ export async function middleware(request: NextRequest) {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
         if (apiUrl) {
           const res = await fetch(`${apiUrl}/api/brands/me`, {
-            headers: { Cookie: `token=${token}` },
+            headers: { Authorization: `Bearer ${token}` },
           });
           if (res.ok) {
             const { data: brand } = await res.json();
