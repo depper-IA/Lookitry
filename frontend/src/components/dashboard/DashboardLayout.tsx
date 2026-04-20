@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, LogOut, Menu, Gift } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { SubscriptionBadge } from './SubscriptionBadge';
 import { LiveTryOnButton } from './LiveTryOnButton';
@@ -70,14 +71,17 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
     if (!currentBrand?.email) return;
     setResendSending(true);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/resend-verification`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/resend-verification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: currentBrand.email }),
       });
+      if (!res.ok) throw new Error('Request failed');
       setResendSent(true);
-    } catch {
-      // silencioso
+      toast.success('Email de verificación reenviado');
+    } catch (err) {
+      console.error('Error reenviando verificación:', err);
+      toast.error('No se pudo reenviar el email. Intenta de nuevo.');
     } finally {
       setResendSending(false);
     }
