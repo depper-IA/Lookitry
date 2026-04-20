@@ -32,7 +32,6 @@ function templateToLayout(template?: string): Layout {
     case undefined:
       return 'bare';
     default:
-      console.warn(`[TryOnWidget] Template desconocido: "${template}". Usando bare.`);
       return 'bare';
   }
 }
@@ -83,12 +82,12 @@ export function TryOnWidget({
     if (!brandSlug || !selfieHash) return;
     const key = getCacheKey(brandSlug, selfieHash);
     const saved = localStorage.getItem(key);
-    if (saved) {
+      if (saved) {
       try {
         const { products } = JSON.parse(saved);
         if (products) setGeneratedProducts(new Map(Object.entries(products)));
-      } catch (e) {
-        console.error('Error parsing generated products', e);
+      } catch {
+        // Cache corrupto, limpiar
         localStorage.removeItem(key);
       }
     }
@@ -100,8 +99,8 @@ export function TryOnWidget({
     const key = getCacheKey(brandSlug, selfieHash);
     try {
       localStorage.setItem(key, JSON.stringify({ products: Object.fromEntries(generatedProducts) }));
-    } catch (e) {
-      console.warn('[TryOnWidget] localStorage lleno, no se pudo guardar caché de generaciones.', e);
+      } catch {
+      // localStorage lleno o no disponible, continuar sin caché
     }
   }, [generatedProducts, brandSlug, selfieHash]);
 
@@ -182,8 +181,8 @@ export function TryOnWidget({
       // Invalida el caché cuando se sube una COMPLETAMENTE NUEVA selfie
       const key = getCacheKey(brandSlug, newHash);
       localStorage.removeItem(key);
-    } catch (e) {
-      console.warn('[TryOnWidget] No se pudo generar hash de selfie', e);
+    } catch {
+      // Hash falló, continuar sin caché por selfie específica
     }
     setGeneratedProducts(new Map());
     
@@ -217,9 +216,8 @@ export function TryOnWidget({
       let status;
       try {
         status = await tryonService.getGenerationStatus(generationId);
-      } catch (pollErr: any) {
-        // Error de red — continuar polleando
-        console.warn('[TryOnWidget] Error en polling, reintento…', pollErr.message);
+      } catch {
+        // Error de red — continuar polleando silenciosamente
         continue;
       }
 

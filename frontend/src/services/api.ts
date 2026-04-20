@@ -17,7 +17,7 @@ function isAuthRoute(pathname: string): boolean {
 
 function getFullUrl(path: string): string {
   const base = (API_URL || '').replace(/\/api$/, '');
-  const cleanPath = path.startsWith('/api') ? path : `/api${path}`;
+  const cleanPath = path.startsWith('/api/') ? path : `/api${path}`;
   return `${base}${cleanPath}`;
 }
 

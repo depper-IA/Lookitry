@@ -61,6 +61,8 @@
 | **Drag-and-drop** | Implementados handlers `onDragEnter/Leave/Over/Drop` en SelfieUploader |
 | **ResizeObserver** | Cleanup correcto en TemplateModernSidebar y TemplateShowcase |
 | **EMBED_ORIGIN** | Ahora usa `useMemo` envuelto en try-catch |
+| **Focus trap modales** | Implementado `useFocusTrap` hook para feedback y lightbox (WCAG) |
+| **aria-labels** | Agregados `aria-label` a todos los botones del SelfieUploader |
 
 #### Fixes Backend
 
