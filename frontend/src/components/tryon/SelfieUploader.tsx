@@ -52,7 +52,7 @@ export function SelfieUploader({
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       // Si hay datos de imagen en el portapapeles, prevenir y mostrar mensaje
-      const hasImage = e.clipboardData?.items?.some(
+      const hasImage = Array.from(e.clipboardData?.items || []).some(
         (item) => item.type.startsWith('image/')
       );
       if (hasImage) {
