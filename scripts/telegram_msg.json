@@ -1,0 +1,4 @@
+{
+  "chat_id": 1049458877,
+  "text": "Kira: Fix /api/brands/me 401 applied. trial-checkout agora inclui Authorization Bearer header. Commit d223678 em producao."
+}

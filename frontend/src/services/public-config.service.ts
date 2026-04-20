@@ -40,23 +40,22 @@ export async function fetchPublicPlanPrices(): Promise<PublicPlanPrices> {
   if (planPricesPromise) return planPricesPromise;
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceKey = process.env.SUPABASE_SERVICE_KEY;
 
-  if (!supabaseUrl || !anonKey) return PLAN_PRICE_FALLBACK;
+  if (!supabaseUrl || !serviceKey) return PLAN_PRICE_FALLBACK;
 
   planPricesPromise = (async () => {
     try {
-      const response = await fetch(`${supabaseUrl}/rest/v1/pricing_config?id=in.(basic,pro)&select=id,data`, {
-        headers: {
-          apikey: anonKey,
-          Authorization: `Bearer ${anonKey}`,
-        },
+      // Use backend endpoint to avoid broken anon key
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+      const response = await fetch(`${apiUrl}/api/pricing-config`, {
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (!response.ok) return PLAN_PRICE_FALLBACK;
 
-      const rows = await response.json();
-      if (!Array.isArray(rows)) return PLAN_PRICE_FALLBACK;
+      const result = await response.json();
+      const rows = result?.data || [];
 
       const prices = { ...PLAN_PRICE_FALLBACK };
 

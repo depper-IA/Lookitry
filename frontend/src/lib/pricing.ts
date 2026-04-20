@@ -4,7 +4,8 @@
  */
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Route through backend to avoid broken anon key issue
+const PRICING_BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -187,21 +188,25 @@ export interface PlanPriceOverride {
  */
 export async function getPricingConfig(): Promise<PricingConfig> {
   try {
-    // 1. Obtener configuración base y promociones en paralelo
+    // Get pricing config from backend (uses service_role key internally)
+    // This avoids the broken anon key issue
     const [configRes, promosRes] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-        next: { revalidate: 300, tags: ['pricing'] },
+      fetch(`${PRICING_BACKEND_URL}/api/pricing-config`, {
+        cache: 'no-store',
       }),
       fetch(`${SUPABASE_URL}/rest/v1/promotions?active=eq.true&select=type,config,starts_at,ends_at`, {
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+        headers: {
+          apikey: process.env.SUPABASE_SERVICE_KEY!,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY!}`,
+        },
         next: { revalidate: 300, tags: ['pricing'] },
       })
     ]);
 
-    if (!configRes.ok) throw new Error(`Supabase error: ${configRes.status}`);
+    if (!configRes.ok) throw new Error(`Backend pricing error: ${configRes.status}`);
 
-    const rows: { id: string; data: Record<string, unknown> }[] = await configRes.json();
+    const configResult: { ok: boolean; data: { id: string; data: Record<string, unknown> }[] } = await configRes.json();
+    const rows = configResult.data || [];
     const promos: { type: string; config: any; starts_at?: string | null; ends_at?: string | null }[] =
       promosRes.ok ? await promosRes.json() : [];
 
@@ -311,8 +316,8 @@ export async function getPriceOverrides(): Promise<PlanPriceOverride[]> {
 
     const res = await fetch(url, {
       headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        apikey: process.env.SUPABASE_SERVICE_KEY!,
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY!}`,
       },
       next: { revalidate: 300 },
     });
