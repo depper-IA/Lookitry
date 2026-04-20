@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { tryonService } from '@/services/tryon.service';
 import type { TryOnConfigResponse } from '@/types';
 import { TemplateBare } from './templates/TemplateBare';
@@ -307,9 +307,14 @@ export function TryOnWidget({
     }
   };
 
-  const EMBED_ORIGIN = typeof window !== 'undefined' && document.referrer
-    ? new URL(document.referrer).origin
-    : '*';
+  const EMBED_ORIGIN = useMemo(() => {
+    if (typeof window === 'undefined' || !document.referrer) return '*';
+    try {
+      return new URL(document.referrer).origin;
+    } catch {
+      return '*';
+    }
+  }, []);
 
   useEffect(() => {
     if (!isEmbed || !config) return;
