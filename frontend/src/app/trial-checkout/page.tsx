@@ -42,9 +42,13 @@ export default function TrialCheckoutPage() {
     let cancelled = false;
     const checkExistingSubscription = async () => {
       try {
+        const token = typeof window !== 'undefined' ? document.cookie.match(/token=([^;]+)/)?.[1] : null;
         const res = await fetch(`${API_URL}/api/brands/me`, {
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         });
         if (!res.ok) return; // No autenticado, permitir acceso guest
 
