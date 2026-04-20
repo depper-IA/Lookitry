@@ -21,6 +21,23 @@
 
 ---
 
+### feat(widget): conversion UX improvements on result step
+
+**Problema:** El paso de resultado del widget no mostraba precio ni tenía CTA de compra — el usuario terminaba la prueba virtual y no sabía qué hacer después.
+
+**Cambios implementados:**
+- **P0**: `ResultDisplay` ahora muestra `productPrice` con formato COP (Intl.NumberFormat) cuando existe y no es pluginView
+- **P1**: Botón WhatsApp con icono cuando `whatsappContact` está configurado (abre wa.me con número limpio)
+- **P1**: "Probar otro" reducido de botón con borde a texto plano con icono — baja jerarquía visual para no competir con conversión
+
+**Archivos modificados:**
+- `ResultDisplay.tsx` — Props `productPrice` + `whatsappContact`, reordenamiento de botones
+- 5 templates actualizados para pasar los nuevos props: `TemplateBare`, `TemplateLandingEmbed`, `TemplateBoldProStudio`, `TemplateModernSidebar`, `TemplateShowcase`
+
+**Commit:** `0ad853ef`
+
+---
+
 ### fix(csp): agregar minio.wilkiedevs.com a connect-src CSP directive
 
 **Problema:** Error CSP "Connecting to 'https://minio.wilkiedevs.com/...' violates... connect-src directive" en el editor de productos al subir imágenes.
