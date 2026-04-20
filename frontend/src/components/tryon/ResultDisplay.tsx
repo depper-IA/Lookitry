@@ -1,7 +1,65 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getProxiedImageUrl } from '@/utils/imageProxy';
+
+// ── Focus Trap Hook ─────────────────────────────────────────────────────────────
+function useFocusTrap(isActive: boolean) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!isActive || !containerRef.current) return;
+
+    // Guardar el elemento previamente enfocado
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
+    // Obtener todos los elementos focalizables dentro del modal
+    const focusableSelectors = [
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      'a[href]',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(', ');
+
+    const focusableElements = containerRef.current.querySelectorAll<HTMLElement>(focusableSelectors);
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    // Enfocar el primer elemento
+    firstElement?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) {
+        // Shift + Tab
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement?.focus();
+        }
+      } else {
+        // Tab
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement?.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      // Restaurar foco al cerrar
+      previousActiveElement.current?.focus();
+    };
+  }, [isActive]);
+
+  return containerRef;
+}
 
 // ── Marca de agua dinámica (Visual Overlay) ──────────────────────────────────
 // Lógica: Los planes BASIC y TRIAL muestran marca de agua visual en el widget
@@ -147,6 +205,10 @@ export function ResultDisplay({
   const [feedbackDesc, setFeedbackDesc]       = useState('');
   const [feedbackSending, setFeedbackSending] = useState(false);
   const [feedbackSent, setFeedbackSent]       = useState(false);
+
+  // Focus trap refs para modales
+  const feedbackTrapRef = useFocusTrap(feedbackOpen);
+  const lightboxTrapRef = useFocusTrap(lightboxOpen);
 
   const handleDownload = () => {
     const downloadUrl = getProxiedImageUrl(imageUrl, brandPlan, true);
@@ -501,15 +563,19 @@ export function ResultDisplay({
       </div>
 
       {feedbackOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={handleFeedbackClose}>
-          <div 
-            className="rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden border" 
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={handleFeedbackClose} role="presentation">
+          <div
+            ref={feedbackTrapRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="feedback-title"
+            className="rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden border"
             onClick={e => e.stopPropagation()}
             style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6' }}
           >
             {!feedbackSent ? (
               <>
-                <h3 className="font-bold text-xl mb-2" style={{ color: textColor }}>¿Algo no salió bien?</h3>
+                <h3 id="feedback-title" className="font-bold text-xl mb-2" style={{ color: textColor }}>¿Algo no salió bien?</h3>
                 <p className="text-sm mb-5" style={{ color: mutedColor }}>Cuéntanos qué falló para que nuestra IA aprenda a hacerlo mejor.</p>
                 <div className="grid grid-cols-2 gap-2 mb-4">
                   {ERROR_TYPES.map(et => (
@@ -585,13 +651,26 @@ export function ResultDisplay({
       )}
 
       {lightboxOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4" onClick={() => setLightboxOpen(false)}>
-          <img src={imageUrl} alt={productName} className="max-w-full max-h-[90vh] object-contain rounded-2xl" />
-          <button className="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4" onClick={() => setLightboxOpen(false)} role="presentation">
+          <div
+            ref={lightboxTrapRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Imagen de ${productName} en pantalla completa`}
+            className="relative flex items-center justify-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <img src={imageUrl} alt={productName} className="max-w-full max-h-[90vh] object-contain rounded-2xl" />
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label="Cerrar pantalla completa"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
     </>

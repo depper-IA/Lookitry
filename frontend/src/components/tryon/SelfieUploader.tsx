@@ -208,6 +208,7 @@ export function SelfieUploader({
                 {/* BOTÓN CÁMARA (Acción Principal) */}
                 <button
                   onClick={handleCameraClick}
+                  aria-label="Tomar foto con la cámara frontal"
                   className="w-full group relative overflow-hidden flex items-center gap-4 p-5 rounded-[2.5rem] transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]"
                   style={{ 
                     backgroundColor: primaryColor,
@@ -231,6 +232,7 @@ export function SelfieUploader({
                 {/* BOTÓN GALERÍA (Acción Secundaria) */}
                 <button
                   onClick={() => inputRef.current?.click()}
+                  aria-label="Elegir imagen de la galería"
                   className="w-full group flex items-center gap-4 p-5 rounded-[2.5rem] border-2 transition-all duration-500 hover:bg-white/5 active:scale-[0.98]"
                   style={{ 
                     borderColor: cardBorder || 'rgba(255,255,255,0.1)',
@@ -306,8 +308,8 @@ export function SelfieUploader({
           )}
         </AnimatePresence>
 
-        <input ref={inputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
-        <input ref={cameraRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" capture="user" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
+        <input ref={inputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} aria-label="Subir imagen desde galería" />
+        <input ref={cameraRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" capture="user" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} aria-label="Tomar foto con cámara" />
       </div>
     </>
   );
