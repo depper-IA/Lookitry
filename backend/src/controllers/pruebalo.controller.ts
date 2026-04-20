@@ -15,6 +15,7 @@ import { PromptRagService } from '../services/prompt-rag.service';
 import { UploadService } from '../services/upload.service';
 import { buildCategoryRulesBlock, getPromptRules } from '../config/prompt-rules';
 import { createAdminNotification } from '../utils/adminNotifications';
+import { generationConcurrencyService } from '../services/generation-concurrency.service';
 import {
   getBrandAllowedOrigins,
   getExpectedStoreHost,

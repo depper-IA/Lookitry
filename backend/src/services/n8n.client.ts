@@ -63,70 +63,115 @@ export class N8nClient {
       throw new Error('Configuración de n8n incompleta. Verifica N8N_WEBHOOK_URL y N8N_BEARER_TOKEN / N8N_API_KEY');
     }
 
-    try {
-      console.log(`🔄 Llamando a n8n webhook para brand_id: ${payload.brand_id}, product_id: ${payload.product_id}`);
-      console.log(`📦 Payload enviado:`, JSON.stringify({
-        brand_id: payload.brand_id,
-        product_id: payload.product_id,
-        selfie_url: payload.selfie_url,
-        product_image_url: payload.product_image_url,
-        prompt: (payload.prompt || '').substring(0, 100) + '...',
-      }, null, 2));
+    const MAX_RETRIES = 3;
+    const RETRY_DELAYS = [2000, 4000, 8000]; // ms
 
-      const response = await axios.post<N8nWebhookResponse>(
-        this.webhookUrl,
-        {
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        console.log(`🔄 Llamando a n8n webhook para brand_id: ${payload.brand_id}, product_id: ${payload.product_id} (attempt ${attempt + 1}/${MAX_RETRIES + 1})`);
+        console.log(`📦 Payload enviado:`, JSON.stringify({
           brand_id: payload.brand_id,
           product_id: payload.product_id,
           selfie_url: payload.selfie_url,
           product_image_url: payload.product_image_url,
-          prompt: payload.prompt,
-        },
-        {
-          timeout: this.timeout,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.apiKey}`,
+          prompt: (payload.prompt || '').substring(0, 100) + '...',
+        }, null, 2));
+
+        const response = await axios.post<N8nWebhookResponse>(
+          this.webhookUrl,
+          {
+            brand_id: payload.brand_id,
+            product_id: payload.product_id,
+            selfie_url: payload.selfie_url,
+            product_image_url: payload.product_image_url,
+            prompt: payload.prompt,
           },
-        }
-      );
+          {
+            timeout: this.timeout,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${this.apiKey}`,
+            },
+          }
+        );
 
-      console.log('✅ Respuesta exitosa de n8n');
-      return response.data;
+        console.log('✅ Respuesta exitosa de n8n');
+        return response.data;
 
-    } catch (error: any) {
-      // Manejar errores específicos de axios
-      if (axios.isAxiosError(error)) {
-        // Timeout
-        if (error.code === 'ECONNABORTED') {
-          console.error('⏱️  Timeout: La generación tardó más de 90 segundos');
-          throw new Error('Timeout: La generación tardó más de 90 segundos');
-        }
+      } catch (error: any) {
+        const isLastAttempt = attempt === MAX_RETRIES;
+        const isRetryableError = this.isRetryableError(error);
 
-        // Error de respuesta del servidor
-        if (error.response) {
-          const status: number = error.response.status;
-          const errorMessage = error.response.data?.error || error.response.data?.message || error.message;
-          console.error(`[n8n] Error HTTP ${status}:`, errorMessage, '| body:', JSON.stringify(error.response.data ?? {}));
-
-          // Crear error enriquecido con statusCode para que el controller lo detecte
-          const enriched = new Error(`n8n error ${status}: ${errorMessage}`) as any;
-          enriched.statusCode = status;
-          enriched.n8nBody = error.response.data;
-          throw enriched;
+        if (isRetryableError && !isLastAttempt) {
+          const delay = RETRY_DELAYS[attempt] || 8000;
+          console.warn(`⚠️  Intento ${attempt + 1} falló (${error.message}), reintentando en ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
         }
 
-        // Error de conexión
-        if (error.request) {
-          console.error('❌ Error de conexión con n8n');
-          throw new Error('Error de conexión: No se pudo conectar con el servicio de n8n');
+        // Manejar errores específicos de axios
+        if (axios.isAxiosError(error)) {
+          // Timeout
+          if (error.code === 'ECONNABORTED') {
+            console.error('⏱️  Timeout: La generación tardó más de 90 segundos');
+            throw new Error('Timeout: La generación tardó más de 90 segundos');
+          }
+
+          // Error de respuesta del servidor
+          if (error.response) {
+            const status: number = error.response.status;
+            const errorMessage = error.response.data?.error || error.response.data?.message || error.message;
+            console.error(`[n8n] Error HTTP ${status}:`, errorMessage, '| body:', JSON.stringify(error.response.data ?? {}));
+
+            // Crear error enriquecido con statusCode para que el controller lo detecte
+            const enriched = new Error(`n8n error ${status}: ${errorMessage}`) as any;
+            enriched.statusCode = status;
+            enriched.n8nBody = error.response.data;
+            throw enriched;
+          }
+
+          // Error de conexión
+          if (error.request) {
+            console.error('❌ Error de conexión con n8n');
+            throw new Error('Error de conexión: No se pudo conectar con el servicio de n8n');
+          }
         }
+
+        // Error genérico
+        console.error('❌ Error desconocido al llamar a n8n:', error.message);
+        throw new Error(`Error al conectar con n8n: ${error.message}`);
       }
-
-      // Error genérico
-      console.error('❌ Error desconocido al llamar a n8n:', error.message);
-      throw new Error(`Error al conectar con n8n: ${error.message}`);
     }
+
+    // Should not reach here, but TypeScript needs this
+    throw new Error('n8n webhook call failed after all retries');
+  }
+
+  /**
+   * Determine if an error is retryable (transient network errors)
+   */
+  private isRetryableError(error: any): boolean {
+    if (!axios.isAxiosError(error)) {
+      // Non-axios errors: retry on unknown errors (could be transient)
+      return true;
+    }
+
+    const code = error.code || '';
+    const message = error.message || '';
+    const status = error.response?.status;
+
+    // Retry on connection errors, timeouts, and 5xx server errors
+    const retryableCodes = ['ECONNABORTED', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN'];
+    const retryableStatuses = [502, 503, 504, 429, 408];
+
+    return (
+      retryableCodes.includes(code) ||
+      (status !== undefined && retryableStatuses.includes(status)) ||
+      message.includes('socket hang up') ||
+      message.includes('getaddrinfo') ||
+      message.includes('N8N webhook error') ||
+      (!status && !error.response) // Network error with no response
+    );
   }
 
   /**
