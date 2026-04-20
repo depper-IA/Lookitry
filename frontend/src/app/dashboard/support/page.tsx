@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
+import { fetchPublicPaymentSettings, toWhatsAppUrl } from '@/services/public-config.service';
 
 type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -77,6 +78,7 @@ export default function SupportPage() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [supportContact, setSupportContact] = useState({ whatsapp: '', email: 'info@lookitry.com' });
 
   const [filterStatus, setFilterStatus] = useState('');
   const [page, setPage] = useState(1);
@@ -109,6 +111,18 @@ export default function SupportPage() {
   useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
+
+  useEffect(() => {
+    fetchPublicPaymentSettings()
+      .then(data => {
+        if (!data) return;
+        setSupportContact({
+          whatsapp: toWhatsAppUrl(data.manualWhatsapp) || '',
+          email: data.manualEmail || 'info@lookitry.com',
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   const handleCreateTicket = async (formData: { subject: string; description: string; priority: TicketPriority; category: TicketCategory }) => {
     setSaving(true);
@@ -203,24 +217,26 @@ export default function SupportPage() {
           También puedes contactarnos directamente:
         </p>
         <div className="flex flex-wrap gap-4">
-          <a 
-            href="mailto:info@lookitry.com" 
+          <a
+            href={`mailto:${supportContact.email}`}
             className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[var(--accent)]"
             style={{ color: 'var(--accent)' }}
           >
             <Mail className="h-4 w-4" />
-            info@lookitry.com
+            {supportContact.email}
           </a>
-          <a
-            href={process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || 'https://wa.me/573001234567'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[var(--accent)]"
-            style={{ color: 'var(--accent)' }}
-          >
-            <MessageSquare className="h-4 w-4" />
-            WhatsApp
-          </a>
+          {supportContact.whatsapp && (
+            <a
+              href={supportContact.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[var(--accent)]"
+              style={{ color: 'var(--accent)' }}
+            >
+              <MessageSquare className="h-4 w-4" />
+              WhatsApp
+            </a>
+          )}
           {process.env.NEXT_PUBLIC_STATUS_URL && (
             <a
               href={process.env.NEXT_PUBLIC_STATUS_URL}
