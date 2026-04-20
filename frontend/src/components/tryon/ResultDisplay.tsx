@@ -4,53 +4,26 @@ import React, { useState, useEffect } from 'react';
 import { getProxiedImageUrl } from '@/utils/imageProxy';
 
 // ── Marca de agua dinámica (Visual Overlay) ──────────────────────────────────
-// Lógica: Los planes BASIC y TRIAL muestran marca de agua "Powered by Lookitry"
-// Los planes PRO y ENTERPRISE no muestran marca (beneficio de suscripción premium)
+// Lógica: Los planes BASIC y TRIAL muestran marca de agua visual en el widget
+// - BASIC: Logo pequeño en esquina inferior izquierda (w-20)
+// - TRIAL: Logo ancho ocupando todo el ancho inferior
+// PRO y ENTERPRISE no muestran marca visual (beneficio premium)
+// NOTA: El watermark real queda Incrustado en la imagen descargada vía backend (image.service.ts)
 function Watermark({ plan }: { plan?: string }) {
-  const PREMIUM_PLANS = ['PRO', 'ENTERPRISE'];
-  const showWatermark = !plan || !PREMIUM_PLANS.includes(plan.toUpperCase());
+  if (plan !== 'BASIC' && plan !== 'TRIAL') return null;
 
-  if (!showWatermark) return null;
-
-  return (
-    <div
-      className="absolute bottom-3 right-3 z-10 pointer-events-none select-none"
-      aria-hidden="true"
-    >
-      <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1.5 rounded-full">
-        {/* Logo SVG mini de Lookitry */}
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="shrink-0"
-        >
-          <path
-            d="M12 2L2 7L12 12L22 7L12 2Z"
-            fill="#FF5C3A"
-            stroke="#FF5C3A"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M2 17L12 22L22 17"
-            stroke="#FF5C3A"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M2 12L12 17L22 12"
-            stroke="#FF5C3A"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span className="text-white/90 text-[9px] font-black uppercase tracking-wider whitespace-nowrap">
-          Lookitry AI
-        </span>
+  if (plan === 'BASIC') {
+    return (
+      <div className="absolute bottom-4 left-4 w-20 pointer-events-none select-none z-10 opacity-40">
+        <img src="/watermark-basic.webp" alt="Lookitry" className="w-full h-auto" />
       </div>
+    );
+  }
+
+  // TRIAL: Logo ancho ocupando todo el ancho inferior
+  return (
+    <div className="absolute bottom-0 left-0 w-full pointer-events-none select-none z-10 opacity-60">
+      <img src="/watermark-trial.webp" alt="Lookitry" className="w-full h-auto" />
     </div>
   );
 }

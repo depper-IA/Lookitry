@@ -178,54 +178,114 @@ El middleware de Next.js configura:
 
 ### Lógica de Visibilidad
 
-El widget incluye un sistema de marca de agua "Powered by Lookitry AI" que aparece en las imágenes generadas según el plan del cliente:
+El widget incluye DOS tipos de watermark:
 
-| Plan | Marca de Agua | Detalle |
-|------|---------------|---------|
-| **TRIAL** | Visible | "Lookitry AI" badge en esquina inferior derecha |
-| **BASIC** | Visible | "Lookitry AI" badge en esquina inferior derecha |
-| **PRO** | Oculta | Sin marca — beneficio premium |
-| **ENTERPRISE** | Oculta | Sin marca — beneficio premium |
+**1. Watermark Visual (Frontend - superposición en pantalla)**
+Aplica a las imágenes mientras se ven en el widget:
 
-### Implementación
+| Plan | Watermark Visual | Posición |
+|------|-----------------|----------|
+| **TRIAL** | `/watermark-trial.webp` | Ancho completo en parte inferior |
+| **BASIC** | `/watermark-basic.webp` | Esquina inferior izquierda (w-20) |
+| **PRO** | Sin watermark visual | — |
+| **ENTERPRISE** | Sin watermark visual | — |
+
+**2. Watermark Incrustado (Backend - queda en la imagen descargada)**
+Se aplica mediante `image.service.ts` con Sharp cuando el usuario descarga la imagen:
+
+| Plan | Watermark Archivo | Posición |
+|------|-------------------|----------|
+| **TRIAL** | `assets/watermark-trial.webp` | Centrado, 45% del ancho |
+| **BASIC** | `assets/watermark-basic.webp` | Esquina inferior derecha, 10% del ancho |
+| **PRO** | Sin watermark | — |
+| **ENTERPRISE** | Sin watermark | — |
+
+### Implementación Visual (Frontend)
 
 ```tsx
 // En ResultDisplay.tsx
 function Watermark({ plan }: { plan?: string }) {
-  const PREMIUM_PLANS = ['PRO', 'ENTERPRISE'];
-  const showWatermark = !plan || !PREMIUM_PLANS.includes(plan.toUpperCase());
+  if (plan !== 'BASIC' && plan !== 'TRIAL') return null;
 
-  if (!showWatermark) return null;
-
-  return (
-    <div className="absolute bottom-3 right-3 z-10 pointer-events-none">
-      <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1.5 rounded-full">
-        {/* Logo SVG mini de Lookitry */}
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#FF5C3A"/>
-          <path d="M2 17L12 22L22 17" stroke="#FF5C3A" strokeWidth="1.5"/>
-          <path d="M2 12L12 17L22 12" stroke="#FF5C3A" strokeWidth="1.5"/>
-        </svg>
-        <span className="text-white/90 text-[9px] font-black uppercase tracking-wider">
-          Lookitry AI
-        </span>
+  if (plan === 'BASIC') {
+    // Logo pequeño en esquina inferior izquierda
+    return (
+      <div className="absolute bottom-4 left-4 w-20 pointer-events-none select-none z-10 opacity-40">
+        <img src="/watermark-basic.webp" alt="Lookitry" className="w-full h-auto" />
       </div>
+    );
+  }
+
+  // TRIAL: Logo ancho ocupando todo el ancho inferior
+  return (
+    <div className="absolute bottom-0 left-0 w-full pointer-events-none select-none z-10 opacity-60">
+      <img src="/watermark-trial.webp" alt="Lookitry" className="w-full h-auto" />
     </div>
   );
 }
 ```
 
+### Implementación Backend (Sharp)
+
+```typescript
+// En backend/src/services/image.service.ts
+async processWithWatermark(imageUrl: string, plan: string): Promise<Buffer> {
+  // Si es PRO, no aplicamos marca de agua
+  if (plan === 'PRO') {
+    return await sharp(imageBuffer).jpeg({ quality: 90 }).toBuffer();
+  }
+
+  // Seleccionar marca de agua según plan
+  const watermarkPath = plan === 'BASIC'
+    ? this.watermarkBasic   // assets/watermark-basic.webp
+    : this.watermarkTrial; // assets/watermark-trial.webp
+
+  if (plan === 'BASIC') {
+    // BASIC: Esquina inferior derecha, 10% del ancho
+    return await sharp(imageBuffer)
+      .composite([{
+        input: resizedWatermark,
+        top: height - wmHeight - padding,
+        left: width - wmWidth - padding,
+        blend: 'over'
+      }])
+      .jpeg({ quality: 85 })
+      .toBuffer();
+  } else {
+    // TRIAL: Centrado, 45% del ancho
+    return await sharp(imageBuffer)
+      .composite([{
+        input: resizedWatermark,
+        gravity: 'center',
+        blend: 'over'
+      }])
+      .jpeg({ quality: 85 })
+      .toBuffer();
+  }
+}
+```
+
+### Archivos
+
+| Archivo | Ubicación | Uso |
+|---------|-----------|-----|
+| `watermark-basic.webp` | `frontend/public/watermark-basic.webp` | Visual en widget (BASIC) |
+| `watermark-trial.webp` | `frontend/public/watermark-trial.webp` | Visual en widget (TRIAL) |
+| `watermark-basic.webp` | `backend/assets/watermark-basic.webp` | Incrustado en descarga (BASIC) |
+| `watermark-trial.webp` | `backend/assets/watermark-trial.webp` | Incrustado en descarga (TRIAL) |
+
 ### Propósito
 
-1. **Branding** — Cada imagen generada incluye atribución a Lookitry
-2. **Monetización** — Incentivo para upgrade a PRO/ENTERPRISE
-3. **Viralidad** — Usuarios comparten imágenes "con marca", difundiendo el producto
+1. **Branding visual** — El watermark en pantalla recuerda quién provee el servicio
+2. **Watermark en imagen** — Queda Incrustado cuando el usuario descarga/comparte
+3. **Monetización** — Incentivo para upgrade a PRO/ENTERPRISE (sin marca)
 
-### Archivo
+### Endpoint de Descarga
 
-- **Ubicación:** `frontend/src/components/tryon/ResultDisplay.tsx`
-- **Línea:** ~55 (invocación), ~7-45 (definición)
-- **Prop:** `brandPlan` se pasa desde el componente padre
+El watermark se aplica cuando se llama a `/api/images/look` con `download=true`:
+```
+GET /api/images/look?src={minio_url}&plan={PLAN}&download=true
+```
 
 ---
 

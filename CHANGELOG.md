@@ -2,25 +2,32 @@
 
 ## 20 de Abril 2026 (Auditoría + Fixes Widget Try-On)
 
-### ✨ Feature: Sistema de Marca de Agua (Watermark)
+### 🔧 Fix: Sistema de Marca de Agua (Watermark) — CORREGIDO
 
-**Resumen:** Implementado sistema de marca de agua "Powered by Lookitry AI" en imágenes generadas.
+**Resumen:** Restaurada implementación correcta del watermark usando archivos .webp reales.
+
+#### Corrección
+
+| Problema | Solución |
+|----------|----------|
+| Watermark usaba SVG genérico "Lookitry AI" | Ahora usa `/watermark-basic.webp` y `/watermark-trial.webp` reales |
+| Posición incorrecta | BASIC: esquina inferior izquierda; TRIAL: ancho completo inferior |
 
 #### Lógica Implementada
 
-| Plan | Marca de Agua |
-|------|---------------|
-| TRIAL | Visible |
-| BASIC | Visible |
-| PRO | Oculta |
-| ENTERPRISE | Oculta |
+| Plan | Watermark Visual | Archivo | Posición |
+|------|------------------|---------|----------|
+| TRIAL | Visible | `/watermark-trial.webp` | Ancho completo inferior |
+| BASIC | Visible | `/watermark-basic.webp` | Esquina inferior izquierda |
+| PRO | Sin marca | — | Beneficio premium |
+| ENTERPRISE | Sin marca | — | Beneficio premium |
 
 #### Archivos Modificados
 
 | Archivo | Cambio |
 |---------|--------|
-| `frontend/src/components/tryon/ResultDisplay.tsx` | Función Watermark implementada (líneas 7-45) |
-| `Lookitry_Brain_Vault/Cerebro/Docs/Guias/WIDGET_GUIDE.md` | Documentación de la lógica |
+| `frontend/src/components/tryon/ResultDisplay.tsx` | Watermark restaurado usando archivos .webp |
+| `Lookitry_Brain_Vault/Cerebro/Docs/Guias/WIDGET_GUIDE.md` | Documentación completa del sistema |
 
 ### 🐛 Fixes Críticos P0 — Widget Try-On
 
