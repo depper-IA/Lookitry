@@ -1,9 +1,6 @@
 import { api } from './api';
 import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
 
-/** Tiempo máximo (ms) que esperamos una respuesta del endpoint de generación */
-const GENERATION_TIMEOUT_MS = 95_000;
-
 function isCreditsExhaustedErrorPayload(payload: any): boolean {
   const errorCode = String(payload?.error || '').toUpperCase();
   const message = String(payload?.message || '').toLowerCase();
@@ -110,8 +107,7 @@ class TryOnService {
     try {
       const response = await api.post<GenerateTryOnResponse>(
         `/pruebalo/${brandSlug}/generate`,
-        formData,
-        { timeout: GENERATION_TIMEOUT_MS }
+        formData
       );
 
       return response.data;
