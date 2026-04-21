@@ -262,7 +262,8 @@ export class SubscriptionService {
   }
 
   private isEligibleReferralConversion(planPurchased: string, isUpgrade: boolean): boolean {
-    if (isUpgrade) return false;
+    // TRIAL purchases do NOT trigger referral rewards — only paid plans (BASIC, PRO, ENTERPRISE)
+    if (planPurchased === 'TRIAL') return false;
     return referralService.isEligiblePlan(planPurchased);
   }
 
