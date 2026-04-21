@@ -37,6 +37,21 @@ export default function PremiumLanding({
 }: PremiumLandingProps & { realReviewsCount?: number; usingMockReviews?: boolean }) {
 
   const [navCurrency, setNavCurrency] = useState<'COP' | 'USD'>(currency);
+  const [trmState, setTrmState] = useState(trm);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    if (apiUrl) {
+      fetch(`${apiUrl}/api/payment-settings/public`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data?.trm && Number(data.trm) > 0) {
+            setTrmState(Number(data.trm));
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const handleCurrencyChange = () => {
@@ -64,7 +79,7 @@ export default function PremiumLanding({
           <LandingSteps />
           <LandingMiniLanding />
           <LandingPlugin />
-          <LandingPricing pricing={pricing} currency={navCurrency} trm={trm} />
+          <LandingPricing pricing={pricing} currency={navCurrency} trm={trmState} />
           <ActiveCouponsBanner />
           <LandingPayments />
           <ReviewsSlider reviews={reviews} realReviewsCount={realReviewsCount} usingMockReviews={usingMockReviews} />
