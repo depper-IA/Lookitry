@@ -36,7 +36,7 @@ export async function getReferralInfo(req: AuthRequest, res: Response) {
 
     const { data: referrals } = await supabaseAdmin
       .from('referrals')
-      .select('id, referred_brand_id, status, created_at, referrer_claimed, reward_credits, converted_at')
+      .select('id, referred_brand_id, status, created_at, referrer_claimed, reward_credits, converted_at, referred:brands!referred_brand_id(name)')
       .eq('referrer_brand_id', brandId)
       .order('created_at', { ascending: false });
 
