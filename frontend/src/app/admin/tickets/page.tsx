@@ -7,7 +7,7 @@ import { adminApi } from '@/services/adminApi';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import {
   Search, Plus, X, ChevronLeft, ChevronRight, Ticket, AlertTriangle,
-  Clock, CheckCircle2, User, Building2, Tag, Users, Edit2, Trash2, Filter
+  Clock, CheckCircle2, User, Building2, Tag, Users, Edit2, Trash2, Filter, Send, MessageCircle
 } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -30,6 +30,15 @@ interface Ticket {
   created_at: string;
   updated_at: string;
   resolved_at: string | null;
+}
+
+interface TicketMessage {
+  id: string;
+  ticket_id: string;
+  sender_type: 'admin' | 'brand' | 'system';
+  sender_id: string | null;
+  content: string;
+  created_at: string;
 }
 
 interface Admin {
@@ -121,6 +130,12 @@ export default function TicketsPage() {
   // Detail panel
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
+  // Messages
+  const [messages, setMessages] = useState<TicketMessage[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [messageText, setMessageText] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
+
   // Bulk actions
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
@@ -167,6 +182,39 @@ export default function TicketsPage() {
     }
   }, [filterStatus, filterPriority, filterBrand, filterAssigned, searchTerm, page, limit]);
 
+  const fetchMessages = useCallback(async (ticketId: string) => {
+    setLoadingMessages(true);
+    try {
+      const data = await adminApi.get<{ messages: TicketMessage[] }>(
+        `/api/admin/tickets/${ticketId}/messages`
+      );
+      setMessages(data.messages || []);
+    } catch (err: any) {
+      console.error('Error fetching messages:', err);
+      setMessages([]);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, []);
+
+  const sendMessage = async () => {
+    if (!selectedTicket || !messageText.trim()) return;
+    setSendingMessage(true);
+    try {
+      const data = await adminApi.post<{ data: TicketMessage }>(
+        `/api/admin/tickets/${selectedTicket.id}/messages`,
+        { content: messageText.trim() }
+      );
+      setMessages(prev => [...prev, data.data]);
+      setMessageText('');
+      fetchTickets(); // refresh to update status
+    } catch (err: any) {
+      setToast({ message: err.message || 'Error al enviar mensaje', type: 'error' });
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
   useEffect(() => {
     fetchBrands();
     fetchAdmins();
@@ -175,6 +223,15 @@ export default function TicketsPage() {
   useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
+
+  useEffect(() => {
+    if (selectedTicket) {
+      fetchMessages(selectedTicket.id);
+    } else {
+      setMessages([]);
+      setMessageText('');
+    }
+  }, [selectedTicket, fetchMessages]);
 
   const clearFilters = () => {
     setFilterStatus('');
@@ -703,6 +760,74 @@ export default function TicketsPage() {
                 <p className="text-sm whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
                   {selectedTicket.description}
                 </p>
+              </div>
+
+              {/* Messages Thread */}
+              <div className="rounded-xl border border-[var(--border-color)] p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <MessageCircle className="h-4 w-4 text-[var(--text-muted)]" />
+                  <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Conversación</p>
+                </div>
+
+                {loadingMessages ? (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>
+                    Sin mensajes aún. Usa el campo de abajo para responder.
+                  </p>
+                ) : (
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {messages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`rounded-xl p-3 text-sm ${
+                          msg.sender_type === 'admin'
+                            ? 'bg-[var(--accent)]/10 border border-[var(--accent)]/20 ml-4'
+                            : msg.sender_type === 'brand'
+                            ? 'bg-white/5 border border-[var(--border-color)] mr-4'
+                            : 'bg-gray-500/10 border border-gray-500/20 mx-4'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+                            {msg.sender_type === 'admin' ? 'Admin' : msg.sender_type === 'brand' ? (selectedTicket.brand_name || 'Cliente') : 'Sistema'}
+                          </span>
+                          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                            {new Date(msg.created_at).toLocaleString('es-CO', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p className="whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>{msg.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Reply Input */}
+                {selectedTicket.status !== 'resolved' && selectedTicket.status !== 'closed' && (
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="text"
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                      placeholder="Escribe una respuesta..."
+                      className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]/50"
+                    />
+                    <button
+                      onClick={sendMessage}
+                      disabled={sendingMessage || !messageText.trim()}
+                      className="rounded-xl bg-[var(--accent)] p-2 text-white transition-colors hover:bg-[var(--accent)]/90 disabled:opacity-50 flex items-center justify-center"
+                    >
+                      {sendingMessage ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Quick Actions */}
