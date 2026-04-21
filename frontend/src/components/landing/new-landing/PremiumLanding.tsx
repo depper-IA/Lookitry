@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import LandingNav from './LandingNav';
 import LandingHero from './LandingHero';
 import LandingStats from './LandingStats';
@@ -27,26 +27,44 @@ interface PremiumLandingProps {
   trm?: number;
 }
 
-export default function PremiumLanding({ 
-  pricing, 
-  reviews, 
-  realReviewsCount = 0, 
+export default function PremiumLanding({
+  pricing,
+  reviews,
+  realReviewsCount = 0,
   usingMockReviews = false,
-  currency = 'COP', 
-  trm = 4000 
+  currency = 'COP',
+  trm = 4000
 }: PremiumLandingProps & { realReviewsCount?: number; usingMockReviews?: boolean }) {
+
+  const [navCurrency, setNavCurrency] = useState<'COP' | 'USD'>(currency);
+
+  useEffect(() => {
+    const handleCurrencyChange = () => {
+      const saved = localStorage.getItem('currency') as 'COP' | 'USD';
+      if (saved) setNavCurrency(saved);
+    };
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
+  }, []);
+
+  const handleNavCurrencyChange = (c: 'COP' | 'USD') => {
+    setNavCurrency(c);
+    localStorage.setItem('currency', c);
+    window.dispatchEvent(new Event('currencyChange'));
+  };
+
   return (
     <PromoBannerProvider>
       <div className="min-h-screen bg-white dark:bg-black text-[#0a0a0a] dark:text-white selection:bg-[#FF5C3A]/30 selection:text-white font-dm-sans overflow-x-clip">
         <PromoBanner />
-        <LandingNav />
+        <LandingNav currency={navCurrency} onCurrencyChange={handleNavCurrencyChange} />
         <main className="relative">
           <LandingHero />
           <LandingStats />
           <LandingSteps />
           <LandingMiniLanding />
           <LandingPlugin />
-          <LandingPricing pricing={pricing} currency={currency} trm={trm} />
+          <LandingPricing pricing={pricing} currency={navCurrency} trm={trm} />
           <ActiveCouponsBanner />
           <LandingPayments />
           <ReviewsSlider reviews={reviews} realReviewsCount={realReviewsCount} usingMockReviews={usingMockReviews} />
