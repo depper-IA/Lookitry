@@ -3,29 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Copy, Gift, Loader2, Star, Users, Zap } from 'lucide-react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-
-interface ReferralData {
-  referralCode: string;
-  rewardCredits: number;
-  referredRewardCredits: number;
-  referralCount: number;
-  successfulReferrals: number;
-  pendingReferrals: number;
-  totalCreditsEarned: number;
-  hasReferredCode: boolean;
-  referredCodeStatus: string | null;
-  referrerName: string | null;
-  recentReferrals: Array<{
-    id: string;
-    referred_brand_id: string;
-    referredName: string | null;
-    status: string;
-    created_at: string;
-    converted_at?: string | null;
-  }>;
-}
+import { referralService, ReferralData } from '@/services/referral.service';
 
 export default function ReferralPage() {
   const [data, setData] = useState<ReferralData | null>(null);
@@ -42,9 +20,7 @@ export default function ReferralPage() {
 
   const loadReferralData = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/brands/me/referral`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Error al cargar');
-      const json = await res.json();
+      const json = await referralService.getReferralInfo();
       setData(json);
     } finally {
       setLoading(false);
@@ -75,19 +51,13 @@ export default function ReferralPage() {
     setClaimSuccess(null);
 
     try {
-      const res = await fetch(`${API_URL}/api/brands/me/referral/claim`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ code: claimCode }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Error');
-      setClaimSuccess(json.message);
+      const result = await referralService.claimReferralCode(claimCode);
+      setClaimSuccess(result.message);
       setClaimCode('');
       await loadReferralData();
     } catch (err: any) {
-      setClaimError(err.message || 'Código inválido');
+      const message = err?.response?.data?.message || err?.message || 'Código inválido';
+      setClaimError(message);
     } finally {
       setClaimLoading(false);
     }
@@ -113,7 +83,7 @@ export default function ReferralPage() {
           Recomienda y gana
         </h1>
         <p className="text-body text-[var(--text-secondary)] max-w-xl">
-          Cada tienda que conviertas te da <span className="font-semibold text-[#FF5C3A]">{rewardCredits} créditos</span>. 
+          Cada tienda que conviertas te da <span className="font-semibold text-[#FF5C3A]">{rewardCredits} créditos</span>.
           Y tu invitado también gana <span className="font-semibold text-[#FF5C3A]">{referredRewardCredits}</span> al activar su plan.
         </p>
       </div>
@@ -126,13 +96,13 @@ export default function ReferralPage() {
       >
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
         <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-white/5 blur-xl" />
-        
+
         <div className="relative">
           <div className="mb-2 flex items-center gap-2">
             <Gift className="h-5 w-5" />
             <span className="text-sm font-medium uppercase tracking-wider opacity-80">Tu código de referido</span>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <code className="text-3xl sm:text-4xl font-bold tracking-tight">{data?.referralCode || '—'}</code>
             <button
@@ -153,7 +123,7 @@ export default function ReferralPage() {
               )}
             </button>
           </div>
-          
+
           <p className="mt-4 text-sm opacity-80">
             Compártelo con tiendas de moda que necesiten un probador virtual con IA
           </p>
@@ -198,7 +168,7 @@ export default function ReferralPage() {
 
       {/* ── Beneficios (Dos columnas) ───────────────────────────── */}
       <div className="grid gap-4 md:grid-cols-2">
-        
+
         {/* Beneficio del Referidor */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -212,7 +182,7 @@ export default function ReferralPage() {
             </div>
             <span className="text-label font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Tu beneficio</span>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold text-[#FF5C3A]">{rewardCredits}</span>
@@ -222,7 +192,7 @@ export default function ReferralPage() {
               Cuando tu invitado pague su primer plan Basic, Pro o Enterprise.
             </p>
           </div>
-          
+
           <div className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-3">
             <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-500" />
             <span className="text-sm text-emerald-400">Se acreditan automáticamente</span>
@@ -242,7 +212,7 @@ export default function ReferralPage() {
             </div>
             <span className="text-label font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Beneficio del invitado</span>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold text-violet-500">{referredRewardCredits}</span>
@@ -252,7 +222,7 @@ export default function ReferralPage() {
               Al activar su plan con tu código de referido.
             </p>
           </div>
-          
+
           <div className="mt-5 rounded-xl bg-violet-500/10 px-4 py-3">
             <p className="text-sm text-violet-400">
               Tu código hace que sea más fácil para ellos empezar
@@ -362,7 +332,7 @@ export default function ReferralPage() {
         className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6"
       >
         <h2 className="mb-5 text-lg font-bold text-[var(--text-primary)]">Cómo funciona</h2>
-        
+
         <div className="space-y-5">
           {/* Paso 1 */}
           <div className="flex gap-4">
@@ -376,10 +346,10 @@ export default function ReferralPage() {
               </p>
             </div>
           </div>
-          
+
           {/* Conexión visual */}
           <div className="ml-5 h-6 w-0.5 bg-[var(--border-color)]" />
-          
+
           {/* Paso 2 */}
           <div className="flex gap-4">
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">
@@ -394,10 +364,10 @@ export default function ReferralPage() {
               </p>
             </div>
           </div>
-          
+
           {/* Conexión visual */}
           <div className="ml-5 h-6 w-0.5 bg-[var(--border-color)]" />
-          
+
           {/* Paso 3 */}
           <div className="flex gap-4">
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-white">
