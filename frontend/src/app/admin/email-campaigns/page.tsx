@@ -311,7 +311,7 @@ export default function EmailCampaignsPage() {
             <tr>
                 <td class="mobile-padding" align="center" style="padding: 10px 40px 40px 40px;">
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                        <tr><td align="center"><a href="https://lookitry.com/checkout?plan=TRIAL" class="heading-text" style="display: block; width: 100%; background-color: #FF5C3A; color: #FFFFFF; text-align: center; font-size: 18px; font-weight: 700; text-decoration: none; padding: 20px 0; border-radius: 12px;">Quiero el acceso anticipado &rarr;</a></td></tr>
+                        <tr><td align="center"><a href="https://lookitry.com/trial-checkout" class="heading-text" style="display: block; width: 100%; background-color: #FF5C3A; color: #FFFFFF; text-align: center; font-size: 18px; font-weight: 700; text-decoration: none; padding: 20px 0; border-radius: 12px;">Quiero el acceso anticipado &rarr;</a></td></tr>
                         <tr><td align="center" style="padding-top: 16px;"><p class="body-text" style="margin: 0; font-size: 12px; color: #666666;">Sin compromiso. Plazas limitadas para marcas seleccionadas.</p></td></tr>
                     </table>
                 </td>

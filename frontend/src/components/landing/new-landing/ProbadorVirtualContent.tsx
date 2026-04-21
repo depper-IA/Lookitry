@@ -59,7 +59,7 @@ export default function ProbadorVirtualContent() {
               <Link href="/marca/demo" className="rounded-2xl bg-[#FF5C3A] px-12 py-6 text-sm font-bold text-white shadow-xl shadow-[#FF5C3A]/30 transition-all hover:scale-105">
                 Prueba Premium
               </Link>
-              <Link href="/checkout?plan=TRIAL" className="rounded-2xl border border-white/10 bg-white/5 px-12 py-6 text-sm font-bold text-white transition-all hover:bg-white/10">
+              <Link href="/trial-checkout" className="rounded-2xl border border-white/10 bg-white/5 px-12 py-6 text-sm font-bold text-white transition-all hover:bg-white/10">
                 Activar para mi Marca
               </Link>
             </div>
@@ -147,7 +147,7 @@ export default function ProbadorVirtualContent() {
               <span className="text-[#FF5C3A]">Futuro de la Moda?</span>
             </h2>
             <Link
-              href="/checkout?plan=TRIAL"
+              href="/trial-checkout"
               className="inline-flex items-center gap-4 rounded-[2.5rem] bg-[#FF5C3A] px-16 py-8 text-lg font-black text-white shadow-2xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 active:scale-95"
             >
               Empezar Ahora <InfinityIcon size={24} />

@@ -52,7 +52,7 @@ export default function LandingHero() {
 
           <div className="flex flex-wrap justify-center gap-3 sm:gap-5 lg:justify-start">
             <Link
-              href="/checkout?plan=TRIAL"
+              href="/trial-checkout"
               className="group flex items-center gap-2 rounded-xl bg-[#FF5C3A] px-6 py-4 text-sm font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 hover:bg-[#ff7b5e] sm:gap-3 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base"
             >
               Obtén Acceso Premium
