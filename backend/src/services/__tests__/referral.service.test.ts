@@ -33,18 +33,18 @@ describe('ReferralService', () => {
     expect(supabaseAdmin.from).not.toHaveBeenCalled();
   });
 
-  it('convierte un referral pendiente y acredita 500 creditos una sola vez', async () => {
+  it('convierte un referral pendiente y acredita 200 creditos una sola vez', async () => {
     const pendingReferral = {
       id: 'ref-1',
       referrer_brand_id: 'referrer-1',
       referred_brand_id: 'brand-1',
       referral_code: 'ABCD1234',
-      reward_credits: 500,
+      reward_credits: 200,
       referrer_claimed: false,
       status: 'pending',
     };
     const convertedReferral = { ...pendingReferral, status: 'converted' };
-    const claimedReferral = { referrer_brand_id: 'referrer-1', reward_credits: 500 };
+    const claimedReferral = { referrer_brand_id: 'referrer-1', reward_credits: 200 };
     const claimedReferralReferred = { referred_brand_id: 'brand-1', reward_credits: 100 };
 
     const referralsFetch = buildChain({ data: pendingReferral, error: null });
@@ -54,7 +54,7 @@ describe('ReferralService', () => {
     const referralsReferredFetch = buildChain({ data: convertedReferral, error: null });
     const referralsReferredUpdate = buildChain({ data: claimedReferralReferred, error: null });
     const brandBalanceFetch = buildChain({ data: { extra_credits_balance: 100 }, error: null });
-    const brandBalanceUpdate = buildChain({ data: { extra_credits_balance: 600 }, error: null });
+    const brandBalanceUpdate = buildChain({ data: { extra_credits_balance: 300 }, error: null });
     const brandReferredBalanceFetch = buildChain({ data: { extra_credits_balance: 0 }, error: null });
     const brandReferredBalanceUpdate = buildChain({ data: { extra_credits_balance: 100 }, error: null });
 
@@ -80,10 +80,10 @@ describe('ReferralService', () => {
       converted: true,
       rewarded: true,
       rewardedReferred: true,
-      rewardCredits: 500,
+      rewardCredits: 300,
       referralId: 'ref-1',
     });
-    expect(brandBalanceUpdate.update).toHaveBeenCalledWith({ extra_credits_balance: 600 });
+    expect(brandBalanceUpdate.update).toHaveBeenCalledWith({ extra_credits_balance: 300 });
     expect(brandReferredBalanceUpdate.update).toHaveBeenCalledWith({ extra_credits_balance: 100 });
   });
 
@@ -93,7 +93,7 @@ describe('ReferralService', () => {
       referrer_brand_id: 'referrer-1',
       referred_brand_id: 'brand-1',
       referral_code: 'ABCD1234',
-      reward_credits: 500,
+      reward_credits: 200,
       referrer_claimed: true,
       status: 'converted',
     };
@@ -124,7 +124,7 @@ describe('ReferralService', () => {
       converted: true,
       rewarded: false,
       rewardedReferred: true,
-      rewardCredits: 500,
+      rewardCredits: 200,
       referralId: 'ref-1',
     });
   });
