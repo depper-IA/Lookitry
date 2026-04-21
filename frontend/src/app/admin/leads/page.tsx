@@ -80,6 +80,15 @@ function IconWarning() {
 function IconExternalLink() {
   return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>;
 }
+function IconEye() {
+  return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
+}
+function IconGlobe() {
+  return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>;
+}
+function IconStar() {
+  return <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>;
+}
 function IconPhone() {
   return <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>;
 }
@@ -111,6 +120,7 @@ export default function LeadsPage() {
     statuses: string[];
   }>({ cities: [], countries: [], businessTypes: [], statuses: [] });
   const [editLead, setEditLead] = useState<Lead | null>(null);
+  const [detailLead, setDetailLead] = useState<Lead | null>(null);
 
   const fetchLeads = useCallback(async () => {
     try {
@@ -185,268 +195,259 @@ export default function LeadsPage() {
       <div className="flex items-center justify-center h-64">
         <IconSpinner />
       </div>
-    );
+);
   }
+}
 
-return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="space-y-5"
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="flex items-center justify-between"
-      >
-        <div>
-          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-bold tracking-tight">Leads</h1>
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">
-            Total: <span className="font-semibold">{stats.total}</span> leads
-          </p>
-        </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest transition-all"
-          style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
-        >
-          <IconPlus />
-          Agregar Lead
-        </button>
-      </motion.div>
+function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void }) {
+  const googleMapsUrl = lead.latitude && lead.longitude
+    ? `https://www.google.com/maps/search/?api=1&query=${lead.latitude},${lead.longitude}`
+    : lead.address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lead.address)}`
+    : null;
 
+  const phoneLink = lead.phone ? `tel:+57${lead.phone.replace(/\D/g, '')}` : null;
+  const emailLink = lead.email ? `mailto:${lead.email}` : null;
+
+  const instagramLink = lead.instagram
+    ? lead.instagram.startsWith('http') ? lead.instagram : `https://instagram.com/${lead.instagram.replace('@', '')}`
+    : null;
+
+  const tiktokLink = lead.tiktok
+    ? lead.tiktok.startsWith('http') ? lead.tiktok : `https://tiktok.com/@${lead.tiktok.replace('@', '')}`
+    : null;
+
+  const websiteLink = lead.website && !lead.website.startsWith('http')
+    ? `https://${lead.website}`
+    : lead.website || null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.08 }}
-        className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4"
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.2 }}
+        className="rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border"
+        style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+        onClick={e => e.stopPropagation()}
       >
-        {(['new', 'qualified', 'contacted', 'interested', 'not_interested', 'client'] as LeadStatus[]).map((status) => (
-          <div
-            key={status}
-            className="rounded-2xl border p-4 cursor-pointer transition-colors"
-            style={{ backgroundColor: 'var(--bg-card)', borderColor: filterStatus === status ? 'var(--accent)' : 'var(--border-color)' }}
-            onClick={() => setFilterStatus(filterStatus === status ? '' : status)}
-          >
-            <p className="text-2xl font-bold" style={{ color: STATUS_COLORS[status] }}>{stats[status]}</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{STATUS_LABELS[status]}</p>
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b backdrop-blur-md" style={{ borderColor: 'var(--border-color)', backgroundColor: 'color-mix(in srgb, var(--bg-card) 90%, transparent)' }}>
+          <div>
+            <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{lead.name}</h2>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              {lead.business_type || lead.source}
+            </p>
           </div>
-        ))}
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12 }}
-        className="flex gap-4"
-      >
-        <select
-          value={filterCountry}
-          onChange={(e) => setFilterCountry(e.target.value)}
-          className="px-3 py-2 border rounded-lg focus:outline-none"
-          style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)', backgroundColor: 'var(--bg-input)' }}
-        >
-          <option value="">Todos los países</option>
-          {filterOptions.countries.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <select
-          value={filterCity}
-          onChange={(e) => setFilterCity(e.target.value)}
-          className="px-3 py-2 border rounded-lg focus:outline-none"
-          style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)', backgroundColor: 'var(--bg-input)' }}
-        >
-          <option value="">Todas las ciudades</option>
-          {filterOptions.cities.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <select
-          value={filterBusinessType}
-          onChange={(e) => setFilterBusinessType(e.target.value)}
-          className="px-3 py-2 border rounded-lg focus:outline-none"
-          style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)', backgroundColor: 'var(--bg-input)' }}
-        >
-          <option value="">Todos los negocios</option>
-          {filterOptions.businessTypes.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        {(filterStatus || filterCountry || filterCity || filterBusinessType) && (
           <button
-            onClick={() => {
-              setFilterStatus('');
-              setFilterCountry('');
-              setFilterCity('');
-              setFilterBusinessType('');
-            }}
-            className="px-3 py-2 text-sm transition-colors rounded-xl border flex items-center gap-1"
-            style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}
+            onClick={onClose}
+            className="p-2 rounded-lg transition-colors hover:bg-[var(--bg-hover)]"
+            style={{ color: 'var(--text-muted)' }}
           >
-            Limpiar filtros <IconX />
+            <IconX />
           </button>
-        )}
-      </motion.div>
+        </div>
 
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-4 rounded-xl border flex items-center gap-3"
-          style={{ backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.2)', color: '#ef4444' }}
-        >
-          <IconWarning />
-          <span>{error}</span>
-          <button onClick={() => setError(null)} className="ml-auto"><IconX /></button>
-        </motion.div>
-      )}
+        <div className="p-6 space-y-6">
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {googleMapsUrl && (
+              <a
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-sm transition-all hover:scale-[1.02]"
+                style={{ backgroundColor: '#4285F4', color: '#fff' }}
+              >
+                <IconMapPin /> Google Maps
+              </a>
+            )}
+            {phoneLink && (
+              <a
+                href={phoneLink}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-sm transition-all hover:scale-[1.02]"
+                style={{ backgroundColor: '#25D366', color: '#fff' }}
+              >
+                <IconPhone /> Llamar
+              </a>
+            )}
+            {emailLink && (
+              <a
+                href={emailLink}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-sm transition-all hover:scale-[1.02]"
+                style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
+              >
+                <IconMail /> Email
+              </a>
+            )}
+            {websiteLink && (
+              <a
+                href={websiteLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-sm transition-all hover:scale-[1.02]"
+                style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', borderColor: 'var(--border-color)', border: '1px solid' }}
+              >
+                <IconGlobe /> Website
+              </a>
+            )}
+          </div>
 
-      {leads.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.16 }}
-          className="text-center py-12 rounded-2xl border"
-          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
-        >
-          <div style={{ color: 'var(--text-muted)' }}><IconMail /></div>
-          <p className="mt-2" style={{ color: 'var(--text-muted)' }}>No hay leads</p>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="mt-4 transition-colors hover:opacity-80"
-            style={{ color: 'var(--accent)' }}
-          >
-            Agregar el primero
-          </button>
-        </motion.div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.16 }}
-          className="rounded-2xl border overflow-hidden"
-          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
-        >
-          <table className="w-full">
-            <thead>
-              <tr className="border-b" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
-                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Nombre</th>
-                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Ubicación</th>
-                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Contacto</th>
-                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Estado</th>
-                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Fecha</th>
-                <th className="text-right px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leads.map((lead) => (
-                <tr key={lead.id} className="border-b last:border-0 transition-colors" style={{ borderColor: 'var(--border-color)' }}
-                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
-                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-                >
-                  <td className="px-4 py-3">
-                    <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{lead.name}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{lead.business_type || lead.source}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 text-sm text-[#666]">
-                      <IconMapPin />
-                      {lead.city}, {lead.country}
-                    </div>
-                    {(lead.latitude || lead.longitude) && (
-                      <div className="text-xs text-[#999] mt-1">
-                        {lead.latitude?.toFixed(4)}, {lead.longitude?.toFixed(4)}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="space-y-1">
-                      {lead.email && (
-                        <a href={`mailto:${lead.email}`} className="flex items-center gap-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                          <IconMail /> {lead.email}
-                        </a>
-                      )}
-                      {lead.phone && (
-                        <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                          <IconPhone /> {lead.phone}
-                        </a>
-                      )}
-                      {lead.website && (
-                        <a href={lead.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm truncate max-w-[200px]" style={{ color: 'var(--accent)' }} title={lead.website}>
-                          <IconExternalLink />
-                          <span className="truncate">Web</span>
-                        </a>
-                      )}
-                      {lead.instagram && (
-                        <a href={`https://instagram.com/${lead.instagram}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm" style={{ color: 'var(--text-secondary)' }} title={`@${lead.instagram}`}>
-                          <span style={{ color: 'var(--accent)' }}>@</span>{lead.instagram}
-                        </a>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={lead.status}
-                      onChange={(e) => handleStatusChange(lead.id, e.target.value as LeadStatus)}
-                      disabled={actionLoading === lead.id}
-                      className="px-2 py-1 text-xs rounded-full border-0 cursor-pointer"
-                      style={{ backgroundColor: `${STATUS_COLORS[lead.status]}20`, color: STATUS_COLORS[lead.status] }}
-                    >
-                      {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
+          {/* Status Badge */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Estado:</span>
+            <span
+              className="px-3 py-1 rounded-full text-xs font-semibold"
+              style={{ backgroundColor: `${STATUS_COLORS[lead.status]}20`, color: STATUS_COLORS[lead.status] }}
+            >
+              {STATUS_LABELS[lead.status]}
+            </span>
+          </div>
+
+          {/* Location Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Ubicación</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <IconMapPin className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Dirección</span>
+                </div>
+                <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{lead.address || 'No disponible'}</p>
+              </div>
+              <div className="p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <IconGlobe className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Ciudad / País</span>
+                </div>
+                <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{lead.city || '—'}, {lead.country}</p>
+              </div>
+            </div>
+            {lead.latitude && lead.longitude && (
+              <div className="p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+                <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Coordenadas</p>
+                <p className="text-sm font-mono" style={{ color: 'var(--text-secondary)' }}>
+                  {lead.latitude.toFixed(6)}, {lead.longitude.toFixed(6)}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Contact Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Contacto</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {lead.phone && (
+                <div className="p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+                  <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Teléfono</p>
+                  <a href={phoneLink!} className="text-sm font-medium hover:underline" style={{ color: 'var(--accent)' }}>
+                    {lead.phone}
+                  </a>
+                </div>
+              )}
+              {lead.email && (
+                <div className="p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+                  <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Email</p>
+                  <a href={emailLink!} className="text-sm font-medium hover:underline truncate block" style={{ color: 'var(--accent)' }}>
+                    {lead.email}
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Social Section */}
+          {(lead.instagram || lead.tiktok || lead.website) && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Redes Sociales</h3>
+              <div className="flex flex-wrap gap-3">
+                {lead.instagram && (
+                  <a
+                    href={instagramLink!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+                    style={{ backgroundColor: '#E4405F20', color: '#E4405F', border: '1px solid #E4405F30' }}
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    @{lead.instagram.replace('@', '')}
+                  </a>
+                )}
+                {lead.tiktok && (
+                  <a
+                    href={tiktokLink!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+                    style={{ backgroundColor: '#00000020', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.46V13a8.28 8.28 0 005.58 2.15v-3.45a4.85 4.85 0 01-1-.11z"/></svg>
+                    @{lead.tiktok.replace('@', '')}
+                  </a>
+                )}
+                {lead.website && (
+                  <a
+                    href={websiteLink!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+                    style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+                  >
+                    <IconGlobe /> Website
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Rating Section */}
+          {(lead.rating !== undefined || lead.user_ratings_total !== undefined) && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Valoración Google</h3>
+              <div className="flex items-center gap-4 p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+                {lead.rating !== undefined && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{lead.rating.toFixed(1)}</span>
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <IconStar
+                          key={star}
+                          className="w-4 h-4"
+                          style={{ color: star <= Math.round(lead.rating!) ? '#FBBD23' : 'var(--text-muted)' }}
+                        />
                       ))}
-                    </select>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[#666]">{formatDate(lead.created_at)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      {lead.instagram && (
-                        <a
-                          href={`https://instagram.com/${lead.instagram}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-[#999] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-lg transition-colors"
-                          title="Ir a Instagram"
-                        >
-                          <IconExternalLink />
-                        </a>
-                      )}
-                      <button
-                        onClick={() => handleAddOutreach(lead.id, 'email')}
-                        className="p-2 text-[#999] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-lg transition-colors"
-                        title="Marcar email enviado"
-                      >
-                        <IconMail />
-                      </button>
-                      <button
-                        onClick={() => setEditLead(lead)}
-                        className="p-2 text-[#999] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-lg transition-colors"
-                        title="Editar"
-                      >
-                        <IconEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(lead.id)}
-                        disabled={actionLoading === lead.id}
-                        className="p-2 text-[#999] hover:text-[#ef4444] hover:bg-[#fef2f2] rounded-lg transition-colors disabled:opacity-50"
-                        title="Eliminar"
-                      >
-                        <IconTrash />
-                      </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </motion.div>
-      )}
+                  </div>
+                )}
+                {lead.user_ratings_total !== undefined && (
+                  <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                    ({lead.user_ratings_total.toLocaleString()} reseñas)
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
-      {showAddModal && (
-        <LeadModal onClose={() => setShowAddModal(false)} onSave={fetchLeads} />
-      )}
+          {/* Notes Section */}
+          {lead.notes && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Notas</h3>
+              <div className="p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+                <p className="text-sm whitespace-pre-wrap" style={{ color: 'var(--text-secondary)' }}>{lead.notes}</p>
+              </div>
+            </div>
+          )}
 
-      {editLead && (
-        <LeadModal lead={editLead} onClose={() => setEditLead(null)} onSave={fetchLeads} />
-      )}
-    </motion.div>
+          {/* Metadata */}
+          <div className="pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              Creado: {formatDate(lead.created_at)} • Fuente: {lead.source}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
