@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Product } from '@/types';
-import { 
-  Edit3, 
-  Trash2, 
+import {
+  Edit3,
+  Trash2,
   Package,
   Sparkles,
   Gauge,
@@ -13,7 +13,9 @@ import {
   Layers,
   Star,
   Plus,
-  X
+  X,
+  Eye,
+  MoreHorizontal
 } from 'lucide-react';
 
 import { getProxiedUrl } from '@/utils/imageProxy';
@@ -36,36 +38,41 @@ interface ProductListProps {
 // ═══════════════════════════════════════════════════════════════════════════════
 const DESIGN = {
   accent: '#FF5C3A',
-  accentGlow: 'rgba(255, 92, 58, 0.25)',
-  accentSubtle: 'rgba(255, 92, 58, 0.1)',
-  
+  accentGlow: 'rgba(255, 92, 58, 0.15)',
+  accentSubtle: 'rgba(255, 92, 58, 0.08)',
+
   // Status
   success: '#10B981',
-  successGlow: 'rgba(16, 185, 129, 0.3)',
+  successGlow: 'rgba(16, 185, 129, 0.2)',
   danger: '#EF4444',
-  
+
+  // Surfaces
+  surface1: 'rgba(255, 255, 255, 0.03)',
+  surface2: 'rgba(255, 255, 255, 0.06)',
+
   // Effects
-  shadowCard: '0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15)',
-  shadowHover: '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 92, 58, 0.2)',
-  
+  shadowCard: '0 4px 24px rgba(0, 0, 0, 0.2)',
+  shadowHover: '0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 92, 58, 0.15)',
+  shadowGlow: '0 0 30px rgba(255, 92, 58, 0.2)',
+
   // Timing
   fast: '150ms',
-  normal: '300ms',
+  normal: '250ms',
 };
 
-const CATEGORY_STYLES: Record<string, { bg: string; icon: React.ReactNode }> = {
-  rines: { bg: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', icon: <Gauge className="w-3 h-3" /> },
-  tshirt: { bg: 'linear-gradient(135deg, #3F3F46 0%, #27272A 100%)', icon: <Layers className="w-3 h-3" /> },
-  camisa: { bg: 'linear-gradient(135deg, #78350F 0%, #451A03 100%)', icon: <Star className="w-3 h-3" /> },
-  vestido: { bg: 'linear-gradient(135deg, #4C1D95 0%, #2E1065 100%)', icon: <Sparkles className="w-3 h-3" /> },
-  zapatos: { bg: 'linear-gradient(135deg, #166534 0%, #14532D 100%)', icon: <Star className="w-3 h-3" /> },
-  default: { bg: 'linear-gradient(135deg, #3F3F46 0%, #27272A 100%)', icon: <Sparkles className="w-3 h-3" /> },
+const CATEGORY_STYLES: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+  rines: { bg: 'rgba(30, 41, 59, 0.9)', text: '#94A3B8', icon: <Gauge className="w-3 h-3" /> },
+  tshirt: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
+  camisa: { bg: 'rgba(120, 53, 15, 0.9)', text: '#FCD34D', icon: <Star className="w-3 h-3" /> },
+  vestido: { bg: 'rgba(76, 29, 149, 0.9)', text: '#C4B5FD', icon: <Sparkles className="w-3 h-3" /> },
+  zapatos: { bg: 'rgba(22, 101, 52, 0.9)', text: '#86EFAC', icon: <Star className="w-3 h-3" /> },
+  default: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Sparkles className="w-3 h-3" /> },
 };
 
-const BADGE_STYLES: Record<string, { bg: string; shadow: string; dot: string }> = {
-  nuevo: { bg: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', shadow: DESIGN.successGlow, dot: '#34D399' },
-  top: { bg: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', shadow: 'rgba(245, 158, 11, 0.3)', dot: '#FCD34D' },
-  oferta: { bg: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', shadow: 'rgba(239, 68, 68, 0.3)', dot: '#FCA5A5' },
+const BADGE_STYLES: Record<string, { bg: string; text: string; dot: string; shadow: string }> = {
+  nuevo: { bg: 'rgba(16, 185, 129, 0.15)', text: '#10B981', dot: '#34D399', shadow: 'rgba(16, 185, 129, 0.3)' },
+  top: { bg: 'rgba(245, 158, 11, 0.15)', text: '#F59E0B', dot: '#FCD34D', shadow: 'rgba(245, 158, 11, 0.3)' },
+  oferta: { bg: 'rgba(239, 68, 68, 0.15)', text: '#EF4444', dot: '#FCA5A5', shadow: 'rgba(239, 68, 68, 0.3)' },
 };
 
 const CATEGORY_UNITS: Record<string, string> = {
@@ -75,83 +82,108 @@ const CATEGORY_UNITS: Record<string, string> = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SUB-COMPONENTS (Using CSS Variables for Dark/Light)
+// SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function CategoryBadge({ category }: { category: string }) {
   const style = CATEGORY_STYLES[category.toLowerCase()] || CATEGORY_STYLES.default;
   return (
-    <div 
-      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-white/90 text-[9px] font-semibold uppercase tracking-wider"
-      style={{ background: style.bg, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}
+    <span
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-medium uppercase tracking-wide backdrop-blur-sm"
+      style={{ 
+        background: `${style.bg.replace('0.9', '0.6')}`,
+        color: style.text, 
+        border: '1px solid rgba(255,255,255,0.06)',
+        backdropFilter: 'blur(8px)',
+      }}
     >
       {style.icon}
       {category}
-    </div>
+    </span>
   );
 }
 
 function ProductBadge({ type }: { type: string }) {
   const style = BADGE_STYLES[type.toLowerCase()] || BADGE_STYLES.nuevo;
   return (
-    <div 
-      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-white text-[9px] font-bold uppercase tracking-wider"
-      style={{ background: style.bg, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.2), 0 2px 12px ${style.shadow}`, border: '1px solid rgba(255,255,255,0.1)' }}
+    <span
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide backdrop-blur-sm"
+      style={{ 
+        background: `${style.bg}`,
+        color: style.text, 
+        border: `1px solid ${style.dot}25`,
+        backdropFilter: 'blur(8px)',
+        boxShadow: `0 2px 8px ${style.shadow}20`,
+      }}
     >
-      <div className="w-1.5 h-1.5 rounded-full" style={{ background: style.dot, boxShadow: `0 0 6px ${style.dot}` }} />
+      <span 
+        className="w-1.5 h-1.5 rounded-full" 
+        style={{ 
+          background: style.dot, 
+          boxShadow: `0 0 4px ${style.dot}`,
+          opacity: 0.9,
+        }} 
+      />
       {type}
-    </div>
+    </span>
   );
 }
 
-function ActiveStatus() {
+function ActiveIndicator() {
   return (
     <div className="flex items-center gap-1.5">
-      <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: DESIGN.success, boxShadow: `0 0 8px ${DESIGN.success}, 0 0 16px ${DESIGN.successGlow}` }} />
-      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: DESIGN.success }}>Activo</span>
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: DESIGN.success }} />
+        <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: DESIGN.success }} />
+      </span>
+      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: DESIGN.success }}>Activo</span>
     </div>
   );
 }
 
-function PriceTag({ price, category }: { price: number; category: string }) {
+function PriceDisplay({ price, category }: { price: number; category: string }) {
   const unit = CATEGORY_UNITS[category.toLowerCase()] || CATEGORY_UNITS.default;
   return (
     <div className="text-right shrink-0 min-w-0">
-      {unit && <p className="text-[9px] mb-0.5 font-medium truncate" style={{ color: 'var(--text-muted)' }}>{unit}</p>}
-      <p className="text-lg md:text-xl font-black tracking-tight truncate" style={{ color: DESIGN.accent, textShadow: `0 0 20px ${DESIGN.accentGlow}` }}>
+      {unit && <p className="text-[9px] mb-0.5 font-medium opacity-60" style={{ color: 'var(--text-secondary)' }}>{unit}</p>}
+      <p className="text-xl font-extrabold tracking-tight" style={{ color: DESIGN.accent }}>
         ${price.toLocaleString('es-CO')}
       </p>
     </div>
   );
 }
 
-// Technical Line - Core specs in one line (no duplicates)
-function TechLine({ attributes }: { attributes: Record<string, any> }) {
+function TechSpecs({ attributes }: { attributes: Record<string, any> }) {
   if (!attributes || Object.keys(attributes).length === 0) return null;
   const parts: string[] = [];
   if (attributes.material) parts.push(attributes.material);
   if (attributes.medida_pulgadas) parts.push(attributes.medida_pulgadas + '"');
   if (attributes.marca) parts.push(attributes.marca);
   if (parts.length === 0) return null;
-  return <p className="text-[10px] font-medium tracking-wide truncate" style={{ color: 'var(--text-muted)' }}>{parts.join(' · ')}</p>;
+  return (
+    <p className="text-[10px] font-medium opacity-70 truncate" style={{ color: 'var(--text-secondary)' }}>
+      {parts.join(' · ')}
+    </p>
+  );
 }
 
-// Attribute Pills - ONLY pills, NO duplicates with TechLine
-function AttrPills({ attributes }: { attributes: Record<string, any> }) {
+function AttributePills({ attributes }: { attributes: Record<string, any> }) {
   if (!attributes || Object.keys(attributes).length === 0) return null;
-  const pills: string[] = [];
-  // These are pills ONLY (not shown in TechLine)
-  if (attributes.finish) pills.push(attributes.finish);
-  if (attributes.peso) pills.push(attributes.peso + 'kg');
-  if (attributes.tallas && Array.isArray(attributes.tallas)) pills.push(attributes.tallas.slice(0, 4).join(', '));
-  if (attributes.color && !attributes.material) pills.push(attributes.color); // Only if no material
+  const pills: { label: string; color: string }[] = [];
+  if (attributes.finish) pills.push({ label: attributes.finish, color: '#8B5CF6' });
+  if (attributes.peso) pills.push({ label: attributes.peso + 'kg', color: '#06B6D4' });
+  if (attributes.tallas && Array.isArray(attributes.tallas)) pills.push({ label: attributes.tallas.slice(0, 3).join(', '), color: '#F59E0B' });
+  if (attributes.color && !attributes.material) pills.push({ label: attributes.color, color: '#EC4899' });
   if (pills.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1.5">
       {pills.map((pill, i) => (
-        <span key={i} className="px-2 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide"
-          style={{ background: 'var(--pill-bg)', color: 'var(--pill-text)', border: '1px solid var(--pill-border)' }}>
-          {pill}
+        <span
+          key={i}
+          className="px-2 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide"
+          style={{ background: `${pill.color}15`, color: pill.color, border: `1px solid ${pill.color}30` }}
+        >
+          {pill.label}
         </span>
       ))}
     </div>
@@ -176,140 +208,242 @@ interface ProductCardProps {
 function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, onAddToWidget, canAddToWidget }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  
+  const [showActions, setShowActions] = useState(false);
+
   const isGrid = variant === 'grid';
   const isThumb = variant === 'thumbnails';
   const isList = variant === 'list';
-  const cardHeight = isGrid ? 'min-h-[480px]' : isThumb ? 'min-h-[400px] md:min-h-[480px]' : '';
-  
+
+  const cardMinHeight = isGrid ? 'min-h-[520px]' : isThumb ? 'min-h-[440px]' : '';
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ duration: 0.4, delay: index * 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.35, delay: index * 0.04, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="group relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{ height: cardHeight, display: 'flex', flexDirection: 'column' }}
+      onMouseEnter={() => { setIsHovered(true); setShowActions(true); }}
+      onMouseLeave={() => { setIsHovered(false); setShowActions(false); }}
+      style={{ minHeight: cardMinHeight, display: 'flex', flexDirection: 'column' }}
     >
-      {/* Ambient Glow */}
-      <div className="absolute -inset-1 rounded-3xl pointer-events-none transition-opacity duration-500" style={{ opacity: isHovered ? 1 : 0, background: `radial-gradient(ellipse at 50% 0%, ${DESIGN.accentGlow} 0%, transparent 60%)` }} />
-
       {/* Card Container */}
-      <div className="relative flex flex-col rounded-2xl overflow-hidden flex-1"
+      <div
+        className="relative flex flex-col rounded-2xl overflow-hidden flex-1 transition-all duration-300"
         style={{
           background: 'var(--card-bg)',
           border: '1px solid var(--card-border)',
           boxShadow: isHovered ? DESIGN.shadowHover : DESIGN.shadowCard,
-          transition: `all ${DESIGN.normal} ease`
+          transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
         }}
       >
-        {/* Image */}
-        <div className={`relative overflow-hidden ${isList ? 'aspect-[1/1] h-20' : isThumb ? 'aspect-[4/5]' : 'aspect-square'} flex-shrink-0`}>
-          {!imageLoaded && <div className="absolute inset-0 animate-pulse" style={{ background: 'var(--skeleton-bg)' }} />}
-          <img src={getProxiedUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 ease-out"
-            style={{ transform: isHovered ? 'scale(1.08)' : 'scale(1)', opacity: imageLoaded ? 1 : 0 }}
-            onLoad={() => setImageLoaded(true)} />
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top, var(--overlay-dark) 0%, transparent 60%)' }} />
-          <div className="absolute inset-0 pointer-events-none transition-opacity duration-500" style={{ opacity: isHovered ? 0.6 : 0, background: `radial-gradient(ellipse at 30% 70%, ${DESIGN.accentGlow} 0%, transparent 50%)` }} />
+        {/* Image Container */}
+        <div
+          className={`relative overflow-hidden flex-shrink-0 ${isList ? 'aspect-square h-24 w-24' : isThumb ? 'aspect-[4/5]' : 'aspect-square'}`}
+        >
+          {/* Skeleton */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 animate-pulse" style={{ background: 'var(--skeleton-bg)' }} />
+          )}
 
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-            {product.badge && <ProductBadge type={product.badge} />}
-            {!isList && <CategoryBadge category={product.category} />}
-          </div>
+          {/* Product Image */}
+          <img
+            src={getProxiedUrl(product.imageUrl)}
+            alt={product.name}
+            className="w-full h-full object-cover transition-all duration-500"
+            style={{
+              transform: isHovered && !isList ? 'scale(1.05)' : 'scale(1)',
+              opacity: imageLoaded ? 1 : 0,
+            }}
+            onLoad={() => setImageLoaded(true)}
+          />
 
-          {/* Status */}
-          <div className="absolute top-3 right-3" style={{ transform: isHovered ? 'scale(1.1)' : 'scale(1)', transition: `transform ${DESIGN.fast} ease` }}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md" style={{ background: 'rgba(16, 185, 129, 0.9)', boxShadow: `0 4px 12px ${DESIGN.successGlow}` }}>
-              <Check className="w-4 h-4 text-white" strokeWidth={3} />
+          {/* Gradient Overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 40%, transparent 70%)',
+              opacity: isHovered ? 0.8 : 0.5,
+            }}
+          />
+
+          {/* Top Badges Row */}
+          <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+            <div className="flex flex-col gap-1.5">
+              {product.badge && <ProductBadge type={product.badge} />}
+              {!isList && <CategoryBadge category={product.category} />}
+            </div>
+
+            {/* Active Status Badge */}
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center backdrop-blur-md transition-transform duration-200"
+              style={{
+                background: 'rgba(16, 185, 129, 0.9)',
+                boxShadow: `0 4px 12px ${DESIGN.successGlow}`,
+                transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+              }}
+            >
+              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
             </div>
           </div>
 
-          {/* Actions - only show on hover for grid/list, thumbnails use button overlay */}
-          {!isThumb && (
-            <div className="absolute bottom-0 left-0 right-0 p-4" style={{ transform: isHovered ? 'translateY(0)' : 'translateY(100%)', transition: `transform ${DESIGN.normal} ease`, background: 'linear-gradient(to top, var(--overlay-dark) 0%, transparent 100%)' }}>
+          {/* Actions Overlay - Grid & List */}
+          {!isThumb && showActions && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute bottom-0 left-0 right-0 p-4"
+              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)' }}
+            >
               <div className="flex justify-center gap-2">
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onEdit}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white"
-                  style={{ background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)' }}>
-                  <Edit3 size={14} /> Editar
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-wider text-white backdrop-blur-md transition-all"
+                  style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}
+                >
+                  <Edit3 size={12} /> Editar
                 </motion.button>
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onDelete}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white"
-                  style={{ background: 'rgba(239, 68, 68, 0.8)', border: '1px solid rgba(239, 68, 68, 0.4)' }}>
-                  <Trash2 size={14} /> Eliminar
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-wider text-white backdrop-blur-md transition-all"
+                  style={{ background: 'rgba(239, 68, 68, 0.8)', border: '1px solid rgba(239, 68, 68, 0.4)' }}
+                >
+                  <Trash2 size={12} /> Eliminar
                 </motion.button>
                 {onAddToWidget && (
                   <motion.button
-                    whileHover={{ scale: isInWidget ? 1 : 1.02 }}
-                    whileTap={{ scale: isInWidget ? 1 : 0.98 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={(e) => { e.stopPropagation(); onAddToWidget(); }}
                     disabled={isInWidget || !canAddToWidget}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-wider backdrop-blur-md transition-all ${
                       isInWidget
-                        ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
+                        ? 'bg-emerald-500/30 text-emerald-300 cursor-default'
                         : canAddToWidget === false
-                        ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
+                        ? 'bg-gray-500/20 text-gray-400 cursor-not-allowed'
                         : 'bg-[#FF5C3A]/80 text-white hover:bg-[#FF5C3A]'
                     }`}
-                    style={{ border: isInWidget ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,92,58,0.4)' }}
+                    style={{ border: isInWidget ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,92,58,0.3)' }}
                   >
-                    {isInWidget ? <Check size={14} /> : <Plus size={14} />}
+                    {isInWidget ? <Check size={12} /> : <Plus size={12} />}
                     {isInWidget ? 'En Widget' : 'Agregar'}
                   </motion.button>
                 )}
               </div>
-            </div>
+            </motion.div>
           )}
 
-          {/* Thumbnail view: Add to widget button at bottom */}
+          {/* Thumbnail Add Button */}
           {isThumb && onAddToWidget && (
-            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
+            <div
+              className="absolute bottom-0 left-0 right-0 p-3 transition-opacity duration-300"
+              style={{
+                background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                opacity: isHovered ? 1 : 0.7,
+              }}
+            >
               <motion.button
-                whileHover={{ scale: isInWidget ? 1 : 1.02 }}
-                whileTap={{ scale: isInWidget ? 1 : 0.98 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={(e) => { e.stopPropagation(); onAddToWidget(); }}
                 disabled={isInWidget || !canAddToWidget}
-                className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${
+                className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all ${
                   isInWidget
-                    ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
+                    ? 'bg-emerald-500/25 text-emerald-300 cursor-default'
                     : canAddToWidget === false
-                    ? 'bg-gray-500/10 text-gray-500 cursor-not-allowed'
-                    : 'bg-[#FF5C3A]/80 text-white hover:bg-[#FF5C3A]'
+                    ? 'bg-gray-500/15 text-gray-400 cursor-not-allowed'
+                    : 'bg-[#FF5C3A] text-white hover:bg-[#FF5C3A]/90'
                 }`}
               >
                 {isInWidget ? <Check size={12} /> : <Plus size={12} />}
-                {isInWidget ? 'En Widget' : 'Agregar'}
+                {isInWidget ? 'En Widget' : 'Agregar al Widget'}
               </motion.button>
             </div>
           )}
         </div>
 
-        {/* Content - compact for thumbnails */}
-        <div className="flex flex-col flex-1 justify-end p-3 lg:p-4">
-          {/* Product name */}
-          <h3 className="font-bold uppercase tracking-tight leading-tight line-clamp-2 mb-1" style={{ color: 'var(--text-primary)', fontSize: isThumb ? '11px' : '13px' }}>
+        {/* Content Area */}
+        <div className={`flex flex-col flex-1 ${isList ? 'p-4 justify-center' : 'p-4 lg:p-5 justify-end'}`}>
+          {/* Product Name - Prominent */}
+          <h3
+            className="font-bold uppercase tracking-tight leading-tight line-clamp-2"
+            style={{
+              color: 'var(--text-primary)',
+              fontSize: isThumb ? '12px' : '14px',
+            }}
+          >
             {product.name}
           </h3>
 
-          {/* Category badge */}
-          {!isList && (
-            <div className="mb-2">
-              <span className="text-[9px] font-semibold uppercase tracking-wider opacity-70" style={{ color: 'var(--text-muted)' }}>
-                {product.category}
-              </span>
+          {/* Product Description - Subtle & Elegant */}
+          {(product.shortDescription || product.description) && (
+            <p
+              className="mt-1.5 line-clamp-2 leading-relaxed"
+              style={{
+                color: 'var(--text-muted)',
+                fontSize: '10px',
+                fontWeight: 400,
+              }}
+            >
+              {product.shortDescription || product.description}
+            </p>
+          )}
+
+          {/* Category - List only */}
+          {isList && (
+            <div className="mt-2">
+              <CategoryBadge category={product.category} />
             </div>
           )}
 
-          {/* Price - always visible */}
+          {/* Tech Specs */}
+          <TechSpecs attributes={product.attributes || {}} />
+
+          {/* Attribute Pills */}
+          <div className="mt-2">
+            <AttributePills attributes={product.attributes || {}} />
+          </div>
+
+          {/* Price & Status Row */}
           {product.price != null && (
-            <div className="mt-auto pt-2 flex items-center justify-between">
-              <span className="text-sm lg:text-lg font-black tracking-tight" style={{ color: DESIGN.accent, textShadow: `0 0 20px ${DESIGN.accentGlow}` }}>
-                ${Number(product.price).toLocaleString('es-CO')}
-              </span>
-              <ActiveStatus />
+            <div className="mt-auto pt-3 flex items-end justify-between">
+              <PriceDisplay price={product.price} category={product.category} />
+              <ActiveIndicator />
+            </div>
+          )}
+
+          {/* Mobile Actions - List view */}
+          {isList && (
+            <div className="flex items-center gap-2 mt-3 lg:hidden">
+              {onAddToWidget && (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => onAddToWidget()}
+                  disabled={isInWidget || !canAddToWidget}
+                  className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold uppercase transition-all ${
+                    isInWidget
+                      ? 'bg-emerald-500/15 text-emerald-400'
+                      : canAddToWidget === false
+                      ? 'bg-gray-500/10 text-gray-400'
+                      : 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                  }`}
+                >
+                  {isInWidget ? <Check size={12} /> : <Plus size={12} />}
+                  {isInWidget ? 'En Widget' : 'Agregar'}
+                </motion.button>
+              )}
+              <motion.button whileTap={{ scale: 0.95 }} onClick={onEdit}
+                className="px-3 py-2 rounded-lg" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
+                <Edit3 size={14} style={{ color: 'var(--text-primary)' }} />
+              </motion.button>
+              <motion.button whileTap={{ scale: 0.95 }} onClick={onDelete}
+                className="px-3 py-2 rounded-lg" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <Trash2 size={14} style={{ color: DESIGN.danger }} />
+              </motion.button>
             </div>
           )}
         </div>
@@ -324,13 +458,20 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
 
 function GridView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
-          <ProductCard key={product.id} product={product} variant="grid" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx}
+          <ProductCard
+            key={product.id}
+            product={product}
+            variant="grid"
+            onEdit={() => onEdit(product)}
+            onDelete={() => onDelete(product.id)}
+            index={idx}
             isInWidget={widgetProductIds?.includes(product.id)}
             onAddToWidget={onAddToWidget ? () => onAddToWidget(product.id) : undefined}
-            canAddToWidget={canAddToWidget} />
+            canAddToWidget={canAddToWidget}
+          />
         ))}
       </AnimatePresence>
     </div>
@@ -339,13 +480,20 @@ function GridView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
 
 function ThumbnailsView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-5 lg:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
-          <ProductCard key={product.id} product={product} variant="thumbnails" onEdit={() => onEdit(product)} onDelete={() => onDelete(product.id)} index={idx}
+          <ProductCard
+            key={product.id}
+            product={product}
+            variant="thumbnails"
+            onEdit={() => onEdit(product)}
+            onDelete={() => onDelete(product.id)}
+            index={idx}
             isInWidget={widgetProductIds?.includes(product.id)}
             onAddToWidget={onAddToWidget ? () => onAddToWidget(product.id) : undefined}
-            canAddToWidget={canAddToWidget} />
+            canAddToWidget={canAddToWidget}
+          />
         ))}
       </AnimatePresence>
     </div>
@@ -355,7 +503,10 @@ function ThumbnailsView({ products, onEdit, onDelete, widgetProductIds, onAddToW
 function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: DESIGN.shadowCard }}>
+      {/* Header accent line */}
       <div className="h-1" style={{ background: `linear-gradient(to right, ${DESIGN.accent}, transparent)` }} />
+
+      {/* Desktop Table */}
       <div className="hidden lg:block">
         <table className="w-full">
           <thead>
@@ -370,15 +521,31 @@ function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
           <tbody>
             <AnimatePresence mode="popLayout">
               {products.map((product, idx) => (
-                <motion.tr key={product.id} layout initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ delay: idx * 0.03 }}
-                  className="group" style={{ borderBottom: '1px solid var(--card-border)' }}>
+                <motion.tr
+                  key={product.id}
+                  layout
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: idx * 0.03 }}
+                  className="group"
+                  style={{ borderBottom: '1px solid var(--card-border)' }}
+                >
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0" style={{ border: '1px solid var(--card-border)' }}>
                         <img src={getProxiedUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h4 className="font-bold uppercase tracking-tight text-sm" style={{ color: 'var(--text-primary)' }}>{product.name}</h4>
+                        {(product.shortDescription || product.description) && (
+                          <p 
+                            className="text-[10px] mt-0.5 line-clamp-1" 
+                            style={{ color: 'var(--text-muted)' }}
+                          >
+                            {product.shortDescription || product.description}
+                          </p>
+                        )}
                         <div className="flex items-center gap-2 mt-1.5">
                           <div className="w-1.5 h-1.5 rounded-full" style={{ background: DESIGN.success, boxShadow: `0 0 6px ${DESIGN.success}` }} />
                           <span className="text-[9px] font-semibold uppercase" style={{ color: DESIGN.success }}>Activo</span>
@@ -393,10 +560,14 @@ function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <TechLine attributes={product.attributes || {}} />
-                    <AttrPills attributes={product.attributes || {}} />
+                    <TechSpecs attributes={product.attributes || {}} />
+                    <div className="mt-1.5">
+                      <AttributePills attributes={product.attributes || {}} />
+                    </div>
                   </td>
-                  <td className="px-6 py-5 text-right"><PriceTag price={product.price ?? 0} category={product.category} /></td>
+                  <td className="px-6 py-5 text-right">
+                    <PriceDisplay price={product.price ?? 0} category={product.category} />
+                  </td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex justify-end gap-2">
                       {onAddToWidget && (
@@ -410,7 +581,7 @@ function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
                               ? 'bg-emerald-500/15 cursor-default'
                               : canAddToWidget === false
                               ? 'bg-gray-500/10 cursor-not-allowed'
-                              : 'bg-[#FF5C3A]/15 hover:bg-[#FF5C3A]/25'
+                              : 'hover:bg-[#FF5C3A]/15'
                           }`}
                           style={{
                             border: widgetProductIds?.includes(product.id)
@@ -427,10 +598,12 @@ function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
                           )}
                         </motion.button>
                       )}
-                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)} className="p-2.5 rounded-lg" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
+                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)}
+                        className="p-2.5 rounded-lg" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
                         <Edit3 size={16} style={{ color: 'var(--text-primary)' }} />
                       </motion.button>
-                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)} className="p-2.5 rounded-lg" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)}
+                        className="p-2.5 rounded-lg" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)' }}>
                         <Trash2 size={16} style={{ color: DESIGN.danger }} />
                       </motion.button>
                     </div>
@@ -441,30 +614,52 @@ function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
           </tbody>
         </table>
       </div>
+
+      {/* Mobile Cards */}
       <div className="lg:hidden p-4 space-y-4">
         <AnimatePresence mode="popLayout">
           {products.map((product) => (
-            <motion.div key={product.id} layout initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="flex gap-4 p-4 rounded-xl" style={{ background: 'var(--card-bg-elevated)', border: '1px solid var(--card-border)' }}>
+            <motion.div
+              key={product.id}
+              layout
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="flex gap-4 p-4 rounded-xl"
+              style={{ background: 'var(--card-bg-elevated)', border: '1px solid var(--card-border)' }}
+            >
               <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0" style={{ border: '1px solid var(--card-border)' }}>
                 <img src={getProxiedUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 min-w-0 flex flex-col justify-between">
                 <div>
                   <h4 className="font-bold uppercase text-xs" style={{ color: 'var(--text-primary)' }}>{product.name}</h4>
+                  {(product.shortDescription || product.description) && (
+                    <p 
+                      className="text-[9px] mt-0.5 line-clamp-1" 
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {product.shortDescription || product.description}
+                    </p>
+                  )}
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: DESIGN.success }} />
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: DESIGN.success }} />
                     <CategoryBadge category={product.category} />
                   </div>
-                  <TechLine attributes={product.attributes || {}} />
+                  <TechSpecs attributes={product.attributes || {}} />
+                  <div className="mt-1.5">
+                    <AttributePills attributes={product.attributes || {}} />
+                  </div>
                 </div>
                 <div className="flex items-center justify-between mt-2">
-                  <PriceTag price={product.price ?? 0} category={product.category} />
+                  <PriceDisplay price={product.price ?? 0} category={product.category} />
                   <div className="flex gap-2">
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)} className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase" style={{ background: 'var(--btn-bg)' }}>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)}
+                      className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase" style={{ background: 'var(--btn-bg)' }}>
                       <Edit3 size={12} className="inline mr-1" />Editar
                     </motion.button>
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)} className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase" style={{ background: 'rgba(239,68,68,0.15)', color: DESIGN.danger }}>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)}
+                      className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase" style={{ background: 'rgba(239,68,68,0.15)', color: DESIGN.danger }}>
                       <Trash2 size={12} className="inline mr-1" />Eliminar
                     </motion.button>
                   </div>
@@ -484,9 +679,16 @@ function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
 
 function EmptyState() {
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-      className="text-center p-16 rounded-3xl" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
-      <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center" style={{ background: DESIGN.accentSubtle, border: `1px solid ${DESIGN.accentGlow}` }}>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="text-center p-16 rounded-3xl"
+      style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
+    >
+      <div
+        className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center"
+        style={{ background: DESIGN.accentSubtle, border: `1px solid ${DESIGN.accentGlow}` }}
+      >
         <Package className="w-10 h-10" style={{ color: DESIGN.accent }} />
       </div>
       <h3 className="text-xl font-bold uppercase tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>Sin Productos</h3>
