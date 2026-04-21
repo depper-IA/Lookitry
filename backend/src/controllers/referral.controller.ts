@@ -163,23 +163,9 @@ export async function claimReferralBonus(req: AuthRequest, res: Response) {
       .update({ referral_count: (referrer.referral_count || 0) + 1 })
       .eq('id', referrer.id);
 
-    const { data: currentBrand } = await supabaseAdmin
-      .from('brands')
-      .select('plan')
-      .eq('id', brandId)
-      .single();
-
-    if (currentBrand?.plan && referralService.isEligiblePlan(currentBrand.plan)) {
-      await referralService.convertReferralForFirstPaidPlan({
-        referredBrandId: brandId,
-        planPurchased: currentBrand.plan,
-        paymentReference: null,
-      });
-    }
-
     return res.status(200).json({
       success: true,
-      message: `Codigo aplicado. Tu referente recibira ${rewardCredits} creditos extra cuando completes tu primer pago mensual.`,
+      message: `Codigo aplicado. Tu referente recibira ${rewardCredits} creditos extra cuando completes tu primer pago de suscripcion.`,
       referralId: newReferral?.id,
     });
   } catch (error) {

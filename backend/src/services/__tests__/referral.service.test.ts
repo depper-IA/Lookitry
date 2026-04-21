@@ -45,7 +45,7 @@ describe('ReferralService', () => {
     };
     const convertedReferral = { ...pendingReferral, status: 'converted' };
     const claimedReferral = { referrer_brand_id: 'referrer-1', reward_credits: 500 };
-    const claimedReferralReferred = { referred_brand_id: 'brand-1', reward_credits: 500 };
+    const claimedReferralReferred = { referred_brand_id: 'brand-1', reward_credits: 100 };
 
     const referralsFetch = buildChain({ data: pendingReferral, error: null });
     const referralsConvert = buildChain({ data: convertedReferral, error: null });
@@ -97,7 +97,7 @@ describe('ReferralService', () => {
       referrer_claimed: true,
       status: 'converted',
     };
-    const claimedReferralReferred = { referred_brand_id: 'brand-1', reward_credits: 500 };
+    const claimedReferralReferred = { referred_brand_id: 'brand-1', reward_credits: 100 };
 
     const referralsFetch = buildChain({ data: convertedReferral, error: null });
     const referralsClaimFetch = buildChain({ data: convertedReferral, error: null });
