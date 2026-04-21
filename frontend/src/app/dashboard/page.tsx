@@ -10,6 +10,7 @@ import {
   CircleDashed,
   ExternalLink,
   Gauge,
+  Gift,
   LayoutTemplate,
   Package,
   PlugZap,
@@ -26,12 +27,19 @@ import type { Brand, UsageStats as UsageStatsType } from '@/types';
 import { deriveDashboardAccountState, type WooMetricsSummary } from '@/lib/dashboardAccountState';
 import { getSubscriptionDisplayState } from '@/lib/subscription-display';
 
+interface ReferralSummary {
+  hasReferredCode: boolean;
+  referredCodeStatus: string | null;
+}
+
 export default function DashboardPage() {
   const [brand, setBrand] = useState<Brand | null>(null);
   const [usage, setUsage] = useState<UsageStatsType | null>(null);
   const [analytics, setAnalytics] = useState<BrandAnalytics | null>(null);
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
   const [wooMetrics, setWooMetrics] = useState<WooMetricsSummary>(null);
+  const [hasReferredCode, setHasReferredCode] = useState(false);
+  const [referredCodeStatus, setReferredCodeStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTrialExpiredModal, setShowTrialExpiredModal] = useState(false);
   const [isBannerDismissed, setIsBannerDismissed] = useState(false);
@@ -41,12 +49,13 @@ export default function DashboardPage() {
 
     const loadDashboard = async () => {
       try {
-        const [brandResult, usageResult, analyticsResult, subscriptionResult, wooMetricsResult] = await Promise.allSettled([
+        const [brandResult, usageResult, analyticsResult, subscriptionResult, wooMetricsResult, referralResult] = await Promise.allSettled([
           brandsService.getCurrentBrand(),
           usageService.getUsageStats(),
           analyticsService.getOverview(),
           subscriptionService.getSubscriptionInfo(),
           api.get('/brands/me/woocommerce-metrics'),
+          api.get('/brands/me/referral'),
         ]);
 
         if (!mounted) {
@@ -67,6 +76,11 @@ export default function DashboardPage() {
         }
         if (wooMetricsResult.status === 'fulfilled') {
           setWooMetrics((wooMetricsResult.value?.data as WooMetricsSummary) ?? null);
+        }
+        if (referralResult.status === 'fulfilled' && referralResult.value?.data) {
+          const refData = referralResult.value.data as ReferralSummary;
+          setHasReferredCode(refData.hasReferredCode ?? false);
+          setReferredCodeStatus(refData.referredCodeStatus ?? null);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -134,26 +148,54 @@ export default function DashboardPage() {
           Sincronizando estado de tu cuenta...
         </p>
       </div>
-    );
+);
   }
 
-  const hasLandingPage = Boolean(brand?.hasLandingPage ?? brand?.has_landing_page);
-  const landingUrl = brand?.customDomain
-    ? (brand.customDomain.startsWith('http://') || brand.customDomain.startsWith('https://')
-        ? brand.customDomain
-        : `https://${brand.customDomain}`)
-    : `/sitio/${brand?.slug ?? ''}`;
-  const showcaseUrl = hasLandingPage ? landingUrl : `/marca/${brand?.slug ?? ''}`;
-  const showcaseLabel = hasLandingPage ? 'Ver sitio de marca' : 'Ver probador';
   const isTrial = (subscriptionInfo?.isInTrial ?? false) || subscriptionDisplayState.isTrial || subscriptionDisplayState.displayPlan === 'TRIAL';
-  const planLabel = isTrial ? 'TRIAL' : subscriptionDisplayState.displayPlan ?? brand?.plan ?? 'BASIC';
-  const successRate = Math.round(analytics?.successRate ?? 0);
-  const totalGenerations = analytics?.totalGenerations ?? 0;
-  const productsCount = usage?.currentMonth?.productsCount ?? 0;
-  const productsLimit = usage?.currentMonth?.productsLimit ?? (brand?.plan === 'PRO' ? 15 : 5);
-  const monthlyGenerations = usage?.currentMonth?.generationsUsed ?? 0;
-  const generationsLimit = usage?.currentMonth?.generationsLimit ?? 0;
-  const revenueView = isTrial ? 'Activación en curso' : subscriptionInfo?.status === 'active' || subscriptionInfo?.status === 'expiring_soon' ? 'Plan al día' : 'Revisión requerida';
+  const showReferralBanner = hasReferredCode && referredCodeStatus === 'pending' && isTrial;
+
+  if (showReferralBanner) {
+    return (
+      <div className="mx-auto max-w-[1400px] space-y-8 px-4 pb-20 md:space-y-10 md:px-0">
+        {/* Banner de referral pendiente */}
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-[2rem] border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 to-[var(--bg-card)] p-6 shadow-xl md:p-8"
+        >
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
+          <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10">
+                <Gift className="h-7 w-7 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-emerald-400">Tienes 100 créditos de regalo pendientes</h3>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
+                  Activa tu plan Basic, Pro o Enterprise para redimir tus 100 créditos de bienvenida.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3 md:flex-row md:shrink-0">
+              <Link
+                href="/planes"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-6 py-3 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:brightness-110"
+              >
+                Ver planes
+                <ArrowRight size={14} />
+              </Link>
+              <Link
+                href="/dashboard/referral"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/30 bg-[var(--bg-input)] px-6 py-3 text-xs font-black uppercase tracking-[0.2em] text-emerald-400 transition-all hover:bg-emerald-500/10"
+              >
+                Ver detalles
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (showTrialExpiredModal) {
     return (
@@ -193,10 +235,26 @@ export default function DashboardPage() {
     );
   }
 
-  // Banner de estado oculto cuando todos los pasos de onboarding están completos Y el usuario lo ha descartado
+  const hasLandingPage = Boolean(brand?.hasLandingPage ?? brand?.has_landing_page);
+  const landingUrl = brand?.customDomain
+    ? (brand.customDomain.startsWith('http://') || brand.customDomain.startsWith('https://')
+        ? brand.customDomain
+        : `https://${brand.customDomain}`)
+    : `/sitio/${brand?.slug ?? ''}`;
+  const showcaseUrl = hasLandingPage ? landingUrl : `/marca/${brand?.slug ?? ''}`;
+  const showcaseLabel = hasLandingPage ? 'Ver sitio de marca' : 'Ver probador';
+  const planLabel = isTrial ? 'TRIAL' : subscriptionDisplayState.displayPlan ?? brand?.plan ?? 'BASIC';
+  const successRate = Math.round(analytics?.successRate ?? 0);
+  const totalGenerations = analytics?.totalGenerations ?? 0;
+  const productsCount = usage?.currentMonth?.productsCount ?? 0;
+  const productsLimit = usage?.currentMonth?.productsLimit ?? (brand?.plan === 'PRO' ? 15 : 5);
+  const monthlyGenerations = usage?.currentMonth?.generationsUsed ?? 0;
+  const generationsLimit = usage?.currentMonth?.generationsLimit ?? 0;
+  const revenueView = isTrial ? 'Activación en curso' : subscriptionInfo?.status === 'active' || subscriptionInfo?.status === 'expiring_soon' ? 'Plan al día' : 'Revisión requerida';
+
   const isOnboardingComplete = accountState.completedSteps === accountState.totalSteps;
 
-  if (isOnboardingComplete && isBannerDismissed) {
+  if (showTrialExpiredModal) {
     return (
       <div className="mx-auto max-w-[1400px] space-y-8 px-4 pb-20 md:space-y-10 md:px-0">
         {/* Grid principal cuando onboarding está completo */}
