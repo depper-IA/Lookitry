@@ -124,6 +124,18 @@ export default function TrialCheckoutPage() {
   }, []);
 
   useEffect(() => {
+    const handleCurrencyChange = () => {
+      const saved = localStorage.getItem('currency') as 'COP' | 'USD';
+      if (saved && saved !== currency) {
+        setCurrency(saved);
+        setPaymentMethod(saved === 'USD' ? 'paypal' : 'wompi');
+      }
+    };
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
+  }, []);
+
+  useEffect(() => {
     saveCheckoutDraft(TRIAL_DRAFT_KEY, {
       plan: 'TRIAL',
       months: 1,
@@ -147,7 +159,9 @@ export default function TrialCheckoutPage() {
     const newCurrency = currency === 'COP' ? 'USD' : 'COP';
     setCurrency(newCurrency);
     localStorage.setItem('currency', newCurrency);
+    // Forzar PayPal cuando es USD, Wompi cuando es COP
     setPaymentMethod(newCurrency === 'USD' ? 'paypal' : 'wompi');
+    window.dispatchEvent(new Event('currencyChange'));
   };
 
   const validateStep2 = () => {
@@ -432,12 +446,18 @@ export default function TrialCheckoutPage() {
                 <div className="space-y-4 mb-8">
                   <button
                     onClick={() => {
+                      if (currency === 'USD') return;
                       setPaymentMethod('wompi');
                       setCurrency('COP');
                       localStorage.setItem('currency', 'COP');
                     }}
+                    disabled={currency === 'USD'}
                     className={`w-full flex items-center justify-between rounded-2xl border p-5 transition-all ${
-                      paymentMethod === 'wompi' ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[#1f1f1f] bg-[#0a0a0a]'
+                      currency === 'USD'
+                        ? 'opacity-30 cursor-not-allowed border-[#1f1f1f] bg-[#0a0a0a]'
+                        : paymentMethod === 'wompi'
+                          ? 'border-[#FF5C3A] bg-[#FF5C3A]/5'
+                          : 'border-[#1f1f1f] bg-[#0a0a0a] hover:border-[#FF5C3A]/30'
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -506,28 +526,71 @@ export default function TrialCheckoutPage() {
             )}
           </div>
 
-          <aside className="lg:col-span-4 lg:sticky lg:top-24">
-            <div className="rounded-[2rem] border border-[#1f1f1f] bg-[#0d0d0d] p-8">
+<aside className="lg:col-span-4 lg:sticky lg:top-24">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100 rounded-[2rem] border border-[#1f1f1f] bg-[#0d0d0d] p-8 space-y-6">
               <p className="text-[10px] font-black uppercase tracking-widest text-[#FF5C3A]">Tu resumen</p>
-              <div className="mt-6 space-y-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-bold text-white">Prueba profesional</p>
-                    <p className="text-[11px] text-[#999]">{trialDays} días de acceso</p>
-                  </div>
-                  <span className="text-sm font-mono text-white">{formatCop(priceCOP)}</span>
-                </div>
 
-                <div className="border-t border-[#1f1f1f] pt-5">
-                  <p className="text-xs font-bold uppercase tracking-widest text-[#999]">Método seleccionado</p>
-                  <p className="mt-2 text-sm font-bold text-white">{paymentMethod === 'paypal' ? 'PayPal / USD' : 'Wompi / COP'}</p>
-                  <p className="mt-1 text-[11px] text-[#999]">{paymentMethod === 'paypal' ? `${formatUsd(priceUSD)} USD · ${formatCop(priceCOP)} COP` : `${formatCop(priceCOP)} COP · ${formatUsd(priceUSD)} USD`}</p>
+              {/* Plan */}
+              <div className="flex items-start justify-between animate-in fade-in slide-in-from-top-2 duration-300">
+                <div>
+                  <p className="text-sm font-bold text-white">Prueba profesional</p>
+                  <p className="text-[11px] text-[#999]">{trialDays} días de acceso</p>
                 </div>
+                <span className="text-sm font-mono text-white">{formatCop(priceCOP)}</span>
+              </div>
 
-                <div className="border-t border-[#1f1f1f] pt-5">
-                  <p className="text-xs font-bold uppercase tracking-widest text-[#999]">Total</p>
-                  <p className="mt-2 text-3xl font-jakarta font-black text-white">{formatPrimaryPrice()}</p>
-                  <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A]">{formatSecondaryPrice()} · TRM {formatCop(trm).replace('COP', '').trim()}</p>
+              {/* Divider */}
+              <div className="h-[1px] bg-gradient-to-r from-transparent via-[#1f1f1f] to-transparent" />
+
+              {/* Precio USD equivalente */}
+              {currency === 'USD' && (
+                <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
+                  <span className="text-[11px] text-[#999]">Equivalente USD</span>
+                  <span className="text-sm font-mono text-white/60">{formatUsd(priceUSD)}</span>
+                </div>
+              )}
+
+              {/* Total - siempre visible, cambio animado */}
+              <div className="border-t border-[#1f1f1f] pt-5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#999]">Total a pagar</p>
+                <div className="flex items-baseline gap-2 mt-2">
+                  <p className="text-3xl font-jakarta font-black text-white transition-all duration-300">
+                    {formatPrimaryPrice()}
+                  </p>
+                  {currency === 'USD' && (
+                    <span className="text-[11px] text-[#FF5C3A] animate-pulse">~{formatCop(priceCOP)} COP</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Método + badge */}
+              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 delay-100">
+                <div className="flex items-center gap-2">
+                  {paymentMethod === 'paypal' ? (
+                    <Image src="/payment-paypal.svg" alt="PayPal" width={50} height={18} className="object-contain opacity-80" />
+                  ) : (
+                    <Image src="/wompi-logo.svg" alt="Wompi" width={50} height={18} className="object-contain opacity-80" />
+                  )}
+                </div>
+                <div className="h-4 w-[1px] bg-[#1f1f1f]" />
+                <span className="text-[11px] text-[#999]">
+                  {paymentMethod === 'paypal' ? 'PayPal · USD' : 'Wompi · COP'}
+                </span>
+              </div>
+
+              {/* Badges de confianza */}
+              <div className="flex flex-wrap gap-2 pt-2 animate-in fade-in slide-in-from-top-2 duration-300 delay-200">
+                <div className="flex items-center gap-1.5 bg-[#FF5C3A]/10 border border-[#FF5C3A]/20 rounded-full px-3 py-1.5">
+                  <svg className="w-3 h-3 text-[#FF5C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#FF5C3A]">Activación instantánea</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-[#FF5C3A]/10 border border-[#FF5C3A]/20 rounded-full px-3 py-1.5">
+                  <svg className="w-3 h-3 text-[#FF5C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#FF5C3A]">Pago seguro</span>
                 </div>
               </div>
             </div>
