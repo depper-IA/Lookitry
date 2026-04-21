@@ -311,14 +311,14 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void })
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
                 <div className="flex items-center gap-2 mb-2">
-                  <IconMapPin className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+                  <IconMapPin />
                   <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Dirección</span>
                 </div>
                 <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{lead.address || 'No disponible'}</p>
               </div>
               <div className="p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
                 <div className="flex items-center gap-2 mb-2">
-                  <IconGlobe className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+                  <IconGlobe />
                   <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Ciudad / País</span>
                 </div>
                 <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{lead.city || '—'}, {lead.country}</p>
@@ -411,11 +411,9 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void })
                     <span className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{lead.rating.toFixed(1)}</span>
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <IconStar
-                          key={star}
-                          className="w-4 h-4"
-                          style={{ color: star <= Math.round(lead.rating!) ? '#FBBD23' : 'var(--text-muted)' }}
-                        />
+                        <span key={star} style={{ color: star <= Math.round(lead.rating!) ? '#FBBD23' : 'var(--text-muted)' }}>
+                          <IconStar />
+                        </span>
                       ))}
                     </div>
                   </div>
