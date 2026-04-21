@@ -249,17 +249,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       try {
         userParsed = JSON.parse(userStr);
       } catch (e) {
-        console.error('Error parseando adminUser:', e);
         localStorage.removeItem('adminUser');
       }
     }
 
     if (!userParsed && pathname !== '/admin/login') {
-      router.push('/admin/login');
+      // Verificar cookie antes de redirigir
+      adminApi.get('/admin/verify')
+        .then(profileData => {
+          if (profileData?.admin) {
+            localStorage.setItem('adminUser', JSON.stringify(profileData.admin));
+            setAdminUser(profileData.admin);
+            setLoading(false);
+            return;
+          }
+          router.push('/admin/login');
+        })
+        .catch(() => {
+          router.push('/admin/login');
+        });
       return;
     }
 
     if (pathname !== '/admin/login') {
+      // Resto del código existente para cargar datos
       adminApi.get('/admin/verify')
         .then(profileData => {
           if (!profileData) {
