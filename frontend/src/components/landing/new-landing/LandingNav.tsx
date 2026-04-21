@@ -257,7 +257,7 @@ export default function LandingNav({
                           {/* CTA abajo */}
                           <div className="text-center mb-2">
                             <Link
-                              href="/checkout?plan=TRIAL"
+                              href="/trial-checkout"
                               onClick={() => setMegaMenuOpen(false)}
                               className="inline-flex items-center justify-center rounded-full bg-[#FF5C3A] px-5 py-2.5 text-[11px] font-semibold text-white transition-all hover:opacity-90 hover:scale-105 active:scale-95 shadow-lg shadow-[#FF5C3A]/30"
                             >
@@ -338,7 +338,7 @@ export default function LandingNav({
             )}
 
             <Link
-              href="/checkout?plan=TRIAL"
+              href="/trial-checkout"
               className="group relative hidden overflow-hidden rounded-full bg-[#FF5C3A] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 active:scale-95 sm:px-8 sm:py-3.5 md:inline-flex"
             >
               <span className="relative z-10">Trial 7 días por $20.000</span>
@@ -447,7 +447,7 @@ export default function LandingNav({
                 </Link>
               )}
               <Link
-                href="/checkout?plan=TRIAL"
+                href="/trial-checkout"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-transform hover:scale-[1.01]"
               >

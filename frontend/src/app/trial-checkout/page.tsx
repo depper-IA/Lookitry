@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Mail, ChevronLeft, ChevronRight, CreditCard, LayoutPanelLeft } from 'lucide-react';
+import { Mail, ChevronLeft, ChevronRight, CreditCard, LayoutPanelLeft, AlertCircle } from 'lucide-react';
 import { api } from '@/services/api';
+import { authService } from '@/services/auth.service';
 import { StepProgress, Step } from '@/components/payments/StepProgress';
 import { clearCheckoutDraft, loadCheckoutDraft, saveCheckoutDraft } from '@/lib/checkoutDraft';
 import { formatCop, formatUsd, priceInUsd } from '@/lib/paymentDisplay';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 const OA = '#FF5C3A';
@@ -37,6 +39,16 @@ export default function TrialCheckoutPage() {
   const [nameError, setNameError] = useState('');
   const [redirecting, setRedirecting] = useState(false);
 
+  // Session-related states
+  const [hasSession, setHasSession] = useState(false);
+  const [sessionInfo, setSessionInfo] = useState<{ name: string; email: string } | null>(null);
+  const [hasHadTrial, setHasHadTrial] = useState(false);
+  const trialBlockedBySession = hasSession && hasHadTrial;
+
+  // Email check states
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailExists, setEmailExists] = useState<{ exists: boolean; name?: string; plan?: string } | null>(null);
+
   // Guard: si el usuario ya tiene trial activo o plan pago, redirigir al dashboard
   useEffect(() => {
     let cancelled = false;
@@ -45,7 +57,7 @@ export default function TrialCheckoutPage() {
         const token = typeof window !== 'undefined' ? document.cookie.match(/token=([^;]+)/)?.[1] : null;
         const res = await fetch(`${API_URL}/api/brands/me`, {
           credentials: 'include',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
@@ -54,6 +66,13 @@ export default function TrialCheckoutPage() {
 
         const { data: brand } = await res.json();
         if (cancelled || !brand) return;
+
+        // Guardar info de sesión
+        setHasSession(true);
+        setSessionInfo({ name: brand.name || '', email: brand.email || '' });
+        setGuestEmail(brand.email || '');
+        setGuestName(brand.name || '');
+        setHasHadTrial(!!(brand.trial_end_date || brand.trial_generations_limit));
 
         const isTrialActive =
           brand.plan === 'TRIAL' &&
@@ -68,6 +87,12 @@ export default function TrialCheckoutPage() {
         if (isTrialActive || hasPaidPlan) {
           setRedirecting(true);
           router.replace('/dashboard/subscription');
+          return;
+        }
+
+        // Usuario autenticado con sesión válida → ir directo a paso 3
+        if (brand.google_id) {
+          setCurrentStep(3);
         }
       } catch {
         // Si falla la verificación, permitir acceso normal
@@ -113,8 +138,7 @@ export default function TrialCheckoutPage() {
         if (brand?.name && !draft?.brandName) {
           setGuestName(brand.name);
         }
-        // Si es usuario Google (tiene google_id), ir directo al paso de pago
-        if (brand?.google_id) {
+        if (brand?.google_id && currentStep === 1) {
           setCurrentStep(3);
         }
       } catch {
@@ -133,7 +157,7 @@ export default function TrialCheckoutPage() {
     };
     window.addEventListener('currencyChange', handleCurrencyChange);
     return () => window.removeEventListener('currencyChange', handleCurrencyChange);
-  }, []);
+  }, [currency]);
 
   useEffect(() => {
     saveCheckoutDraft(TRIAL_DRAFT_KEY, {
@@ -159,9 +183,62 @@ export default function TrialCheckoutPage() {
     const newCurrency = currency === 'COP' ? 'USD' : 'COP';
     setCurrency(newCurrency);
     localStorage.setItem('currency', newCurrency);
-    // Forzar PayPal cuando es USD, Wompi cuando es COP
     setPaymentMethod(newCurrency === 'USD' ? 'paypal' : 'wompi');
     window.dispatchEvent(new Event('currencyChange'));
+  };
+
+  // Check email existence
+  const checkEmailExists = useCallback(async (emailToCheck: string) => {
+    if (!emailToCheck.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToCheck)) return;
+    setEmailChecking(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/check-email?email=${encodeURIComponent(emailToCheck.trim())}`);
+      const data = await res.json();
+      if (data.exists) {
+        setEmailExists({ exists: true, name: data.brand?.name, plan: data.plan });
+        // Si tiene cuenta existente, pre-llenar nombre si no está
+        if (data.brand?.name && !guestName) {
+          setGuestName(data.brand.name);
+        }
+      } else {
+        setEmailExists({ exists: false });
+      }
+    } catch {
+      setEmailExists(null);
+    } finally {
+      setEmailChecking(false);
+    }
+  }, [guestName]);
+
+  const handleGoogleCheckoutSuccess = async (data: any) => {
+    if (data.checkoutPrefill) {
+      localStorage.setItem('checkoutPrefill', JSON.stringify({
+        email: data.email,
+        name: data.name,
+        googleId: data.googleId,
+      }));
+      setGuestEmail(data.email || '');
+      setGuestName(data.name || '');
+      setEmailError('');
+      setEmailExists({ exists: false });
+    } else {
+      localStorage.setItem('brand', JSON.stringify(data.brand));
+      if (data.token) localStorage.setItem('token', data.token);
+      setHasSession(true);
+      setSessionInfo({ name: data.brand.name || '', email: data.brand.email || '' });
+      setGuestEmail(data.brand.email || '');
+      setGuestName(data.brand.name || '');
+      setEmailError('');
+      setEmailExists({ exists: false });
+      // Ir directo a paso 3
+      setCurrentStep(3);
+    }
+  };
+
+  const handleLogoutAndGoToTrial = async () => {
+    await authService.logout();
+    clearCheckoutDraft(TRIAL_DRAFT_KEY);
+    window.location.href = '/trial-checkout';
   };
 
   const validateStep2 = () => {
@@ -218,6 +295,10 @@ export default function TrialCheckoutPage() {
     setError('');
 
     try {
+      if (trialBlockedBySession) {
+        throw new Error('Ya usaste tu prueba gratuita. ¡Upgrade a Basic o Pro para continuar!');
+      }
+
       if (!validateStep2()) {
         setCurrentStep(2);
         setLoading(false);
@@ -302,6 +383,30 @@ export default function TrialCheckoutPage() {
           <div className="lg:col-span-8 space-y-6">
             {currentStep === 1 && (
               <section className="rounded-[2rem] border border-[#1f1f1f] bg-[#0d0d0d] p-8">
+                {/* Alerta: usuario ya tuvo trial */}
+                {trialBlockedBySession && (
+                  <div className="mb-8 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 animate-in fade-in slide-in-from-top-2">
+                    <p className="text-sm font-bold text-amber-300">Ya usaste tu prueba gratuita.</p>
+                    <p className="mt-2 text-sm text-[#d6d6d6]">
+                      ¡Tu cuenta ya tuvo un trial! Te invitamos a hacer upgrade a Basic o Pro para continuar.
+                    </p>
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                      <button
+                        onClick={() => window.location.href = '/checkout?plan=BASIC'}
+                        className="rounded-xl bg-[#FF5C3A] px-5 py-3 text-sm font-bold text-white transition-all flex-1 text-center"
+                      >
+                        Ver planes pagos
+                      </button>
+                      <button
+                        onClick={() => window.location.href = '/dashboard'}
+                        className="rounded-xl border border-[#2a2a2a] px-5 py-3 text-sm font-bold text-white transition-all hover:bg-white/5 flex-1 text-center"
+                      >
+                        Ir al dashboard
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h1 className="font-jakarta font-bold text-3xl md:text-4xl leading-tight text-white">
@@ -377,11 +482,70 @@ export default function TrialCheckoutPage() {
                   <div className="text-[11px] font-bold uppercase tracking-widest text-[#FF5C3A]">Paso 2 de 3</div>
                 </div>
 
+                {/* Google Sign-In para usuarios no autenticados */}
+                {!hasSession && (
+                  <div className="mb-6">
+                    <GoogleSignInButton
+                      flow="checkout"
+                      onSuccess={handleGoogleCheckoutSuccess}
+                      loginHint={guestEmail || undefined}
+                      className="w-full"
+                    />
+                    <div className="relative my-5">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-[#1f1f1f]" />
+                      </div>
+                      <div className="relative flex justify-center">
+                        <span className="bg-[#0d0d0d] px-4 text-[11px] text-[#666] font-bold uppercase tracking-widest">
+                          o continúa con email
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Alerta: cuenta existente */}
+                {emailExists?.exists && (
+                  <div className="mb-6 rounded-2xl border border-blue-500/30 bg-blue-500/10 p-5 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-blue-300">Ya tienes una cuenta con este correo.</p>
+                        {emailExists.plan && emailExists.plan !== 'TRIAL' && (
+                          <p className="mt-1 text-sm text-[#d6d6d6]">
+                            Tienes el plan {emailExists.plan}. Puedes hacer upgrade o gestionar tu suscripción desde el dashboard.
+                          </p>
+                        )}
+                        {emailExists.plan === 'TRIAL' && (
+                          <p className="mt-1 text-sm text-[#d6d6d6]">
+                            Tu trial está activo o vencido. Contacta a soporte si necesitas ayuda.
+                          </p>
+                        )}
+                        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                          <button
+                            onClick={() => window.location.href = '/dashboard'}
+                            className="rounded-xl bg-[#FF5C3A] px-5 py-2.5 text-sm font-bold text-white transition-all flex-1 text-center"
+                          >
+                            Ir al dashboard
+                          </button>
+                          <button
+                            onClick={() => setEmailExists({ exists: false })}
+                            className="rounded-xl border border-[#2a2a2a] px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-white/5 flex-1 text-center"
+                          >
+                            Usar otro correo
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-5">
                   <div>
                     <label className="mb-2 flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest text-[#999]">
                       <Mail className="w-3.5 h-3.5" style={{ color: OA }} />
                       Email corporativo
+                      {emailChecking && <span className="text-[#666] font-normal normal-case tracking-normal ml-1">verificando...</span>}
                     </label>
                     <input
                       type="email"
@@ -389,7 +553,9 @@ export default function TrialCheckoutPage() {
                       onChange={(e) => {
                         setGuestEmail(e.target.value);
                         setEmailError('');
+                        setEmailExists({ exists: false });
                       }}
+                      onBlur={(e) => checkEmailExists(e.target.value)}
                       placeholder="ejemplo@correo.com"
                       className="w-full rounded-2xl border border-[#222] bg-[#050505] px-5 py-4 text-[14px] text-white outline-none transition-colors focus:border-[#FF5C3A]"
                     />
@@ -526,7 +692,7 @@ export default function TrialCheckoutPage() {
             )}
           </div>
 
-<aside className="lg:col-span-4 lg:sticky lg:top-24">
+          <aside className="lg:col-span-4 lg:sticky lg:top-24">
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100 rounded-[2rem] border border-[#1f1f1f] bg-[#0d0d0d] p-8 space-y-5">
               <p className="text-[10px] font-black uppercase tracking-widest text-[#FF5C3A]">Tu resumen</p>
 

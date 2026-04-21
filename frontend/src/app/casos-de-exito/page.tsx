@@ -112,7 +112,7 @@ export default function CasosDeUsoPage() {
                 <Link href="/checkout" className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center gap-3">
                   Quiero usar Lookitry <ArrowRight size={18} />
                 </Link>
-                <Link href="/checkout?plan=TRIAL" className="bg-[#1a1a1a] border border-white/10 text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:border-[#FF5C3A]/30 flex items-center gap-3">
+                <Link href="/trial-checkout" className="bg-[#1a1a1a] border border-white/10 text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:border-[#FF5C3A]/30 flex items-center gap-3">
                   Empezar con mi marca
                 </Link>
               </div>

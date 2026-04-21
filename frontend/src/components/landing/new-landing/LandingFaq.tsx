@@ -167,7 +167,7 @@ export default function LandingFaq() {
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="/checkout?plan=TRIAL"
+                href="/trial-checkout"
                 className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full bg-[#FF5C3A] text-white font-bold text-sm uppercase tracking-wider overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#FF5C3A]/30"
               >
                 <span className="relative z-10">Comenzar trial</span>
