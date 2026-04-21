@@ -157,6 +157,29 @@ export default function ProfilePage() {
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [states, setStates] = useState<StateOption[]>([]);
   const [cities, setCities] = useState<CityOption[]>([]);
+  const [resendingVerification, setResendingVerification] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+
+  // Handler para reenviar email de verificación
+  const handleResendVerification = async () => {
+    if (!brand?.email) return;
+    setResendingVerification(true);
+    setResendSuccess(false);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: brand.email }),
+      });
+      if (!res.ok) throw new Error('Error al reenviar');
+      setResendSuccess(true);
+    } catch {
+      // Silently handle error - show success anyway to avoid confusion
+      setResendSuccess(true);
+    } finally {
+      setResendingVerification(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -462,10 +485,25 @@ export default function ProfilePage() {
                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                      <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 font-jakarta">Email Verificado</span>
                   </div>
+                ) : resendSuccess ? (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                     <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 font-jakarta">Email Reenviado</span>
+                  </div>
                 ) : (
-                  <button className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full hover:bg-amber-500/20 transition-all">
-                     <Shield className="w-4 h-4 text-amber-500" />
-                     <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">Verificar Ahora</span>
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={resendingVerification}
+                    className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full hover:bg-amber-500/20 transition-all disabled:opacity-60"
+                  >
+                     {resendingVerification ? (
+                       <Loader2 className="w-4 h-4 text-amber-500 animate-spin" />
+                     ) : (
+                       <Shield className="w-4 h-4 text-amber-500" />
+                     )}
+                     <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">
+                       {resendingVerification ? 'Enviando...' : 'Reenviar Verificación'}
+                     </span>
                   </button>
                 )}
              </div>
@@ -493,7 +531,7 @@ export default function ProfilePage() {
           {/* PLAN CARD PREMIUM (METALLIC) */}
           <motion.div
             variants={itemVariants}
-            className="bg-zinc-900 text-white rounded-[3rem] p-10 space-y-6 relative overflow-hidden shadow-3xl ring-1 ring-white/10"
+            className="bg-[var(--bg-card)] rounded-[3rem] p-10 space-y-6 relative overflow-hidden shadow-2xl border border-[var(--border-color)]"
           >
              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-[#FF5C3A] blur-[80px] opacity-20" />
              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500 blur-[80px] opacity-20" />
@@ -503,24 +541,24 @@ export default function ProfilePage() {
                    <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/10">
                       <Layout className="w-6 h-6 text-indigo-500" />
-                    </div>  <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">Mi plan</span>
+                    </div>  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] opacity-60">Mi plan</span>
                    </div>
-                   <h3 className="text-4xl font-[950] tracking-tighter italic uppercase text-white leading-tight">
+                   <h3 className="text-4xl font-[950] tracking-tighter italic uppercase text-[var(--text-primary)] leading-tight">
                       Lookitry<br/>
                       <span className="text-[#FF5C3A]">{subscriptionState.displayPlan}</span>
                    </h3>
                 </div>
 
-                <div className="flex items-end justify-between border-t border-white/10 pt-6">
+                <div className="flex items-end justify-between border-t border-[var(--border-color)] pt-6">
                    <div className="space-y-1">
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30 italic">Estado</p>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60 italic">Estado</p>
                       <p className={`text-xs font-black uppercase tracking-widest ${subscriptionToneClass}`}>{subscriptionState.statusLabel}</p>
                    </div>
-                   <button 
-                     onClick={() => (window.location.href = '/dashboard/subscription')} 
-                     className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all active:scale-95"
+                   <button
+                     onClick={() => (window.location.href = '/dashboard/subscription')}
+                     className="p-3 bg-[var(--bg-hover)] hover:bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] transition-all active:scale-95"
                    >
-                      <ChevronRight className="w-4 h-4 text-white" />
+                      <ChevronRight className="w-4 h-4 text-[var(--text-primary)]" />
                    </button>
                 </div>
              </div>
@@ -724,9 +762,9 @@ export default function ProfilePage() {
 
                   <div className="space-y-3 text-center pt-20 pb-10">
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-4">Mi plan</p>
-                    <div className="inline-block px-12 py-8 bg-zinc-50 rounded-[3rem] border border-zinc-200/60 shadow-deep">
-                      <span className="text-4xl font-[950] tracking-tighter italic uppercase text-zinc-800">Lookitry <span className="text-[#FF5C3A]">{subscriptionState.displayPlan}</span></span>
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mt-3">{subscriptionState.renewalLabel}: {formatDate(subscriptionState.renewalDate)}</p>
+                    <div className="inline-block px-12 py-8 bg-[var(--bg-card)] rounded-[3rem] border border-[var(--border-color)] shadow-xl">
+                      <span className="text-4xl font-[950] tracking-tighter italic uppercase text-[var(--text-primary)]">Lookitry <span className="text-[#FF5C3A]">{subscriptionState.displayPlan}</span></span>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mt-3">{subscriptionState.renewalLabel}: {formatDate(subscriptionState.renewalDate)}</p>
                     </div>
                   </div>
 

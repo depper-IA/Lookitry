@@ -224,7 +224,7 @@ export default function LoginForm({
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="border px-4 py-3 rounded-xl text-[13px]"
+                  className="relative z-50 border px-4 py-3 rounded-xl text-[13px]"
                   style={{
                     backgroundColor: 'rgba(239,68,68,0.08)',
                     borderColor: 'rgba(239,68,68,0.2)',

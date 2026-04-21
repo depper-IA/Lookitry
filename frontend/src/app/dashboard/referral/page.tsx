@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, CheckCircle2, Copy, Gift, Loader2, Users } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Copy, Gift, Loader2, Star, Users, Zap } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 interface ReferralData {
   referralCode: string;
   rewardCredits: number;
+  referredRewardCredits: number;
   referralCount: number;
   successfulReferrals: number;
   pendingReferrals: number;
   totalCreditsEarned: number;
+  hasReferredCode: boolean;
+  referredCodeStatus: string | null;
+  referrerName: string | null;
   recentReferrals: Array<{
     id: string;
     referred_brand_id: string;
@@ -97,149 +101,355 @@ export default function ReferralPage() {
   }
 
   const rewardCredits = data?.rewardCredits || 500;
+  const referredRewardCredits = data?.referredRewardCredits || 100;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 p-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Recomienda y gana</h1>
-              <p className="mt-1 text-[var(--text-muted)]">Invita a otras tiendas y gana {rewardCredits} fotos extras por cada una que pague.</p>
+    <div className="mx-auto max-w-4xl space-y-8 p-4 sm:p-6">
+
+      {/* ── Header ─────────────────────────────────────────────── */}
+      <div className="space-y-1">
+        <h1 className="text-display-md font-bold text-[var(--text-primary)]">
+          Recomienda y gana
+        </h1>
+        <p className="text-body text-[var(--text-secondary)] max-w-xl">
+          Cada tienda que conviertas te da <span className="font-semibold text-[#FF5C3A]">{rewardCredits} créditos</span>. 
+          Y tu invitado también gana <span className="font-semibold text-[#FF5C3A]">{referredRewardCredits}</span> al activar su plan.
+        </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
-          <div className="mb-2 flex items-center gap-3">
-            <div className="rounded-lg bg-[#FF5C3A]/10 p-2">
-              <Gift className="h-5 w-5 text-[#FF5C3A]" />
-            </div>
-            <span className="text-sm text-[var(--text-muted)]">Tu código</span>
+      {/* ── Hero Card (Código de referido) ──────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#FF5C3A] to-[#ff7a5c] p-8 text-white"
+      >
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+        <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-white/5 blur-xl" />
+        
+        <div className="relative">
+          <div className="mb-2 flex items-center gap-2">
+            <Gift className="h-5 w-5" />
+            <span className="text-sm font-medium uppercase tracking-wider opacity-80">Tu código de referido</span>
           </div>
-          <div className="mt-3 flex items-center gap-2">
-            <code className="text-2xl font-bold text-white">{data?.referralCode || '—'}</code>
+          
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <code className="text-3xl sm:text-4xl font-bold tracking-tight">{data?.referralCode || '—'}</code>
             <button
               onClick={copyCode}
               aria-label="Copiar código de referido"
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg p-3 transition-colors hover:bg-[var(--bg-hover)] active:scale-95"
+              className="flex w-fit items-center gap-2 rounded-xl bg-white/20 px-5 py-3 text-sm font-medium backdrop-blur-sm transition-all hover:bg-white/30 active:scale-95"
             >
               {copied ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              ) : (
-                <Copy className="h-5 w-5 text-[var(--text-muted)]" />
-              )}
-              {copied && (
-                <span className="absolute -top-9 left-1/2 -translate-x-1/2 rounded bg-emerald-500 px-2 py-1 text-[10px] font-bold text-white whitespace-nowrap">
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
                   ¡Copiado!
-                </span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4" />
+                  Copiar código
+                </>
               )}
             </button>
           </div>
+          
+          <p className="mt-4 text-sm opacity-80">
+            Compártelo con tiendas de moda que necesiten un probador virtual con IA
+          </p>
+        </div>
+      </motion.div>
+
+      {/* ── Stats Row ───────────────────────────────────────────── */}
+      <div className="grid grid-cols-3 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 text-center"
+        >
+          <Users className="mx-auto mb-2 h-5 w-5 text-[var(--text-muted)]" />
+          <p className="text-2xl font-bold text-[var(--text-primary)]">{data?.referralCount || 0}</p>
+          <p className="text-xs text-[var(--text-muted)] mt-1">Invitados</p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
-          <div className="mb-2 flex items-center gap-3">
-            <div className="rounded-lg bg-emerald-500/10 p-2">
-              <Users className="h-5 w-5 text-emerald-500" />
-            </div>
-            <span className="text-sm text-[var(--text-muted)]">Personas invitadas</span>
-          </div>
-          <p className="text-3xl font-bold text-white">{data?.referralCount || 0}</p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 text-center"
+        >
+          <CheckCircle2 className="mx-auto mb-2 h-5 w-5 text-emerald-500" />
+          <p className="text-2xl font-bold text-[var(--text-primary)]">{data?.successfulReferrals || 0}</p>
+          <p className="text-xs text-[var(--text-muted)] mt-1">Convertidos</p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
-          <div className="mb-2 flex items-center gap-3">
-            <div className="rounded-lg bg-amber-500/10 p-2">
-              <CheckCircle2 className="h-5 w-5 text-amber-500" />
-            </div>
-            <span className="text-sm text-[var(--text-muted)]">Ya pagaron</span>
-          </div>
-          <p className="text-3xl font-bold text-white">{data?.successfulReferrals || 0}</p>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
-          <div className="mb-2 flex items-center gap-3">
-            <div className="rounded-lg bg-sky-500/10 p-2">
-              <Gift className="h-5 w-5 text-sky-400" />
-            </div>
-            <span className="text-sm text-[var(--text-muted)]">Fotos ganadas</span>
-          </div>
-          <p className="text-3xl font-bold text-white">{data?.totalCreditsEarned || 0}</p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 text-center"
+        >
+          <Zap className="mx-auto mb-2 h-5 w-5 text-[#FF5C3A]" />
+          <p className="text-2xl font-bold text-[var(--text-primary)]">{data?.totalCreditsEarned || 0}</p>
+          <p className="text-xs text-[var(--text-muted)] mt-1">Créditos ganados</p>
         </motion.div>
       </div>
 
-      <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
-        <h2 className="mb-4 text-lg font-bold text-white">¿Cómo funciona?</h2>
-        <div className="space-y-4">
-          <div className="flex gap-4">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">1</div>
+      {/* ── Beneficios (Dos columnas) ───────────────────────────── */}
+      <div className="grid gap-4 md:grid-cols-2">
+        
+        {/* Beneficio del Referidor */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6"
+        >
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FF5C3A]/10">
+              <Star className="h-5 w-5 text-[#FF5C3A]" />
+            </div>
+            <span className="text-label font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Tu beneficio</span>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl font-bold text-[#FF5C3A]">{rewardCredits}</span>
+              <span className="text-lg text-[var(--text-secondary)]">créditos</span>
+            </div>
+            <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+              Cuando tu invitado pague su primer plan Basic, Pro o Enterprise.
+            </p>
+          </div>
+          
+          <div className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-3">
+            <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-500" />
+            <span className="text-sm text-emerald-400">Se acreditan automáticamente</span>
+          </div>
+        </motion.div>
+
+        {/* Beneficio del Referido */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6"
+        >
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10">
+              <Gift className="h-5 w-5 text-violet-500" />
+            </div>
+            <span className="text-label font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Beneficio del invitado</span>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl font-bold text-violet-500">{referredRewardCredits}</span>
+              <span className="text-lg text-[var(--text-secondary)]">créditos</span>
+            </div>
+            <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+              Al activar su plan con tu código de referido.
+            </p>
+          </div>
+          
+          <div className="mt-5 rounded-xl bg-violet-500/10 px-4 py-3">
+            <p className="text-sm text-violet-400">
+              Tu código hace que sea más fácil para ellos empezar
+            </p>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* ── Sección: ¿Te invitaron? (Para el referido) ────────── */}
+      {!data?.hasReferredCode ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6"
+        >
+          <div className="mb-1">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">¿Te invitaron?</h2>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              Ingresa el código que te compartieron y gana{' '}
+              <span className="font-semibold text-violet-500">{referredRewardCredits} créditos</span> al activar tu plan.
+            </p>
+          </div>
+
+          {claimSuccess ? (
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4">
+              <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-500" />
+              <div>
+                <p className="font-medium text-emerald-400">¡Código aplicado!</p>
+                <p className="text-sm text-emerald-400/80">{claimSuccess}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <input
+                type="text"
+                value={claimCode}
+                onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
+                placeholder={`Ej: ${data?.referralCode || 'ABC12345'}`}
+                aria-label="Código de referido"
+                className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 py-4 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[#FF5C3A] focus:outline-none min-h-[48px] text-base tracking-wider font-mono"
+              />
+              <button
+                onClick={handleClaim}
+                disabled={claimLoading || !claimCode.trim()}
+                aria-label="Aplicar código de referido"
+                className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] px-8 py-4 font-medium text-white transition-colors hover:bg-[#FF5C3A]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 min-h-[48px]"
+              >
+                {claimLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>Aplicar código <ArrowRight className="h-5 w-5" /></>
+                )}
+              </button>
+            </div>
+          )}
+          {claimError && <p className="mt-3 text-sm text-red-400">{claimError}</p>}
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="rounded-2xl border border-violet-500/30 bg-violet-500/5 p-6"
+        >
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-violet-500/20">
+              <CheckCircle2 className="h-5 w-5 text-violet-500" />
+            </div>
             <div>
-              <p className="font-medium text-white">Comparte tu código</p>
-              <p className="text-sm text-[var(--text-muted)]">Envíalo a otras tiendas que puedan necesitar el probador virtual.</p>
+              <h2 className="font-bold text-[var(--text-primary)]">Código aplicado</h2>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                Te invitó{' '}
+                <span className="font-medium text-[var(--text-primary)]">
+                  {data?.referrerName || 'una tienda'}
+                </span>
+              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
+                  data?.referredCodeStatus === 'converted'
+                    ? 'bg-emerald-500/20 text-emerald-400'
+                    : 'bg-amber-500/20 text-amber-400'
+                }`}>
+                  {data?.referredCodeStatus === 'converted' ? (
+                    <>
+                      <CheckCircle2 className="h-3 w-3" />
+                      {referredRewardCredits} créditos desbloqueados
+                    </>
+                  ) : (
+                    <>
+                      <Gift className="h-3 w-3" />
+                      {referredRewardCredits} créditos al activar tu plan
+                    </>
+                  )}
+                </span>
+              </div>
             </div>
           </div>
+        </motion.div>
+      )}
+
+      {/* ── Cómo funciona ──────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6"
+      >
+        <h2 className="mb-5 text-lg font-bold text-[var(--text-primary)]">Cómo funciona</h2>
+        
+        <div className="space-y-5">
+          {/* Paso 1 */}
           <div className="flex gap-4">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">2</div>
-            <div>
-              <p className="font-medium text-white">Ellos lo reclaman</p>
-              <p className="text-sm text-[var(--text-muted)]">La nueva marca registra tu código una sola vez desde su cuenta.</p>
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">
+              1
+            </div>
+            <div className="pt-1">
+              <p className="font-semibold text-[var(--text-primary)]">Compartes tu código</p>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
+                Tu invitado lo usa al registrarse en Lookitry.
+              </p>
             </div>
           </div>
+          
+          {/* Conexión visual */}
+          <div className="ml-5 h-6 w-0.5 bg-[var(--border-color)]" />
+          
+          {/* Paso 2 */}
           <div className="flex gap-4">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">3</div>
-            <div>
-              <p className="font-medium text-white">Tú ganas {rewardCredits} fotos extras</p>
-              <p className="text-sm text-[var(--text-muted)]">Se liberan automáticamente cuando ese referido paga por primera vez un plan mensual real.</p>
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">
+              2
+            </div>
+            <div className="pt-1">
+              <p className="font-semibold text-[var(--text-primary)]">Ellos activan su plan</p>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
+                Cuando se suscriben a Basic o Pro, ellos reciben{' '}
+                <span className="font-medium text-violet-500">{referredRewardCredits} créditos</span> y tú recibes{' '}
+                <span className="font-medium text-[#FF5C3A]">{rewardCredits} créditos</span>.
+              </p>
+            </div>
+          </div>
+          
+          {/* Conexión visual */}
+          <div className="ml-5 h-6 w-0.5 bg-[var(--border-color)]" />
+          
+          {/* Paso 3 */}
+          <div className="flex gap-4">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-white">
+              3
+            </div>
+            <div className="pt-1">
+              <p className="font-semibold text-[var(--text-primary)]">Ambos ganan</p>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
+                Los créditos se acreditan automáticamente. Sin pasos extra.
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
-          <h2 className="mb-4 text-lg font-bold text-white">¿Tienes un link de referido?</h2>
-        <p className="mb-4 text-sm text-[var(--text-muted)]">Ingresa el código que te compartieron. El beneficio se acredita al referente cuando completes tu primer pago mensual elegible.</p>
-
-        {claimSuccess ? (
-          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-            <p className="flex items-center gap-2 text-emerald-400">
-              <CheckCircle2 className="h-5 w-5" />
-              {claimSuccess}
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <input
-              type="text"
-              value={claimCode}
-              onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
-              placeholder="Ej: ABC12345"
-              aria-label="Tu link de referido"
-              className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-4 text-white placeholder:text-[var(--text-muted)] focus:border-[#FF5C3A] focus:outline-none min-h-[48px] text-base"
-            />
-            <button
-              onClick={handleClaim}
-              disabled={claimLoading || !claimCode.trim()}
-              aria-label="Aplicar código de referido"
-              className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] px-8 py-4 font-medium text-white transition-colors hover:bg-[#FF5C3A]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 min-h-[48px] text-base"
-            >
-              {claimLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Aplicar <ArrowRight className="h-5 w-5" /></>}
-            </button>
-          </div>
-        )}
-        {claimError && <p className="mt-2 text-sm text-red-400">{claimError}</p>}
-      </div>
-
+      {/* ── Referidos Recientes ────────────────────────────────── */}
       {data?.recentReferrals && data.recentReferrals.length > 0 && (
-        <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
-          <h2 className="mb-4 text-lg font-bold text-white">Personas que has invitado</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6"
+        >
+          <h2 className="mb-4 text-lg font-bold text-[var(--text-primary)]">Personas que has invitado</h2>
           <div className="space-y-3">
-            {data.recentReferrals.map(ref => (
-              <div key={ref.id} className="flex items-center justify-between rounded-xl bg-[var(--bg-primary)] p-3">
-                <span className="text-sm text-[var(--text-muted)]">Referido #{ref.id.slice(0, 8)}</span>
-                <span className={`text-sm font-medium ${ref.status === 'converted' ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {data.recentReferrals.map((ref, idx) => (
+              <div
+                key={ref.id}
+                className="flex items-center justify-between rounded-xl bg-[var(--bg-base)] px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
+                    ref.status === 'converted'
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'bg-amber-500/20 text-amber-400'
+                  }`}>
+                    {idx + 1}
+                  </div>
+                  <span className="text-sm text-[var(--text-muted)]">
+                    Referido #{ref.id.slice(0, 8).toUpperCase()}
+                  </span>
+                </div>
+                <span className={`text-xs font-medium ${
+                  ref.status === 'converted'
+                    ? 'text-emerald-400'
+                    : 'text-amber-400'
+                }`}>
                   {ref.status === 'converted' ? 'Convertido' : 'Pendiente'}
                 </span>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

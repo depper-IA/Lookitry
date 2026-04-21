@@ -41,17 +41,29 @@ export async function getReferralInfo(req: AuthRequest, res: Response) {
       .order('created_at', { ascending: false });
 
     const rewardCredits = referralService.getDefaultRewardCredits();
+    const referredRewardCredits = referralService.getDefaultReferredRewardCredits();
     const totalCreditsEarned = (referrals || [])
       .filter(referral => referral.referrer_claimed)
       .reduce((sum, referral) => sum + Number(referral.reward_credits || rewardCredits), 0);
 
+    // Check if current user has a referral code applied (they are the referred)
+    const { data: myReferralAsReferred } = await supabaseAdmin
+      .from('referrals')
+      .select('id, status, referrer_claimed, referred_claimed, referrer:brands!referrer_brand_id(name)')
+      .eq('referred_brand_id', brandId)
+      .maybeSingle();
+
     return res.status(200).json({
       referralCode,
       rewardCredits,
+      referredRewardCredits,
       referralCount: referrals?.length || 0,
       successfulReferrals: referrals?.filter(r => r.status === 'converted').length || 0,
       pendingReferrals: referrals?.filter(r => r.status === 'pending').length || 0,
       totalCreditsEarned,
+      hasReferredCode: !!myReferralAsReferred,
+      referredCodeStatus: myReferralAsReferred?.status || null,
+      referrerName: myReferralAsReferred?.referrer?.name || null,
       recentReferrals: referrals?.slice(0, 5) || [],
     });
   } catch (error) {
