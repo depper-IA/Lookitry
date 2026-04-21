@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { UsageStats as UsageStatsType } from '@/types';
-import { Activity, Package, Calendar, AlertTriangle, TrendingUp, Zap } from 'lucide-react';
+import { Activity, Package, Calendar, AlertTriangle, TrendingUp, Zap, Gift } from 'lucide-react';
 
 interface UsageStatsProps {
   stats: UsageStatsType;
@@ -128,6 +128,46 @@ export function UsageStats({ stats, isTrial = false, trialEndsAt = null }: Usage
           </motion.div>
         ))}
       </div>
+
+      {/* Extra Credits from Referrals - Permanent credits */}
+      {stats.extraCreditsBalance > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="group relative overflow-hidden rounded-[2.5rem] border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-[var(--bg-card)] to-[var(--bg-base)] p-8 shadow-2xl"
+        >
+          <div className="absolute right-0 top-0 p-10 opacity-10 transition-transform duration-700 group-hover:scale-110">
+            <Gift size={140} strokeWidth={1} />
+          </div>
+
+          <div className="relative z-10 flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-6">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[2rem] border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 shadow-inner">
+                <Gift className="h-7 w-7" />
+              </div>
+              <div>
+                <p className="mb-1 font-jakarta text-[9px] font-black uppercase tracking-[0.3em] text-emerald-400/70">
+                  Creditos de referidos
+                </p>
+                <h4 className="text-3xl font-extrabold tracking-tighter text-emerald-400">
+                  {stats.extraCreditsBalance}
+                </h4>
+                <p className="text-[10px] font-bold uppercase tracking-tight text-[var(--text-muted)]">
+                  Creditos extras permanentes
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-[var(--bg-card)] px-6 py-3 shadow-sm">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+              <span className="whitespace-nowrap text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                No se reinician nunca
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {isTrial ? (
         <motion.div className="relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-[2.5rem] border border-[var(--border-color)] bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-base)] p-8 shadow-2xl sm:flex-row">
