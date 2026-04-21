@@ -147,7 +147,6 @@ const adminNav = [
   {
     label: 'CONFIGURACION',
     items: [
-      { href: '/admin/configuracion', label: 'General', icon: SettingsIcon },
       { href: '/admin/payment-settings', label: 'Pagos', icon: PaymentsIcon },
       { href: '/admin/pricing', label: 'Precios', icon: PricingIcon },
       { href: '/admin/social-api-config', label: 'Social APIs', icon: GlobeIcon },
@@ -214,7 +213,6 @@ const pageTitleMap: Record<string, string> = {
   '/admin/woocommerce': 'WooCommerce',
   '/admin/audit-log': 'Auditoría',
   '/admin/playbooks': 'Playbooks Operativos',
-  '/admin/configuracion': 'Configuración',
   '/admin/admins': 'Administradores',
   '/admin/enterprise': 'Enterprise Sync',
   '/admin/profile': 'Mi Perfil',
