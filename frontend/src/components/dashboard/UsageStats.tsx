@@ -100,6 +100,11 @@ export function UsageStats({ stats, isTrial = false, trialEndsAt = null }: Usage
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-4xl font-extrabold tracking-tighter text-[var(--text-primary)]">{item.used}</span>
                     <span className="text-lg font-bold text-[var(--text-muted)]">/ {item.limit}</span>
+                    {item.id === 'generations' && stats.extraCreditsBalance > 0 && (
+                      <span className="ml-2 text-sm font-bold text-emerald-400">
+                        + {stats.extraCreditsBalance} extra
+                      </span>
+                    )}
                   </div>
                   <span
                     className={`rounded-xl border p-2 text-xs font-black ${
@@ -112,6 +117,11 @@ export function UsageStats({ stats, isTrial = false, trialEndsAt = null }: Usage
                   </span>
                 </div>
                 <ProgressBar value={item.used} max={item.limit} />
+                {item.id === 'generations' && stats.availableCredits > item.limit && (
+                  <p className="text-[10px] font-bold uppercase tracking-tight text-[var(--text-muted)]">
+                    Total disponible: <span className="text-emerald-400">{stats.availableCredits}</span> créditos
+                  </p>
+                )}
               </div>
 
               {item.warning && (
