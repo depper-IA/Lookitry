@@ -527,59 +527,50 @@ export default function TrialCheckoutPage() {
           </div>
 
 <aside className="lg:col-span-4 lg:sticky lg:top-24">
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100 rounded-[2rem] border border-[#1f1f1f] bg-[#0d0d0d] p-8 space-y-6">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100 rounded-[2rem] border border-[#1f1f1f] bg-[#0d0d0d] p-8 space-y-5">
               <p className="text-[10px] font-black uppercase tracking-widest text-[#FF5C3A]">Tu resumen</p>
 
-              {/* Plan */}
-              <div className="flex items-start justify-between animate-in fade-in slide-in-from-top-2 duration-300">
-                <div>
-                  <p className="text-sm font-bold text-white">Prueba profesional</p>
-                  <p className="text-[11px] text-[#999]">{trialDays} días de acceso</p>
+              {/* Total - siempre visible, cambia según currency */}
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#999] mb-3">Total a pagar</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-jakarta font-black text-white transition-all duration-300">
+                    {formatPrimaryPrice()}
+                  </p>
+                  <span className="text-[11px] text-[#999]">
+                    {currency === 'USD' ? 'USD' : 'COP'}
+                  </span>
                 </div>
-                <span className="text-sm font-mono text-white">{formatCop(priceCOP)}</span>
+                {currency === 'USD' && (
+                  <p className="text-[11px] text-[#666] mt-1">~{formatCop(priceCOP)} COP · TRM {formatCop(trm).replace('COP', '').trim()}</p>
+                )}
               </div>
 
               {/* Divider */}
               <div className="h-[1px] bg-gradient-to-r from-transparent via-[#1f1f1f] to-transparent" />
 
-              {/* Precio USD equivalente */}
-              {currency === 'USD' && (
-                <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
-                  <span className="text-[11px] text-[#999]">Equivalente USD</span>
-                  <span className="text-sm font-mono text-white/60">{formatUsd(priceUSD)}</span>
-                </div>
-              )}
-
-              {/* Total - siempre visible, cambio animado */}
-              <div className="border-t border-[#1f1f1f] pt-5">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#999]">Total a pagar</p>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <p className="text-3xl font-jakarta font-black text-white transition-all duration-300">
-                    {formatPrimaryPrice()}
-                  </p>
-                  {currency === 'USD' && (
-                    <span className="text-[11px] text-[#FF5C3A] animate-pulse">~{formatCop(priceCOP)} COP</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Método + badge */}
+              {/* Método de pago seleccionado */}
               <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 delay-100">
                 <div className="flex items-center gap-2">
                   {paymentMethod === 'paypal' ? (
-                    <Image src="/payment-paypal.svg" alt="PayPal" width={50} height={18} className="object-contain opacity-80" />
+                    <Image src="/payment-paypal.svg" alt="PayPal" width={55} height={20} className="object-contain opacity-90" />
                   ) : (
-                    <Image src="/wompi-logo.svg" alt="Wompi" width={50} height={18} className="object-contain opacity-80" />
+                    <div className="relative">
+                      <Image src="/wompi-logo.svg" alt="Wompi" width={55} height={20} className={`object-contain ${currency === 'USD' ? 'opacity-30' : 'opacity-90'}`} />
+                      {currency === 'USD' && (
+                        <span className="absolute -top-1 -right-1 text-[7px] font-black text-[#FF5C3A] bg-[#0d0d0d] px-1 rounded">USD</span>
+                      )}
+                    </div>
                   )}
                 </div>
-                <div className="h-4 w-[1px] bg-[#1f1f1f]" />
+                <div className="h-5 w-[1px] bg-[#1f1f1f]" />
                 <span className="text-[11px] text-[#999]">
                   {paymentMethod === 'paypal' ? 'PayPal · USD' : 'Wompi · COP'}
                 </span>
               </div>
 
               {/* Badges de confianza */}
-              <div className="flex flex-wrap gap-2 pt-2 animate-in fade-in slide-in-from-top-2 duration-300 delay-200">
+              <div className="flex flex-wrap gap-2 pt-1 animate-in fade-in slide-in-from-top-2 duration-300 delay-200">
                 <div className="flex items-center gap-1.5 bg-[#FF5C3A]/10 border border-[#FF5C3A]/20 rounded-full px-3 py-1.5">
                   <svg className="w-3 h-3 text-[#FF5C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -592,6 +583,13 @@ export default function TrialCheckoutPage() {
                   </svg>
                   <span className="text-[9px] font-bold uppercase tracking-widest text-[#FF5C3A]">Pago seguro</span>
                 </div>
+              </div>
+
+              {/* Logos de tarjetas */}
+              <div className="flex items-center justify-center gap-4 pt-2 opacity-40">
+                <Image src="/payment-pse.svg" alt="PSE" width={28} height={20} className="grayscale" />
+                <Image src="/payment-visa.svg" alt="Visa" width={38} height={14} className="grayscale" />
+                <Image src="/payment-mastercard.svg" alt="Mastercard" width={26} height={18} className="grayscale" />
               </div>
             </div>
           </aside>

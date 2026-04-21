@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Lock } from 'lucide-react';
@@ -9,14 +10,26 @@ interface CheckoutHeaderProps {
 }
 
 export default function CheckoutHeader({ OA }: CheckoutHeaderProps) {
+  const [currentCurrency, setCurrentCurrency] = useState<'COP' | 'USD'>('COP');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('currency') as 'COP' | 'USD' | null;
+    if (saved) setCurrentCurrency(saved);
+
+    const handleCurrencyChange = () => {
+      const updated = localStorage.getItem('currency') as 'COP' | 'USD' | null;
+      if (updated) setCurrentCurrency(updated);
+    };
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
+  }, []);
+
   const handleCurrencyToggle = () => {
-    const current = localStorage.getItem('currency') as 'COP' | 'USD' | null;
-    const newCurrency = current === 'USD' ? 'COP' : 'USD';
+    const newCurrency = currentCurrency === 'USD' ? 'COP' : 'USD';
     localStorage.setItem('currency', newCurrency);
+    setCurrentCurrency(newCurrency);
     window.dispatchEvent(new Event('currencyChange'));
   };
-
-  const currentCurrency = localStorage.getItem('currency') as 'COP' | 'USD' | null;
 
   return (
     <nav className="sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-md border-b border-[#1a1a1a] px-6 h-16 flex items-center justify-between">
