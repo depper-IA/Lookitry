@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { supabaseAdmin } from '../config/supabase';
+import { generateToken } from '../utils/jwt';
 import { wompiService } from '../services/wompi.service';
 
 const router = Router();
@@ -261,6 +262,21 @@ router.post('/activate-guest', authMiddleware, asyncHandler(async (req: AuthRequ
     .from('pending_registrations')
     .update({ status: 'used', updated_at: now.toISOString() } as any)
     .eq('reference', ref);
+
+  // Generate JWT and set cookie
+  const token = generateToken({ brandId: brandId, email: updatedBrand?.email || req.brand?.email || '' });
+
+  const IS_PROD = process.env.NODE_ENV === 'production';
+  const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+  const cookieOptions: any = {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: 'lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    path: '/',
+  };
+  if (COOKIE_DOMAIN && IS_PROD) cookieOptions.domain = COOKIE_DOMAIN;
+  res.cookie('token', token, cookieOptions);
 
   return res.json({ success: true, brand: updatedBrand });
 }));
