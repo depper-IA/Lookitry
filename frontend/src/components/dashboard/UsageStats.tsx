@@ -158,7 +158,7 @@ export function UsageStats({ stats, isTrial = false, trialEndsAt = null }: Usage
               </div>
               <div>
                 <p className="mb-1 font-jakarta text-[9px] font-black uppercase tracking-[0.3em] text-emerald-400/70">
-                  Creditos de referidos
+                  Creditos extras
                 </p>
                 <h4 className="text-3xl font-extrabold tracking-tighter text-emerald-400">
                   {stats.extraCreditsBalance}

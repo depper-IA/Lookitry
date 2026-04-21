@@ -688,7 +688,7 @@ export default function SubscriptionPage() {
                          <Sparkles className="h-4 w-4 text-emerald-400" />
                        </div>
                        <div>
-                         <p className="text-[10px] font-black uppercase tracking-wider text-emerald-400">Creditos de referidos</p>
+                         <p className="text-[10px] font-black uppercase tracking-wider text-emerald-400">Creditos extras</p>
                          <p className="text-xs font-bold text-emerald-400/70">Permanentes — no se reinician con la suscripcion</p>
                        </div>
                      </div>
