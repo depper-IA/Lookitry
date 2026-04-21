@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   ExternalLink, 
-  Eye, 
-  EyeOff, 
   Copy, 
   Check, 
   MessageCircle, 
@@ -109,8 +107,8 @@ export function EmbedSection() {
   }, []);
   const [platform, setPlatform] = useState<Platform | null>('wordpress');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
   const [activeTab, setActiveTab] = useState<'widget' | 'iframe'>('widget');
+
 
   const baseUrl = 'https://lookitry.com';
   const embedUrl = brand ? `${baseUrl}/marca/${brand.slug}` : '';
@@ -158,26 +156,7 @@ export function EmbedSection() {
            <a href={embedUrl} target="_blank" rel="noopener noreferrer" className="w-full md:w-auto px-6 py-3 bg-[var(--accent)] text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-[var(--accent)]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
              <ExternalLink size={14} /> Ver probador público
            </a>
-           <button onClick={() => setShowPreview(!showPreview)} className="px-6 py-3 bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-xl font-bold uppercase tracking-widest text-[10px] hover:border-[var(--accent)]/40 transition-all flex items-center justify-center gap-2">
-             {showPreview ? <><EyeOff size={14} /> Ocultar preview</> : <><Eye size={14} /> Vista previa</>}
-           </button>
         </div>
-
-        <AnimatePresence>
-          {showPreview && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-               <div className="rounded-2xl border border-[var(--border-color)] overflow-hidden shadow-2xl mt-6 bg-white">
-                  <div className="h-10 bg-zinc-900 flex items-center px-6 gap-2 border-b border-white/5">
-                     <div className="flex gap-1.5"><div className="w-2 h-2 rounded-full bg-rose-500" /><div className="w-2 h-2 rounded-full bg-amber-500" /><div className="w-2 h-2 rounded-full bg-emerald-500" /></div>
-                     <span className="text-[9px] font-mono text-zinc-500 truncate ml-4">{embedUrl}</span>
-                  </div>
-                  <div className="overflow-auto">
-                    <iframe src={embedUrl} className="w-full min-w-[320px] h-[600px] bg-white" title="Preview" />
-                  </div>
-               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.section>
 
       {/* ── PLATFORM SELECTOR ── */}
