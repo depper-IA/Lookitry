@@ -141,7 +141,7 @@ export async function claimReferralBonus(req: AuthRequest, res: Response) {
       .maybeSingle();
 
     if (existingReferral) {
-      return res.status(400).json({ error: 'Ya tienes un referido registrado' });
+      return res.status(400).json({ error: 'Ya reclamaste un codigo de referido' });
     }
 
     const rewardCredits = referralService.getDefaultRewardCredits();
