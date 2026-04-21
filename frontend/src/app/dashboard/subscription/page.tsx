@@ -664,23 +664,35 @@ export default function SubscriptionPage() {
                      </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                     <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] p-4 relative overflow-hidden group/box">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover/box:text-[#FF5C3A] transition-colors">Fotos del plan</p>
-                        <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{usage?.currentMonth?.generationsRemaining ?? 0}</p>
-                        <div className="mt-1 h-1 w-full bg-[var(--border-color)] rounded-full overflow-hidden">
-                           <div 
-                             className="h-full bg-[#FF5C3A] transition-all duration-1000" 
-                             style={{ width: `${Math.min(100, (usage?.currentMonth?.generationsUsed || 0) / (usage?.currentMonth?.generationsLimit || 1) * 100)}%` }} 
-                           />
-                        </div>
+                   <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] p-4 relative overflow-hidden group/box">
+                         <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover/box:text-[#FF5C3A] transition-colors">Fotos del plan</p>
+                         <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{usage?.currentMonth?.generationsRemaining ?? 0}</p>
+                         <div className="mt-1 h-1 w-full bg-[var(--border-color)] rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-[#FF5C3A] transition-all duration-1000"
+                              style={{ width: `${Math.min(100, (usage?.currentMonth?.generationsUsed || 0) / (usage?.currentMonth?.generationsLimit || 1) * 100)}%` }}
+                            />
+                         </div>
+                      </div>
+                      <div className="rounded-2xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 p-4 relative overflow-hidden group/box">
+                         <p className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">Fotos extras</p>
+                         <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{usage?.extraCreditsBalance ?? 0}</p>
+                         <p className="mt-1 text-[8px] font-bold uppercase tracking-tighter text-[var(--text-muted)] opacity-60">Sin vencimiento</p>
+                      </div>
+                   </div>
+
+                    {(usage?.extraCreditsBalance ?? 0) > 0 && (
+                     <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 flex items-center gap-3">
+                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10">
+                         <Sparkles className="h-4 w-4 text-emerald-400" />
+                       </div>
+                       <div>
+                         <p className="text-[10px] font-black uppercase tracking-wider text-emerald-400">Creditos de referidos</p>
+                         <p className="text-xs font-bold text-emerald-400/70">Permanentes — no se reinician con la suscripcion</p>
+                       </div>
                      </div>
-                     <div className="rounded-2xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 p-4 relative overflow-hidden group/box">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">Fotos extras</p>
-                        <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{usage?.extraCreditsBalance ?? 0}</p>
-                        <p className="mt-1 text-[8px] font-bold uppercase tracking-tighter text-[var(--text-muted)] opacity-60">Sin vencimiento</p>
-                     </div>
-                  </div>
+                   )}
 
                   <div className="flex items-center justify-between px-2 pt-1 border-t border-[var(--border-color)] border-dashed">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Total Disponible ahora:</span>
