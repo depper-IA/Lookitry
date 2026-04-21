@@ -367,6 +367,46 @@ export default function AdminBrandsPage() {
   // View mode
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    if (selectedIds.size === filteredBrands.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredBrands.map(b => b.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    const ok = await confirm({
+      title: 'Eliminar marcas',
+      message: `¿Eliminar ${selectedIds.size} marca(s) seleccionada(s)? Esta acción no se puede deshacer.`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+      reason: 'Las marcas eliminadas no pueden recuperarse.',
+    });
+    if (!ok) return;
+    try {
+      await Promise.all(Array.from(selectedIds).map(id => adminApi.delete(`/admin/brands/${id}`)));
+      showToast(`${selectedIds.size} marca(s) eliminada(s)`, 'success');
+      setSelectedIds(new Set());
+      await fetchBrands();
+    } catch (err: any) {
+      showToast(err.message || 'Error al eliminar marcas', 'error');
+    }
+  };
+
   useEffect(() => {
     fetchBrands();
     fetchLandingPrice();
@@ -708,24 +748,51 @@ export default function AdminBrandsPage() {
             )}
           </div>
         ) : (
-          <BrandTable
-            brands={filteredBrands}
-            selected={new Set()}
-            onToggleSelect={() => {}}
-            onToggleSelectAll={() => {}}
-            onSelectDetails={handleViewDetails}
-            onSelectProducts={handleViewProducts}
-            onSelectActivate={brand => handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')}
-            onSelectModalConfig={handleOpenModalConfig}
-            onSendReset={handleSendResetEmail}
-            sortField="name"
-            sortOrder="asc"
-            onSortChange={() => {}}
-            currentPage={currentPage}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            landingPrice={landingPrice}
-          />
+          <>
+            {/* Bulk Actions Bar */}
+            {selectedIds.size > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-4 rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-5 py-3"
+              >
+                <span className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>
+                  {selectedIds.size} seleccionada(s)
+                </span>
+                <button
+                  onClick={handleBulkDelete}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Eliminar
+                </button>
+                <button
+                  onClick={() => setSelectedIds(new Set())}
+                  className="ml-auto text-sm text-[var(--text-muted)] hover:text-white transition-colors"
+                >
+                  Cancelar
+                </button>
+              </motion.div>
+            )}
+            <BrandTable
+              brands={filteredBrands}
+              selected={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onToggleSelectAll={handleToggleSelectAll}
+              onSelectDetails={handleViewDetails}
+              onSelectProducts={handleViewProducts}
+              onSelectActivate={brand => handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')}
+              onSelectModalConfig={handleOpenModalConfig}
+              onSendReset={handleSendResetEmail}
+              sortField="name"
+              sortOrder="asc"
+              onSortChange={() => {}}
+              currentPage={currentPage}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              landingPrice={landingPrice}
+            />
+          </>
         )}
       </motion.div>
 
