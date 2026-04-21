@@ -88,7 +88,7 @@ Reglas de facturacion:
 - El nuevo plan inicia inmediatamente tras el pago
 - Las generaciones no utilizadas no son acumulables entre periodos
 - Lookitry puede ofrecer cupones de descuento que cubren parcial o totalmente el costo del plan
-- Programa de referidos: el referente recibe 500 creditos extra cuando el referido completa su primer pago mensual elegible`,
+- Programa de referidos: el referente recibe 200 creditos extra cuando el referido completa su primer pago mensual elegible`,
   },
   {
     id: 'art6',

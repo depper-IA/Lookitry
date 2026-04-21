@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '../config/supabase';
 
-const DEFAULT_REFERRAL_REWARD_CREDITS = 500;
+const DEFAULT_REFERRAL_REWARD_CREDITS = 200;
 const DEFAULT_REFERRED_REWARD_CREDITS = 100;
 const ELIGIBLE_REFERRAL_PLANS = ['BASIC', 'PRO', 'ENTERPRISE'] as const;
 

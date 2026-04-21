@@ -101,7 +101,7 @@ export default function ReferralPage() {
     );
   }
 
-  const rewardCredits = data?.rewardCredits || 500;
+  const rewardCredits = data?.rewardCredits || 200;
   const referredRewardCredits = data?.referredRewardCredits || 100;
 
   return (
