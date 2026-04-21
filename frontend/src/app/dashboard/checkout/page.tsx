@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CheckCircle, XCircle, CreditCard, ShieldCheck, ArrowLeft,
-  Globe, ArrowUpCircle, RefreshCw, Zap, Star, Check,
+  Globe, ArrowUpCircle, RefreshCw, Zap, Star, Check, Gift, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import WompiButton from '@/components/payments/WompiButton';
 import { subscriptionService } from '@/services/subscription.service';
@@ -309,6 +309,15 @@ function CheckoutContent() {
   const [loadingProration, setLoadingProration] = useState(false);
   const [applyingFreeUpgrade, setApplyingFreeUpgrade] = useState(false);
 
+  // Referral code (solo para transicion trial -> plan)
+  const [showReferralField, setShowReferralField] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const [referralApplied, setReferralApplied] = useState(false);
+  const [referralLoading, setReferralLoading] = useState(false);
+  const [referralError, setReferralError] = useState<string | null>(null);
+  const [hasReferredCode, setHasReferredCode] = useState(false);
+  const [referredCodeStatus, setReferredCodeStatus] = useState<string | null>(null);
+
   // Lógica de suscripción
   const isUpgrade = hasActiveSub && currentPlan?.toUpperCase() === 'BASIC' && selectedPlan.toUpperCase() === 'PRO';
   const isDowngrade = hasActiveSub && currentPlan?.toUpperCase() === 'PRO' && selectedPlan.toUpperCase() === 'BASIC';
@@ -382,6 +391,14 @@ function CheckoutContent() {
       }
       setLoadingInfo(false);
     });
+
+    // Cargar estado de referral (para saber si el usuario ya tiene código aplicado)
+    api.get('/brands/me/referral').then((res: any) => {
+      if (res?.data) {
+        setHasReferredCode(res.data.hasReferredCode ?? false);
+        setReferredCodeStatus(res.data.referredCodeStatus ?? null);
+      }
+    }).catch(() => {});
 
     const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -1161,6 +1178,80 @@ function CheckoutContent() {
             </div>
           </div>
 
+          {/* Campo de código de referido (colapsable, solo para trial -> plan) */}
+          {isOperationalTrial && !hasReferredCode && (
+            <div
+              className="rounded-2xl border overflow-hidden"
+              style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+            >
+              <button
+                type="button"
+                onClick={() => setShowReferralField(!showReferralField)}
+                className="w-full px-5 py-4 flex items-center justify-between text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-emerald-400" />
+                  <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    ¿Tienes un código de referido?
+                  </span>
+                </div>
+                {showReferralField ? (
+                  <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+                ) : (
+                  <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+                )}
+              </button>
+
+              {showReferralField && (
+                <div className="px-5 pb-4 space-y-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={referralCode}
+                      onChange={e => setReferralCode(e.target.value.toUpperCase())}
+                      placeholder="Código (ej: ABCD1234)"
+                      className="flex-1 rounded-xl border px-3 py-2 text-sm bg-[var(--bg-input)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!referralCode.trim()) return;
+                        setReferralLoading(true);
+                        setReferralError(null);
+                        try {
+                          const res = await api.post<{ valid: boolean; referrerName?: string }>('/api/coupons/validate', { code: referralCode });
+                          if (res.data?.valid) {
+                            setReferralApplied(true);
+                          }
+                        } catch (err: any) {
+                          setReferralError(err.message || 'Código inválido');
+                        } finally {
+                          setReferralLoading(false);
+                        }
+                      }}
+                      disabled={referralLoading || !referralCode.trim()}
+                      className="px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-bold transition-all hover:brightness-110 disabled:opacity-50"
+                    >
+                      {referralLoading ? '...' : 'Aplicar'}
+                    </button>
+                  </div>
+                  {referralError && (
+                    <p className="text-xs text-red-400">{referralError}</p>
+                  )}
+                  {referralApplied && (
+                    <div className="flex items-center gap-2 text-xs text-emerald-400 font-medium">
+                      <Check className="w-3.5 h-3.5" />
+                      <span>¡Código aplicado! Recibirás <strong>100 créditos extra</strong> al activar tu plan.</span>
+                    </div>
+                  )}
+                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    Los créditos extra no aplican para pagos de trial.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Add-on mini-landing */}
           {!hasLandingPage && (
             <div
@@ -1317,6 +1408,17 @@ function CheckoutContent() {
                 <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
                   <span>Mini-landing (pago único)</span>
                   <span>{formatPrice(miniLandingPrice, paymentMethod, trm)}</span>
+                </div>
+              )}
+
+              {/* Referral credits bonus (solo cuando aplica y esta aplicado) */}
+              {referralApplied && (
+                <div className="flex items-center justify-between text-sm" style={{ color: '#10b981' }}>
+                  <span className="flex items-center gap-1.5">
+                    <Gift className="w-3.5 h-3.5" />
+                    Código de referido aplicado
+                  </span>
+                  <span className="font-bold">+100 créditos extra</span>
                 </div>
               )}
 
