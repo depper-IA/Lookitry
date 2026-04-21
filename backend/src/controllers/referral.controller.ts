@@ -63,7 +63,7 @@ export async function getReferralInfo(req: AuthRequest, res: Response) {
       totalCreditsEarned,
       hasReferredCode: !!myReferralAsReferred,
       referredCodeStatus: myReferralAsReferred?.status || null,
-      referrerName: myReferralAsReferred?.referrer?.name || null,
+      referrerName: myReferralAsReferred?.referrer?.[0]?.name || null,
       recentReferrals: referrals?.slice(0, 5) || [],
     });
   } catch (error) {
