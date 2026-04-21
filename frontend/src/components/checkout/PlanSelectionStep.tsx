@@ -122,7 +122,7 @@ export default function PlanSelectionStep({
           if ((p === 'TRIAL' || p === 'LANDING') && hasEmailAccount) {
             return null;
           }
-          
+
           const isSelected = selectedPlan === p;
           return (
             <button
@@ -172,7 +172,7 @@ export default function PlanSelectionStep({
                 ) : (
                   <>
                     <div className="text-2xl font-jakarta font-extrabold text-white">
-                      {p === 'TRIAL' 
+                      {p === 'TRIAL'
                         ? (planBase.TRIAL > 0 ? formatCop(planBase.TRIAL) : 'GRATIS')
                         : formatCop(planBase[p as keyof typeof planBase])
                       }
