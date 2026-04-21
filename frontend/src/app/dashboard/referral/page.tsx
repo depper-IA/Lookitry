@@ -20,6 +20,7 @@ interface ReferralData {
   recentReferrals: Array<{
     id: string;
     referred_brand_id: string;
+    referredName: string | null;
     status: string;
     created_at: string;
     converted_at?: string | null;
@@ -436,7 +437,7 @@ export default function ReferralPage() {
                     {idx + 1}
                   </div>
                   <span className="text-sm text-[var(--text-muted)]">
-                    Referido #{ref.id.slice(0, 8).toUpperCase()}
+                    {ref.referredName || `Referido #${ref.id.slice(0, 8).toUpperCase()}`}
                   </span>
                 </div>
                 <span className={`text-xs font-medium ${
