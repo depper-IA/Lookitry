@@ -21,6 +21,8 @@ interface GooglePlaceResult {
   reviews?: Array<{ author_name: string; text: string }>;
   types?: string[];
   photos?: Array<{ photo_reference: string }>;
+  rating?: number;
+  user_ratings_total?: number;
 }
 
 interface GooglePlacesResponse {
@@ -212,6 +214,8 @@ export class LeadGenerationService {
         city: search.city,
         latitude: place.geometry?.location?.lat,
         longitude: place.geometry?.location?.lng,
+        rating: place.rating,
+        reviews_count: place.user_ratings_total,
         status: 'new',
       }));
 
@@ -322,6 +326,8 @@ export class LeadGenerationService {
           city: search.city,
           latitude: place.geometry?.location?.lat,
           longitude: place.geometry?.location?.lng,
+          rating: place.rating,
+          reviews_count: place.user_ratings_total,
           status: 'new',
         };
 

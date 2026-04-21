@@ -17,6 +17,8 @@ export interface Lead {
   postal_code?: string;
   latitude?: number;
   longitude?: number;
+  rating?: number;
+  reviews_count?: number;
   source: string;
   source_id?: string;
   search_id?: string;

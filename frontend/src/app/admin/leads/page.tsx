@@ -18,6 +18,10 @@ interface Lead {
   address?: string;
   city?: string;
   country: string;
+  latitude?: number;
+  longitude?: number;
+  rating?: number;
+  user_ratings_total?: number;
   status: LeadStatus;
   source: string;
   notes?: string;
@@ -346,6 +350,11 @@ return (
                       <IconMapPin />
                       {lead.city}, {lead.country}
                     </div>
+                    {(lead.latitude || lead.longitude) && (
+                      <div className="text-xs text-[#999] mt-1">
+                        {lead.latitude?.toFixed(4)}, {lead.longitude?.toFixed(4)}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="space-y-1">
@@ -357,6 +366,17 @@ return (
                       {lead.phone && (
                         <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
                           <IconPhone /> {lead.phone}
+                        </a>
+                      )}
+                      {lead.website && (
+                        <a href={lead.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm truncate max-w-[200px]" style={{ color: 'var(--accent)' }} title={lead.website}>
+                          <IconExternalLink />
+                          <span className="truncate">Web</span>
+                        </a>
+                      )}
+                      {lead.instagram && (
+                        <a href={`https://instagram.com/${lead.instagram}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm" style={{ color: 'var(--text-secondary)' }} title={`@${lead.instagram}`}>
+                          <span style={{ color: 'var(--accent)' }}>@</span>{lead.instagram}
                         </a>
                       )}
                     </div>
