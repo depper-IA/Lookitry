@@ -45,6 +45,12 @@ const corsOriginEnv = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
   : [];
 
+// Agregar localhost para desarrollo local
+const isDev = process.env.NODE_ENV !== 'production';
+const devOrigins = isDev
+  ? ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://[::1]:3000']
+  : [];
+
 const allowedOrigins = [
   ...new Set([
     process.env.FRONTEND_URL || '',
@@ -53,6 +59,7 @@ const allowedOrigins = [
     'https://lookitry.com',
     'https://www.lookitry.com',
     ...corsOriginEnv,
+    ...devOrigins,
   ]),
 ].filter(Boolean);
 
