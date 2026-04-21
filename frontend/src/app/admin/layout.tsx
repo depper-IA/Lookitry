@@ -242,6 +242,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [notifCount, setNotifCount] = useState(0);
 
   useEffect(() => {
+    // Solo verificar localStorage - NO llamar a /admin/verify aquí para evitar refresh loop
     const userStr = localStorage.getItem('adminUser');
     let userParsed = null;
 
@@ -254,58 +255,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     if (!userParsed && pathname !== '/admin/login') {
-      // Verificar cookie antes de redirigir
-      adminApi.get('/admin/verify')
-        .then(profileData => {
-          if (profileData?.admin) {
-            localStorage.setItem('adminUser', JSON.stringify(profileData.admin));
-            setAdminUser(profileData.admin);
-            setLoading(false);
-            return;
-          }
-          router.push('/admin/login');
-        })
-        .catch(() => {
-          router.push('/admin/login');
-        });
+      router.push('/admin/login');
       return;
     }
 
-    if (pathname !== '/admin/login') {
-      // Resto del código existente para cargar datos
-      adminApi.get('/admin/verify')
-        .then(profileData => {
-          if (!profileData) {
-            if (userParsed) setAdminUser(userParsed);
-            setLoading(false);
-            return;
-          }
-          setAdminUser(profileData.admin || userParsed);
-          setLoading(false);
-
-          Promise.all([
-            adminApi.get('/admin/feedback/count-unresolved').catch(() => null),
-            adminApi.get('/admin/notifications').catch(() => null),
-          ]).then(([fbData, notifData]) => {
-            if (fbData?.count) setFeedbackCount(fbData.count);
-            if (notifData?.notifications) {
-              try {
-                const readRaw = localStorage.getItem('admin_notifications_read');
-                const readIds: Set<string> = readRaw ? new Set(JSON.parse(readRaw)) : new Set();
-                const unread = (notifData.notifications as any[]).filter((n: any) => !readIds.has(n.id)).length;
-                setNotifCount(unread);
-              } catch { setNotifCount(notifData.notifications.length); }
-            }
-          }).catch(() => {});
-        })
-        .catch(() => {
-          if (userParsed) setAdminUser(userParsed);
-          setLoading(false);
-        });
-    } else {
-      if (userParsed) setAdminUser(userParsed);
-      setLoading(false);
+    if (userParsed) {
+      setAdminUser(userParsed);
     }
+
+    setLoading(false);
   }, [pathname, router]);
 
   const handleLogout = async () => {

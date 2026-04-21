@@ -18,36 +18,6 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    // Verificar si ya hay una sesión válida en cookies
-    const checkExistingSession = async () => {
-      if (loading) return;
-
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-        const baseUrl = apiUrl.replace(/\/api$/, '');
-
-        const res = await fetch(`${baseUrl}/api/admin/verify`, {
-          method: 'GET',
-          credentials: 'include',
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.admin) {
-            localStorage.setItem('adminUser', JSON.stringify(data.admin));
-            window.location.href = '/admin/dashboard';
-            return;
-          }
-        }
-      } catch (e) {
-        console.error('[AdminLogin] Error verificando sesión:', e);
-      }
-    };
-
-    checkExistingSession();
-  }, [loading]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
