@@ -3,17 +3,18 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
-import { 
-  Activity, 
-  Server, 
-  Database, 
-  Cloud, 
-  Zap, 
+import {
+  Activity,
+  Server,
+  Database,
+  Cloud,
+  Zap,
   Clock,
   CheckCircle,
   XCircle,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  Cpu
 } from 'lucide-react';
 
 interface HealthStatus {
@@ -40,6 +41,10 @@ interface HealthStatus {
     used_mb: number;
     total_mb: number;
     percent: number;
+  };
+  cpu?: {
+    percent: number;
+    cores: number;
   };
 }
 
@@ -253,12 +258,44 @@ export default function AdminHealthPage() {
             animate={{ width: `${health.memory.percent}%` }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
             className="h-full rounded-full"
-            style={{ 
+            style={{
               backgroundColor: health.memory.percent > 90 ? '#ef4444' : health.memory.percent > 70 ? '#f59e0b' : '#10b981'
             }}
           />
         </div>
       </motion.section>
+
+      {/* CPU Bar */}
+      {health.cpu && (
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.06 }}
+          className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Cpu className="w-4 h-4" style={{ color: '#8b5cf6' }} />
+              <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Uso de CPU</span>
+              <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-muted)' }}>
+                {health.cpu.cores} cores
+              </span>
+            </div>
+            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{health.cpu.percent.toFixed(1)}%</span>
+          </div>
+          <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-input)' }}>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(health.cpu.percent, 100)}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              className="h-full rounded-full"
+              style={{
+                backgroundColor: health.cpu.percent > 90 ? '#ef4444' : health.cpu.percent > 70 ? '#f59e0b' : '#10b981'
+              }}
+            />
+          </div>
+        </motion.section>
+      )}
 
       {/* Services Grid */}
       <motion.section

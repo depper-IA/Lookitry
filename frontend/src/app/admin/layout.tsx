@@ -177,7 +177,6 @@ const adminNav = [
     label: 'EQUIPO',
     items: [
       { href: '/admin/admins', label: 'Admins', icon: AdminsIcon },
-      { href: '/admin/soporte', label: 'Soporte', icon: BellIcon },
       { href: '/admin/tickets', label: 'Tickets', icon: TicketIcon },
     ],
   },
@@ -219,7 +218,6 @@ const pageTitleMap: Record<string, string> = {
   '/admin/admins': 'Administradores',
   '/admin/enterprise': 'Enterprise Sync',
   '/admin/profile': 'Mi Perfil',
-  '/admin/soporte': 'Soporte',
   '/admin/feedback': 'Feedback',
   '/admin/generations': 'Generaciones',
   '/admin/tickets': 'Tickets',

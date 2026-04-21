@@ -199,6 +199,17 @@ export async function getHealthStatus(_req: Request, res: Response): Promise<voi
     percent: ((totalMem - freeMem) / totalMem) * 100,
   };
 
+  // CPU usage (1 minute average)
+  const cpus = os.cpus();
+  let totalIdle = 0, totalTick = 0;
+  for (const cpu of cpus) {
+    for (const type in cpu.times) {
+      totalTick += cpu.times[type as keyof typeof cpu.times];
+    }
+    totalIdle += cpu.times.idle;
+  }
+  const cpuPercent = ((totalTick - totalIdle) / totalTick) * 100;
+
   const body = {
     status,
     timestamp: new Date().toISOString(),
@@ -211,6 +222,10 @@ export async function getHealthStatus(_req: Request, res: Response): Promise<voi
       active_connections: servicesMap.supabase.status === 'ok' ? 5 : 0,
     },
     memory,
+    cpu: {
+      percent: cpuPercent,
+      cores: cpus.length,
+    },
     redis: {
       status: servicesMap.redis.status === 'ok' ? 'connected' : 'disconnected',
     }

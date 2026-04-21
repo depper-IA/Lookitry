@@ -61,7 +61,7 @@ export const getTickets = async (req: any, res: Response) => {
     }));
 
     return res.json({
-      data: tickets,
+      tickets,
       total: count || 0,
       has_more: (count || 0) > offsetNum + limitNum
     });
