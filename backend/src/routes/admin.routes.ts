@@ -88,6 +88,8 @@ import {
   deleteTicket,
   bulkActionTickets,
   getTicketsStats,
+  getTicketMessages,
+  addTicketMessage,
 } from '../controllers/admin/tickets.admin.controller';
 
 const router = Router();
@@ -267,5 +269,7 @@ router.patch('/tickets/:id', requirePermission('brands'), updateTicket);
 router.delete('/tickets/:id', requirePermission('admins'), deleteTicket);
 router.post('/tickets/bulk-action', requirePermission('brands'), bulkActionTickets);
 router.get('/tickets/stats', requirePermission('brands'), getTicketsStats);
+router.get('/tickets/:id/messages', requirePermission('brands'), getTicketMessages);
+router.post('/tickets/:id/messages', requirePermission('brands'), addTicketMessage);
 
 export default router;

@@ -194,7 +194,7 @@ export const updateTicket = async (req: any, res: Response) => {
       return res.status(404).json({ error: 'NOT_FOUND', message: 'Ticket no encontrado' });
     }
 
-    // Validaciones de transición de estado
+    // Validaciones de transicion de estado
     if (status === 'resolved' && current.status !== 'resolved' && current.status !== 'in_progress') {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
@@ -253,7 +253,7 @@ export const updateTicket = async (req: any, res: Response) => {
 
 /**
  * DELETE /api/admin/tickets/:id
- * Eliminar ticket (solo si está open)
+ * Eliminar ticket (solo si esta open)
  */
 export const deleteTicket = async (req: any, res: Response) => {
   try {
@@ -271,7 +271,7 @@ export const deleteTicket = async (req: any, res: Response) => {
       return res.status(404).json({ error: 'NOT_FOUND', message: 'Ticket no encontrado' });
     }
 
-    // Solo permitir eliminar si está open
+    // Solo permitir eliminar si esta open
     if (ticket.status !== 'open') {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
@@ -327,14 +327,14 @@ export const bulkActionTickets = async (req: any, res: Response) => {
     if (action === 'change_status' && !new_status) {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
-        message: 'new_status es requerido para acción change_status'
+        message: 'new_status es requerido para accion change_status'
       });
     }
 
     if (action === 'assign' && !assigned_to) {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
-        message: 'assigned_to es requerido para acción assign'
+        message: 'assigned_to es requerido para accion assign'
       });
     }
 
@@ -412,7 +412,7 @@ export const bulkActionTickets = async (req: any, res: Response) => {
 
 /**
  * GET /api/admin/tickets/stats
- * Estadísticas de tickets
+ * Estadisticas de tickets
  */
 export const getTicketsStats = async (_req: any, res: Response) => {
   try {
@@ -427,7 +427,7 @@ export const getTicketsStats = async (_req: any, res: Response) => {
 
     if (error) {
       console.error('[TicketsAdmin] getTicketsStats:', error);
-      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener estadísticas' });
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener estadisticas' });
     }
 
     const openTickets = allTickets.filter(t => t.status === 'open');
@@ -465,6 +465,103 @@ export const getTicketsStats = async (_req: any, res: Response) => {
     });
   } catch (err: any) {
     console.error('[TicketsAdmin] getTicketsStats:', err);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al obtener estadísticas') });
+    return res.status(500).json({ error: "INTERNAL_ERROR", message: sanitizeError(err, "Error al obtener estadisticas") });
+  }
+};
+
+/**
+ * GET /api/admin/tickets/:id/messages
+ * Obtener mensajes de un ticket
+ */
+export const getTicketMessages = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const { data: messages, error } = await supabaseAdmin
+      .from('ticket_messages')
+      .select('*')
+      .eq('ticket_id', id)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('[TicketsAdmin] getTicketMessages:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener mensajes' });
+    }
+
+    return res.json({ messages: messages || [] });
+  } catch (err: any) {
+    console.error('[TicketsAdmin] getTicketMessages:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al obtener mensajes') });
+  }
+};
+
+/**
+ * POST /api/admin/tickets/:id/messages
+ * Agregar mensaje a un ticket
+ */
+export const addTicketMessage = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+    const admin = req.admin;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Content es requerido'
+      });
+    }
+
+    // Verificar que el ticket existe
+    const { data: ticket, error: ticketError } = await supabaseAdmin
+      .from('admin_support_tickets')
+      .select('id, status, brand_id')
+      .eq('id', id)
+      .single();
+
+    if (ticketError || !ticket) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Ticket no encontrado' });
+    }
+
+    const { data: message, error: messageError } = await supabaseAdmin
+      .from('ticket_messages')
+      .insert({
+        ticket_id: id,
+        sender_type: 'admin',
+        sender_id: admin?.id || null,
+        content: content.trim()
+      })
+      .select()
+      .single();
+
+    if (messageError || !message) {
+      console.error('[TicketsAdmin] addTicketMessage:', messageError);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al agregar mensaje' });
+    }
+
+    // Si el ticket estaba en 'open', pasarlo a 'in_progress'
+    if (ticket.status === 'open') {
+      await supabaseAdmin
+        .from('admin_support_tickets')
+        .update({ status: 'in_progress' })
+        .eq('id', id);
+    }
+
+    // Registrar en audit log
+    await auditService.log({
+      admin_id: admin?.id || 'system',
+      admin_email: admin?.email || 'system',
+      action: 'ticket.message' as any,
+      target_brand_id: ticket.brand_id || undefined,
+      details: {
+        ticket_id: id,
+        message_id: message.id
+      }
+    });
+
+    return res.status(201).json({ data: message });
+  } catch (err: any) {
+    console.error('[TicketsAdmin] addTicketMessage:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al agregar mensaje') });
   }
 };
