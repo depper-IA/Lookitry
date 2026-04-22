@@ -51,6 +51,7 @@ export interface UpdateBrandDto {
   custom_domain?: string | null;
   onboarding_dismissed?: boolean;
   share_message?: string | null;
+  widget_cover_image?: string | null; // PRO: imagen de portada del widget (independiente de mini-landing)
 }
 
 export class BrandsService {

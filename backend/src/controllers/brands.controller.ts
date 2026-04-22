@@ -32,7 +32,7 @@ export class BrandsController {
         });
       }
 
-      // No devolver la contraseña
+      // No devolver la contraseÃ±a
       const { password, ...brandWithoutPassword } = brand;
 
       return res.status(200).json(brandWithoutPassword);
@@ -110,7 +110,7 @@ export class BrandsController {
         if (typeof req.body.name !== 'string' || req.body.name.trim().length === 0) {
           return res.status(400).json({
             error: 'VALIDATION_ERROR',
-            message: 'El nombre no puede estar vacío',
+            message: 'El nombre no puede estar vacÃ­o',
           });
         }
         updates.name = req.body.name;
@@ -172,6 +172,14 @@ export class BrandsController {
         }
       }
 
+      // Widget cover image -- solo Plan PRO
+      if (req.body.widget_cover_image !== undefined) {
+        if (req.brand.plan !== 'PRO') {
+          return res.status(403).json({ error: 'FORBIDDEN', message: 'La imagen de portada del widget requiere Plan PRO' });
+        }
+        (updates as any).widget_cover_image = req.body.widget_cover_image || null;
+      }
+
       // Merge website / dominios permitidos safely into social_links JSONB
       if (req.body.website !== undefined) {
         const currentSocialLinks = updates.social_links || (currentBrand as any).social_links || {};
@@ -189,30 +197,30 @@ export class BrandsController {
         };
       }
 
-      // Slug personalizado — solo Plan PRO
+      // Slug personalizado â€” solo Plan PRO
       if (req.body.slug !== undefined) {
         if (req.brand.plan !== 'PRO') {
           return res.status(403).json({
             error: 'FORBIDDEN',
-            message: 'La personalización del slug requiere Plan Pro',
+            message: 'La personalizaciÃ³n del slug requiere Plan Pro',
           });
         }
         const slug = String(req.body.slug).trim().toLowerCase();
         if (!slug || !/^[a-z0-9-]+$/.test(slug) || slug.length < 3) {
           return res.status(400).json({
             error: 'VALIDATION_ERROR',
-            message: 'El slug solo puede contener letras minúsculas, números y guiones (mínimo 3 caracteres)',
+            message: 'El slug solo puede contener letras minÃºsculas, nÃºmeros y guiones (mÃ­nimo 3 caracteres)',
           });
         }
         updates.slug = slug;
       }
 
-      // Dominio personalizado — solo Plan PRO
+      // Dominio personalizado â€” solo Plan PRO
       if (req.body.custom_domain !== undefined) {
         if (req.brand.plan !== 'PRO') {
           return res.status(403).json({
             error: 'FORBIDDEN',
-            message: 'La configuración de dominio personalizado requiere Plan Pro',
+            message: 'La configuraciÃ³n de dominio personalizado requiere Plan Pro',
           });
         }
         
@@ -222,7 +230,7 @@ export class BrandsController {
           if (!brandsService.isValidDomain(domain)) {
             return res.status(400).json({
               error: 'VALIDATION_ERROR',
-              message: 'El formato del dominio es inválido (ej: tumarca.com)',
+              message: 'El formato del dominio es invÃ¡lido (ej: tumarca.com)',
             });
           }
           
@@ -231,7 +239,7 @@ export class BrandsController {
           if (existing && existing.id !== req.brand.id) {
             return res.status(400).json({
               error: 'CONFLICT',
-              message: 'Ese dominio ya está configurado por otra marca',
+              message: 'Ese dominio ya estÃ¡ configurado por otra marca',
             });
           }
         }
@@ -249,10 +257,10 @@ export class BrandsController {
 
       const updatedBrand = await brandsService.updateBrand(req.brand.id, updates);
 
-      // Invalidar caché del probador para este slug
+      // Invalidar cachÃ© del probador para este slug
       invalidateBrandConfigCache(updatedBrand.slug);
 
-      // No devolver la contraseña
+      // No devolver la contraseÃ±a
       const { password, ...brandWithoutPassword } = updatedBrand;
 
       return res.status(200).json(brandWithoutPassword);
@@ -262,7 +270,7 @@ export class BrandsController {
       if (error.message.includes('hexadecimal') || error.message.includes('slug') || error.message.includes('uso')) {
         return res.status(400).json({
           error: 'VALIDATION_ERROR',
-          message: sanitizeError(error, 'Error de validación en perfil'),
+          message: sanitizeError(error, 'Error de validaciÃ³n en perfil'),
         });
       }
 
@@ -346,7 +354,7 @@ export class BrandsController {
       if (error.message.includes('No hay campos')) {
         return res.status(400).json({
           error: 'VALIDATION_ERROR',
-          message: sanitizeError(error, 'Error de validación en preferencias'),
+          message: sanitizeError(error, 'Error de validaciÃ³n en preferencias'),
         });
       }
 
@@ -359,7 +367,7 @@ export class BrandsController {
 
   /**
    * POST /api/brands/request-upgrade
-   * Solicitar upgrade a Plan PRO — envía notificación al admin para gestión manual.
+   * Solicitar upgrade a Plan PRO â€” envÃ­a notificaciÃ³n al admin para gestiÃ³n manual.
    * El admin aplica el cambio desde el panel una vez confirme el pago.
    * Requirement 29.1
    */
@@ -386,7 +394,7 @@ export class BrandsController {
         console.error('[requestUpgrade] ADMIN_EMAIL no configurado');
         return res.status(500).json({
           error: 'INTERNAL_ERROR',
-          message: 'Error de configuración del servidor',
+          message: 'Error de configuraciÃ³n del servidor',
         });
       }
 
@@ -394,7 +402,7 @@ export class BrandsController {
 
       emailService.sendEmail({
         to: adminEmail,
-        subject: `Solicitud de upgrade a PRO — ${brand.name}`,
+        subject: `Solicitud de upgrade a PRO â€” ${brand.name}`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
             <h2 style="color:#4f46e5;margin-bottom:8px">Solicitud de upgrade a Plan PRO</h2>
@@ -417,11 +425,11 @@ export class BrandsController {
       const { supabaseAdmin } = await import('../config/supabase');
       await supabaseAdmin.from('brands').update({ upgrade_requested_at: new Date().toISOString() }).eq('id', brand.id);
 
-      // Notificación persistente en el panel admin
+      // NotificaciÃ³n persistente en el panel admin
       createAdminNotification({
         type: 'upgrade_request',
         title: 'Solicitud de upgrade a PRO',
-        message: `${brand.name} (${brand.email}) solicita cambiar al Plan PRO — pendiente de pago`,
+        message: `${brand.name} (${brand.email}) solicita cambiar al Plan PRO â€” pendiente de pago`,
         severity: 'warning',
         brandId: brand.id,
         brandName: brand.name,
@@ -440,7 +448,7 @@ export class BrandsController {
 
   /**
    * POST /api/brands/request-plan-change
-   * Solicitar cambio de plan (upgrade o downgrade) — envía email al admin
+   * Solicitar cambio de plan (upgrade o downgrade) â€” envÃ­a email al admin
    */
   async requestPlanChange(req: AuthRequest, res: Response) {
     try {
@@ -450,7 +458,7 @@ export class BrandsController {
 
       const { targetPlan, message, months } = req.body;
       if (!targetPlan || !['BASIC', 'PRO'].includes(targetPlan)) {
-        return res.status(400).json({ error: 'INVALID_PLAN', message: 'Plan inválido' });
+        return res.status(400).json({ error: 'INVALID_PLAN', message: 'Plan invÃ¡lido' });
       }
       const monthsCount = Math.min(24, Math.max(1, Number(months) || 1));
       const discountPct = monthsCount >= 12 ? 15 : monthsCount >= 6 ? 10 : monthsCount >= 3 ? 5 : 0;
@@ -468,7 +476,7 @@ export class BrandsController {
 
       const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
       if (!adminEmail) {
-        return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error de configuración' });
+        return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error de configuraciÃ³n' });
       }
 
       const isUpgrade = targetPlan === 'PRO';
@@ -476,12 +484,12 @@ export class BrandsController {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
       const monthsLabel = monthsCount > 1
-        ? `${monthsCount} meses${discountPct > 0 ? ` (${discountPct}% descuento — Total: ${totalPrice.toLocaleString('es-CO')} COP)` : ''}`
+        ? `${monthsCount} meses${discountPct > 0 ? ` (${discountPct}% descuento â€” Total: ${totalPrice.toLocaleString('es-CO')} COP)` : ''}`
         : '1 mes';
 
       await emailService.sendEmail({
         to: adminEmail,
-        subject: `Solicitud de ${changeType} — ${brand.name} (${brand.plan} → ${targetPlan})`,
+        subject: `Solicitud de ${changeType} â€” ${brand.name} (${brand.plan} â†’ ${targetPlan})`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
             <h2 style="color:${isUpgrade ? '#4f46e5' : '#dc2626'};margin-bottom:8px">
@@ -510,13 +518,13 @@ export class BrandsController {
       const { supabaseAdmin } = await import('../config/supabase');
       await supabaseAdmin.from('brands').update({ upgrade_requested_at: new Date().toISOString() }).eq('id', req.brand.id);
 
-      // Notificación persistente en el panel admin
+      // NotificaciÃ³n persistente en el panel admin
       const notifTitle = monthsCount > 1
-        ? `Solicitud de ${changeType} — ${monthsCount} meses`
+        ? `Solicitud de ${changeType} â€” ${monthsCount} meses`
         : `Solicitud de ${changeType} de plan`;
       const notifMessage = monthsCount > 1
-        ? `${brand.name} solicitó cambiar de ${brand.plan} a ${targetPlan} por ${monthsCount} meses${discountPct > 0 ? ` (${discountPct}% desc.)` : ''}`
-        : `${brand.name} (${brand.email}) solicitó cambiar de ${brand.plan} a ${targetPlan}`;
+        ? `${brand.name} solicitÃ³ cambiar de ${brand.plan} a ${targetPlan} por ${monthsCount} meses${discountPct > 0 ? ` (${discountPct}% desc.)` : ''}`
+        : `${brand.name} (${brand.email}) solicitÃ³ cambiar de ${brand.plan} a ${targetPlan}`;
 
       await createAdminNotification({
         type: 'plan_change_request',
@@ -535,7 +543,7 @@ export class BrandsController {
         },
       });
 
-      return res.status(200).json({ message: 'Solicitud enviada. Nos contactaremos en las próximas 24 horas.' });
+      return res.status(200).json({ message: 'Solicitud enviada. Nos contactaremos en las prÃ³ximas 24 horas.' });
     } catch (error: any) {
       console.error('Error en requestPlanChange:', error);
       return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al enviar la solicitud' });
@@ -572,7 +580,7 @@ export class BrandsController {
       const { type } = req.body || {};
       const supportedTypes = ['customers/data_request', 'customers/redact', 'shop/redact', 'app/uninstalled'];
       if (!supportedTypes.includes(type)) {
-        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Tipo de solicitud legal inválido' });
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Tipo de solicitud legal invÃ¡lido' });
       }
 
       const brand = await brandsService.getBrandById(req.brand.id);
@@ -717,7 +725,7 @@ export class BrandsController {
       ];
 
       if (!supportedEvents.includes(eventName)) {
-        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Evento de trial inválido' });
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Evento de trial invÃ¡lido' });
       }
 
       await recordTrialEvent(req.brand.id, eventName as any, metadata && typeof metadata === 'object' ? metadata : {});

@@ -52,7 +52,7 @@ export class PruebaloController {
   private assertPluginOperational(brand: any) {
     const socialLinks = getBrandSocialLinks(brand);
     if (socialLinks.app_uninstalled_at || socialLinks.integration_paused_at) {
-      throw new ValidationError('La integración está pausada o desinstalada para esta tienda');
+      throw new ValidationError('La integraciÃ³n estÃ¡ pausada o desinstalada para esta tienda');
     }
     
     // Plugin solo funciona con planes PRO o ENTERPRISE
@@ -64,8 +64,8 @@ export class PruebaloController {
 
   /**
    * GET /api/pruebalo/:brandSlug
-   * Endpoint público para obtener configuración de marca y productos
-   * No requiere autenticación
+   * Endpoint pÃºblico para obtener configuraciÃ³n de marca y productos
+   * No requiere autenticaciÃ³n
    */
   getBrandConfig = asyncHandler(async (req: Request, res: Response) => {
     const { brandSlug } = req.params;
@@ -74,7 +74,7 @@ export class PruebaloController {
       throw new ValidationError('El slug de la marca es requerido');
     }
 
-    // Intentar obtener del caché
+    // Intentar obtener del cachÃ©
     const cached = getCachedBrandConfig(brandSlug);
     if (cached) {
       // Invalidar si las URLs de productos tienen el proxy antiguo
@@ -84,7 +84,7 @@ export class PruebaloController {
       if (!hasProxyUrls) {
         return res.status(200).json(cached);
       }
-      // Caché contaminado — invalidar y reconstruir
+      // CachÃ© contaminado â€” invalidar y reconstruir
       invalidateBrandConfigCache(brandSlug);
     }
 
@@ -95,22 +95,22 @@ export class PruebaloController {
       throw new NotFoundError('Marca no encontrada');
     }
 
-    // Obtener configuración global de pagos y modal
+    // Obtener configuraciÃ³n global de pagos y modal
     const paymentSettings = await paymentSettingsService.getSettings();
     const footerBrandUrl = paymentSettings.footer_brand_url || 'https://lookitry.com';
     // El timer global es de 3 minutos (180 segundos)
     const globalTimerSeconds = (paymentSettings as any).landing_preview_timer_seconds || 180;
 
-    // La lógica de previsualización se maneja en el frontend usando localStorage
-    // Calcularlo por created_at bloqueaba al usuario si no la veía el mismo día de registro.
+    // La lÃ³gica de previsualizaciÃ³n se maneja en el frontend usando localStorage
+    // Calcularlo por created_at bloqueaba al usuario si no la veÃ­a el mismo dÃ­a de registro.
     const isPreviewExpired = false;
 
-    // Obtener productos activos de la marca (Solo si no ha expirado o si ya pagó)
+    // Obtener productos activos de la marca (Solo si no ha expirado o si ya pagÃ³)
     // Si la marca tiene widget_product_ids definidos, usar solo esos productos
     const widgetProductIds = (brand as any).widget_product_ids || [];
     let products = isPreviewExpired ? [] : await productsService.getProductsByBrand(brand.id);
 
-    // Filtrar productos si widget_product_ids está definido y no está vacío
+    // Filtrar productos si widget_product_ids estÃ¡ definido y no estÃ¡ vacÃ­o
     if (widgetProductIds.length > 0) {
       products = products.filter(p => widgetProductIds.includes(p.id));
       // Mantener el orden definido en widget_product_ids
@@ -119,7 +119,7 @@ export class PruebaloController {
         .filter(Boolean);
     }
 
-    // Preparar respuesta con configuración visual y productos
+    // Preparar respuesta con configuraciÃ³n visual y productos
     const response = {
       brand: {
         id: brand.id,
@@ -148,10 +148,10 @@ export class PruebaloController {
         landing_template: (brand as any).landing_template ?? 'classic',
         schedule: (brand as any).schedule ?? null,
         slogan: (brand as any).slogan ?? null,
-        // Configuración del modal (Desde settings globales o marca)
+        // ConfiguraciÃ³n del modal (Desde settings globales o marca)
         modal_title: (brand as any).modal_title || (paymentSettings as any).landing_modal_title || 'Vista previa agotada',
         modal_description: (brand as any).modal_description || (paymentSettings as any).landing_modal_description || 'Tu tiempo de prueba ha terminado. Activa tu mini-landing para continuar.',
-        modal_features: (brand as any).modal_features || (paymentSettings as any).landing_modal_features || ['URL personalizada', 'Catálogo IA ilimitado', 'Branding propio'],
+        modal_features: (brand as any).modal_features || (paymentSettings as any).landing_modal_features || ['URL personalizada', 'CatÃ¡logo IA ilimitado', 'Branding propio'],
         preview_timer_seconds: globalTimerSeconds,
         is_preview_expired: isPreviewExpired,
         logo_light: (brand as any).logo_light ?? null,
@@ -161,6 +161,7 @@ export class PruebaloController {
         show_brand_name: (brand as any).show_brand_name ?? true,
         header_color: (brand as any).header_color ?? null,
         plan: brand.plan ?? 'BASIC',
+        widget_cover_image: (brand as any).widget_cover_image ?? null,
       },
       footer_brand_url: footerBrandUrl,
       products: products.map(product => ({
@@ -174,7 +175,7 @@ export class PruebaloController {
       })),
     };
 
-    // Guardar en caché antes de responder
+    // Guardar en cachÃ© antes de responder
     setCachedBrandConfig(brandSlug, response);
 
     return res.status(200).json(response);
@@ -183,7 +184,7 @@ export class PruebaloController {
   /**
    * GET /api/pruebalo/allowed-origins
    * Devuelve una lista de todos los dominios registrados en "Sitio Web" (social_links.website).
-   * Usado por el Edge Middleware para la Lista Blanca Dinámica de iframes.
+   * Usado por el Edge Middleware para la Lista Blanca DinÃ¡mica de iframes.
    */
   getAllowedOrigins = asyncHandler(async (req: Request, res: Response) => {
     const { data, error } = await supabaseAdmin
@@ -212,13 +213,13 @@ export class PruebaloController {
 
   /**
    * POST /api/pruebalo/:brandSlug/generate
-   * Endpoint público para generar una imagen de try-on
-   * No requiere autenticación
+   * Endpoint pÃºblico para generar una imagen de try-on
+   * No requiere autenticaciÃ³n
    */
   generateTryOn = asyncHandler(async (req: Request, res: Response) => {
     const { brandSlug } = req.params;
     const { productId } = req.body;
-    const imageFile = req.file; // Multer manejará el archivo
+    const imageFile = req.file; // Multer manejarÃ¡ el archivo
 
     // 1. Validar marca existe por slug
     const brand = await brandsService.getBrandBySlug(brandSlug);
@@ -228,7 +229,7 @@ export class PruebaloController {
 
     if (brand.email_verified === false) {
       throw new ValidationError(
-        'Debes confirmar el correo de esta cuenta para habilitar los créditos y usar el probador virtual.'
+        'Debes confirmar el correo de esta cuenta para habilitar los crÃ©ditos y usar el probador virtual.'
       );
     }
 
@@ -253,7 +254,7 @@ export class PruebaloController {
       throw new ValidationError('Solo se permiten archivos JPG, PNG o WEBP');
     }
 
-    // Validar tamaño máximo (5MB)
+    // Validar tamaÃ±o mÃ¡ximo (5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (imageFile.size > maxSize) {
       throw new ValidationError('El archivo no debe superar 5MB');
@@ -264,7 +265,7 @@ export class PruebaloController {
     if (!slot.acquired) {
       const slotInfo = await generationConcurrencyService.getSlotInfo(brand.id, brand.plan);
       throw new ConcurrencyLimitError(
-        `El probador está ocupado con ${slotInfo.active} generación(es). Intenta en ${Math.ceil(slot.waitTimeMs / 1000)}s.`,
+        `El probador estÃ¡ ocupado con ${slotInfo.active} generaciÃ³n(es). Intenta en ${Math.ceil(slot.waitTimeMs / 1000)}s.`,
         slotInfo.queueTimeoutMs
       );
     }
@@ -294,13 +295,13 @@ export class PruebaloController {
         imageUrl: existingGeneration.result_image_url,
         processingTime: existingGeneration.processing_time ?? 0,
         reused: true,
-        message: 'Ya habías generado este producto con esta misma imagen. Te mostramos el resultado guardado sin costo adicional.',
+        message: 'Ya habÃ­as generado este producto con esta misma imagen. Te mostramos el resultado guardado sin costo adicional.',
       });
     }
 
-    // 4. Reservar un crédito real antes de generar.
-    // Si el mensual se agotó, intenta consumir uno extra. Si la IA falla,
-    // el crédito extra reservado se devuelve en el catch.
+    // 4. Reservar un crÃ©dito real antes de generar.
+    // Si el mensual se agotÃ³, intenta consumir uno extra. Si la IA falla,
+    // el crÃ©dito extra reservado se devuelve en el catch.
     let creditReservation: { source: 'monthly' | 'extra' } | null = null;
     try {
       creditReservation = await usageService.reserveGenerationCredit(brand.id);
@@ -308,7 +309,7 @@ export class PruebaloController {
       if (error.message === 'INSUFFICIENT_CREDITS') {
         const usage = await usageService.getUsageStats(brand.id);
         throw new LimitExceededError(
-          'Créditos insuficientes',
+          'CrÃ©ditos insuficientes',
           {
             used: usage.currentMonth.generationsUsed,
             limit: usage.currentMonth.generationsLimit,
@@ -337,7 +338,7 @@ export class PruebaloController {
     // 7. Llamar a n8n con selfieBase64 y prompt
     const startTime = Date.now();
     try {
-      // 7.1 Obtener configuración de IA desde payment_settings para refinamiento global
+      // 7.1 Obtener configuraciÃ³n de IA desde payment_settings para refinamiento global
       const { data: globalSettings } = await supabaseAdmin
         .from('payment_settings')
         .select('ai_prompt_master, ai_prompt_negative')
@@ -367,22 +368,22 @@ export class PruebaloController {
 
       // 7.4 Apply sanitized admin prompts
       if (sanitized.safeMaster) {
-        finalPrompt += `\n\n[ADMIN MASTER RULES — HIGHEST PRIORITY]\n- ${sanitized.safeMaster}`;
+        finalPrompt += `\n\n[ADMIN MASTER RULES â€” HIGHEST PRIORITY]\n- ${sanitized.safeMaster}`;
       }
 
       // 7.5 Apply sanitized negative prompt
       if (sanitized.safeNegative) {
-        finalPrompt += `\n\n[NEGATIVE PROMPT — DO NOT GENERATE]\n${sanitized.safeNegative}`;
+        finalPrompt += `\n\n[NEGATIVE PROMPT â€” DO NOT GENERATE]\n${sanitized.safeNegative}`;
       }
 
       // 7.7 Add anti-injection instructions to final prompt
       finalPrompt = addAntiInjectionInstructions(finalPrompt);
 
-      // 7.8 Enrich with RAG (learning from previous errors) — timeout 4s, non-blocking
+      // 7.8 Enrich with RAG (learning from previous errors) â€” timeout 4s, non-blocking
       const prompt = await promptRagService.enrichPrompt(finalPrompt, product.category ?? null);
 
-      // 7.9 Direct processing (no Redis) — call n8n directly and wait for result
-      console.log(`[pruebalo] Llamando n8n directamente para generación ${generation.id}`);
+      // 7.9 Direct processing (no Redis) â€” call n8n directly and wait for result
+      console.log(`[pruebalo] Llamando n8n directamente para generaciÃ³n ${generation.id}`);
 
       let n8nResult: { success: boolean; imageUrl?: string; error?: string } = { success: false };
       try {
@@ -395,10 +396,10 @@ export class PruebaloController {
         });
       } catch (n8nCallError: any) {
         console.error('[pruebalo] Error en llamada a n8n:', n8nCallError.message);
-        // Continuar para que el código de abajo maneje el error
+        // Continuar para que el cÃ³digo de abajo maneje el error
       }
 
-      // 7.10 Polling until generation is ready (max 90s) — in case worker updates the record
+      // 7.10 Polling until generation is ready (max 90s) â€” in case worker updates the record
       const maxPolls = 45;
       let pollCount = 0;
       let finalGeneration = generation;
@@ -412,10 +413,10 @@ export class PruebaloController {
           break;
         }
         if (updated?.status === 'FAILED') {
-          throw new Error(updated.error_message || 'Generación fallida');
+          throw new Error(updated.error_message || 'GeneraciÃ³n fallida');
         }
 
-        // Si n8n respondió directamente, usar ese resultado
+        // Si n8n respondiÃ³ directamente, usar ese resultado
         if (n8nResult.success && n8nResult.imageUrl) {
           await generationsService.updateGeneration(generation.id, {
             status: 'SUCCESS',
@@ -430,10 +431,10 @@ export class PruebaloController {
         pollCount++;
       }
 
-      // Si después del polling aún no tenemos resultado y n8n dio error, lanzar error de n8n
+      // Si despuÃ©s del polling aÃºn no tenemos resultado y n8n dio error, lanzar error de n8n
       if (finalGeneration.status !== 'SUCCESS' || !finalGeneration.result_image_url) {
         if (n8nResult.success && n8nResult.imageUrl) {
-          // n8n tuvo éxito pero el polling no vio el resultado - usar resultado directo
+          // n8n tuvo Ã©xito pero el polling no vio el resultado - usar resultado directo
           finalGeneration.result_image_url = n8nResult.imageUrl;
           finalGeneration.status = 'SUCCESS';
         } else if (!n8nResult.success && n8nResult.error) {
@@ -443,13 +444,13 @@ export class PruebaloController {
             'n8n'
           );
         } else {
-          throw new Error('Timeout esperando resultado de generación');
+          throw new Error('Timeout esperando resultado de generaciÃ³n');
         }
       }
 
       const processingTime = Date.now() - startTime;
 
-      // 8. Actualizar registro con resultado (SUCCESS/FAILED) — guardar prompt para trazabilidad RAG
+      // 8. Actualizar registro con resultado (SUCCESS/FAILED) â€” guardar prompt para trazabilidad RAG
       await generationsService.updateGeneration(finalGeneration.id, {
         status: 'SUCCESS',
         result_image_url: finalGeneration.result_image_url,
@@ -482,7 +483,7 @@ export class PruebaloController {
       const processingTime = Date.now() - startTime;
       if (creditReservation?.source === 'extra') {
         await usageService.refundReservedExtraCredit(brand.id).catch((refundError) => {
-          console.error('[pruebalo] No se pudo devolver el crédito extra reservado', refundError);
+          console.error('[pruebalo] No se pudo devolver el crÃ©dito extra reservado', refundError);
         });
       }
 
@@ -504,12 +505,12 @@ export class PruebaloController {
             imageUrl: dedupedGeneration.result_image_url,
             processingTime: dedupedGeneration.processing_time ?? 0,
             reused: true,
-            message: 'Ya existía un resultado para esta imagen y este producto. Te mostramos el guardado para evitar un costo duplicado.',
+            message: 'Ya existÃ­a un resultado para esta imagen y este producto. Te mostramos el guardado para evitar un costo duplicado.',
           });
         }
       }
 
-      // ── Debugging detallado para trazabilidad ──────────────────────────────
+      // â”€â”€ Debugging detallado para trazabilidad â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const errorText = [
         n8nError.message || '',
         JSON.stringify(n8nError.n8nBody ?? {}),
@@ -529,7 +530,7 @@ export class PruebaloController {
         errorText.includes('provider returned error') ||
         errorText.includes('402');
 
-      console.error('[pruebalo] Error en generación', {
+      console.error('[pruebalo] Error en generaciÃ³n', {
         brandSlug,
         brandId: brand.id,
         productId: product.id,
@@ -562,8 +563,8 @@ export class PruebaloController {
           await createAdminNotification({
             type: 'credits_exhausted',
             severity: 'error',
-            title: 'Créditos agotados en prueba virtual',
-            message: `${brand.name} se quedó sin créditos de generación. Los clientes finales verán un mensaje temporal de indisponibilidad hasta que se recargue capacidad.`,
+            title: 'CrÃ©ditos agotados en prueba virtual',
+            message: `${brand.name} se quedÃ³ sin crÃ©ditos de generaciÃ³n. Los clientes finales verÃ¡n un mensaje temporal de indisponibilidad hasta que se recargue capacidad.`,
             brandId: brand.id,
             brandName: brand.name,
             metadata: {
@@ -590,8 +591,8 @@ export class PruebaloController {
 
   /**
    * POST /api/pruebalo/:brandSlug/generation/:generationId/feedback
-   * Endpoint público para reportar un error en una generación.
-   * No requiere autenticación — el cliente del widget puede reportar directamente.
+   * Endpoint pÃºblico para reportar un error en una generaciÃ³n.
+   * No requiere autenticaciÃ³n â€” el cliente del widget puede reportar directamente.
    */
   reportGenerationFeedback = asyncHandler(async (req: Request, res: Response) => {
     const { brandSlug, generationId } = req.params;
@@ -609,26 +610,26 @@ export class PruebaloController {
 
     if (!error_type || !validErrorTypes.includes(error_type)) {
       throw new ValidationError(
-        `Tipo de error inválido. Valores permitidos: ${validErrorTypes.join(', ')}`
+        `Tipo de error invÃ¡lido. Valores permitidos: ${validErrorTypes.join(', ')}`
       );
     }
 
-    // Verificar que la generación existe y pertenece a esta marca
+    // Verificar que la generaciÃ³n existe y pertenece a esta marca
     const brand = await brandsService.getBrandBySlug(brandSlug);
     if (!brand) throw new NotFoundError('Marca no encontrada');
 
     const generation = await generationsService.getGenerationById(generationId);
-    if (!generation) throw new NotFoundError('Generación no encontrada');
-    if (generation.brand_id !== brand.id) throw new NotFoundError('Generación no encontrada');
+    if (!generation) throw new NotFoundError('GeneraciÃ³n no encontrada');
+    if (generation.brand_id !== brand.id) throw new NotFoundError('GeneraciÃ³n no encontrada');
 
-    // Obtener categoría del producto para el RAG
+    // Obtener categorÃ­a del producto para el RAG
     let productCategory: string | undefined;
     try {
       const product = await productsService.getProductById(generation.product_id);
       productCategory = product?.category ?? undefined;
     } catch { /* producto eliminado */ }
 
-    // Guardar feedback (dispara embedding async vía n8n)
+    // Guardar feedback (dispara embedding async vÃ­a n8n)
     const feedback = await feedbackService.createFeedback({
       generation_id: generationId,
       brand_id: brand.id,
@@ -638,7 +639,7 @@ export class PruebaloController {
       prompt_used: (generation as any).prompt_used ?? undefined,
     });
 
-    // Verificar si hay errores frecuentes del mismo tipo → notificar admin
+    // Verificar si hay errores frecuentes del mismo tipo â†’ notificar admin
     feedbackService.countRecentByType(error_type, productCategory ?? null, 24)
       .then(async (count) => {
         if (count >= 3) {
@@ -646,8 +647,8 @@ export class PruebaloController {
           await createAdminNotification({
             type: 'high_usage',
             severity: 'warning',
-            title: 'Errores frecuentes de generación',
-            message: `Se han reportado ${count} errores de tipo "${error_type}"${productCategory ? ` en categoría "${productCategory}"` : ''} en las últimas 24h.`,
+            title: 'Errores frecuentes de generaciÃ³n',
+            message: `Se han reportado ${count} errores de tipo "${error_type}"${productCategory ? ` en categorÃ­a "${productCategory}"` : ''} en las Ãºltimas 24h.`,
           });
         }
       })
@@ -662,8 +663,8 @@ export class PruebaloController {
 
   /**
    * GET /api/pruebalo/:brandSlug/generation/:generationId
-   * Endpoint público para consultar el estado de una generación (polling del widget).
-   * No requiere autenticación — el generationId actúa como token de acceso.
+   * Endpoint pÃºblico para consultar el estado de una generaciÃ³n (polling del widget).
+   * No requiere autenticaciÃ³n â€” el generationId actÃºa como token de acceso.
    */
   getGenerationStatus = asyncHandler(async (req: Request, res: Response) => {
     const { brandSlug, generationId } = req.params;
@@ -672,16 +673,16 @@ export class PruebaloController {
     const brand = await brandsService.getBrandBySlug(brandSlug);
     if (!brand) throw new NotFoundError('Marca no encontrada');
 
-    // Obtener la generación
+    // Obtener la generaciÃ³n
     const generation = await generationsService.getGenerationById(generationId);
     if (!generation) {
-      // 404 si no existe — frontend treat as PENDING
-      return res.status(404).json({ error: 'Generación no encontrada' });
+      // 404 si no existe â€” frontend treat as PENDING
+      return res.status(404).json({ error: 'GeneraciÃ³n no encontrada' });
     }
 
     // Verificar que pertenece a esta marca
     if (generation.brand_id !== brand.id) {
-      return res.status(404).json({ error: 'Generación no encontrada' });
+      return res.status(404).json({ error: 'GeneraciÃ³n no encontrada' });
     }
 
     return res.status(200).json({
@@ -705,7 +706,7 @@ export class PruebaloController {
     // Limpiar host: remover puertos o prefijos
     const cleanHost = host.split(':')[0].toLowerCase();
     
-    // Si es el dominio base o localhost, no hay nada que resolver aquí
+    // Si es el dominio base o localhost, no hay nada que resolver aquÃ­
     const baseDomain = process.env.BASE_DOMAIN || 'lookitry.com';
     if (cleanHost === baseDomain || cleanHost === 'localhost') {
       return res.status(200).json({ slug: null });
@@ -722,7 +723,7 @@ export class PruebaloController {
 
   /**
    * GET /api/pruebalo/session-token?key=...
-   * Endpoint público (S2S) para generar un token JWT efímero.
+   * Endpoint pÃºblico (S2S) para generar un token JWT efÃ­mero.
    * El plugin lo pide para pasarlo al frontend y evitar exponer la API Key.
    */
   generateSessionToken = asyncHandler(async (req: Request, res: Response) => {
@@ -735,7 +736,7 @@ export class PruebaloController {
 
     const brand = await brandsService.getBrandByApiKey(key);
     if (!brand) {
-      return res.status(200).json({ valid: false, message: 'Clave de API inválida' });
+      return res.status(200).json({ valid: false, message: 'Clave de API invÃ¡lida' });
     }
     this.assertPluginOperational(brand);
 
@@ -745,10 +746,10 @@ export class PruebaloController {
 
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      throw new Error('JWT_SECRET no está configurado');
+      throw new Error('JWT_SECRET no estÃ¡ configurado');
     }
 
-    // Token efímero de 1 hora
+    // Token efÃ­mero de 1 hora
     const token = jwt.sign(
       { 
         brand_id: brand.id, 
@@ -768,7 +769,7 @@ export class PruebaloController {
 
   /**
    * GET /api/pruebalo/validate-api-key?key=...
-   * Endpoint público para validar una clave de API desde el plugin
+   * Endpoint pÃºblico para validar una clave de API desde el plugin
    */
   validateApiKey = asyncHandler(async (req: Request, res: Response) => {
     const keyFromHeader = req.headers['x-api-key'] as string;
@@ -782,7 +783,7 @@ export class PruebaloController {
 
     const brand = await brandsService.getBrandByApiKey(key);
     if (!brand) {
-      return res.status(200).json({ valid: false, message: 'Clave de API inválida' });
+      return res.status(200).json({ valid: false, message: 'Clave de API invÃ¡lida' });
     }
     this.assertPluginOperational(brand);
 
@@ -820,7 +821,7 @@ export class PruebaloController {
 
     const brand = await brandsService.getBrandByApiKey(key);
     if (!brand) {
-      return res.status(401).json({ success: false, message: 'Clave de API inválida' });
+      return res.status(401).json({ success: false, message: 'Clave de API invÃ¡lida' });
     }
     this.assertPluginOperational(brand);
 
@@ -849,12 +850,12 @@ export class PruebaloController {
     }
 
     if (!Array.isArray(products)) {
-      throw new ValidationError('Lista de productos inválida');
+      throw new ValidationError('Lista de productos invÃ¡lida');
     }
 
     const brand = await brandsService.getBrandByApiKey(apiKey);
     if (!brand) {
-      throw new ValidationError('Clave de API inválida');
+      throw new ValidationError('Clave de API invÃ¡lida');
     }
     this.assertPluginOperational(brand);
 
@@ -868,12 +869,12 @@ export class PruebaloController {
 
     const result = await productsService.bulkSyncProducts(brand.id, products);
 
-    // Invalidar caché tras sincronización
+    // Invalidar cachÃ© tras sincronizaciÃ³n
     invalidateBrandConfigCache(brand.slug);
 
     return res.status(200).json({
       success: true,
-      message: 'Sincronización completada',
+      message: 'SincronizaciÃ³n completada',
       result
     });
   });
@@ -892,7 +893,7 @@ export class PruebaloController {
 
     const brand = await brandsService.getBrandByApiKey(apiKey);
     if (!brand) {
-      throw new ValidationError('Clave de API inválida');
+      throw new ValidationError('Clave de API invÃ¡lida');
     }
     this.assertPluginOperational(brand);
 
@@ -932,7 +933,7 @@ export class PruebaloController {
 
     const brand = await brandsService.getBrandByApiKey(apiKey);
     if (!brand) {
-      throw new ValidationError('Clave de API inválida');
+      throw new ValidationError('Clave de API invÃ¡lida');
     }
     this.assertPluginOperational(brand);
 
@@ -1024,7 +1025,7 @@ export class PruebaloController {
 
     const brand = await brandsService.getBrandByApiKey(apiKey);
     if (!brand) {
-      throw new ValidationError('Clave de API inválida');
+      throw new ValidationError('Clave de API invÃ¡lida');
     }
 
     const currentSocialLinks = getBrandSocialLinks(brand);
@@ -1044,7 +1045,7 @@ export class PruebaloController {
       },
     });
 
-    return res.status(200).json({ success: true, message: 'Integración pausada correctamente' });
+    return res.status(200).json({ success: true, message: 'IntegraciÃ³n pausada correctamente' });
   });
 
   private async markPluginValidated(brand: any, incomingDomain?: string | null) {
@@ -1088,7 +1089,7 @@ export class PruebaloController {
 
   /**
    * GET /api/pruebalo/img-proxy?url=...
-   * Proxy para saltar bloqueos de CORS/Hotlinking de imágenes de productos
+   * Proxy para saltar bloqueos de CORS/Hotlinking de imÃ¡genes de productos
    */
   // SSRF protection: allowlist of safe domains for image proxy
   private static readonly ALLOWED_IMAGE_PROXY_DOMAINS = [
@@ -1106,7 +1107,7 @@ export class PruebaloController {
 
   /**
    * GET /api/pruebalo/img-proxy?url=...
-   * Proxy para saltar bloqueos de CORS/Hotlinking de imágenes de productos
+   * Proxy para saltar bloqueos de CORS/Hotlinking de imÃ¡genes de productos
    */
   imgProxy = asyncHandler(async (req: Request, res: Response) => {
     const imageUrl = req.query.url as string;
@@ -1118,9 +1119,9 @@ export class PruebaloController {
     try {
       // Validar si es una URL absoluta
       if (!imageUrl.startsWith('http')) {
-        throw new ValidationError('URL de imagen inválida');
+        throw new ValidationError('URL de imagen invÃ¡lida');
       }
-      // SSRF: validar destino de proxy de imágenes con allowlist y no IPs privadas
+      // SSRF: validar destino de proxy de imÃ¡genes con allowlist y no IPs privadas
       const isAllowedImageUrl = (urlStr: string): boolean => {
         try {
           const u = new URL(urlStr);
@@ -1183,7 +1184,7 @@ export class PruebaloController {
           throw new ValidationError('URL de imagen no permitida');
         }
       } catch (err: any) {
-        throw new ValidationError(err.message === 'URL de imagen no permitida' ? err.message : 'URL de imagen inválida');
+        throw new ValidationError(err.message === 'URL de imagen no permitida' ? err.message : 'URL de imagen invÃ¡lida');
       }
 
       const response = await fetch(imageUrl, {
@@ -1222,7 +1223,7 @@ export class PruebaloController {
       if (error instanceof ValidationError) {
         return res.status(400).json({
           error: 'INVALID_IMAGE_URL',
-          message: sanitizeError(error, 'URL de imagen inválida'),
+          message: sanitizeError(error, 'URL de imagen invÃ¡lida'),
         });
       }
       return res.status(500).json({ 
@@ -1235,8 +1236,8 @@ export class PruebaloController {
 
 /**
  * Construye el prompt de try-on para Gemini.
- * Aplica reglas base por categoría de prenda para evitar errores comunes
- * (ej: vestido que deja pantalón visible, zapatos eliminados incorrectamente).
+ * Aplica reglas base por categorÃ­a de prenda para evitar errores comunes
+ * (ej: vestido que deja pantalÃ³n visible, zapatos eliminados incorrectamente).
  */
 function buildTryOnPrompt(product: { name: string; category?: string; description?: string | null }): string {
   const rules = getPromptRules(product.category);
@@ -1253,9 +1254,9 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
   }
 
   lines.push(
-    `ABSOLUTE RULES — follow all of them without exception:`,
+    `ABSOLUTE RULES â€” follow all of them without exception:`,
 
-    `[CLOTHING REPLACEMENT — MANDATORY]`,
+    `[CLOTHING REPLACEMENT â€” MANDATORY]`,
     categoryRulesBlock,
     `- ${rules.replace}`,
     `- ${rules.keep}`,
@@ -1266,7 +1267,7 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
   const cat = (product.category || '').toUpperCase();
   if (cat.includes('VESTIDO') || cat.includes('DRESS')) {
     lines.push(
-      `[DRESS OVERRIDE — HIGHEST PRIORITY]`,
+      `[DRESS OVERRIDE â€” HIGHEST PRIORITY]`,
       `- The person may be wearing a jacket, denim jacket, cardigan, or coat in the original photo. REMOVE IT COMPLETELY.`,
       `- The person may be wearing pants, jeans, or leggings in the original photo. REMOVE THEM COMPLETELY.`,
       `- After applying the dress, NO jacket, NO pants, NO jeans, NO leggings should be visible anywhere in the image.`,
@@ -1280,7 +1281,7 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
     `- If it is a full-body photo: show the person completely from head to toe. Never crop feet, legs, or any body part.`,
     `- If it is a close-up selfie: keep the same tight framing around the face and upper body.`,
     `- Maintain the exact same pose, body position, background, and spatial composition as the original photo.`,
-    `- Fill every pixel of the frame with the scene — no empty space, no unused canvas area.`,
+    `- Fill every pixel of the frame with the scene â€” no empty space, no unused canvas area.`,
 
     `[OUTPUT DIMENSIONS]`,
     `- The output image MUST match the EXACT aspect ratio of the input selfie.`,
@@ -1299,7 +1300,7 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
     `[PERSON & REALISM]`,
     `- Keep the person's face, skin tone, hair, body proportions, and expression IDENTICAL to the selfie.`,
     `- The product must fit naturally on the body with correct perspective, lighting, and shadows.`,
-    `- Photorealistic quality only — no illustrations, no stylization.`,
+    `- Photorealistic quality only â€” no illustrations, no stylization.`,
 
     `Output: the final try-on image only. Keep real product branding if it exists, but never add model-invented watermarks, signatures, or UI overlays.`,
   );

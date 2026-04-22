@@ -50,7 +50,7 @@ function BareStepDots({
       : BARE_STEPS.findIndex((s) => s.key === step);
 
   return (
-    <div className="flex items-center justify-center gap-2 py-3">
+    <div className="flex items-center justify-center gap-2 py-2">
       {BARE_STEPS.map((s, i) => {
         const done = i < currentIndex;
         const active = i === currentIndex;
@@ -119,17 +119,17 @@ export function TemplateBare(props: TryOnTemplateProps) {
       {/* Header — oculto en embed (la página del cliente ya tiene branding) */}
       {!isEmbed && (
         <motion.div
-          className="pt-4 px-4 text-center flex-shrink-0"
+          className="pt-8 md:pt-10 px-4 text-center flex-shrink-0"
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-1.5">
             {config.brand.logo ? (
               <img
                 src={config.brand.logo}
                 alt={config.brand.name}
-                className="h-12 w-auto object-contain mb-1"
+                className="h-14 w-auto object-contain"
                 loading="lazy"
               />
             ) : (

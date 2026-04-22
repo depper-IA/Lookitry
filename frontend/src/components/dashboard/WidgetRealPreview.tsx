@@ -15,6 +15,7 @@ interface WidgetRealPreviewProps {
   welcomeMessage: string;
   brandName: string;
   brandLogo?: string;
+  widgetCoverImage?: string | null;
   isPro: boolean;
   products: Product[];
 }
@@ -27,6 +28,7 @@ export function WidgetRealPreview({
   welcomeMessage,
   brandName,
   brandLogo,
+  widgetCoverImage,
   isPro,
   products
 }: WidgetRealPreviewProps) {
@@ -58,6 +60,7 @@ export function WidgetRealPreview({
       widgetTemplate: template,
       buttonText,
       welcomeMessage,
+      widgetCoverImage,
       plan: isPro ? 'PRO' : 'BASIC'
     },
     products: previewProducts.map(p => ({
