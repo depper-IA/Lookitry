@@ -92,7 +92,7 @@ export default function AdminWooCommercePage() {
     setLoadingBrands(true);
     setError('');
     try {
-      const res = await fetch(`${apiBase}/admin/woocommerce/brands-summary`, {
+      const res = await fetch(`${apiBase}/api/admin/woocommerce/brands-summary`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('No se pudo cargar marcas WooCommerce');
@@ -120,7 +120,7 @@ export default function AdminWooCommercePage() {
     if (!brandId) return;
     setLoadingProducts(true);
     try {
-      const res = await fetch(`${apiBase}/admin/woocommerce/brands/${brandId}/products`, {
+      const res = await fetch(`${apiBase}/api/admin/woocommerce/brands/${brandId}/products`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('No se pudo cargar productos de la marca');
@@ -141,7 +141,7 @@ export default function AdminWooCommercePage() {
     setSavingMap((prev) => ({ ...prev, [productId]: true }));
     try {
       const res = await fetch(
-        `${apiBase}/admin/woocommerce/brands/${selectedBrandId}/products/${productId}/active`,
+        `${apiBase}/api/admin/woocommerce/brands/${selectedBrandId}/products/${productId}/active`,
         {
           method: 'PATCH',
           credentials: 'include',
