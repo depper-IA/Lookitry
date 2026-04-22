@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { adminAuthMiddleware, requirePermission } from '../middleware/adminAuth';
-import { authRateLimiter } from '../middleware/rateLimiter';
+import { authRateLimiter, adminLoginRateLimiter } from '../middleware/rateLimiter';
 
 // Todas las funciones de controladores admin modularizados se exportan desde admin.controller facade
 import {
@@ -94,8 +94,8 @@ import {
 
 const router = Router();
 
-// Auth routes (not requiring adminAuthMiddleware yet, but using authRateLimiter)
-router.post('/auth/login', authRateLimiter, adminLogin);
+// Auth routes (not requiring adminAuthMiddleware yet, but using adminLoginRateLimiter)
+router.post('/auth/login', adminLoginRateLimiter, adminLogin);
 router.post('/auth/logout', adminLogout);
 router.post('/auth/forgot-password', authRateLimiter, adminForgotPassword);
 router.post('/auth/reset-password', authRateLimiter, adminResetPassword);
