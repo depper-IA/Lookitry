@@ -1,5 +1,59 @@
 # CHANGELOG — Lookitry
 
+## 22 de Abril 2026 — Auditoría Sistema de Leads + Enriquecimiento
+
+### 🔴 Auditoría Crítica Completada
+
+**Problema identificado:** Sistema de leads tenía 0% de datos de contacto (email, phone, website, Instagram, TikTok)
+
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| Leads totales | 139 | 139 |
+| Leads con phone | 0 | ~136 |
+| Leads con website | 0 | ~100+ |
+| Leads con email | 0 | 0 (Google Places no provee emails) |
+
+### ✅ Correcciones Aplicadas
+
+| Corrección | Archivos | Estado |
+|------------|----------|--------|
+| Workflow n8n insertaba en tabla `clientes` (inexistente) | `flujo2_prospeccion_colombia.json` | ✅ Corregido |
+| Place Details API para obtener phone/website | `lead-generation.service.ts` | ✅ Agregado |
+| Campo TikTok en modal de creación | `LeadModal.tsx`, `types.ts` | ✅ Agregado |
+| Campo Facebook en modal de creación | `LeadModal.tsx`, `types.ts` | ✅ Agregado |
+| Campo facebook_url en backend types | `lead.service.ts` | ✅ Agregado |
+| TECH_STACK.md desactualizado | `TECH_STACK.md` | ✅ Corregido |
+| Migración SQL preparada | `add_facebook_url_to_leads.sql` | 📋 Pendiente ejecutar |
+
+### 📊 Enriquecimiento de Leads
+
+**Script ejecutado:** `scripts/enrich-leads.js` y `scripts/enrich-leads-v2.js`
+- 136 leads enriquecidos con phone y website usando Place Details API
+- Quota consumida: ~136 requests de Google Places (de 500/día disponibles)
+
+### ⚠️ Pendiente de Ejecutar Manualmente
+
+**En Supabase SQL Editor, ejecutar:**
+
+```sql
+-- Agregar columna facebook_url a leads
+ALTER TABLE leads ADD COLUMN facebook_url VARCHAR(500);
+CREATE INDEX IF NOT EXISTS idx_leads_facebook_url ON leads(facebook_url);
+
+-- Verificar que tiktok existe (si no, ejecutar también)
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS tiktok VARCHAR(255);
+```
+
+### 🔴 Limitación: Emails NO disponibles via Google Places
+
+Google Places API **NUNCA devuelve emails** de negocios. Opciones para obtener emails:
+
+1. **Apify Google Maps Scraper** (ya configurado en workflow n8n) - puede extraer más datos
+2. **Scraping de websites** de los negocios (ya enriquecidos con website)
+3. **LinkedIn Sales Navigator** para emails de contactos
+
+---
+
 ## 22 de Abril 2026 — Auditoría y Limpieza del Brain Vault
 
 ### 🧹 Limpieza de Documentación Obsoleta

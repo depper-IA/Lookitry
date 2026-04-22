@@ -19,6 +19,8 @@ export default function LeadModal({ lead, onClose, onSave }: LeadModalProps) {
     phone: lead?.phone || '',
     website: lead?.website || '',
     instagram: lead?.instagram || '',
+    tiktok: lead?.tiktok || '',
+    facebook_url: lead?.facebook_url || '',
     country: lead?.country || 'Colombia',
     city: lead?.city || '',
     notes: lead?.notes || '',
@@ -112,6 +114,30 @@ export default function LeadModal({ lead, onClose, onSave }: LeadModalProps) {
                 value={form.instagram}
                 onChange={(e) => setForm({ ...form, instagram: e.target.value })}
                 placeholder="@usuario"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>TikTok</label>
+              <input
+                type="text"
+                value={form.tiktok}
+                onChange={(e) => setForm({ ...form, tiktok: e.target.value })}
+                placeholder="@usuario"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Facebook</label>
+              <input
+                type="text"
+                value={form.facebook_url}
+                onChange={(e) => setForm({ ...form, facebook_url: e.target.value })}
+                placeholder="https://facebook.com/pagina"
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none"
                 style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               />

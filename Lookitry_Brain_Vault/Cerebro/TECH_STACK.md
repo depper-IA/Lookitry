@@ -463,27 +463,41 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | Campo | Tipo | Notas |
 |-------|------|-------|
 | `id` | uuid PK | |
-| `business_name` | text | Nombre del negocio |
-| `contact_name` | text | Contacto principal |
-| `email` | text | Email del lead |
-| `phone` | text | Teléfono |
-| `website` | text | Sitio web |
-| `facebook_url` | text | Página de Facebook |
-| `instagram_handle` | text | Instagram |
-| `tiktok_handle` | text | TikTok |
+| `name` | varchar(255) | Nombre del negocio |
+| `business_type` | varchar(100) | Categoría/nicho |
+| `description` | text | |
+| `email` | varchar(255) | Email del lead |
+| `phone` | varchar(50) | Teléfono |
+| `website` | varchar(500) | Sitio web |
+| `instagram` | varchar(255) | Handle de Instagram (sin @) |
+| `tiktok` | varchar(255) | Handle de TikTok (sin @) |
+| `facebook_url` | varchar(500) | URL de página de Facebook |
 | `address` | text | Dirección física |
-| `city` | text | Ciudad |
-| `country` | text | País (CO, US, ES) |
-| `latitude`, `longitude` | numeric | Coordenadas |
-| `place_id` | text | Google Place ID |
-| `rating` | numeric | Rating Google |
-| `reviews_count` | integer | Total reviews |
-| `status` | enum | NEW, CONTACTED, QUALIFIED, INTERESTED, CONVERTED, LOST |
-| `score` | integer DEFAULT 0 | Score de interés (0-100) |
+| `city` | varchar(100) | Ciudad |
+| `state` | varchar(100) | |
+| `country` | varchar(100) NOT NULL | País (CO, US, ES) |
+| `postal_code` | varchar(20) | |
+| `latitude`, `longitude` | double precision | Coordenadas |
+| `source` | varchar(50) DEFAULT 'google_places' | google_places, manual, crm_import |
+| `source_id` | varchar(255) | Google Place ID |
+| `search_id` | uuid FK → lead_searches | Nullable |
+| `status` | varchar(30) | new, qualified, contacted, interested, not_interested, client |
 | `notes` | text | Notas internas |
-| `last_outreach_at` | timestamptz | Último outreach |
-| `search_id` | uuid FK → lead_searches | Nullable, cómo fue encontrado |
-| `source` | text | google_places, manual, import |
+| `internal_notes` | text | Notas solo para admin |
+| `assigned_to` | varchar(255) | |
+| `email_sent_at` | timestamptz | |
+| `email_campaign_id` | uuid | |
+| `dm_sent_at` | timestamptz | |
+| `dm_platform` | varchar(20) | |
+| `is_fashion_relevant` | boolean | Clasificación de nicho fashion |
+| `enrichment_source` | text | keyword_classification, web_verification, ai_classification, pending_verification |
+| `website_verified` | boolean | |
+| `business_type_confirmed` | text | |
+| `last_enriched_at` | timestamptz | |
+| `website_content` | text | Keywords encontrados en website |
+| `enrichment_score` | integer | Score de enriquecimiento |
+| `social_verification_status` | text | verified, partial, unverified |
+| `social_verification_score` | integer | Score de presencia social |
 | `created_at`, `updated_at` | timestamptz | |
 
 ### 5.25 `lead_searches` (Búsquedas Guardadas)
