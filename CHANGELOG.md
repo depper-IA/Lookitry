@@ -1,5 +1,58 @@
 # CHANGELOG — Lookitry
 
+## 22 de Abril 2026 — Auditoría y Limpieza del Brain Vault
+
+### 🧹 Limpieza de Documentación Obsoleta
+
+**Resumen:** Auditoría completa del Brain Vault y limpieza de archivos que ya no reflejan la realidad del proyecto.
+
+#### Sistema Mission Control ELIMINADO
+
+| Componente | Estado | Notas |
+|------------|--------|-------|
+| `MISSION_CONTROL_SPEC.md` | ⚠️ Obsoleto | Marcado como histórico, describe sistema eliminado |
+| `frontend/src/app/mission-control/agents/page.tsx` | ❌ Eliminado | Removido del código |
+| `frontend/src/app/api/agents/status/route.ts` | ❌ Eliminado | Removido del código |
+| `frontend/src/components/admin/agents/` (8 archivos) | ❌ Eliminado | Removido del código |
+
+#### Archivos Archivados (en `Cerebro/Config/Archive/`)
+
+| Archivo | Razón |
+|---------|-------|
+| 17 × `openclaw_MASTER_*.json` | Backups antiguos de configuración de agentes |
+
+#### Archivos Actualizados
+
+| Archivo | Cambio |
+|---------|--------|
+| `AGENTS_CONFIG_MASTER.md` | v3.0 — Eliminación de Mission Control, estado actual de agentes |
+| `MISSION_CONTROL_SPEC.md` | Convertido a documento histórico/obsoleto |
+
+#### Commits Realizados
+
+```
+7ee0317 refactor(admin): remove agents tab from admin and Mission Control system
+```
+
+---
+
+### ℹ️ Archivos Dudosos — Recomendación
+
+Los siguientes archivos fueron identificados como dudosos pero **NO se eliminaron** pending revisión de Sam:
+
+| Archivo | Recomendación |
+|---------|---------------|
+| `PITCH_DECK_LOOKITRY_ES.md` | ¿Todavía relevante para pitch a investors? |
+| `PITCH_DECK_LOOKITRY.md` | ¿Versión en inglés del pitch deck? |
+| `Docs/Logica/` | ¿Refleja arquitectura actual? (Motor_IA_TryOn.md parece válido) |
+| `Docs/audit/` | ¿Auditorías antiguas todavía relevantes? |
+| `Docs/design/RUNPOD_*.md` | RunPod ya no se usa (n8n + OpenRouter es el flujo actual) |
+| `Docs/SHOPIFY_INTEGRATION.md` | ¿Integración activa o legacy? |
+| `Docs/WOOCOMMERCE_QA_E2E.md` | ¿Todavía válido para testing del plugin? |
+| `Docs/research/social-verification-api-research.md` | ¿Resultado de research todavía aplica? |
+
+---
+
 ## 20 de Abril 2026 (Fixes Críticos Health Check + n8n)
 
 ### 🔧 Fix: Health Check de n8n — YA NO hace GET al webhook de producción

@@ -1,26 +1,25 @@
-# 📋 AGENTS_CONFIG_MASTER.md
-**Última actualización**: 2026-04-14
-**Versión**: 2.0
+# AGENTS_CONFIG_MASTER.md — Configuración de Agentes
+
+**Última actualización**: 2026-04-22
+**Versión**: 3.0
+**Estado**: ✅ ACTUAL
 
 ---
 
-## RESUMEN DE CAMBIOS v2.0
+## RESUMEN DE CAMBIOS v3.0
+
+### Sistema Mission Control ELIMINADO
+
+- El dashboard Mission Control fue removido del código (commit `7ee0317`)
+- Los siguientes archivos fueron eliminados:
+  - `frontend/src/app/mission-control/agents/page.tsx`
+  - `frontend/src/app/api/agents/status/route.ts`
+  - `frontend/src/components/admin/agents/` (8 componentes)
 
 ### Modelo Default: MiniMax-M2.7
-- **CAMBIADO**: Groq y DeepSeek ya NO están en systemPromptOverride de ningún agente
-- Todos los agentes usan ahora el default `minimax/MiniMax-M2.7`
-- Excepción: Groq solo si el modelo lo requiere explícitamente en AGENTS.md del Cerebro
 
-### Estructura de Archivos por Agente
-- **CAMBIO**: Cada agente tiene ahora 6+ archivos de configuración:
-  - `SOUL.md` — Personalidad y comportamiento
-  - `IDENTITY.md` — Identidad básica
-  - `USER.md` — Usuarios y contexto ✅ COMPLETO
-  - `HEARTBEAT.md` — Protocolo de vida ✅ COMPLETO
-  - `TOOLS.md` — Herramientas ✅ COMPLETO
-  - `MEMORY.md` — Tareas y memoria ✅ COMPLETO
-  - `AGENTS.md` — Definición del agente ✅ COMPLETO
-  - `AGENTS_SOUL.md` — Personalidad extendida
+- **Mantenido**: Todos los agentes usan `minimax/MiniMax-M2.7`
+- Groq y DeepSeek siguen removidos de todos los systemPromptOverride
 
 ---
 
@@ -41,85 +40,35 @@
 
 ---
 
-## AGENTES CONFIGURADOS EN SESIÓN ACTUAL
+## DELEGACIÓN DE TAREAS
 
-### ✅ Rebecca v3.0 (UGC Creator)
-**Workspace**: `rebecca/`
-**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
+### Tabla de Delegación por Problema
 
-**Nuevas capacidades**:
-- Automejora continua (tendencias, A/B testing)
-- Herramientas gratuitas para contenido (CapCut, DaVinci, Canva, Pexels)
-- Conseguir clientes para Fiverr y Lookitry
-- Buscar patrocinio (SOLO grants, NO equity)
-- **PROHIBIDO**: ceder % de sociedad, compartir propiedad, vender partes
+| Problema Descrito | Tipo | Agente Encargado |
+|-------------------|------|------------------|
+| "El checkout falla en mobile" | Frontend/UI/Responsive | Pixel |
+| "El widget de try-on no carga" | Frontend/Componente | Pixel |
+| "Hay errores en el build" | Frontend/Debug | Pixel |
+| "Los webhooks de Wompi no funcionan" | Pagos/Backend | Kira |
+| "El login está fallando" | Auth/Seguridad | Kira |
+| "Hay errores de TypeScript" | Code Review | Kira |
+| "Las búsquedas están lentas" | DB/Queries | Nadia |
+| "El RAG no responde bien" | IA/Embeddings | Nadia |
+| "El workflow de n8n está caído" | Automatización/n8n | Nadia |
+| "Quiero un reporte de leads" | Marketing/CRM | Marlo |
+| "La campaña de email no envía" | Email/Marketing | Marlo |
+| "El servidor está caído" | Infraestructura/VPS | Zephyr |
+| "Necesito hacer deploy" | DevOps/Deploy | Zephyr |
+| "Docker no arranca" | Docker/Infra | Zephyr |
+| "El CHANGELOG está desactualizado" | Documentación | Lina |
+| "Necesito documentar X" | Documentación | Lina |
 
-**Foco**: MONEY - Generar ingresos para Lookitry
+### Regla de Oro — Sammantha NUNCA hace trabajo de otro agente
 
-### ✅ Cipher (SecurityAuditor)
-**Workspace**: `security-auditor/`
-**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
-
-**Stack real documentado**:
-- Auditor services: auditor.security.ts, auditor.payments.ts, auditor.subscriptions.ts
-- audit.service.ts para logging centralizado
-- Tablas: admin_audit_log, admin_notifications, trial_registrations
-- Helmet y CORS config
-
-### ✅ Pixel (WebWizard)
-**Workspace**: `webwizard/`
-**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
-
-**Stack real documentado**:
-- Next.js 14, React 18.2.0, TypeScript 5.3.3
-- Framer Motion 12.38.0, GSAP 3.14.2
-- Tailwind CSS, Zustand
-- 16 servicios, 12 carpetas de componentes
-
-### ✅ Marlo (GrowthPilot)
-**Workspace**: `growthpilot/`
-**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
-
-**Stack real documentado**:
-- CRM Lead Filter System
-- APIs: analytics, email-campaigns (Brevo), trial-campaigns
-- SMTP configuration
-- n8n workflows
-
-### ✅ Kira (DevGuardian)
-**Workspace**: `devguardian/`
-**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
-
-**Stack real documentado**:
-- Vitest 4.1.0 (frontend), Jest 30.3.0 (backend)
-- Helmet 8.1.0, express-rate-limit 8.3.1
-- Security rules de REGLAS_IMPORTANTES.md
-
-### ✅ Nadia (DataAlchemist)
-**Workspace**: `dataalchemist/`
-**Configuración completa**: AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md
-
-**Stack real documentado**:
-- APIs: GROQ (chat), OpenRouter (Try-On images), Gemini (embeddings)
-- Supabase con pgvector
-- Webhooks: tryon, descriptor, enterprise-sync
-
----
-
-## REGLAS DE CONFIGURACIÓN DE AGENTES
-
-### ✅ Cumplidas
-1. Cada agente tiene workspace completo con 6+ archivos
-2. TOOLS.md contiene información real del Cerebro (no genérica)
-3. USER.md tiene contexto de personas reales y agentes
-4. HEARTBEAT.md tiene tareas específicas y thresholds
-5. SOUL.md tiene personalidad y reglas
-6. MEMORY.md tiene tareas y stack tecnológico real
-
-### ❌ Evitar
-- No usar "TU_NOMBRE", "TU_EMAIL", "placeholder"
-- No inventar información no verificable
-- No copiar templates genéricos sin personalizar
+```
+❌ SAMMANTHA: "Voy a revisar el código del frontend..."
+✅ SAMMANTHA: "Spawneo a Pixel para que revise el frontend"
+```
 
 ---
 
@@ -130,7 +79,31 @@
 | **Sam Wilkie** | Founder / Owner | 1049458877 |
 | **Melissa Urbano** | Junior Front-End Developer | 942528796 |
 
-**Nota**: Melissa es COLABORADORA de Pixel, NO subordinada a agentes
+**Nota**: Melissa es COLABORADORA de Pixel, NO subordinada a agentes. Trabaja JUNTO CON Pixel en frontend.
+
+---
+
+## ESTADO DE CONFIGURACIÓN DE AGENTES
+
+### Agentes Completamente Configurados (8/10)
+
+| Agente | Status | Archivos |
+|--------|--------|----------|
+| **Sammantha** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
+| **Pixel** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
+| **Kira** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
+| **Nadia** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
+| **Marlo** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
+| **Rebecca** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md, PROJECT.md, FIVERR_KNOWLEDGE.md |
+| **Lina** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
+| **Cipher** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
+
+### Agentes Pendientes de Documentación Completa
+
+| Agente | Status | Archivos Existentes |
+|--------|--------|---------------------|
+| **Zephyr** | ⚠️ Parcial | Agentes/architectai.md (1 archivo) |
+| **Leo** | ⚠️ Parcial | Agentes/leo.md + Agentes/leo_PROJECT.md |
 
 ---
 
@@ -139,24 +112,27 @@
 ### Leo
 - Es un AGENTE de trading, NO una persona real
 - Trabaja en conjunto con Rebecca para generar ingresos
+- Configuración en: `Lookitry_Brain_Vault/Cerebro/Agentes/leo.md`
 
-### Melissa
-- Es una PERSONA REAL (Junior Front-End Developer)
-- Trabaja JUNTO CON Pixel en frontend
-- Listed in USER.md como "PERSONA REAL"
+### Rebecca
+- Foco principal: **MONEY** - Generar ingresos para Lookitry
+- Capacidades: Fiverr, contenido UGC, patrocinio (solo grants)
+- NO puede ceder % de sociedad ni equity
 
-### Groq/DeepSeek
-- **REMOVIDOS** de todos los systemPromptOverride
-- Solo usar si AGENTS.md del Cerebro lo especifica explícitamente
-
----
-
-## TAREAS PENDIENTES DE DOCUMENTACIÓN
-
-- [ ] Zephyr (ArchitectAI) - Completar archivos faltantes
-- [ ] Leo - Revisar configuración
-- [ ] CHANGELOG.md - Registrar cambios de hoy
+### Mission Control (ELIMINADO)
+- El sistema Mission Control fue eliminado del código
+- Ya no existe `/mission-control/agents` ni componentes asociados
+- El monitoreo se hace vía Sammantha (Telegram) + CHANGELOG.md
 
 ---
 
-_Last updated: 2026-04-14 15:04 UTC-5_
+## REGISTRO DE CAMBIOS
+
+| Fecha | Cambio | Descripción |
+|-------|--------|-------------|
+| 2026-04-22 | v3.0 | Eliminación de Mission Control; actualización de estado de agentes |
+| 2026-04-14 | v2.0 | Modelo unificado MiniMax-M2.7; 8 agentes completamente configurados |
+
+---
+
+_Last updated: 2026-04-22 12:00 UTC-5_
