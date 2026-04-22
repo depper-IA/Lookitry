@@ -27,11 +27,14 @@ export class BrandAdminService {
       const { data: brands, error } = await supabaseAdmin
         .from('brands')
         .select('*')
-        .not('social_links->>account_archived_at', 'is', null) // Solo si quieres ver las archivadas, pero el usuario quiere que "desaparezcan"
         .order('created_at', { ascending: false });
 
+      if (error || !brands) {
+        throw new Error('Error al obtener marcas: ' + error?.message);
+      }
+
       // Filtrar marcas que tienen el flag de archivado en social_links
-      const activeBrands = (brands || []).filter(b => {
+      const activeBrands = brands.filter(b => {
         const sl = b.social_links || {};
         return !sl.account_archived_at;
       });

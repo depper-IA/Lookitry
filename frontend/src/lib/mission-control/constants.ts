@@ -440,7 +440,6 @@ export const MOCK_SYSTEM_STATUS: SystemStatus = {
 
 export const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: 'Grid', badge: null },
-  { id: 'agents', label: 'Agentes', icon: 'Cpu', badge: '10' },
   { id: 'product', label: 'Try-On', icon: 'Zap', badge: null },
   { id: 'business', label: 'Business', icon: 'TrendingUp', badge: null },
   { id: 'security', label: 'Seguridad', icon: 'Shield', badge: null },
