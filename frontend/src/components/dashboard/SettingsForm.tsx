@@ -65,7 +65,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     buttonText: brand.buttonText || 'Probarme esto',
     welcomeMessage: brand.welcomeMessage || '',
     shareMessage: brand.shareMessage || '',
-    widgetCoverImage: brand.coverImageUrl || '',
+    widgetCoverImage: brand.widgetCoverImage || '',
   });
 
   useEffect(() => {

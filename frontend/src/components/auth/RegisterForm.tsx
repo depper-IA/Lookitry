@@ -399,7 +399,7 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#050505] selection:bg-[var(--accent)]/30">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 theme-bg-base selection:bg-[var(--accent)]/30">
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
         
         {/* Left: Form */}
@@ -413,14 +413,14 @@ export default function RegisterForm() {
             </Link>
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl border border-[var(--accent)]/12 bg-[#0a0a0a] p-8 md:p-10 shadow-2xl">
+          <div className="relative overflow-hidden rounded-3xl border border-[var(--accent)]/12 theme-bg-card p-8 md:p-10 shadow-2xl">
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--accent)]/50 to-transparent" />
             
             <div className="mb-8 text-center lg:text-left">
-              <h1 className="text-3xl font-jakarta font-bold text-white tracking-tight mb-2">
+              <h1 className="text-3xl font-jakarta font-bold theme-text tracking-tight mb-2">
                 Crea tu cuenta
               </h1>
-              <p className="text-sm text-[#999] leading-relaxed">
+              <p className="text-sm theme-text-muted leading-relaxed">
                 Empieza en menos de 2 minutos
               </p>
             </div>
@@ -437,17 +437,17 @@ export default function RegisterForm() {
               {/* Divider */}
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10" />
+                  <div className="w-full border-t theme-border" />
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="bg-[#0a0a0a] px-3 text-[#666]">o regístrate con email</span>
+                  <span className="bg-[var(--bg-base)] px-3 theme-text-muted">o regístrate con email</span>
                 </div>
               </div>
 
               {/* Name + Contact */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                  <label className="text-[11px] font-bold theme-text-muted uppercase tracking-wider flex items-center gap-1.5 ml-1">
                     <Store className="w-3 h-3 text-[var(--accent)]" /> Nombre de marca
                   </label>
                   <input
@@ -456,12 +456,13 @@ export default function RegisterForm() {
                     onChange={handleNameChange}
                     required
                     placeholder="Ej: Velvet Studio"
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[var(--accent)]"
+                    className="w-full rounded-xl border outline-none transition-all focus:border-[var(--accent)] theme-bg-input theme-text placeholder-[var(--text-muted)]"
+                    style={{ borderColor: 'var(--border-color)' }}
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                  <label className="text-[11px] font-bold theme-text-muted uppercase tracking-wider flex items-center gap-1.5 ml-1">
                     <UserIcon className="w-3 h-3 text-[var(--accent)]" /> Tu nombre
                   </label>
                   <input
@@ -470,35 +471,36 @@ export default function RegisterForm() {
                     onChange={(e) => setForm(prev => ({ ...prev, contact_name: e.target.value }))}
                     required
                     placeholder="Tu nombre completo"
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[var(--accent)]"
+                    className="w-full rounded-xl border outline-none transition-all focus:border-[var(--accent)] theme-bg-input theme-text placeholder-[var(--text-muted)]"
+                    style={{ borderColor: 'var(--border-color)' }}
                   />
                 </div>
               </div>
 
               {/* Slug */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                <label className="text-[11px] font-bold theme-text-muted uppercase tracking-wider flex items-center gap-1.5 ml-1">
                   <Globe className="w-3 h-3 text-[var(--accent)]" /> URL de tu probador
                 </label>
-                <div className="flex items-center overflow-hidden rounded-xl border bg-[#050505] transition-all focus-within:border-[var(--accent)]"
-                  style={{ borderColor: slugError ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
+                <div className="flex items-center overflow-hidden rounded-xl border bg-[var(--bg-input)] transition-all focus-within:border-[var(--accent)]"
+                  style={{ borderColor: slugError ? 'rgba(239,68,68,0.4)' : 'var(--border-color)' }}
                 >
-                  <span className="select-none py-3 pl-3 text-xs font-medium text-[#666]">lookitry.com/sitio/</span>
+                  <span className="select-none py-3 pl-3 text-xs font-medium theme-text-muted">lookitry.com/sitio/</span>
                   <input
                     name="slug"
                     value={form.slug}
                     onChange={handleSlugChange}
-                    className="flex-1 bg-transparent px-1 py-3 text-sm text-white placeholder-[#666] focus:outline-none"
+                    className="flex-1 bg-transparent px-1 py-3 text-sm theme-text placeholder-[var(--text-muted)] focus:outline-none"
                     placeholder="mi-marca"
                   />
                   {slugChecking && (
                     <div className="pr-3">
-                      <Loader2 className="w-4 h-4 text-[#666] animate-spin" />
+                      <Loader2 className="w-4 h-4 theme-text-muted animate-spin" />
                     </div>
                   )}
                   {!slugChecking && slugAvailable === true && (
                     <div className="pr-3">
-                      <Check className="w-4 h-4 text-[#10b981]" />
+                      <Check className="w-4 h-4 text-green-500" />
                     </div>
                   )}
                   {!slugChecking && slugAvailable === false && (
@@ -510,7 +512,7 @@ export default function RegisterForm() {
                 {slugError ? (
                   <p className="text-[11px] text-red-500 ml-1">{slugError}</p>
                 ) : (
-                  <p className="text-[11px] text-[#999] ml-1">
+                  <p className="text-[11px] theme-text-muted ml-1">
                     Esta URL identificará tu probador. Solo letras minúsculas, números y guiones.
                   </p>
                 )}
@@ -518,7 +520,7 @@ export default function RegisterForm() {
 
               {/* Email */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                <label className="text-[11px] font-bold theme-text-muted uppercase tracking-wider flex items-center gap-1.5 ml-1">
                   <Mail className="w-3 h-3 text-[var(--accent)]" /> Correo electrónico
                 </label>
                 <input
@@ -528,7 +530,8 @@ export default function RegisterForm() {
                   onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))}
                   required
                   placeholder="correo@tuempresa.com"
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[var(--accent)]"
+                  className="w-full rounded-xl border outline-none transition-all focus:border-[var(--accent)] theme-bg-input theme-text placeholder-[var(--text-muted)]"
+                  style={{ borderColor: 'var(--border-color)' }}
                 />
               </div>
 
@@ -536,7 +539,7 @@ export default function RegisterForm() {
               <div className="space-y-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                    <label className="text-[11px] font-bold theme-text-muted uppercase tracking-wider flex items-center gap-1.5 ml-1">
                       <ShieldCheck className="w-3 h-3 text-[var(--accent)]" /> Contraseña
                     </label>
                     <div className="relative">
@@ -547,13 +550,13 @@ export default function RegisterForm() {
                         onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
                         required
                         placeholder="8+ caracteres"
-                        className="w-full rounded-xl border bg-[#050505] px-4 py-3 pr-10 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[var(--accent)]"
-                        style={{ borderColor: form.password && !isPasswordValid ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
+                        className="w-full rounded-xl border outline-none transition-all focus:border-[var(--accent)] theme-bg-input theme-text placeholder-[var(--text-muted)]"
+                        style={{ borderColor: form.password && !isPasswordValid ? 'rgba(239,68,68,0.4)' : 'var(--border-color)' }}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(v => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666] transition-colors hover:text-white"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-muted transition-colors hover:text-white"
                         aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -562,7 +565,7 @@ export default function RegisterForm() {
                   </div>
                   
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                    <label className="text-[11px] font-bold theme-text-muted uppercase tracking-wider flex items-center gap-1.5 ml-1">
                       Confirmar contraseña
                     </label>
                     <input
@@ -572,15 +575,15 @@ export default function RegisterForm() {
                       onChange={(e) => setForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                       required
                       placeholder="Repite tu contraseña"
-                      className="w-full rounded-xl border bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[var(--accent)]"
-                      style={{ borderColor: form.confirmPassword && !passwordsMatch ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
+                      className="w-full rounded-xl border outline-none transition-all focus:border-[var(--accent)] theme-bg-input theme-text placeholder-[var(--text-muted)]"
+                      style={{ borderColor: form.confirmPassword && !passwordsMatch ? 'rgba(239,68,68,0.4)' : 'var(--border-color)' }}
                     />
                   </div>
                 </div>
 
                 {/* Password requirements checklist */}
-                <div className="rounded-xl border border-[rgba(255,255,255,0.05)] bg-[#050505]/50 px-4 py-3 space-y-2">
-                  <p className="text-[10px] font-bold text-[#666] uppercase tracking-wider mb-2">Requisitos de la contraseña:</p>
+                <div className="rounded-xl border theme-border theme-bg-base px-4 py-3 space-y-2">
+                  <p className="text-[10px] font-bold theme-text-muted uppercase tracking-wider mb-2">Requisitos de la contraseña:</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
                     {[
                       { test: form.password.length >= 8, label: 'Mínimo 8 caracteres' },
@@ -589,12 +592,12 @@ export default function RegisterForm() {
                       { test: /[0-9]/.test(form.password), label: 'Al menos un número' },
                       { test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.password), label: 'Al menos un carácter especial (!@#$%^&*)' },
                     ].map(({ test, label }) => (
-                      <div key={label} className={`flex items-center gap-2 text-[11px] transition-colors ${test ? 'text-green-500' : 'text-[#999]'}`}>
+                      <div key={label} className={`flex items-center gap-2 text-[11px] transition-colors ${test ? 'text-green-500' : 'theme-text-muted'}`}>
                         {test ? (
                           <Check className="w-3.5 h-3.5 flex-shrink-0" />
                         ) : (
                           <span className="w-3.5 h-3.5 flex items-center justify-center flex-shrink-0">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#555]" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
                           </span>
                         )}
                         {label}
@@ -602,7 +605,7 @@ export default function RegisterForm() {
                     ))}
                   </div>
                   {form.confirmPassword && (
-                    <div className={`flex items-center gap-2 text-[11px] mt-2 pt-2 border-t border-[rgba(255,255,255,0.05)] transition-colors ${passwordsMatch ? 'text-green-500' : 'text-red-400'}`}>
+                    <div className={`flex items-center gap-2 text-[11px] mt-2 pt-2 border-t theme-border transition-colors ${passwordsMatch ? 'text-green-500' : 'text-red-400'}`}>
                       {passwordsMatch ? (
                         <Check className="w-3.5 h-3.5 flex-shrink-0" />
                       ) : (
@@ -622,9 +625,9 @@ export default function RegisterForm() {
                     id="acceptTerms"
                     checked={acceptTerms}
                     onChange={(e) => setAcceptTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[var(--accent)] focus:ring-[var(--accent)] focus:ring-offset-0 cursor-pointer"
+                    className="mt-1 w-4 h-4 rounded border theme-border theme-bg-input text-[var(--accent)] focus:ring-[var(--accent)] focus:ring-offset-0 cursor-pointer"
                   />
-                  <label htmlFor="acceptTerms" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                  <label htmlFor="acceptTerms" className="text-xs theme-text-muted leading-relaxed cursor-pointer">
                     Acepto los{' '}
                     <Link href="/terminos" target="_blank" className="text-[var(--accent)] hover:underline">Términos y Condiciones</Link>
                     {' '}del servicio.
@@ -636,9 +639,9 @@ export default function RegisterForm() {
                     id="acceptDataAuth"
                     checked={acceptDataAuth}
                     onChange={(e) => setAcceptDataAuth(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[var(--accent)] focus:ring-[var(--accent)] focus:ring-offset-0 cursor-pointer"
+                    className="mt-1 w-4 h-4 rounded border theme-border theme-bg-input text-[var(--accent)] focus:ring-[var(--accent)] focus:ring-offset-0 cursor-pointer"
                   />
-                  <label htmlFor="acceptDataAuth" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                  <label htmlFor="acceptDataAuth" className="text-xs theme-text-muted leading-relaxed cursor-pointer">
                     Autorizo el tratamiento de mis datos de acuerdo a la{' '}
                     <Link href="/politicas-privacidad" target="_blank" className="text-[var(--accent)] hover:underline">Política de Privacidad</Link>.
                   </label>
@@ -660,7 +663,7 @@ export default function RegisterForm() {
               <button
                 type="submit"
                 disabled={loading || slugChecking || slugAvailable === false}
-                className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[var(--accent)] font-bold text-white shadow-xl shadow-[var(--accent)]/20 transition-all active:scale-95 hover:bg-[#ff6c4d] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[var(--accent)] font-bold text-white shadow-xl shadow-[var(--accent)]/20 transition-all active:scale-95 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="relative flex items-center justify-center gap-3">
                   {loading ? (
@@ -680,9 +683,9 @@ export default function RegisterForm() {
               </button>
             </form>
 
-            <p className="text-center text-xs text-[#999] mt-8">
+            <p className="text-center text-xs theme-text-muted mt-8">
               ¿Ya tienes cuenta?{' '}
-              <Link href="/login" className="text-[var(--accent)] hover:text-[#ff7a5f] font-bold tracking-tight border-b border-transparent hover:border-[var(--accent)] transition-all ml-1">
+              <Link href="/login" className="text-[var(--accent)] hover:brightness-125 font-bold tracking-tight border-b border-transparent hover:border-[var(--accent)] transition-all ml-1">
                 Inicia sesión
               </Link>
             </p>
@@ -698,6 +701,7 @@ export default function RegisterForm() {
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
               className="lg:col-span-2"
+              style={{}}
             >
               <div className="sticky top-8">
                 <div className="hidden lg:block">
@@ -711,12 +715,12 @@ export default function RegisterForm() {
                   </div>
 
                   {/* Plan Card */}
-                  <div className="rounded-2xl border border-[var(--accent)]/20 bg-[#0a0a0a] overflow-hidden shadow-xl">
+                  <div className="rounded-2xl border border-[var(--accent)]/20 theme-bg-card overflow-hidden shadow-xl">
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-jakarta font-bold text-xl text-white">
+                            <span className="font-jakarta font-bold text-xl theme-text">
                               {suggestedPlan.name}
                             </span>
                             {planParam === 'PRO' && (
@@ -734,39 +738,39 @@ export default function RegisterForm() {
                             )}
                           </div>
                           {monthsParam > 1 && (
-                            <p className="text-xs text-[#999]">
+                            <p className="text-xs theme-text-muted">
                               {monthsParam} meses con {planDiscount}% de descuento
                             </p>
                           )}
                         </div>
                         <div className="text-right">
-                          <div className="font-jakarta font-bold text-2xl text-white">
+                          <div className="font-jakarta font-bold text-2xl theme-text">
                             {formatCOP(planTotalWithDiscount / monthsParam)}
                           </div>
-                          <div className="text-[11px] text-[#666]">/ mes</div>
+                          <div className="text-[11px] theme-text-muted">/ mes</div>
                         </div>
                       </div>
 
                       {monthsParam > 1 && (
-                        <div className="flex items-center gap-2 p-2 rounded-lg bg-[#10b981]/10 border border-[#10b981]/20 mb-4">
-                          <Check className="w-3 h-3 text-[#10b981]" />
-                          <span className="text-[11px] text-[#10b981] font-medium">
+                        <div className="flex items-center gap-2 p-2 rounded-lg bg-green-500/10 border border-green-500/20 mb-4">
+                          <Check className="w-3 h-3 text-green-500" />
+                          <span className="text-[11px] text-green-500 font-medium">
                             Ahorras {formatCOP(planTotal - planTotalWithDiscount)} con {monthsParam} meses
                           </span>
                         </div>
                       )}
 
                       {planTotal > 0 && monthsParam > 1 && (
-                        <div className="border-t border-white/10 pt-4 mb-4">
-                          <div className="flex justify-between text-xs text-[#666] mb-1">
+                        <div className="border-t theme-border pt-4 mb-4">
+                          <div className="flex justify-between text-xs theme-text-muted mb-1">
                             <span>Precio mensual</span>
                             <span>{formatCOP(suggestedPlan.price)}</span>
                           </div>
-                          <div className="flex justify-between text-xs text-[#666] mb-1">
+                          <div className="flex justify-between text-xs theme-text-muted mb-1">
                             <span>Descuento {monthsParam} meses</span>
-                            <span className="text-[#10b981]">-{planDiscount}%</span>
+                            <span className="text-green-500">-{planDiscount}%</span>
                           </div>
-                          <div className="flex justify-between font-medium text-sm text-white pt-2 border-t border-white/10">
+                          <div className="flex justify-between font-medium text-sm theme-text pt-2 border-t theme-border">
                             <span>Total a pagar</span>
                             <span>{formatCOP(planTotalWithDiscount)}</span>
                           </div>
@@ -774,14 +778,14 @@ export default function RegisterForm() {
                       )}
 
                       {planTotal > 0 && monthsParam === 1 && (
-                        <div className="flex justify-between font-medium text-sm text-white pt-2 border-t border-white/10">
+                        <div className="flex justify-between font-medium text-sm theme-text pt-2 border-t theme-border">
                           <span>Total a pagar</span>
                           <span>{formatCOP(planTotalWithDiscount)}</span>
                         </div>
                       )}
 
                       {planParam === 'TRIAL' && (
-                        <div className="flex justify-between font-medium text-sm text-white pt-2 border-t border-white/10">
+                        <div className="flex justify-between font-medium text-sm theme-text pt-2 border-t theme-border">
                           <span>Pago único</span>
                           <span>{formatCOP(20000)}</span>
                         </div>
@@ -792,7 +796,7 @@ export default function RegisterForm() {
                     <div className="px-6 pb-6">
                       <ul className="space-y-2.5">
                         {suggestedPlan.features.map((feature) => (
-                          <li key={feature} className="flex items-center gap-2 text-xs text-[#999]">
+                          <li key={feature} className="flex items-center gap-2 text-xs theme-text-muted">
                             <Check className="w-3.5 h-3.5 text-[var(--accent)] flex-shrink-0" />
                             {feature}
                           </li>
@@ -802,7 +806,7 @@ export default function RegisterForm() {
 
                     {/* CTA Arrow */}
                     <div className="px-6 pb-6">
-                      <div className="flex items-center justify-between text-[11px] text-[#666]">
+                      <div className="flex items-center justify-between text-[11px] theme-text-muted">
                         <span>Después del registro</span>
                         <div className="flex items-center gap-1 text-[var(--accent)]">
                           <span>Ir al pago</span>
@@ -812,7 +816,7 @@ export default function RegisterForm() {
                     </div>
                   </div>
 
-                  <p className="text-center text-[10px] text-[#666] mt-4">
+                  <p className="text-center text-[10px] theme-text-muted mt-4">
                     Pago seguro con Wompi o PayPal
                   </p>
                 </div>
@@ -825,7 +829,7 @@ export default function RegisterForm() {
         <div className="hidden lg:flex absolute top-8 left-8">
           <Link href="/" className="flex items-center gap-3 group">
             <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" priority />
-            <span className="font-jakarta font-extrabold text-2xl text-white tracking-tighter">
+            <span className="font-jakarta font-extrabold text-2xl theme-text tracking-tighter">
               Look<span className="text-[var(--accent)]">itry</span>
             </span>
           </Link>
