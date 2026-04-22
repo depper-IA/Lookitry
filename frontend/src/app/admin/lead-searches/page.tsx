@@ -100,6 +100,7 @@ export default function LeadSearchesPage() {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [enrichEmails, setEnrichEmails] = useState(true);
 
   const fetchSearches = useCallback(async () => {
     try {
@@ -127,11 +128,25 @@ export default function LeadSearchesPage() {
     setActionLoading(id);
     setError(null);
     try {
-      const data = await adminApi.post<{ inserted: number; duplicates: number; found: number; message?: string }>(`/admin/lead-searches/${id}/run`);
+      const endpoint = enrichEmails
+        ? `/admin/lead-searches/${id}/run?enrichEmails=true`
+        : `/admin/lead-searches/${id}/run`;
+      const data = await adminApi.post<any>(endpoint);
+
       if (data.inserted === 0 && data.duplicates === 0) {
         alert(`No se encontraron leads nuevos.\n\nPosibles razones:\n• Los keywords no coinciden con negocios en Google\n• La ubicación no tiene resultados\n• La cuota de Google Places se agotó\n\nRevisa la configuración e intenta con otros keywords.`);
       } else {
-        alert(`Búsqueda completada:\n${data.inserted} leads nuevos\n${data.duplicates} duplicados`);
+        let message = `Búsqueda completada:\n${data.inserted} leads nuevos\n${data.duplicates} duplicados`;
+        if (data.emailEnrichment) {
+          if (data.emailEnrichment.error) {
+            message += `\n\nBúsqueda de emails: Error (${data.emailEnrichment.error})`;
+          } else if (data.emailEnrichment.found > 0) {
+            message += `\n\nBúsqueda de emails:\n${data.emailEnrichment.found}/${data.emailEnrichment.attempted} emails encontrados`;
+          } else {
+            message += `\n\nBúsqueda de emails: No se encontraron emails`;
+          }
+        }
+        alert(message);
       }
       fetchSearches();
     } catch (err: any) {
@@ -308,14 +323,34 @@ export default function LeadSearchesPage() {
         <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
           Búsquedas configuradas
         </h2>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
-        >
-          <IconPlus />
-          Nueva Búsqueda
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Email Enrichment Toggle */}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Buscar emails
+            </span>
+            <div
+              onClick={() => setEnrichEmails(!enrichEmails)}
+              className="relative w-12 h-6 rounded-full transition-colors cursor-pointer"
+              style={{ backgroundColor: enrichEmails ? '#10b981' : 'var(--border-color)' }}
+            >
+              <div
+                className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
+                style={{
+                  transform: enrichEmails ? 'translateX(24px)' : 'translateX(2px)',
+                }}
+              />
+            </div>
+          </label>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
+          >
+            <IconPlus />
+            Nueva Búsqueda
+          </button>
+        </div>
       </div>
 
       {searches.length === 0 ? (
