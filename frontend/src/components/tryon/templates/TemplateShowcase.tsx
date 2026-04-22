@@ -1,21 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GenerationLoader } from '../GenerationLoader';
 import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
 import type { TryOnTemplateProps, Product } from './types';
 import { ErrorBanner, NoticeBanner, GENERATION_CACHED_HINT, GENERATION_TIME_HINT } from './shared';
-
-// Helper para determinar si un color es claro u oscuro
-function isLightBg(hex: string): boolean {
-  const clean = hex.replace('#', '');
-  const r = parseInt(clean.substring(0, 2), 16);
-  const g = parseInt(clean.substring(2, 4), 16);
-  const b = parseInt(clean.substring(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.5;
-}
+import { isLightBg } from './shared';
 
 // ── Template Showcase: Editorial Fashion Vitrine ──────────────────────────────
 export function TemplateShowcase(props: TryOnTemplateProps) {
@@ -49,18 +41,18 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
   const [isSmall, setIsSmall] = useState(false);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-    
-    // Si forcedLayout está definido, usar ese valor directamente
+    // Si forcedLayout está definido, no necesitamos ResizeObserver
     if (props.forcedLayout) {
       setIsSmall(props.forcedLayout === 'mobile');
+      return;
     }
+    
+    if (!containerRef.current) return;
     
     const obs = new ResizeObserver((entries) => {
       const { width } = entries[0].contentRect;
       setIsSmall(width < 768);
     });
-
 
     obs.observe(containerRef.current);
     return () => obs.disconnect();
@@ -76,11 +68,8 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
     ? `linear-gradient(180deg, ${secondaryColor} 0%, ${secondaryColor} 70%, ${primaryColor}08 100%)`
     : `linear-gradient(180deg, ${secondaryColor} 0%, ${secondaryColor} 70%, ${primaryColor}15 100%)`;
 
-  // Generate explicit dark fallback background for non-embed mode
+  // Generate explicit dark fallback background
   const solidBg = bgLuminance ? secondaryColor : '#0a0a0a';
-  const solidGradientBg = bgLuminance 
-    ? secondaryColor 
-    : '#0a0a0a';
 
   if (step === 'generating') {
     return (
@@ -97,7 +86,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
     <div
       ref={containerRef}
       className="flex flex-col font-sans min-h-screen min-h-[100dvh] overflow-y-auto overflow-x-hidden"
-      style={{ backgroundColor: solidGradientBg }}
+      style={{ backgroundColor: solidBg }}
     >
       <EditorialHeader 
         config={config} 
@@ -120,17 +109,54 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
         />
         <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
 
-        {step === 'upload' && (
-          <div className="flex flex-col min-h-[calc(100vh-64px)]">
-            {/* Mobile: Editorial Split Layout - Magazine Style */}
-            {isSmall ? (
+        <AnimatePresence mode="wait">
+          {step === 'upload' && (
+            <motion.div
+              key="upload"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+              className="flex flex-col min-h-[calc(100vh-64px)]"
+            >
+              {/* Show selfie preview above uploader if returning */}
+              {selfiePreview && selectedProduct && (
+                <div className="w-full px-4 pt-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex items-center gap-3 p-3 rounded-2xl"
+                    style={{ backgroundColor: cardBg, border: `1px solid ${bgLuminance ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)'}` }}
+                  >
+                    <img src={selfiePreview} alt="Tu foto" className="w-12 h-12 rounded-xl object-cover" />
+                    <div className="flex-1">
+                      <p className="text-[11px] font-black uppercase italic" style={{ color: primaryColor }}>
+                        Foto lista
+                      </p>
+                      <p className="text-[9px] font-medium uppercase tracking-wider" style={{ color: textMuted }}>
+                        {selectedProduct.name}
+                      </p>
+                    </div>
+                    <button
+                      onClick={onReset}
+                      className="text-[9px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl transition-all hover:bg-white/10"
+                      style={{ color: textMuted }}
+                    >
+                      Cambiar
+                    </button>
+                  </motion.div>
+                </div>
+              )}
+
+              {/* Mobile: Editorial Split Layout - Magazine Style */}
+              {isSmall ? (
               <div className="flex-1 flex flex-col">
                 {/* Hero Image - Full Width Magazine Cut */}
                 <div className="relative w-full" style={{ minHeight: '45vh' }}>
                   <div 
                     className="absolute inset-0 bg-cover bg-center"
                     style={{ 
-                      backgroundImage: `linear-gradient(to bottom, transparent 40%, ${solidGradientBg}), url(${config.brand.coverImageUrl || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800'})`,
+                      backgroundImage: `linear-gradient(to bottom, transparent 40%, ${solidBg}), url(${config.brand.coverImageUrl || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800'})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                     }}
@@ -150,7 +176,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                           </div>
                         )}
                       </div>
-                      <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40 italic" style={{ color: textPrimary }}>Digital Experience</span>
+                      <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40 italic" style={{ color: textPrimary }}>Prueba Virtual</span>
                     </div>
                   </div>
                   
@@ -251,7 +277,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                       className={`${isSmall ? 'text-xs' : 'text-xs sm:text-sm md:text-base'} font-black uppercase tracking-[0.4em] opacity-40 italic max-w-xs mx-auto`}
                       style={{ color: textPrimary }}
                     >
-                      Digital Experience
+                      Prueba Virtual
                     </p>
                   </div>
                 </div>
@@ -282,78 +308,93 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                 </div>
               </div>
             )}
-          </div>
-        )}
+            </motion.div>
 
-        {step === 'select' && (
-          <div className="w-full flex flex-col items-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-4 sm:pt-6">
-            {/* Hero de selección - Editorial Accent */}
-            <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 mb-8 sm:mb-12 w-full max-w-3xl">
-              <div className="inline-block relative">
-                <h2 className={`${isSmall ? 'text-3xl' : 'text-5xl lg:text-6xl'} font-black tracking-tighter italic uppercase relative z-10`} style={{ color: textPrimary }}>
-                  {welcomeMessage || 'Colección Real'}
-                </h2>
-                <div className="absolute -bottom-2 -right-4 w-10 h-10 rounded-full" style={{ backgroundColor: primaryColor, opacity: 0.2 }} />
-              </div>
-              <p className="text-[10px] md:text-xs uppercase tracking-[0.5em] font-black opacity-30 italic" style={{ color: textPrimary }}>
-                Selecciona tu próxima pieza
-              </p>
-            </div>
+            {step === 'select' && (
+              <motion.div
+                key="select"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                className="w-full flex flex-col items-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-4 sm:pt-6"
+              >
+                {/* Hero de selección - Editorial Accent */}
+                <div className="text-center space-y-6 mb-8 sm:mb-12 w-full max-w-3xl">
+                  <div className="inline-block relative">
+                    <h2 className={`${isSmall ? 'text-3xl' : 'text-5xl lg:text-6xl'} font-black tracking-tighter italic uppercase relative z-10`} style={{ color: textPrimary }}>
+                      {welcomeMessage || 'Colección Real'}
+                    </h2>
+                    <div className="absolute -bottom-2 -right-4 w-10 h-10 rounded-full" style={{ backgroundColor: primaryColor, opacity: 0.2 }} />
+                  </div>
+                  <p className="text-[10px] md:text-xs uppercase tracking-[0.5em] font-black opacity-30 italic" style={{ color: textPrimary }}>
+                    Selecciona tu próxima pieza
+                  </p>
+                </div>
 
-            {/* Selfie preview si existe */}
-            {selfiePreview && (
-              <div className="w-full max-w-xl mb-6 sm:mb-8">
-                <SelfiePreviewEditorial 
-                  preview={selfiePreview} 
-                  onReset={onReset} 
-                  primaryColor={primaryColor}
-                  textMuted={textMuted}
-                  cardBg={cardBg}
-                  bgLuminance={bgLuminance}
-                />
-              </div>
+                {/* Selfie preview si existe */}
+                {selfiePreview && (
+                  <div className="w-full max-w-xl mb-6 sm:mb-8">
+                    <SelfiePreviewEditorial 
+                      preview={selfiePreview} 
+                      onReset={onReset} 
+                      primaryColor={primaryColor}
+                      textMuted={textMuted}
+                      cardBg={cardBg}
+                      bgLuminance={bgLuminance}
+                    />
+                  </div>
+                )}
+
+                {/* Grid de productos estilo magazine - Centrado */}
+                <div className="w-full max-w-7xl mx-auto">
+                  <ProductGridEditorial
+                    products={config.products}
+                    selected={selectedProduct}
+                    onSelect={onProductSelect}
+                    primaryColor={primaryColor}
+                    generatedProducts={generatedProducts}
+                    cardBg={cardBg}
+                    bgLuminance={bgLuminance}
+                    textPrimary={textPrimary}
+                    textMuted={textMuted}
+                    isSmall={isSmall}
+                  />
+                </div>
+              </motion.div>
             )}
 
-            {/* Grid de productos estilo magazine - Centrado */}
-            <div className="w-full max-w-7xl mx-auto">
-              <ProductGridEditorial
-                products={config.products}
-                selected={selectedProduct}
-                onSelect={onProductSelect}
-                primaryColor={primaryColor}
-                generatedProducts={generatedProducts}
-                cardBg={cardBg}
-                bgLuminance={bgLuminance}
-                textPrimary={textPrimary}
-                textMuted={textMuted}
-                isSmall={isSmall}
-              />
-            </div>
-          </div>
-        )}
-
-        {step === 'result' && resultImageUrl && (
-          <div className="pb-32 sm:pb-40">
-            <ResultDisplay
-              imageUrl={resultImageUrl}
-              productName={selectedProduct?.name || ''}
-              productPrice={selectedProduct?.price}
-              selfiePreview={selfiePreview}
-              onReset={onReset}
-              primaryColor={primaryColor}
-              generationId={generationId ?? undefined}
-              brandSlug={brandSlug}
-              brandName={config.brand.name}
-              brandPlan={config.brand.plan}
-              shareMessage={shareMessage}
-              pluginView={pluginView}
-              textColor={textPrimary}
-              mutedColor={textMuted}
-              cardBg={cardBg}
-              cardBorder={bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)'}
-              whatsappContact={config.brand.whatsappContact ?? null}
-            />
-          </div>
+            {step === 'result' && resultImageUrl && (
+              <motion.div
+                key="result"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                className="pb-32 sm:pb-40"
+              >
+                <ResultDisplay
+                  imageUrl={resultImageUrl}
+                  productName={selectedProduct?.name || ''}
+                  productPrice={selectedProduct?.price}
+                  selfiePreview={selfiePreview}
+                  onReset={onReset}
+                  primaryColor={primaryColor}
+                  generationId={generationId ?? undefined}
+                  brandSlug={brandSlug}
+                  brandName={config.brand.name}
+                  brandPlan={config.brand.plan}
+                  shareMessage={shareMessage}
+                  pluginView={pluginView}
+                  textColor={textPrimary}
+                  mutedColor={textMuted}
+                  cardBg={cardBg}
+                  cardBorder={bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)'}
+                  whatsappContact={config.brand.whatsappContact ?? null}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         )}
       </div>
 
@@ -362,7 +403,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
         <BottomCTAEditorial
           onClick={onProceedToUpload}
           primaryColor={primaryColor}
-          buttonText={`Siguiente: ${buttonText || 'Subir foto'}`}
+          buttonText={`Siguiente: ${selectedProduct?.name || buttonText || 'Subir foto'}`}
           bgLuminance={bgLuminance}
           textMuted={textMuted}
           secondaryColor={secondaryColor}
@@ -423,7 +464,7 @@ function EditorialHeader({ config, onReset, showReset, primaryColor, bgLuminance
               {config.brand.name}
             </span>
             <span className="text-[7px] font-black uppercase tracking-[0.3em] opacity-40 italic mt-px" style={{ color: bgLuminance ? '#000' : '#fff' }}>
-              Showcase
+              {config.brand.plan || 'Estilo'}
             </span>
           </div>
         </div>
@@ -457,7 +498,7 @@ function SelfiePreviewEditorial({ preview, onReset, primaryColor, textMuted, car
   if (!preview) return null;
   return (
     <div 
-      className="relative flex items-center gap-3 sm:gap-4 rounded-2xl p-3 sm:p-4 shadow-xl animate-fade-in"
+      className="relative flex items-center gap-3 sm:gap-4 rounded-2xl p-3 sm:p-4 shadow-xl"
       style={{ 
         backgroundColor: bgLuminance ? '#ffffff' : 'rgba(255,255,255,0.08)',
         border: `1px solid ${bgLuminance ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)'}`,
@@ -534,14 +575,24 @@ function ProductGridEditorial({
 }) {
   if (products.length === 0) {
     return (
-      <div className="text-center py-16 space-y-3">
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center py-16 space-y-4"
+      >
+        <motion.div 
+          className="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center"
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
           <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: textMuted }}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
           </svg>
-        </div>
+        </motion.div>
         <p className="text-sm font-medium" style={{ color: textMuted }}>No hay productos disponibles</p>
-      </div>
+        <p className="text-xs opacity-60" style={{ color: textMuted }}>Pronto añadiremos nuevas piezas a la colección</p>
+      </motion.div>
     );
   }
 
@@ -556,17 +607,20 @@ function ProductGridEditorial({
         const alreadyGenerated = generatedProducts.has(p.id);
         
         return (
-          <button
+          <motion.button
             key={p.id}
             onClick={() => onSelect(p)}
             className={`
               group relative w-full rounded-2xl overflow-hidden text-left transition-all duration-300
-              ${sel ? 'ring-2 scale-[1.02]' : 'hover:scale-[1.01] active:scale-[0.99]'}
+              ${sel ? 'ring-2' : 'hover:ring-1'}
             `}
             style={{ 
               animationDelay: `${index * 50}ms`,
               '--ring-color': primaryColor,
             } as React.CSSProperties}
+            layout
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
           >
             {/* Background glow cuando seleccionado */}
             {sel && (
@@ -685,7 +739,7 @@ function ProductGridEditorial({
                 )}
               </div>
             </div>
-          </button>
+          </motion.button>
         );
       })}
     </div>
@@ -711,12 +765,15 @@ function BottomCTAEditorial({
   secondaryColor: string;
 }) {
   return (
-    <div 
-      className="fixed bottom-0 left-0 right-0 p-3 sm:p-4 z-50 animate-fade-in-up"
+    <motion.div 
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      className="fixed bottom-0 left-0 right-0 p-3 sm:p-4 z-50"
       style={{ 
         backgroundColor: bgLuminance ? secondaryColor : '#0a0a0a',
         borderTop: `1px solid ${bgLuminance ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)'}`,
-        paddingBottom: 'max(env(safe-area-inset-bottom), 12px)',
+        paddingBottom: 'max(env(safe-area-inset-bottom), 16px)',
         boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
       }}
     >
@@ -740,6 +797,6 @@ function BottomCTAEditorial({
           </p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
