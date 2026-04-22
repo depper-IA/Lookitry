@@ -101,7 +101,6 @@ const adminNav = [
     items: [
       { href: '/admin/dashboard', label: 'Mission Control', icon: DashboardIcon },
       { href: '/admin/funnel', label: 'Funnel', icon: FunnelIcon },
-      { href: '/admin/agents', label: 'Agentes', icon: BotIcon },
     ],
   },
   {
@@ -185,7 +184,6 @@ const adminNav = [
 
 const pageTitleMap: Record<string, string> = {
   '/admin/dashboard': 'Mission Control',
-  '/admin/agents': 'Agents Activity',
   '/admin/brands': 'Marcas',
   '/admin/subscriptions': 'Suscripciones',
   '/admin/referrals': 'Programa de Referidos',
