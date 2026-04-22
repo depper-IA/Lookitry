@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-04-22
+
+### refactor(brain-vault): Auditoría de integridad + limpieza de archivos obsoletos
+
+**Resumen:** Auditoría completa de base de datos y archivos del Brain Vault. Se actualizó documentación y eliminaron archivos que ya no reflejan la realidad del proyecto.
+
+#### Base de Datos — Verificación de Integridad
+
+**Tablas verificadas y OK:** `brands`, `products`, `generations`, `coupons`, `leads`, `promotions`, `trial_campaigns`, `admin_notifications`, `pending_registrations`, `plugin_telemetry_events`, `enterprise_sync_configs`, `google_places_quota`, `lead_searches`
+
+**Discrepancias corregidas en `Esquema_Base_Datos.md`:**
+- Eliminada tabla inexistente `api_keys`
+- Eliminada tabla inexistente `payment_logs`
+- Corregido `landing_template` de enum a varchar(20)
+- Agregados campos faltantes: `google_id`, `auth_provider`, `needs_onboarding`, `internal_notes`, `logo_light`, `logo_dark` (brands)
+- Agregados campos faltantes: `badge` (products)
+- Agregado campo `prompt_used` (generations)
+- Actualizado esquema completo con todas las tablas reales
+
+#### Archivos Eliminados (Obsoletos)
+
+| Archivo | Razón |
+|---------|-------|
+| `Docs/design/RUNPOD_SETUP.md` | RunPod ya no se usa (n8n + OpenRouter) |
+| `Docs/design/RUNPOD_IDM_VTON_WORKFLOW_DESIGN.md` | RunPod ya no se usa |
+| `PITCH_DECK_LOOKITRY.md` | Pitch deck obsoleto |
+| `PITCH_DECK_LOOKITRY_ES.md` | Pitch deck obsoleto |
+| `Docs/SHOPIFY_INTEGRATION.md` | WooCommerce es el plugin actual |
+| `Docs/WOOCOMMERCE_QA_E2E.md` | Testing E2E desactualizado |
+| `Docs/research/social-verification-api-research.md` | Research desactualizado |
+
 ---
 
 ## 2026-04-20
@@ -444,6 +475,7 @@ Sistema completo para automatizar contenido de Instagram + TikTok con música AI
 ### docs(brain-vault): Limpieza de archivos obsoletos
 
 **Archivos ELIMINADOS (duplicados o claramente obsoletos):**
+- `Cerebro/Config/openclaw_MASTER_*.json` (17 archivos) — Backups temporales de configuración openclaw
 - `Cerebro/Logs/CHANGELOG.md` — Duplicado de `Cerebro/CHANGELOG.md`
 - `Cerebro/Logs/CHANGELOG_ARCHIVE_2026_Q1.md` — Histórico antiguo, info cubierta en CHANGELOG principal
 - `Cerebro/Logs/CHANGELOG_ARCHIVE_2026_04_06.md` — Histórico antiguo duplicado
@@ -456,6 +488,7 @@ Sistema completo para automatizar contenido de Instagram + TikTok con música AI
 **Archivos MANTENIDOS (Sam los leerá después):**
 - `Cerebro/Docs/design/RUNPOD_*.md` — Documentación RunPod para lectura posterior
 - `Cerebro/Docs/SHOPIFY_INTEGRATION.md` — Integración Shopify para lectura posterior
+- `Cerebro/Archive/` — Carpeta con archivos archive (sin cambios)
 
 ---
 
