@@ -28,11 +28,7 @@ export const getGenerations = async (req: any, res: Response) => {
 
     let query = supabaseAdmin
       .from('admin_generations_log')
-      .select(`
-        *,
-        brands(id, name, slug),
-        products(id, name)
-      `, { count: 'exact' });
+      .select('*', { count: 'exact' });
 
     if (brand_id) {
       query = query.eq('brand_id', brand_id);
@@ -56,14 +52,33 @@ export const getGenerations = async (req: any, res: Response) => {
       return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener generaciones' });
     }
 
+    // Obtener brands y products para mostrar nombres
+    const brandIds = [...new Set((data || []).map((g: any) => g.brand_id).filter(Boolean))];
+    const productIds = [...new Set((data || []).map((g: any) => g.product_id).filter(Boolean))];
+
+    const [brandsResult, productsResult] = await Promise.all([
+      brandIds.length > 0
+        ? supabaseAdmin.from('brands').select('id, name, slug').in('id', brandIds)
+        : { data: [], error: null },
+      productIds.length > 0
+        ? supabaseAdmin.from('products').select('id, name').in('id', productIds)
+        : { data: [], error: null },
+    ]);
+
+    const brandsMap: Record<string, any> = {};
+    (brandsResult.data || []).forEach((b: any) => { brandsMap[b.id] = b; });
+
+    const productsMap: Record<string, any> = {};
+    (productsResult.data || []).forEach((p: any) => { productsMap[p.id] = p; });
+
     // Transformar datos con nombres relacionados
     const generations = (data || []).map((row: any) => ({
       id: row.id,
       brand_id: row.brand_id,
-      brand_name: row.brands?.name || null,
-      brand_slug: row.brands?.slug || null,
+      brand_name: brandsMap[row.brand_id]?.name || null,
+      brand_slug: brandsMap[row.brand_id]?.slug || null,
       product_id: row.product_id,
-      product_name: row.products?.name || null,
+      product_name: productsMap[row.product_id]?.name || null,
       status: row.status,
       model_provider: row.model_used || null,
       selfie_url: row.selfie_url,
