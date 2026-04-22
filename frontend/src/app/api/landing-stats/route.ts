@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 // Proxy to backend Express to avoid duplicating Supabase service key
 export async function GET() {
   try {
-    const response = await fetch(`${API_URL}/landing-stats`, {
+    const response = await fetch(`${API_URL}/api/landing-stats`, {
       next: { revalidate: 3600 }, // Cache for 1 hour
     });
 
