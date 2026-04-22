@@ -10,13 +10,14 @@ interface Feedback {
   generation_id?: string;
   brand_id?: string;
   error_type: string;
-  error_message?: string;
+  description?: string | null;
   user_description?: string;
   resolved: boolean;
   resolved_by?: string;
   resolved_at?: string;
   created_at: string;
   brands?: { name: string; slug: string };
+  result_image_url?: string | null;
 }
 
 interface Stats {
@@ -27,20 +28,22 @@ interface Stats {
 }
 
 const ERROR_TYPE_LABELS: Record<string, string> = {
-  'face_detection_failed': 'Deteccion de rostro',
-  'clothing_alignment': 'Alineacion de ropa',
-  'image_quality': 'Calidad de imagen',
-  'generation_timeout': 'Timeout de generacion',
-  'model_error': 'Error del modelo',
+  'wrong_clothing_removed': 'Ropa removida incorrectamente',
+  'wrong_clothing_kept': 'Ropa original mantenida',
+  'body_distortion': 'Distorsión del cuerpo',
+  'color_wrong': 'Color incorrecto',
+  'product_not_applied': 'Producto no aplicado',
+  'background_changed': 'Fondo modificado',
   'other': 'Otro',
 };
 
 const ERROR_TYPE_COLORS: Record<string, string> = {
-  'face_detection_failed': '#ef4444',
-  'clothing_alignment': '#f59e0b',
-  'image_quality': '#6b7280',
-  'generation_timeout': '#8b5cf6',
-  'model_error': '#dc2626',
+  'wrong_clothing_removed': '#ef4444',
+  'wrong_clothing_kept': '#f59e0b',
+  'body_distortion': '#8b5cf6',
+  'color_wrong': '#ec4899',
+  'product_not_applied': '#f97316',
+  'background_changed': '#6b7280',
   'other': '#999999',
 };
 
@@ -67,10 +70,12 @@ export default function FeedbackPage() {
   const [filterErrorType, setFilterErrorType] = useState('');
   const [filterResolved, setFilterResolved] = useState('');
   const [filterBrand, setFilterBrand] = useState('');
+  const [availableErrorTypes, setAvailableErrorTypes] = useState<string[]>(Object.keys(ERROR_TYPE_LABELS));
 
   const fetchFeedbacks = useCallback(async () => {
     try {
       setError(null);
+      setLoading(true);
       let url = '/api/admin/feedback?';
       if (filterErrorType) url += `error_type=${filterErrorType}&`;
       if (filterResolved === 'true') url += 'resolved=true&';
@@ -79,11 +84,26 @@ export default function FeedbackPage() {
 
       const [feedbacksData, statsData] = await Promise.all([
         adminApi.get<{ feedbacks: Feedback[] }>(url),
-        adminApi.get<{ stats: Stats }>('/api/admin/feedback/stats'),
+        adminApi.get<{ stats: Array<{ error_type: string; product_category: string | null; count: number }> }>('/api/admin/feedback/stats'),
       ]);
 
-      setFeedbacks(feedbacksData.feedbacks || []);
-      setStats(statsData.stats || { total: 0, resolved: 0, unresolved: 0, by_type: {} });
+      const feedbacksList = feedbacksData.feedbacks || [];
+      setFeedbacks(feedbacksList);
+
+      // Calcular stats desde los datos reales
+      const resolvedCount = feedbacksList.filter(f => f.resolved).length;
+      const unresolvedCount = feedbacksList.filter(f => !f.resolved).length;
+      const byType: Record<string, number> = {};
+      for (const fb of feedbacksList) {
+        byType[fb.error_type] = (byType[fb.error_type] || 0) + 1;
+      }
+
+      setStats({
+        total: feedbacksList.length,
+        resolved: resolvedCount,
+        unresolved: unresolvedCount,
+        by_type: byType,
+      });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -338,7 +358,7 @@ export default function FeedbackPage() {
                   </td>
                   <td className="px-4 py-3">
                     <p style={{ color: 'var(--text-primary)' }} className="text-sm line-clamp-2">
-                      {fb.user_description || fb.error_message || '—'}
+                      {fb.user_description || fb.description || '—'}
                     </p>
                   </td>
                   <td className="px-4 py-3">
@@ -438,9 +458,9 @@ export default function FeedbackPage() {
                 <p style={{ color: 'var(--text-primary)' }}>{selectedFeedback.brands?.name || selectedFeedback.brand_id || '—'}</p>
               </div>
               <div>
-                <label className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Mensaje de error</label>
+                <label className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Descripcion</label>
                 <p className="text-sm mt-1 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)' }}>
-                  {selectedFeedback.error_message || '—'}
+                  {selectedFeedback.description || selectedFeedback.user_description || '—'}
                 </p>
               </div>
               <div>
