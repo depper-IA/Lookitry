@@ -262,7 +262,13 @@ export const getBrandGenerations = async (req: Request, res: Response) => {
       .eq('brand_id', brandId);
 
     if (status) {
-      query = query.eq('status', status);
+      const statusMap: Record<string, string> = {
+        'pending': 'PENDING',
+        'completed': 'SUCCESS',
+        'failed': 'FAILED'
+      };
+      const dbStatus = statusMap[status as string] || status;
+      query = query.eq('status', dbStatus);
     }
     if (start_date) {
       query = query.gte('generated_at', start_date);
