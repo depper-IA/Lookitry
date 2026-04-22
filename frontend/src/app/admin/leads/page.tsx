@@ -39,7 +39,7 @@ export default function LeadsPage() {
   const fetchLeads = useCallback(async () => {
     try {
       setLoading(true);
-      let url = `/api/admin/leads?page=${currentPage}&limit=10&`;
+      let url = `/admin/leads?page=${currentPage}&limit=10&`;
       if (filterCountry) url += `country=${filterCountry}&`;
       if (filterCity) url += `city=${filterCity}&`;
       if (filterBusinessType) url += `business_type=${filterBusinessType}&`;
@@ -49,7 +49,7 @@ export default function LeadsPage() {
       setLeads(data.leads || []);
       setTotalPages(Math.ceil(data.total / 10));
 
-      const statsData = await adminApi.get<Stats>('/api/admin/leads/stats');
+      const statsData = await adminApi.get<Stats>('/admin/leads/stats');
       setStats(statsData);
     } catch (err: any) {
       setError(err.message);
@@ -78,7 +78,7 @@ export default function LeadsPage() {
   const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
     setActionLoading(leadId);
     try {
-      await adminApi.patch(`/api/admin/leads/${leadId}`, { status: newStatus });
+      await adminApi.patch(`/admin/leads/${leadId}`, { status: newStatus });
       fetchLeads();
     } catch (err: any) {
       setError(err.message);
@@ -91,7 +91,7 @@ export default function LeadsPage() {
     if (!confirm('¿Eliminar este lead?')) return;
     setActionLoading(leadId);
     try {
-      await adminApi.delete(`/api/admin/leads/${leadId}`);
+      await adminApi.delete(`/admin/leads/${leadId}`);
       fetchLeads();
     } catch (err: any) {
       setError(err.message);
@@ -102,7 +102,7 @@ export default function LeadsPage() {
 
   const handleAddOutreach = async (leadId: string, type: string) => {
     try {
-      await adminApi.post(`/api/admin/leads/${leadId}/outreach`, { outreach_type: type });
+      await adminApi.post(`/admin/leads/${leadId}/outreach`, { outreach_type: type });
       fetchLeads();
     } catch (err: any) {
       setError(err.message);
