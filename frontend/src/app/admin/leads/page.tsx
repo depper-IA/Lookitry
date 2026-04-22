@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
+import { Users } from 'lucide-react';
 
 type LeadStatus = 'new' | 'qualified' | 'contacted' | 'interested' | 'not_interested' | 'client';
 
@@ -190,13 +191,274 @@ export default function LeadsPage() {
     }
   };
 
-  if (loading) {
+if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <IconSpinner />
       </div>
-);
+    );
   }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-jakarta text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Leads
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            {stats.total.toLocaleString()} leads totales
+          </p>
+        </div>
+        <button
+          onClick={() => { setEditLead(null); setShowAddModal(true); }}
+          className="flex items-center gap-2 rounded-2xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--accent)]/90"
+        >
+          <IconPlus /> Nuevo Lead
+        </button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-gray-500/10 p-2.5">
+              <Users className="h-5 w-5 text-gray-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stats.total}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Total</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-blue-500/10 p-2.5">
+              <IconStar className="h-5 w-5 text-blue-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stats.new}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Nuevos</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-green-500/10 p-2.5">
+              <IconStar className="h-5 w-5 text-green-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stats.interested}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Interesados</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="rounded-[2rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
+        <div className="flex flex-col gap-3 lg:flex-row">
+          <select
+            value={filterCountry}
+            onChange={(e) => { setFilterCountry(e.target.value); }}
+            className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none min-w-[150px]"
+          >
+            <option value="">Todos los países</option>
+            {filterOptions.countries.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select
+            value={filterCity}
+            onChange={(e) => { setFilterCity(e.target.value); }}
+            className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none min-w-[150px]"
+          >
+            <option value="">Todas las ciudades</option>
+            {filterOptions.cities.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select
+            value={filterStatus}
+            onChange={(e) => { setFilterStatus(e.target.value); }}
+            className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none min-w-[160px]"
+          >
+            <option value="">Todos los estados</option>
+            <option value="new">Nuevo</option>
+            <option value="contacted">Contactado</option>
+            <option value="qualified">Cualificado</option>
+            <option value="interested">Interesado</option>
+            <option value="not_interested">No interesado</option>
+            <option value="client">Cliente</option>
+          </select>
+          {(filterCountry || filterCity || filterStatus) && (
+            <button
+              onClick={() => { setFilterCountry(''); setFilterCity(''); setFilterStatus(''); }}
+              className="rounded-2xl border border-[var(--border-color)] px-4 py-3 text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:text-white flex items-center gap-2"
+            >
+              <IconX className="h-4 w-4" /> Limpiar
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Leads Table */}
+      {error && (
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 flex items-center gap-3">
+          <IconWarning />
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden">
+        {leads.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Users className="h-12 w-12 text-[var(--text-muted)] mb-4" />
+            <p className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>No hay leads</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Comienza agregando un lead o ejecutando una búsqueda</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Nombre</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Ubicación</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Contacto</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Estado</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Fuente</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((lead) => (
+                  <tr
+                    key={lead.id}
+                    style={{ borderBottom: '1px solid var(--border-color)' }}
+                    className="hover:bg-[var(--bg-hover)] transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{lead.name}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{lead.business_type || '—'}</p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                        {lead.city || '—'}, {lead.country}
+                      </p>
+                      {lead.rating && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <IconStar className="h-3 w-3" style={{ color: '#FBBD23' }} />
+                          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{lead.rating.toFixed(1)}</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1">
+                        {lead.email && (
+                          <a href={`mailto:${lead.email}`} className="text-sm hover:underline" style={{ color: 'var(--accent)' }}>{lead.email}</a>
+                        )}
+                        {lead.phone && (
+                          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{lead.phone}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <select
+                        value={lead.status}
+                        onChange={(e) => handleStatusChange(lead.id, e.target.value as LeadStatus)}
+                        disabled={actionLoading === lead.id}
+                        className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-base)] px-2 py-1.5 text-xs font-medium outline-none"
+                        style={{ color: STATUS_COLORS[lead.status], backgroundColor: `${STATUS_COLORS[lead.status]}20` }}
+                      >
+                        <option value="new">Nuevo</option>
+                        <option value="contacted">Contactado</option>
+                        <option value="qualified">Cualificado</option>
+                        <option value="interested">Interesado</option>
+                        <option value="not_interested">No interesado</option>
+                        <option value="client">Cliente</option>
+                      </select>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{lead.source}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setDetailLead(lead)}
+                          className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
+                          title="Ver detalle"
+                        >
+                          <IconEye />
+                        </button>
+                        <button
+                          onClick={() => { setEditLead(lead); setShowAddModal(true); }}
+                          className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
+                          title="Editar"
+                        >
+                          <IconEdit />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(lead.id)}
+                          disabled={actionLoading === lead.id}
+                          className="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors disabled:opacity-50"
+                          title="Eliminar"
+                        >
+                          <IconTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
+        <span>Mostrando {leads.length} leads</span>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => { /* page prev */ }}
+            className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
+          >
+            <IconSpinner />
+          </button>
+          <span>1</span>
+          <button
+            onClick={() => { /* page next */ }}
+            className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
+          >
+            <IconSpinner />
+          </button>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {detailLead && (
+        <LeadDetailModal
+          lead={detailLead}
+          onClose={() => setDetailLead(null)}
+        />
+      )}
+      {showAddModal && (
+        <LeadModal
+          lead={editLead || undefined}
+          onClose={() => { setShowAddModal(false); setEditLead(null); }}
+          onSave={fetchLeads}
+        />
+      )}
+    </motion.div>
+  );
 }
 
 function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void }) {
