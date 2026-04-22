@@ -140,14 +140,22 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
           paddingTop: isSmall ? 'max(16px, env(safe-area-inset-top))' : 24,
           paddingBottom: isSmall ? 'max(16px, env(safe-area-inset-bottom))' : 24,
           background: isSmall 
-            ? `linear-gradient(135deg, ${primaryColor}15 0%, ${secondaryColor} 100%)`
-            : `linear-gradient(180deg, ${primaryColor}08 0%, ${secondaryColor} 100%)`,
+            ? bgLuminance 
+              ? `${secondaryColor}` 
+              : `linear-gradient(135deg, ${primaryColor}10 0%, ${secondaryColor} 100%)`
+            : bgLuminance
+              ? `${secondaryColor}`
+              : `linear-gradient(180deg, ${primaryColor}08 0%, ${secondaryColor} 100%)`,
         }}
       >
-        {/* Decorative top accent */}
+        {/* Decorative top accent - subtle solid bar, no gradient for mobile */}
         <div 
-          className={`absolute ${isSmall ? 'top-0 left-0 right-0 h-1' : 'top-0 left-0 bottom-0 w-1'}`}
-          style={{ background: `linear-gradient(${isSmall ? 'to right' : 'to bottom'}, ${primaryColor}, ${primaryColor}40)` }}
+          className={`absolute ${isSmall ? 'top-0 left-0 right-0 h-0.5' : 'top-0 left-0 bottom-0 w-1'}`}
+          style={{ 
+            background: isSmall 
+              ? primaryColor 
+              : `linear-gradient(to bottom, ${primaryColor}, ${primaryColor}40)`
+          }}
         />
 
         {/* Header - Stacked Centered */}

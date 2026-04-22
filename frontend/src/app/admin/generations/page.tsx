@@ -104,7 +104,7 @@ export default function GenerationsPage() {
 
   const fetchBrands = useCallback(async () => {
     try {
-      const data = await adminApi.get<{ brands: Brand[] }>('/api/admin/brands?limit=1000');
+      const data = await adminApi.get<{ brands: Brand[] }>('/admin/brands?limit=1000');
       setBrands(data.brands || []);
     } catch { /* silent */ }
   }, []);
@@ -122,7 +122,7 @@ export default function GenerationsPage() {
       params.set('limit', String(limit));
 
       const data = await adminApi.get<{ generations: Generation[]; total: number; stats?: GenerationStats }>(
-        `/api/admin/generations?${params.toString()}`
+        `/admin/generations?${params.toString()}`
       );
       setGenerations(data.generations || []);
       setTotal(data.total || 0);
