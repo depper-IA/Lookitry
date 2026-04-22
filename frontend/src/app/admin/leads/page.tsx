@@ -33,17 +33,21 @@ export default function LeadsPage() {
   }>({ cities: [], countries: [], businessTypes: [], statuses: [] });
   const [editLead, setEditLead] = useState<Lead | null>(null);
   const [detailLead, setDetailLead] = useState<Lead | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchLeads = useCallback(async () => {
     try {
-      let url = `/api/admin/leads?`;
+      setLoading(true);
+      let url = `/api/admin/leads?page=${currentPage}&limit=10&`;
       if (filterCountry) url += `country=${filterCountry}&`;
       if (filterCity) url += `city=${filterCity}&`;
       if (filterBusinessType) url += `business_type=${filterBusinessType}&`;
       if (filterStatus) url += `status=${filterStatus}&`;
 
-      const data = await adminApi.get<{ leads?: Lead[] }>(url);
+      const data = await adminApi.get<{ leads: Lead[]; total: number; page: number }>(url);
       setLeads(data.leads || []);
+      setTotalPages(Math.ceil(data.total / 10));
 
       const statsData = await adminApi.get<Stats>('/api/admin/leads/stats');
       setStats(statsData);
@@ -52,7 +56,7 @@ export default function LeadsPage() {
     } finally {
       setLoading(false);
     }
-  }, [filterCountry, filterCity, filterBusinessType, filterStatus]);
+  }, [currentPage, filterCountry, filterCity, filterBusinessType, filterStatus]);
 
   const fetchFilters = useCallback(async () => {
     try {
@@ -65,8 +69,11 @@ export default function LeadsPage() {
 
   useEffect(() => {
     fetchLeads();
+  }, [fetchLeads]);
+
+  useEffect(() => {
     fetchFilters();
-  }, [fetchLeads, fetchFilters]);
+  }, [fetchFilters]);
 
   const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
     setActionLoading(leadId);
@@ -100,6 +107,11 @@ export default function LeadsPage() {
     } catch (err: any) {
       setError(err.message);
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (loading) {
@@ -191,25 +203,65 @@ export default function LeadsPage() {
         )}
       </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
-        <span>Mostrando {leads.length} leads</span>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => { /* page prev */ }}
-            className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
-          >
-            <IconSpinner />
-          </button>
-          <span>1</span>
-          <button
-            onClick={() => { /* page next */ }}
-            className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
-          >
-            <IconSpinner />
-          </button>
+      {/* Pagination */}
+      {leads.length > 0 && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Mostrando {(currentPage - 1) * 10 + 1}-{Math.min(currentPage * 10, stats.total)} de {stats.total.toLocaleString()} leads
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium border border-[var(--border-color)] transition-colors hover:bg-[var(--bg-hover)] disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              Anterior
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                const pageNum = i + 1;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className="h-8 w-8 rounded-lg text-sm font-medium transition-colors"
+                    style={{
+                      backgroundColor: currentPage === pageNum ? 'var(--accent)' : 'transparent',
+                      color: currentPage === pageNum ? '#fff' : 'var(--text-secondary)',
+                      border: currentPage === pageNum ? 'none' : '1px solid var(--border-color)',
+                    }}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+              {totalPages > 5 && (
+                <span className="px-2 text-sm" style={{ color: 'var(--text-muted)' }}>...</span>
+              )}
+              {totalPages > 5 && (
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  className="h-8 w-8 rounded-lg text-sm font-medium border border-[var(--border-color)] transition-colors hover:bg-[var(--bg-hover)]"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  {totalPages}
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium border border-[var(--border-color)] transition-colors hover:bg-[var(--bg-hover)] disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              Siguiente
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Modals */}
       {detailLead && (
