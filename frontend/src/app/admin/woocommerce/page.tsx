@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
+import { adminApi } from '@/services/adminApi';
 
 type WooBrandStatus = 'active' | 'pending' | 'inactive';
 
@@ -58,7 +59,7 @@ const STATUS_META: Record<WooBrandStatus, { label: string; bg: string; text: str
 };
 
 export default function AdminWooCommercePage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+  // adminApi ya maneja la base y el prefijo /api correctamente
   const [brands, setBrands] = useState<WooBrand[]>([]);
   const [selectedBrandId, setSelectedBrandId] = useState<string>('');
   const [products, setProducts] = useState<WooProduct[]>([]);
@@ -76,11 +77,12 @@ export default function AdminWooCommercePage() {
 
   const filteredBrands = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const activeOnly = brands.filter((brand) => brand.status === 'active');
+    // Mostramos activas y pendientes para que el admin vea quién está intentando conectar
+    const visibleBrands = brands.filter((brand) => brand.status === 'active' || brand.status === 'pending');
 
-    if (!q) return activeOnly;
+    if (!q) return visibleBrands;
 
-    return activeOnly.filter((brand) =>
+    return visibleBrands.filter((brand) =>
       [brand.name, brand.slug, brand.email, brand.plugin_store_domain || '']
         .join(' ')
         .toLowerCase()
@@ -92,20 +94,16 @@ export default function AdminWooCommercePage() {
     setLoadingBrands(true);
     setError('');
     try {
-      const res = await fetch(`${apiBase}/api/admin/woocommerce/brands-summary`, {
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('No se pudo cargar marcas WooCommerce');
-      const data = await res.json();
+      const data = await adminApi.get('/admin/woocommerce/brands-summary');
       const list: WooBrand[] = Array.isArray(data.brands) ? data.brands : [];
       setBrands(list);
 
-      const firstActive = list.find((brand) => brand.status === 'active');
+      const firstVisible = list.find((brand) => brand.status === 'active' || brand.status === 'pending');
       setSelectedBrandId((current) => {
-        if (current && list.some((brand) => brand.id === current && brand.status === 'active')) {
+        if (current && list.some((brand) => brand.id === current && (brand.status === 'active' || brand.status === 'pending'))) {
           return current;
         }
-        return firstActive?.id || '';
+        return firstVisible?.id || '';
       });
     } catch (err: any) {
       setError(err?.message || 'No se pudo cargar la integración WooCommerce.');
@@ -120,11 +118,7 @@ export default function AdminWooCommercePage() {
     if (!brandId) return;
     setLoadingProducts(true);
     try {
-      const res = await fetch(`${apiBase}/api/admin/woocommerce/brands/${brandId}/products`, {
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('No se pudo cargar productos de la marca');
-      const data = await res.json();
+      const data = await adminApi.get(`/admin/woocommerce/brands/${brandId}/products`);
       setProducts((data.products || []).filter((product: WooProduct) => !!product.external_id));
       setSummary(data.summary || null);
     } catch (err: any) {
@@ -140,17 +134,10 @@ export default function AdminWooCommercePage() {
     if (!selectedBrandId) return;
     setSavingMap((prev) => ({ ...prev, [productId]: true }));
     try {
-      const res = await fetch(
-        `${apiBase}/api/admin/woocommerce/brands/${selectedBrandId}/products/${productId}/active`,
-        {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ is_active: nextState }),
-        }
+      await adminApi.patch(
+        `/admin/woocommerce/brands/${selectedBrandId}/products/${productId}/active`,
+        { is_active: nextState }
       );
-
-      if (!res.ok) throw new Error('No se pudo actualizar el estado del producto');
 
       setProducts((prev) => prev.map((product) => (
         product.id === productId ? { ...product, is_active: nextState } : product
@@ -184,7 +171,7 @@ export default function AdminWooCommercePage() {
           WooCommerce activo
         </h1>
         <p style={{ color: 'var(--text-muted)' }}>
-          Vista filtrada solo a marcas con plugin validado y conexión operativa.
+          Vista de marcas con plugin validado o pendiente de validación.
         </p>
       </header>
 
@@ -220,10 +207,10 @@ export default function AdminWooCommercePage() {
         ) : filteredBrands.length === 0 ? (
           <div className="rounded-[1.5rem] border border-dashed p-8 text-center" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
             <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-              No hay marcas WooCommerce activas para mostrar
+              No hay marcas WooCommerce activas o pendientes
             </p>
             <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-              Esta pantalla ya no mezcla pendientes o API keys sueltas sin validación real del plugin.
+              Las marcas deben tener al menos una API Key generada para aparecer aquí.
             </p>
           </div>
         ) : (

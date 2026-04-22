@@ -39,10 +39,6 @@ export class BrandAdminService {
         return !sl.account_archived_at;
       });
 
-      if (error || !brands) {
-        throw new Error('Error al obtener marcas: ' + error?.message);
-      }
-
       const brandIds = activeBrands.map(b => b.id);
 
       const now = new Date();
@@ -178,8 +174,8 @@ export class BrandAdminService {
 
     // Generar sufijo único para liberar el email y slug originales
     const suffix = Math.random().toString(36).substring(2, 7);
-    const archivedEmail = `archived_${brandId.slice(0, 8)}_${suffix}@lookitry.archived`;
-    const archivedSlug = `archived-${brand.slug}-${suffix}`;
+    const archivedEmail = `archived-${brandId.slice(0, 8)}-${suffix}@lookitry.archived`;
+    const archivedSlug = `archived-${brand.slug}-${suffix}`.replace(/_/g, '-');
     const socialLinks = getBrandSocialLinks(brand as any);
 
     const { error: deleteError } = await supabaseAdmin
@@ -195,13 +191,32 @@ export class BrandAdminService {
           account_archived_at: new Date().toISOString(),
           account_archived_reason: 'admin_delete_reproduction',
           account_archived_by: 'admin',
-          original_email: brand.email, // Guardamos referencia por si acaso
-          original_slug: brand.slug
+          original_email: brand.email,
         },
       })
       .eq('id', brandId);
 
     if (deleteError) throw new Error('Error al archivar marca y liberar credenciales: ' + deleteError.message);
+  }
+
+  /**
+   * Resetear una marca (limpiar trial/suscripción pero mantener cuenta e histórico)
+   */
+  async resetBrand(brandId: string): Promise<void> {
+    const { error } = await supabaseAdmin
+      .from('brands')
+      .update({
+        plan: 'BASIC',
+        subscription_status: 'expired',
+        trial_end_date: null,
+        subscription_start_date: null,
+        subscription_end_date: null,
+        has_landing_page: false,
+        landing_suspended_at: null
+      })
+      .eq('id', brandId);
+
+    if (error) throw new Error('Error al resetear marca: ' + error.message);
   }
 
   /**

@@ -13,7 +13,7 @@ import {
   deleteInactiveProduct, changeBrandPlan, activateBrandPlan, 
   toggleLandingPage, updateBrandNotes, updateModalConfig, 
   sendBrandResetEmail, getMiniLandingsAdmin, suspendMiniLanding, 
-  restoreMiniLanding, getBrandFull, getBrandsList,
+  restoreMiniLanding, getBrandFull, getBrandsList, resetBrand,
   // Stats
   getGlobalStats, getConversionStats, getTopBrands, getAlerts, 
   getRiskData, getEconomics, getMissionControl,
@@ -127,6 +127,7 @@ router.patch('/brands/:id/landing-page', requirePermission('brands'), toggleLand
 router.patch('/brands/:id/notes', requirePermission('brands'), updateBrandNotes);
 router.patch('/brands/:id/modal-config', requirePermission('brands'), updateModalConfig);
 router.post('/brands/:id/send-reset-email', requirePermission('brands'), sendBrandResetEmail);
+router.post('/brands/:id/reset', requirePermission('brands'), resetBrand);
 router.get('/brands/list', requirePermission('brands'), getBrandsList);
 
 // Mini-landings — panel de control

@@ -124,6 +124,22 @@ export const deleteBrand = async (req: any, res: Response) => {
 };
 
 /**
+ * POST /api/admin/brands/:id/reset
+ */
+export const resetBrand = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'ID de marca requerido' });
+    await adminService.resetBrand(id);
+    auditService.log({ admin_id: req.admin?.id ?? 'unknown', admin_email: req.admin?.email ?? 'unknown', action: 'brand.reset', target_brand_id: id });
+    return res.status(200).json({ message: 'Marca reseteada exitosamente (trial/suscripción limpiados)' });
+  } catch (error: any) {
+    const isNotFound = error.message === 'Marca no encontrada';
+    return res.status(isNotFound ? 404 : 500).json({ error: isNotFound ? 'NOT_FOUND' : 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al resetear marca') });
+  }
+};
+
+/**
  * DELETE /api/admin/brands/:id/products/:productId
  */
 export const deleteInactiveProduct = async (req: Request, res: Response) => {
