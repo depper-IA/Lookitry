@@ -36,7 +36,7 @@ router.get('/', async (_req, res) => {
     const satisfaction = Math.round(avgRating * 10) / 10;
 
     return res.status(200).json({
-      active_brands: brandsCount ?? 0,
+      total_brands: brandsCount ?? 0,
       total_generations: generationsCount ?? 0,
       satisfaction_rating: satisfaction,
       reviews_count: reviewsData?.length ?? 0,
