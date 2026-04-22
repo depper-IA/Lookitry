@@ -353,7 +353,7 @@ if (loading) {
                       <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                         {lead.city || '—'}, {lead.country}
                       </p>
-                      {lead.rating && (
+                      {lead.rating != null && (
                         <div className="flex items-center gap-1 mt-1">
                           <IconStar className="h-3 w-3" style={{ color: '#FBBD23' }} />
                           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{lead.rating.toFixed(1)}</span>
@@ -586,7 +586,7 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void })
                 <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{lead.city || '—'}, {lead.country}</p>
               </div>
             </div>
-            {lead.latitude && lead.longitude && (
+            {lead.latitude != null && lead.longitude != null && (
               <div className="p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
                 <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Coordenadas</p>
                 <p className="text-sm font-mono" style={{ color: 'var(--text-secondary)' }}>
@@ -664,16 +664,16 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void })
           )}
 
           {/* Rating Section */}
-          {(lead.rating !== undefined || lead.user_ratings_total !== undefined) && (
+          {(lead.rating != null || lead.user_ratings_total != null) && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Valoración Google</h3>
               <div className="flex items-center gap-4 p-4 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
-                {lead.rating !== undefined && (
+                {lead.rating != null && (
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{lead.rating.toFixed(1)}</span>
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <span key={star} style={{ color: star <= Math.round(lead.rating!) ? '#FBBD23' : 'var(--text-muted)' }}>
+                        <span key={star} style={{ color: star <= Math.round(lead.rating) ? '#FBBD23' : 'var(--text-muted)' }}>
                           <IconStar />
                         </span>
                       ))}
