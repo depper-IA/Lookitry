@@ -102,6 +102,14 @@ function formatDate(iso?: string) {
   return new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+// Limpia el nombre del lead (guiones bajos -> espacios, limpia espacios extra)
+function cleanLeadName(name: string): string {
+  return name
+    .replace(/_/g, ' ')           // Reemplazar guiones bajos con espacios
+    .replace(/\s+/g, ' ')         // Limpiar espacios múltiples
+    .trim();
+}
+
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, new: 0, qualified: 0, contacted: 0, interested: 0, not_interested: 0, client: 0 });
@@ -345,7 +353,7 @@ if (loading) {
                   >
                     <td className="px-6 py-4">
                       <div>
-                        <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{lead.name}</p>
+                        <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{cleanLeadName(lead.name)}</p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{lead.business_type || '—'}</p>
                       </div>
                     </td>
@@ -462,10 +470,13 @@ if (loading) {
 }
 
 function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void }) {
-  const googleMapsUrl = lead.latitude && lead.longitude
-    ? `https://www.google.com/maps/search/?api=1&query=${lead.latitude},${lead.longitude}`
+  // Google Maps: usar nombre + direccion para encontrar el negocio correcto (mas preciso que lat/long)
+  const googleMapsUrl = (lead.name && lead.address)
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lead.name} ${lead.address}`)}`
     : lead.address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lead.address)}`
+    : lead.latitude && lead.longitude
+    ? `https://www.google.com/maps/search/?api=1&query=${lead.latitude},${lead.longitude}`
     : null;
 
   const phoneLink = lead.phone ? `tel:+57${lead.phone.replace(/\D/g, '')}` : null;
@@ -497,7 +508,7 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void })
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b backdrop-blur-md" style={{ borderColor: 'var(--border-color)', backgroundColor: 'color-mix(in srgb, var(--bg-card) 90%, transparent)' }}>
           <div>
-            <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{lead.name}</h2>
+            <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{cleanLeadName(lead.name)}</h2>
             <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
               {lead.business_type || lead.source}
             </p>
