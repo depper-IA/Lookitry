@@ -3,7 +3,9 @@ import { sanitizeError } from '../../utils/sanitizeError';
 import { leadService } from '../../services/lead.service';
 import { leadSearchService } from '../../services/lead-search.service';
 import { leadGenerationService } from '../../services/lead-generation.service';
+import { leadEnrichmentService } from '../../services/lead-enrichment.service';
 import { socialApiConfigService } from '../../services/social-api-config.service';
+import { supabaseAdmin } from '../../config/supabase';
 
 export const getLeads = async (req: any, res: Response) => {
   try {
@@ -169,6 +171,7 @@ export const createLeadSearch = async (req: any, res: Response) => {
 export const runLeadSearch = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const enrichEmails = req.query.enrichEmails === 'true';
 
     const canRun = await leadGenerationService.canMakeRequest();
     if (!canRun) {
@@ -176,7 +179,48 @@ export const runLeadSearch = async (req: Request, res: Response) => {
     }
 
     const result = await leadGenerationService.runSearch(id);
-    return res.json({ message: 'Búsqueda completada', ...result });
+
+    // If email enrichment is requested, find emails for newly inserted leads
+    let emailEnrichment = null;
+    if (enrichEmails && result.inserted > 0) {
+      try {
+        // Get the leads we just inserted (from this search)
+        const search = await leadSearchService.getSearchById(id);
+        if (search) {
+          const { data: newLeads } = await supabaseAdmin
+            .from('leads')
+            .select('id')
+            .eq('search_id', id)
+            .is('email', null)
+            .not('website', 'is', null)
+            .limit(50);
+
+          if (newLeads && newLeads.length > 0) {
+            let found = 0;
+            for (const lead of newLeads) {
+              try {
+                const emailResult = await leadEnrichmentService.findEmailForLead(lead.id);
+                if (emailResult.found) found++;
+              } catch {
+                // Continue even if one fails
+              }
+              // Rate limit
+              await new Promise(r => setTimeout(r, 500));
+            }
+            emailEnrichment = { attempted: newLeads.length, found };
+          }
+        }
+      } catch (emailError: any) {
+        console.error('[Leads] Email enrichment error:', emailError.message);
+        emailEnrichment = { attempted: 0, found: 0, error: emailError.message };
+      }
+    }
+
+    return res.json({
+      message: 'Búsqueda completada',
+      ...result,
+      emailEnrichment
+    });
   } catch (err: any) {
     console.error('[Leads] runLeadSearch:', err);
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al ejecutar búsqueda') });
