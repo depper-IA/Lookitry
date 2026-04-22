@@ -51,6 +51,7 @@ export class AdminService {
   getAllBrandsWithStats() { return this.brands.getAllBrandsWithStats(); }
   changeBrandPlan(brandId: string, newPlan: 'BASIC' | 'PRO') { return this.brands.changeBrandPlan(brandId, newPlan); }
   deleteBrand(brandId: string) { return this.brands.deleteBrand(brandId); }
+  resetBrand(brandId: string) { return this.brands.resetBrand(brandId); }
   deleteInactiveProduct(brandId: string, productId: string) { return this.brands.deleteInactiveProduct(brandId, productId); }
   getBrandProducts(brandId: string) { return this.brands.getBrandProducts(brandId); }
   createBrand(data: Parameters<BrandAdminService['createBrand']>[0]) { return this.brands.createBrand(data); }
