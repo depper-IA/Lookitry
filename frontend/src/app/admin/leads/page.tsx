@@ -673,7 +673,7 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void })
                     <span className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{lead.rating.toFixed(1)}</span>
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <span key={star} style={{ color: star <= Math.round(lead.rating) ? '#FBBD23' : 'var(--text-muted)' }}>
+                        <span key={star} style={{ color: star <= Math.round(lead.rating!) ? '#FBBD23' : 'var(--text-muted)' }}>
                           <IconStar />
                         </span>
                       ))}
