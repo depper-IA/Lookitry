@@ -8,7 +8,7 @@ const n8nClient = new N8nClient();
 
 /**
  * GET /api/admin/generations
- * Lista todas las generaciones con filtros
+ * Lista todas las generaciones con filtros y datos relacionados
  */
 export const getGenerations = async (req: any, res: Response) => {
   try {
@@ -17,16 +17,22 @@ export const getGenerations = async (req: any, res: Response) => {
       status,
       start_date,
       end_date,
-      limit = '50',
-      offset = '0'
+      limit = '20',
+      offset = '0',
+      page = '1'
     } = req.query;
 
-    const limitNum = Math.min(parseInt(limit as string) || 50, 100);
-    const offsetNum = parseInt(offset as string) || 0;
+    const limitNum = Math.min(parseInt(limit as string) || 20, 100);
+    const pageNum = Math.max(parseInt(page as string) || 1, 1);
+    const offsetNum = (pageNum - 1) * limitNum;
 
     let query = supabaseAdmin
       .from('admin_generations_log')
-      .select('*', { count: 'exact' });
+      .select(`
+        *,
+        brands(id, name, slug),
+        products(id, name)
+      `, { count: 'exact' });
 
     if (brand_id) {
       query = query.eq('brand_id', brand_id);
@@ -50,8 +56,26 @@ export const getGenerations = async (req: any, res: Response) => {
       return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener generaciones' });
     }
 
+    // Transformar datos con nombres relacionados
+    const generations = (data || []).map((row: any) => ({
+      id: row.id,
+      brand_id: row.brand_id,
+      brand_name: row.brands?.name || null,
+      brand_slug: row.brands?.slug || null,
+      product_id: row.product_id,
+      product_name: row.products?.name || null,
+      status: row.status,
+      model_provider: row.model_used || null,
+      selfie_url: row.selfie_url,
+      result_url: row.result_url,
+      error_message: row.error_message,
+      processing_time_ms: row.processing_time_ms,
+      metadata: row.metadata,
+      created_at: row.created_at,
+    }));
+
     return res.json({
-      data: data || [],
+      generations,
       total: count || 0,
       has_more: (count || 0) > offsetNum + limitNum
     });

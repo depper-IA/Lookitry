@@ -115,24 +115,33 @@ export default function GenerationsPage() {
       const params = new URLSearchParams();
       if (filterBrand) params.set('brand_id', filterBrand);
       if (filterStatus) params.set('status', filterStatus);
-      if (searchTerm) params.set('search', searchTerm);
-      if (dateFrom) params.set('from', dateFrom);
-      if (dateTo) params.set('to', dateTo);
+      if (dateFrom) params.set('start_date', dateFrom);
+      if (dateTo) params.set('end_date', dateTo);
       params.set('page', String(page));
       params.set('limit', String(limit));
 
-      const data = await adminApi.get<{ generations: Generation[]; total: number; stats?: GenerationStats }>(
-        `/admin/generations?${params.toString()}`
-      );
-      setGenerations(data.generations || []);
-      setTotal(data.total || 0);
-      if (data.stats) setStats(data.stats);
+      const [genData, statsData] = await Promise.all([
+        adminApi.get<{ generations: Generation[]; total: number }>(`/admin/generations?${params.toString()}`),
+        adminApi.get<{ total: number; pending: number; processing: number; completed: number; failed: number }>(
+          `/admin/generations/stats${filterBrand ? `?brand_id=${filterBrand}` : ''}`
+        ),
+      ]);
+
+      setGenerations(genData.generations || []);
+      setTotal(genData.total || 0);
+      setStats({
+        total: statsData.total || 0,
+        pending: statsData.pending || 0,
+        processing: statsData.processing || 0,
+        completed: statsData.completed || 0,
+        failed: statsData.failed || 0,
+      });
     } catch (err: any) {
       setToast({ message: err.message || 'Error al cargar generaciones', type: 'error' });
     } finally {
       setLoading(false);
     }
-  }, [filterBrand, filterStatus, searchTerm, dateFrom, dateTo, page, limit]);
+  }, [filterBrand, filterStatus, dateFrom, dateTo, page, limit]);
 
   useEffect(() => {
     fetchBrands();
