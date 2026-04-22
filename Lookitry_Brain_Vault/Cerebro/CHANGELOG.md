@@ -439,4 +439,24 @@ Sistema completo para automatizar contenido de Instagram + TikTok con música AI
 
 ---
 
-_Last updated: 2026-04-19 12:45 UTC-5_
+## 2026-04-22
+
+### docs(brain-vault): Limpieza de archivos obsoletos
+
+**Archivos ELIMINADOS (duplicados o claramente obsoletos):**
+- `Cerebro/Logs/CHANGELOG.md` — Duplicado de `Cerebro/CHANGELOG.md`
+- `Cerebro/Logs/CHANGELOG_ARCHIVE_2026_Q1.md` — Histórico antiguo, info cubierta en CHANGELOG principal
+- `Cerebro/Logs/CHANGELOG_ARCHIVE_2026_04_06.md` — Histórico antiguo duplicado
+- `Cerebro/Logs/gcp_usage_log.md` — Pricing antiguo de GCP (ya no se usa imagen-3.0)
+- `Cerebro/Docs/n8n_guide.md` — Duplicado de `Cerebro/Docs/Guias/n8n_guide.md`
+- `Cerebro/Docs/PENDING_uptime_monitoring.md` — Configuración completada, sin valor actual
+- `Cerebro/Docs/PENDING_whatsapp_bot.md` — Solo planning, nunca implementado
+- `Cerebro/PARRILLA_REDES_SOCIALES.md` — Parrilla antigua de contenido (reemplazada por procesos actuales de Rebecca)
+
+**Archivos MANTENIDOS (Sam los leerá después):**
+- `Cerebro/Docs/design/RUNPOD_*.md` — Documentación RunPod para lectura posterior
+- `Cerebro/Docs/SHOPIFY_INTEGRATION.md` — Integración Shopify para lectura posterior
+
+---
+
+_Last updated: 2026-04-22 12:00 UTC-5_
