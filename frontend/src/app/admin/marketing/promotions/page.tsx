@@ -388,6 +388,11 @@ export default function PromotionsPage() {
     } catch (e: any) { setError(e.message); } finally { setSavingCoupon(false); }
   };
 
+  const handleToggleCoupon = async (coupon: Coupon) => {
+    await fetch(`${API_URL}/api/admin/coupons/${coupon.id}`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: !coupon.active }) });
+    await loadCoupons();
+  };
+
   const handleDeleteCoupon = async (id: string) => {
     if (!confirm('¿Eliminar este cupón?')) return;
     await fetch(`${API_URL}/api/admin/coupons/${id}`, { method: 'DELETE', credentials: 'include' });
@@ -416,11 +421,14 @@ export default function PromotionsPage() {
           </div>
         </div>
         <button
-          onClick={() => { setShowPromoForm(true); setEditingPromo(null); setTab('promos'); }}
+          onClick={() => {
+            if (tab === 'promos') { setShowPromoForm(true); setEditingPromo(null); }
+            else { setShowCouponForm(true); setEditingCoupon(null); }
+          }}
           className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all hover:opacity-90 shadow-lg shadow-[var(--accent)]/20 w-full sm:w-auto"
           style={{ backgroundColor: 'var(--accent)' }}
         >
-          <IconPlus />Nueva promoción
+          <IconPlus />{tab === 'promos' ? 'Nueva promoción' : 'Nuevo cupón'}
         </button>
       </div>
 
@@ -505,6 +513,75 @@ export default function PromotionsPage() {
                               title="Editar"><IconEdit /></button>
                             <button onClick={() => handleDeletePromo(p.id)} className="p-1.5 rounded-lg transition-colors text-[var(--text-secondary)] hover:text-red-500"
                               title="Eliminar"><IconTrash /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── TAB: Cupones ── */}
+      {tab === 'coupons' && (
+        <div className="space-y-4">
+          {showCouponForm && (
+            <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <p className="font-jakarta font-bold tracking-tight text-[15px] mb-4" style={{ color: 'var(--text-primary)' }}>
+                {editingCoupon ? 'Editar cupón' : 'Nuevo cupón'}
+              </p>
+              <CouponForm
+                initial={editingCoupon
+                  ? { code: editingCoupon.code, discount_type: editingCoupon.discount_type, discount_value: editingCoupon.discount_value, max_uses: editingCoupon.max_uses, expires_at: editingCoupon.expires_at, plan_ids: editingCoupon.plan_ids, active: editingCoupon.active }
+                  : EMPTY_COUPON}
+                onSave={handleSaveCoupon}
+                onCancel={() => { setShowCouponForm(false); setEditingCoupon(null); }}
+                saving={savingCoupon}
+              />
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex justify-center py-12" style={{ color: 'var(--text-muted)' }}><IconSpinner /></div>
+          ) : coupons.length === 0 ? (
+            <div className="text-center py-16 rounded-[2rem]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
+              <div className="flex justify-center mb-3"><IconTag /></div>
+              <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>No hay cupones. Crea el primero.</p>
+            </div>
+          ) : (
+            <div className="rounded-[2rem] border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+              <div className="overflow-x-auto overflow-y-hidden">
+                <table className="w-full text-[13px] min-w-[600px]">
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      {['Código', 'Descuento', 'Usos', 'Vigencia', 'Activo', ''].map((h, i) => (
+                        <th key={i} className={`px-5 py-3 font-semibold text-[11px] uppercase tracking-wide ${i === 4 ? 'text-center' : 'text-left'}`} style={{ color: 'var(--text-secondary)' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {coupons.map(c => (
+                      <tr key={c.id} style={{ borderBottom: '1px solid var(--border-color)' }} className="transition-colors hover:bg-[var(--bg-hover)]">
+                        <td className="px-5 py-3.5 font-medium" style={{ color: 'var(--text-primary)' }}>{c.code}</td>
+                        <td className="px-5 py-3.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                          {c.discount_type === 'pct' ? `${c.discount_value}%` : `$${c.discount_value}`}
+                        </td>
+                        <td className="px-5 py-3.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                          {c.uses_count} {c.max_uses ? `/ ${c.max_uses}` : ''}
+                        </td>
+                        <td className="px-5 py-3.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                          {c.expires_at ? `Hasta ${formatDate(c.expires_at)}` : 'Sin fecha'}
+                        </td>
+                        <td className="px-5 py-3.5 text-center">
+                          <Toggle checked={c.active} onChange={() => handleToggleCoupon(c)} />
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-2 justify-end">
+                            <button onClick={() => { setEditingCoupon(c); setShowCouponForm(true); }} className="p-1.5 rounded-lg transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]" title="Editar"><IconEdit /></button>
+                            <button onClick={() => handleDeleteCoupon(c.id)} className="p-1.5 rounded-lg transition-colors text-[var(--text-secondary)] hover:text-red-500" title="Eliminar"><IconTrash /></button>
                           </div>
                         </td>
                       </tr>
