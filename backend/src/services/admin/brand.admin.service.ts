@@ -412,9 +412,9 @@ export class BrandAdminService {
 
     let query = supabaseAdmin
       .from('brands')
-      .select('id, name, email, slug, plan, subscription_status')
+      .select('id, name, email, slug, plan, subscription_status, social_links')
       .order('name', { ascending: true })
-      .limit(limit);
+      .limit(limit * 2); // Fetch more to allow for filtering
 
     if (search && typeof search === 'string' && search.trim().length > 0) {
       const searchTerm = search.trim();
@@ -424,7 +424,14 @@ export class BrandAdminService {
     const { data, error } = await query;
 
     if (error) throw new Error('Error al obtener marcas: ' + error.message);
-    return data || [];
+    
+    // Filtrar archivados en memoria para mayor seguridad con JSONB
+    return (data || [])
+      .filter(brand => {
+        const sl = brand.social_links || {};
+        return !sl.account_archived_at;
+      })
+      .slice(0, limit);
   }
 }
 
