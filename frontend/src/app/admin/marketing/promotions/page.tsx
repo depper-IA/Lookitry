@@ -60,19 +60,19 @@ function IconSpinner() {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const TYPE_LABELS: Record<PromoType, string> = {
-  modal_timer:   'Modal con countdown',
-  coupon:        'Cupón',
-  banner:        'Banner superior',
+  modal_timer: 'Modal con countdown',
+  coupon: 'Cupón',
+  banner: 'Banner superior',
   plan_override: 'Precio especial por plan',
-  launch_offer:  'Oferta de lanzamiento',
+  launch_offer: 'Oferta de lanzamiento',
 };
 
 const TYPE_COLORS: Record<PromoType, string> = {
-  modal_timer:   '#6366f1',
-  coupon:        '#10b981',
-  banner:        '#f59e0b',
+  modal_timer: '#6366f1',
+  coupon: '#10b981',
+  banner: '#f59e0b',
   plan_override: 'var(--accent)',
-  launch_offer:  '#ec4899',
+  launch_offer: '#ec4899',
 };
 
 function formatDate(iso?: string) {

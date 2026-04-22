@@ -1,0 +1,231 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "minimax/MiniMax-M2.7",
+  "small_model": "groq/llama-3.3-70b-versatile",
+  "provider": {
+    "minimax": {
+      "npm": "@ai-sdk/anthropic",
+      "options": {
+        "baseURL": "https://api.minimax.io/anthropic/v1",
+        "timeout": 300000,
+        "apiKey": "sk-cp-sPgdKbqLq4Ms_K5vTJUw6bJS3WjGmmbrvCQ8CNUyLyHZzACF_44tRK4oqcWNq5zCsjPANYk_oruPGv2m3_VGqjayHyZ07JSf8fUpbwcPhOx5vOAVNhUSZps"
+      },
+      "models": {
+        "MiniMax-M2.7": {
+          "name": "MiniMax-M2.7"
+        }
+      }
+    },
+    "deepseek": {
+      "options": {
+        "timeout": 300000
+      }
+    },
+    "gemini": {
+      "npm": "@ai-sdk/google",
+      "options": {
+        "baseURL": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "timeout": 120000
+      },
+      "models": {
+        "gemini-2.0-flash": {
+          "name": "gemini-2.0-flash"
+        },
+        "gemini-embedding": {
+          "name": "gemini-embedding-exp"
+        }
+      }
+    },
+    "groq": {
+      "options": {
+        "timeout": 120000,
+        "apiKey": "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"
+      }
+    },
+    "openrouter": {
+      "options": {
+        "timeout": 120000
+      }
+    }
+  },
+  "agent": {
+    "sammy": {
+      "description": "Orquestador principal del equipo de agentes Lookitry",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "Sammy es el orquestador maestro de Lookitry. Su cerebro funcional es Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Recibe tareas y delega al agente especialista indicado. PROHIBIDO ejecutar o delegar sin validar primero que la tarea cumple con las directivas de REGLAS_IMPORTANTES. NO edita codigo directamente.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    "webwizard": {
+      "description": "Agente de Frontend y UX — UI, componentes, landing, checkout, dashboard",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "WebWizard maneja todo el Frontend y UX bajo la disciplina de Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Maneja UI, componentes React, widget de try-on, landing y dashboard. OBLIGATORIO: Validar cada cambio visual contra el archivo de reglas. Colores: #FF5C3A (acento), #0a0a0a (fondo), #141414 (cards). Tipografía: Plus Jakarta Sans/DM Sans. Iconos: lucide-react únicamente. Optional chaining obligatorio.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    "devguardian": {
+      "description": "Agente de Calidad, Debugging y Seguridad",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "DevGuardian es el guardián de la calidad y seguridad, guiado por Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Revisa seguridad, pagos, auth JWT y webhooks. Usa razonamiento profundo para validar que ninguna implementación viole las reglas de seguridad o arquitectura del proyecto. NUNCA expone API keys. Backend usa supabaseAdmin. Usa maybeSingle() por seguridad de datos.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "deny",
+        "bash": "allow"
+      }
+    },
+    "dataalchemist": {
+      "description": "Agente de Base de Datos, IA y n8n — MiniMax para todas las tareas",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "# DataAlchemist — Agente de Base de Datos, IA y n8n\n\n## Identidad\n\nSoy el agente responsable de los datos, la inteligencia artificial, y los flujos de automatización de Lookitry. Diseño schemas que escalan, optimizo queries, y construyo los flujos n8n que hacen funcionar el try-on con IA.\n\n## Modelo\n\nMiniMax (`minimax/minimax-m2.7`) para todas las tareas.\n\n## MCPs Disponibles\n\n- **Supabase:** DB, migraciones, queries, verificar índices, RLS policies\n- **n8n:** Monitorear flujos, verificar status, backup de workflows\n- **Context7:** Documentación de PostgreSQL, pgvector, mejores prácticas\n\n## Base de Datos — Supabase (PostgreSQL + pgvector)\n\n### Tablas de alto volumen (índices críticos)\n\n**generations:**\n```sql\n-- Índices existentes: brand_id, status, created_at\n-- Query de polling (<10ms):\nSELECT status, result_image_url FROM generations WHERE id = $1;\n```\n\n**leads:**\n```sql\nCREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);\nCREATE INDEX IF NOT EXISTS idx_leads_search_id ON leads(search_id);\n```\n\n### Sistema RAG con pgvector\n\nEmbeddings usan `vector(768)`. Búsqueda de similitud:\n\n```sql\nSELECT description, prompt_used, error_type,\n  embedding <=> $1::vector AS distance\nFROM generation_feedback\nWHERE product_category = $2 AND resolved = false\nORDER BY embedding <=> $1::vector\nLIMIT 5;\n```\n\n## Flujos n8n — El Motor de IA\n\n| Función | Webhook | ID |\n|---------|---------|-----|\n| Try-On | `/webhook/tryon` | wPLypk7KhBcFLicX |\n| Descriptor | `/webhook/descriptor` | ZjVTV3QxoPEi60GX |\n| Error handling | automático | PNri7NdZYkZhpPnm |\n| Enterprise sync | `/webhook/enterprise-sync` | — |\n\n## Cache Redis — brandConfigCache\n\n```typescript\n// TTL: 5 minutos\n// Clave: brand:${brandSlug}\n// INVALIDAR cuando: cambio de plan, suspensión, cambio de logo/colores\nawait redis.del(`brand:${brandSlug}`);\n```\n\n## Reglas de Uso de Gemini\n\n```\n⚠️ LIMITE: 1500 requests/día, 15 req/min\n\nSIEMPRE: Priorizar caché local antes de consultar Gemini. Para embeddings: usar modelo `gemini-embedding-exp`. Para contenido: `gemini-2.0-flash`. NO usar para tareas que Groq pueda resolver más rápido (rate limit: 30/min).\n```",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    "growthpilot": {
+      "description": "Agente de CRM, Marketing y Leads",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "GrowthPilot maneja campañas, leads, prospecting, referidos y email marketing. Tareas principalmente de lógica de negocio y configuración — no requiere razonamiento profundo.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    "architectai": {
+      "description": "Agente de Infraestructura, DevOps y Arquitectura de Sistema",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "ArchitectAI maneja Infra, DevOps y Arquitectura basándose en Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Administra Docker, VPS, Traefik y despliegues. PROHIBIDO realizar cambios de infraestructura sin validar contra las reglas de despliegue y arquitectura. Usa el script de deploy oficial. Razona paso a paso antes de actuar.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    "docs-writter": {
+      "description": "Agente de Documentación — mantiene PRD, TECH_STACK, AGENTS, llms.txt y CHANGELOG actualizados",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "DocsWriter mantiene documentación crítica: PRD.md, TECH_STACK.md, AGENTS.md, llms.txt y CHANGELOG.md. Registrar en CHANGELOG.md: fecha, descripción, archivos modificados y motivo. Archivar CHANGELOG.md cuando supere 500 líneas o 30 días → CHANGELOG_ARCHIVE_YYYY_MM.md.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "deny"
+      }
+    }
+  },
+  "instructions": [
+    "Lookitry_Brain_Vault/Cerebro/AGENTS.md",
+    "Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md",
+    "Lookitry_Brain_Vault/Cerebro/TECH_STACK.md",
+    "Lookitry_Brain_Vault/Cerebro/MAPA_MAESTRO.md",
+    "Lookitry_Brain_Vault/Cerebro/Agentes/Skills.md"
+  ],
+  "mcp": {
+    "TestSprite": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@testsprite/testsprite-mcp@latest"
+      ],
+      "enabled": true,
+      "environment": {
+        "API_KEY": "sk-user-epBUbD7XjaiftoLL6w1W6cAydxGnBdBahe7elPBPhPcSLSaFHiBM06R2KoQBRmKTSVEAWl37igs3Br68EdD-pfvc8L7UCGAK22ks8e7b1_kjS7VPVsSCaKXyJs_mPSFKHo0"
+      }
+    },
+    "supabase": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "tsx",
+        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/supabase-mcp/src/index.ts"
+      ],
+      "enabled": true,
+      "environment": {
+        "SUPABASE_URL": "https://vkdooutklowctuudjnkl.supabase.co",
+        "SUPABASE_SERVICE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDc2NTY2NSwiZXhwIjoyMDg2MzQxNjY1fQ.NxXV0Too3Iadb0FGuC8powPUuaMPiF1TKIUVtGMyFpg"
+      }
+    },
+    "n8n": {
+      "type": "local",
+      "command": [
+        "node",
+        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/n8n-mcp-server/dist/index.js"
+      ],
+      "enabled": true,
+      "environment": {
+        "N8N_BASE_URL": "https://n8n.wilkiedevs.com",
+        "N8N_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NGUxZTYyYi1kY2M0LTRiZGUtOWFjZS02OTBmMjAxMGIyMDAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiZWE2NmI1N2ItNTBiNS00ZTViLWJhYzYtZDE2MWFkM2NkZTkzIiwiaWF0IjoxNzczMjc5MzMyfQ.ZuYsz4K4ifpp9ho_nZzpDypTy49_APNx9hkecKridJw"
+      }
+    },
+    "hostinger-mcp": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "hostinger-api-mcp@latest"
+      ],
+      "enabled": true,
+      "environment": {
+        "API_TOKEN": "ytiLMZYXYfVupYfuoZ16Yc6rFPetc4ViUczUEZqG37c8b8f0"
+      }
+    },
+    "context7": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "enabled": true,
+      "environment": {
+        "CONTEXT7_API_KEY": "ctx7sk-2a79898f-a150-4027-b9af-9d339aec2e81"
+      }
+    },
+    "memory": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@pepk/mcp-memory-sqlite@latest"
+      ],
+      "enabled": true
+    },
+    "sequentialthinking": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "enabled": true
+    },
+    "obsidian": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@zethictech/obsidian-mcp"
+      ],
+      "enabled": true,
+      "environment": {
+        "OBSIDIAN_VAULT": "Lookitry"
+      }
+    }
+  }
+}
