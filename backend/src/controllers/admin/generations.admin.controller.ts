@@ -34,7 +34,14 @@ export const getGenerations = async (req: any, res: Response) => {
       query = query.eq('brand_id', brand_id);
     }
     if (status) {
-      query = query.eq('status', status);
+      // Mapear status externo (frontend) a interno (DB)
+      const statusMap: Record<string, string> = {
+        'pending': 'PENDING',
+        'completed': 'SUCCESS',
+        'failed': 'FAILED'
+      };
+      const dbStatus = statusMap[status as string] || status;
+      query = query.eq('status', dbStatus);
     }
     if (start_date) {
       query = query.gte('generated_at', start_date);
