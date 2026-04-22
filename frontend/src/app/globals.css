@@ -170,7 +170,14 @@ h1, h2, h3, h4, h5, h6 {
 .theme-bg-hover   { background-color: var(--bg-hover); }
 .theme-border     { border-color: var(--border-color); }
 .theme-text       { color: var(--text-primary); }
-.theme-text-muted { color: var(--text-secondary); }
+.theme-text-muted { color: var(--text-muted); }
+.theme-text-secondary { color: var(--text-secondary); }
+.theme-bg-input   { background-color: var(--bg-input); }
+
+/* ── Login/Register auth pages specific ─────────────────────────────────── */
+.auth-bg-glow {
+  background: radial-gradient(circle, #FF5C3A 0%, transparent 70%);
+}
 
 /* ── Landing theme utilities ─────────────────────────────────────────────── */
 .landing-dark {
