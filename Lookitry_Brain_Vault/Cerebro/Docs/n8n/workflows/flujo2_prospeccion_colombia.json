@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "VirtualTryOn — Prospección Automática Colombia",
   "nodes": [
     {
@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Configuración de búsquedas: ciudades x nichos\nconst ciudades = [\n  'Bogotá', 'Medellín', 'Cali', 'Barranquilla',\n  'Bucaramanga', 'Pereira', 'Cartagena', 'Cúcuta',\n  'Ibagué', 'Manizales', 'Pasto', 'Villavicencio',\n  'Neiva', 'Armenia', 'Montería'\n];\n\nconst nichos = [\n  'tienda de ropa',\n  'boutique moda',\n  'tienda accesorios',\n  'ropa mujer',\n  'ropa hombre',\n  'calzado tienda',\n  'joyería accesorios',\n  'ropa deportiva'\n];\n\n// Generar combinaciones para esta semana (rotar para no repetir)\nconst semana = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));\nconst combinaciones = [];\n\n// 5 ciudades x 3 nichos = 15 búsquedas por ejecución\nconst ciudadesEsta = ciudades.slice((semana * 5) % ciudades.length, ((semana * 5) % ciudades.length) + 5);\nconst nichosEsta = nichos.slice((semana * 3) % nichos.length, ((semana * 3) % nichos.length) + 3);\n\nfor (const ciudad of ciudadesEsta) {\n  for (const nicho of nichosEsta) {\n    combinaciones.push({\n      query: `${nicho} ${ciudad} Colombia`,\n      ciudad: ciudad,\n      nicho: nicho,\n      semana: semana\n    });\n  }\n}\n\nreturn combinaciones.map(c => ({ json: c }));"
+        "jsCode": "// Configuración de búsquedas: ciudades x nichos\nconst ciudades = [\n  'Bogotá', 'Medellín', 'Cali', 'Barranquilla',\n  'Bucaramanga', 'Pereira', 'Cartagena', 'Cúcuta',\n  'Ibagué', 'Manizales', 'Pasto', 'Villavicencio',\n  'Neiva', 'Armenia', 'Montería'\n];\n\nconst nichos = [\n  'tienda de ropa',\n  'boutique moda',\n  'tienda accesorios',\n  'ropa mujer',\n  'ropa hombre',\n  'calzado tienda',\n  'joyería accesorios',\n  'ropa deportiva'\n];\n\n// Generar combinaciones para esta semana (rotar para no repetir)\nconst semana = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));\nconst combinaciones = [];\n// 5 ciudades x 3 nichos = 15 búsquedas por ejecución\nconst ciudadesEsta = ciudades.slice((semana * 5) % ciudades.length, ((semana * 5) % ciudades.length) + 5);\nconst nichosEsta = nichos.slice((semana * 3) % nichos.length, ((semana * 3) % nichos.length) + 3);\nfor (const ciudad of ciudadesEsta) {\n  for (const nicho of nichosEsta) {\n    combinaciones.push({\n      query: `${nicho} ${ciudad} Colombia`,\n      ciudad: ciudad,\n      nicho: nicho,\n      semana: semana\n    });\n  }\n}\n\nreturn combinaciones.map(c => ({ json: c }));"
       },
       "id": "generate-queries",
       "name": "🛠️ Code — Generar queries de búsqueda",
@@ -102,7 +102,7 @@
 
     {
       "parameters": {
-        "jsCode": "// Procesar resultados de Google Maps (Apify)\nconst lugares = Array.isArray($input.item.json) ? $input.item.json : [];\nconst ciudad = $node['🔄 SplitInBatches — 1 query'].json.ciudad;\nconst nicho = $node['🔄 SplitInBatches — 1 query'].json.nicho;\n\nconst leads = [];\n\nfor (const lugar of lugares) {\n  const nombre = lugar.title || lugar.name || null;\n  const email = lugar.email || \n    (lugar.additionalInfo && lugar.additionalInfo.email) || \n    null;\n  const telefono = lugar.phone || lugar.phoneNumber || null;\n  const web = lugar.website || lugar.url || null;\n  const direccion = lugar.address || lugar.street || null;\n  const instagram = (lugar.socialProfiles || []).find(s => s.type === 'instagram')?.url || null;\n  const calificacion = lugar.totalScore || null;\n\n  if (!nombre) continue;\n\n  leads.push({\n    nombre_empresa: nombre.toUpperCase(),\n    nombre_contacto: null,\n    email: email ? email.toLowerCase().trim() : null,\n    telefono: telefono ? String(telefono).replace(/[^0-9]/g, '') : null,\n    nicho: nicho,\n    ciudad: ciudad.toUpperCase(),\n    direccion: direccion || null,\n    sitio_web: web || null,\n    redes_sociales: instagram || null,\n    campana_enviada: 'NO',\n    estado_lead: 'NUEVO',\n    fuente: 'GOOGLE_MAPS_AUTO',\n    _fuente_raw: 'apify_gmaps',\n    _calificacion: calificacion\n  });\n}\n\nreturn leads.map(l => ({ json: l }));"
+        "jsCode": "// Procesar resultados de Google Maps (Apify)\nconst lugares = Array.isArray($input.item.json) ? $input.item.json : [];\nconst ciudad = $node['🔄 SplitInBatches — 1 query'].json.ciudad;\nconst nicho = $node['🔄 SplitInBatches — 1 query'].json.nicho;\nconst leads = [];\n\n\nfor (const lugar of lugares) {\n  const nombre = lugar.title || lugar.name || null;\n  const email = lugar.email || \n    (lugar.additionalInfo && lugar.additionalInfo.email) || \n    null;\n  const telefono = lugar.phone || lugar.phoneNumber || null;\n  const web = lugar.website || lugar.url || null;\n  const direccion = lugar.address || lugar.street || null;\n  const instagram = (lugar.socialProfiles || []).find(s => s.type === 'instagram')?.url || null;\n  const calificacion = lugar.totalScore || null;\n  if (!nombre) continue;\n\n\n  leads.push({\n    name: nombre.toUpperCase(),\n    contact_name: null,\n    email: email ? email.toLowerCase().trim() : null,\n    phone: telefono ? String(telefono).replace(/[^0-9]/g, '') : null,\n    business_type: nicho,\n    city: ciudad.toUpperCase(),\n    address: direccion || null,\n    website: web || null,\n    instagram: instagram || null,\n    status: 'NEW',\n    source: 'GOOGLE_MAPS_AUTO',\n    _fuente_raw: 'apify_gmaps',\n    _calificacion: calificacion\n  });\n}\n\nreturn leads.map(l => ({ json: l }));"
       },
       "id": "process-maps",
       "name": "🛠️ Code — Procesar resultados Maps",
@@ -112,7 +112,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Procesar resultados de Google CSE — extraer emails de snippets\nconst items = $input.item.json.items || [];\nconst ciudad = $node['🔄 SplitInBatches — 1 query'].json.ciudad;\nconst nicho = $node['🔄 SplitInBatches — 1 query'].json.nicho;\n\nconst emailRegex = /[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}/g;\nconst leads = [];\nconst seenEmails = new Set();\n\nfor (const item of items) {\n  const texto = `${item.title || ''} ${item.snippet || ''} ${item.link || ''}`;\n  const emails = texto.match(emailRegex) || [];\n  const nombre = item.title ? item.title.split('|')[0].split('-')[0].trim().toUpperCase() : 'SIN NOMBRE';\n  const web = item.link || null;\n\n  // Filtrar emails genéricos y proveedores\n  const filtrados = emails.filter(e => {\n    const dom = e.split('@')[1];\n    return !seenEmails.has(e) &&\n      !['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'].every(d => dom !== d) &&\n      !e.includes('example') &&\n      !e.includes('test');\n  });\n\n  // También incluir emails genéricos si hay nombre de empresa\n  const todosEmails = emails.filter(e => !seenEmails.has(e));\n  const emailFinal = filtrados[0] || todosEmails[0] || null;\n\n  if (emailFinal) {\n    seenEmails.add(emailFinal);\n    leads.push({\n      nombre_empresa: nombre,\n      nombre_contacto: null,\n      email: emailFinal.toLowerCase().trim(),\n      telefono: null,\n      nicho: nicho,\n      ciudad: ciudad.toUpperCase(),\n      direccion: null,\n      sitio_web: web,\n      redes_sociales: null,\n      campana_enviada: 'NO',\n      estado_lead: 'NUEVO',\n      fuente: 'GOOGLE_CSE_AUTO',\n      _fuente_raw: 'google_cse'\n    });\n  }\n}\n\nreturn leads.map(l => ({ json: l }));"
+        "jsCode": "// Procesar resultados de Google CSE — extraer emails de snippets\nconst items = $input.item.json.items || [];\nconst ciudad = $node['🔄 SplitInBatches — 1 query'].json.ciudad;\nconst nicho = $node['🔄 SplitInBatches — 1 query'].json.nicho;\nconst emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}/g;\nconst leads = [];\nconst seenEmails = new Set();\n\nfor (const item of items) {\n  const texto = `${item.title || ''} ${item.snippet || ''} ${item.link || ''}`;\n  const emails = texto.match(emailRegex) || [];\n  const nombre = item.title ? item.title.split('|')[0].split('-')[0].trim().toUpperCase() : 'SIN NOMBRE';\n  const web = item.link || null;\n\n\n  // Filtrar emails genéricos y proveedores\n  const filtrados = emails.filter(e => {\n    const dom = e.split('@')[1];\n    return !seenEmails.has(e) &&\n      !['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'].every(d => dom !== d) &&\n      !e.includes('example') &&\n      !e.includes('test');\n  });\n\n  // También incluir emails genéricos si hay nombre de empresa\n  const todosEmails = emails.filter(e => !seenEmails.has(e));\n  const emailFinal = filtrados[0] || todosEmails[0] || null;\n\n\n  if (emailFinal) {\n    seenEmails.add(emailFinal);\n    leads.push({\n      name: nombre,\n      contact_name: null,\n      email: emailFinal.toLowerCase().trim(),\n      phone: null,\n      business_type: nicho,\n      city: ciudad.toUpperCase(),\n      address: null,\n      website: web,\n      instagram: null,\n      status: 'NEW',\n      source: 'GOOGLE_CSE_AUTO',\n      _fuente_raw: 'google_cse'\n    });\n  }\n}\n\nreturn leads.map(l => ({ json: l }));"
       },
       "id": "process-cse",
       "name": "🛠️ Code — Procesar resultados CSE",
@@ -135,7 +135,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Deduplicar por email dentro del batch actual\nconst items = $input.all();\nconst seenEmails = new Set();\nconst unicos = [];\n\nfor (const item of items) {\n  const email = item.json.email;\n  const nombre = item.json.nombre_empresa;\n  \n  // Saltar si no tiene nombre\n  if (!nombre || nombre === 'SIN NOMBRE') continue;\n  \n  // Si no tiene email, igual insertar (se puede contactar por WhatsApp)\n  if (!email) {\n    unicos.push(item);\n    continue;\n  }\n  \n  // Normalizar email\n  const emailNorm = email.toLowerCase().trim();\n  \n  // Validar formato básico\n  if (!/^[^@]+@[^@]+\\.[^@]+$/.test(emailNorm)) continue;\n  \n  if (!seenEmails.has(emailNorm)) {\n    seenEmails.add(emailNorm);\n    unicos.push({ json: { ...item.json, email: emailNorm } });\n  }\n}\n\nreturn unicos;"
+        "jsCode": "// Deduplicar por email dentro del batch actual\nconst items = $input.all();\nconst seenEmails = new Set();\nconst unicos = [];\nfor (const item of items) {\n  const email = item.json.email;\n  const nombre = item.json.name;\n  \n  // Saltar si no tiene nombre\n  if (!nombre || nombre === 'SIN NOMBRE') continue;\n  \n  // Si no tiene email, igual insertar (se puede contactar por WhatsApp)\n  if (!email) {\n    unicos.push(item);\n    continue;\n  }\n  \n  // Normalizar email\n  const emailNorm = email.toLowerCase().trim();\n  \n  // Validar formato básico\n  if (!/^[^@]+@[^@]+\\.[^@]+$/.test(emailNorm)) continue;\n  \n  if (!seenEmails.has(emailNorm)) {\n    seenEmails.add(emailNorm);\n    unicos.push({ json: { ...item.json, email: emailNorm } });\n  }\n}\n\nreturn unicos;"
       },
       "id": "dedup-batch",
       "name": "🛠️ Code — Deduplicar batch",
@@ -157,7 +157,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT COUNT(*) as existe FROM clientes WHERE email = '{{ $json.email }}' AND email IS NOT NULL;",
+        "query": "SELECT COUNT(*) as existe FROM leads WHERE email = '{{ $json.email }}' AND email IS NOT NULL;",
         "options": {}
       },
       "id": "check-duplicado",
@@ -193,7 +193,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO clientes (nombre_empresa, nombre_contacto, email, telefono, nicho, ciudad, direccion, sitio_web, redes_sociales, campana_enviada, fecha_campana, estado_lead, ultimo_contacto, notas, fuente) VALUES ('{{ $json.nombre_empresa }}', {{ $json.nombre_contacto ? \"'\" + $json.nombre_contacto + \"'\" : 'NULL' }}, {{ $json.email ? \"'\" + $json.email + \"'\" : 'NULL' }}, {{ $json.telefono ? \"'\" + $json.telefono + \"'\" : 'NULL' }}, '{{ $json.nicho }}', '{{ $json.ciudad }}', {{ $json.direccion ? \"'\" + $json.direccion.replace(/'/g, \"''\") + \"'\" : 'NULL' }}, {{ $json.sitio_web ? \"'\" + $json.sitio_web + \"'\" : 'NULL' }}, {{ $json.redes_sociales ? \"'\" + $json.redes_sociales + \"'\" : 'NULL' }}, 'NO', NULL, 'NUEVO', NOW(), 'Lead captado automáticamente por n8n prospección', '{{ $json.fuente }}') ON CONFLICT (email) DO NOTHING RETURNING id;",
+        "query": "INSERT INTO leads (name, contact_name, email, phone, business_type, city, address, website, instagram, status, source) VALUES ('{{ $json.name }}', {{ $json.contact_name ? \"'\" + $json.contact_name + \"'\" : 'NULL' }}, {{ $json.email ? \"'\" + $json.email + \"'\" : 'NULL' }}, {{ $json.phone ? \"'\" + $json.phone + \"'\" : 'NULL' }}, '{{ $json.business_type }}', '{{ $json.city }}', {{ $json.address ? \"'\" + $json.address.replace(/'/g, \"''\") + \"'\" : 'NULL' }}, {{ $json.website ? \"'\" + $json.website + \"'\" : 'NULL' }}, {{ $json.instagram ? \"'\" + $json.instagram + \"'\" : 'NULL' }}, '{{ $json.status }}', '{{ $json.source }}') ON CONFLICT (email) DO NOTHING RETURNING id;",
         "options": {}
       },
       "id": "insert-lead",
@@ -223,7 +223,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT COUNT(*) as total_nuevos, COUNT(CASE WHEN fuente LIKE '%AUTO%' THEN 1 END) as total_auto FROM clientes WHERE DATE(ultimo_contacto) = CURRENT_DATE AND estado_lead = 'NUEVO';",
+        "query": "SELECT COUNT(*) as total_nuevos, COUNT(CASE WHEN source LIKE '%AUTO%' THEN 1 END) as total_auto FROM leads WHERE DATE(created_at) = CURRENT_DATE AND status = 'NEW';",
         "options": {}
       },
       "id": "stats-semana",

@@ -10,6 +10,7 @@ export interface Lead {
   website?: string;
   instagram?: string;
   tiktok?: string;
+  facebook_url?: string;
   address?: string;
   city?: string;
   state?: string;

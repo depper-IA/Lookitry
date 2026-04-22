@@ -183,6 +183,38 @@ export class LeadGenerationService {
     }
   }
 
+  /**
+   * Get Place Details - retrieves phone and website which are not returned by Text Search
+   */
+  async getPlaceDetails(placeId: string): Promise<{ phone?: string; website?: string }> {
+    if (!(await this.canMakeRequest())) {
+      console.warn('[LeadGen] Quota límite alcanzado, saltando Place Details para:', placeId);
+      return {};
+    }
+
+    try {
+      const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_PLACES_API_KEY}`;
+      const result = await this.httpGet(url);
+      const data = JSON.parse(result) as any;
+
+      await this.incrementQuota();
+
+      if (data.status !== 'OK') {
+        console.warn('[LeadGen] Place Details error:', data.status, 'for:', placeId);
+        return {};
+      }
+
+      const result_ = data.result || {};
+      return {
+        phone: result_.formatted_phone_number || undefined,
+        website: result_.website || undefined,
+      };
+    } catch (error: any) {
+      console.error('[LeadGen] Error getting place details:', error.message);
+      return {};
+    }
+  }
+
   async runSearch(searchId: string): Promise<{ found: number; inserted: number; duplicates: number }> {
     const search = await leadSearchService.getSearchById(searchId);
     if (!search) throw new Error('Search not found');
@@ -201,25 +233,36 @@ export class LeadGenerationService {
 
       found += results.length;
 
-      const leads = results.slice(0, search.max_results).map((place) => ({
-        name: place.name,
-        business_type: place.types?.[0] || 'store',
-        address: place.formatted_address,
-        phone: place.formatted_phone_number,
-        website: place.website,
-        source: 'google_places',
-        source_id: place.place_id,
-        search_id: search.id,
-        country: search.country,
-        city: search.city,
-        latitude: place.geometry?.location?.lat,
-        longitude: place.geometry?.location?.lng,
-        rating: place.rating,
-        reviews_count: place.user_ratings_total,
-        status: 'new',
-      }));
+      // Enrich each place with details (phone/website) from Place Details API
+      const enrichedLeads = [];
 
-      const result = await leadService.createLeadsBatch(leads);
+      for (const place of results.slice(0, search.max_results)) {
+        // Get additional details not available in Text Search
+        const details = await this.getPlaceDetails(place.place_id);
+
+        enrichedLeads.push({
+          name: place.name,
+          business_type: place.types?.[0] || 'store',
+          address: place.formatted_address,
+          phone: details.phone || place.formatted_phone_number,
+          website: details.website || place.website,
+          source: 'google_places',
+          source_id: place.place_id,
+          search_id: search.id,
+          country: search.country,
+          city: search.city,
+          latitude: place.geometry?.location?.lat,
+          longitude: place.geometry?.location?.lng,
+          rating: place.rating,
+          reviews_count: place.user_ratings_total,
+          status: 'new',
+        });
+
+        // Rate limit between Place Details calls
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      const result = await leadService.createLeadsBatch(enrichedLeads);
       inserted += result.inserted;
       duplicates += result.duplicates;
     }
@@ -306,8 +349,13 @@ export class LeadGenerationService {
 
       // Process each place
       for (const place of places.slice(0, search.max_results)) {
+        // Get additional details not available in Text Search (phone/website)
+        const details = await this.getPlaceDetails(place.place_id);
+        const website = details.website || place.website;
+        const phone = details.phone || place.formatted_phone_number;
+
         // Check if this place has website (required for social verification)
-        if (!place.website) {
+        if (!website) {
           result.skippedNoSocial++;
           continue;
         }
@@ -317,8 +365,8 @@ export class LeadGenerationService {
           name: place.name,
           business_type: place.types?.[0] || 'store',
           address: place.formatted_address,
-          phone: place.formatted_phone_number,
-          website: place.website,
+          phone: phone,
+          website: website,
           source: 'google_places',
           source_id: place.place_id,
           search_id: search.id,
