@@ -319,16 +319,87 @@ Para evitar corrupciones de codigo y caidas del sistema:
 
 ---
 
-## 10. Gestion de Habilidades (Skills)
+## 10. Regla de Refactorizacion por Tamanio de Archivo (CRITICO)
+
+### 10.1 Umbral de 600 Lineas
+
+**REGLA OBLIGATORIA para TODOS los agentes:**
+- Cuando un archivo de codigo (`.ts`, `.tsx`, `.js`, `.jsx`) supere las **600 lineas**, DEBE comenzar a refactorizarse en componentes o funciones mas pequenas.
+- El objetivo es mantener archivos **maximo de 600 lineas** para facilitar:
+  - Lectura y comprension rapida
+  - Mantenimiento mas sencillo
+  - Reduccion de conflictos en git
+  - Mejor testabilidad
+
+### 10.2 Protocolo de Refactorizacion
+
+Cuando un archivo supere las 600 lineas:
+
+1. **Identificar componentes o funciones extractables:**
+   - Componentes UI separados (modals, cards, widgets)
+   - Funciones de utilidad (helpers, formatters, validators)
+   - Constantes o configuraciones estaticas
+   - Tipos o interfaces separadas
+
+2. **Crear archivos separados:**
+   - `components/` para componentes React
+   - `utils/` o `helpers/` para funciones de utilidad
+   - `types/` para tipos TypeScript
+   - `constants/` para constantes
+
+3. **Mantener el contexto:**
+   - NO dividir codigo logicamente relacionado
+   - Extraer solo cuando tenga sentido semantico
+   - Mantener imports/exportaciones claros
+
+### 10.3 Deteccion de Codigo Muerto
+
+**Al trabajar en cualquier archivo, el agente DEBE:**
+
+1. **Verificar codigo muerto:**
+   - Funciones nunca llamadas
+   - Variables nunca utilizadas
+   - Imports nunca usados
+   - Props nunca consumidas
+   - Rutas/casos en switch nunca ejecutados
+
+2. **Notificar al usuario:**
+   - SIEMPRE informar si encuentra codigo muerto
+   - Preguntar antes de eliminar
+   - Proporcionar contexto de por que es codigo muerto
+
+3. **Formato de notificacion:**
+   ```
+   [CODIGO MUERTO DETECTADO]
+   Archivo: X
+   Lineas: Y-Z
+   Tipo: [funcion/variable/import/prop]
+   Razon: [por que es codigo muerto]
+   Recommendation: [borrar/archivar]
+   ```
+
+### 10.4 Excepciones
+
+Archivos que PUEDEN superar las 600 lineas SI tienen alta cohesion logica:
+- **Rutas de API** con muchos endpoints relacionados
+- **Servicios** con metodos estrechamente relacionados
+- **Componentes de paginas** donde dividirlo afectaria la legibilidad
+- **Schemas de base de datos**
+
+En estos casos, documentar por que es aceptable exceder el umbral.
+
+---
+
+## 11. Gestion de Habilidades (Skills)
 
 Para asegurar que los agentes no solo lean guias sino que ejecuten tareas con maestria tecnica:
 
-### 10.1 Instalacion de Skills
+### 11.1 Instalacion de Skills
 - **Ubicacion Obligatoria**: Toda nueva Skill debe crearse como un archivo `.md` en `Lookitry_Brain_Vault/Cerebro/Skills/`.
 - **Registro Central**: Tras crear el archivo, se DEBE indexar en [[Skills|Lookitry_Brain_Vault/Cerebro/Agentes/Skills.md]].
 - **Naming**: Usar `kebab-case` (ej: `marketing-automation.md`). PROHIBIDO emojis en nombres de archivos o dentro de los corchetes de enlaces internos.
 
-### 10.2 Estructura de una Skill
+### 11.2 Estructura de una Skill
 Cada archivo de Skill debe contener:
 1. **Identidad**: Que problema resuelve.
 2. **Protocolo de Ejecucion**: Pasos exactos que el agente debe seguir.
@@ -336,21 +407,21 @@ Cada archivo de Skill debe contener:
 
 ---
 
-## 11. Reglas Específicas de Rebecca (UGC Creator)
+## 12. Reglas Específicas de Rebecca (UGC Creator)
 
-### 11.1 Objetivo: MONEY
+### 12.1 Objetivo: MONEY
 Rebecca y Leo son el **motor de ingresos** de Lookitry:
 - Rebecca genera leads y clientes (Fiverr + Lookitry)
 - Leo hace trading
 - JUNTOS hacen dinero para el proyecto
 
-### 11.2 Herramientas Gratuitas para Contenido
+### 12.2 Herramientas Gratuitas para Contenido
 - Video: CapCut, DaVinci Resolve (gratis)
 - Audio: Audacity, Freesound.org (gratis)
 - Imagen: Canva, Pexels, Pixabay (gratis)
 - AI: ChatGPT/Gemini (gratuitos)
 
-### 11.3 Patrocinio (SOLO Grants)
+### 12.3 Patrocinio (SOLO Grants)
 **PERMITE**:
 - Angel investors (dinero, NO equity)
 - Grants: Google for Startups, AWS Activate
@@ -366,7 +437,7 @@ Rebecca y Leo son el **motor de ingresos** de Lookitry:
 
 ---
 
-## 6. Notificación de Tareas Completadas
+## 13. Notificación de Tareas Completadas
 
 **NOTA: La notificación por Telegram a Sam ha sido deshabilitada por solicitud expresa de Sam.**
 
@@ -374,14 +445,11 @@ Los agentes ya NO necesitan notificar por Telegram cuando completan tareas. Esta
 
 ---
 
-**Ultima actualizacion:** Abril 2026 - Sistema de Agentes v2.0
+**Ultima actualizacion:** Abril 2026 - Sistema de Agentes v3.1
 **Cambios principales:**
-- 10 agentes con nombres nuevos
-- Modelo default: MiniMax-M2.7 (Groq/DeepSeek removidos)
-- Rebecca v3.0 con foco en MONEY
-- Melissa como colaboradora de Pixel
-- Leo como agente de trading
-- Regla 6: Notificación obligatoria de tareas
+- Regla 10: Refactorización obligatoria por tamaño de archivo (600 líneas)
+- Regla 10.3: Detección y reporte de código muerto obligatorio
+- Renumeración de secciones para acomodar nueva regla
 
 ---
 
