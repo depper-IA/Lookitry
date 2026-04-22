@@ -27,13 +27,20 @@ export class BrandAdminService {
       const { data: brands, error } = await supabaseAdmin
         .from('brands')
         .select('*')
+        .not('social_links->>account_archived_at', 'is', null) // Solo si quieres ver las archivadas, pero el usuario quiere que "desaparezcan"
         .order('created_at', { ascending: false });
+
+      // Filtrar marcas que tienen el flag de archivado en social_links
+      const activeBrands = (brands || []).filter(b => {
+        const sl = b.social_links || {};
+        return !sl.account_archived_at;
+      });
 
       if (error || !brands) {
         throw new Error('Error al obtener marcas: ' + error?.message);
       }
 
-      const brandIds = brands.map(b => b.id);
+      const brandIds = activeBrands.map(b => b.id);
 
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -58,7 +65,7 @@ export class BrandAdminService {
       successData.data?.forEach(s => { successCounts[s.brand_id] = (successCounts[s.brand_id] || 0) + 1; });
       failedData.data?.forEach(f => { failedCounts[f.brand_id] = (failedCounts[f.brand_id] || 0) + 1; });
 
-      return brands.map(brand => {
+      return activeBrands.map(brand => {
         const trialEnd = brand.trial_end_date ? new Date(brand.trial_end_date) : null;
         const isInTrial =
           brand.plan === 'TRIAL' &&
@@ -160,30 +167,38 @@ export class BrandAdminService {
   async deleteBrand(brandId: string): Promise<void> {
     const { data: brand, error: fetchError } = await supabaseAdmin
       .from('brands')
-      .select('id')
+      .select('id, email, slug, social_links')
       .eq('id', brandId)
       .single();
 
     if (fetchError || !brand) throw new Error('Marca no encontrada');
 
+    // Generar sufijo único para liberar el email y slug originales
+    const suffix = Math.random().toString(36).substring(2, 7);
+    const archivedEmail = `archived_${brandId.slice(0, 8)}_${suffix}@lookitry.archived`;
+    const archivedSlug = `archived-${brand.slug}-${suffix}`;
     const socialLinks = getBrandSocialLinks(brand as any);
 
     const { error: deleteError } = await supabaseAdmin
       .from('brands')
       .update({
+        email: archivedEmail, // Liberamos el email original
+        slug: archivedSlug,   // Liberamos el slug original
         subscription_status: 'suspended',
         has_landing_page: false,
         landing_suspended_at: new Date().toISOString(),
         social_links: {
           ...socialLinks,
           account_archived_at: new Date().toISOString(),
-          account_archived_reason: 'admin_delete',
+          account_archived_reason: 'admin_delete_reproduction',
           account_archived_by: 'admin',
+          original_email: brand.email, // Guardamos referencia por si acaso
+          original_slug: brand.slug
         },
       })
       .eq('id', brandId);
 
-    if (deleteError) throw new Error('Error al archivar marca: ' + deleteError.message);
+    if (deleteError) throw new Error('Error al archivar marca y liberar credenciales: ' + deleteError.message);
   }
 
   /**

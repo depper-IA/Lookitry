@@ -18,6 +18,8 @@ services:
         SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
     container_name: lookitry-frontend
     restart: unless-stopped
+    environment:
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
     volumes:
       - /home/travis/.openclaw/agents:/home/travis/.openclaw/agents:ro
     networks:
