@@ -29,12 +29,8 @@ export default function LandingStats() {
         setStats(data);
       } catch (error) {
         console.error('Error fetching landing stats:', error);
-        // Fallback to hardcoded stats on error
-        setStats({
-          total_brands: 50,
-          total_generations: 400000,
-          satisfaction_rating: 4.9,
-        });
+        // Don't set fallback hardcoded stats - show nothing or retry later
+        setStats(null);
       } finally {
         setLoading(false);
       }

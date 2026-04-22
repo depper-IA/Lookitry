@@ -5,11 +5,10 @@ const router = Router();
 
 router.get('/', async (_req, res) => {
   try {
-    // Count active brands (subscription_status = 'active' or 'trial')
+    // Count ALL brands (regardless of subscription status)
     const { count: brandsCount, error: brandsError } = await supabaseAdmin
       .from('brands')
-      .select('id', { count: 'exact', head: true })
-      .in('subscription_status', ['active', 'trial']);
+      .select('id', { count: 'exact', head: true });
 
     if (brandsError) throw brandsError;
 
