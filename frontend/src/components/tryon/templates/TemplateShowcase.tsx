@@ -85,7 +85,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
   if (step === 'generating') {
     return (
       <div className="flex flex-col min-h-screen min-h-[100dvh]" style={{ backgroundColor: solidBg }}>
-        <EditorialHeader config={config} onReset={onReset} primaryColor={primaryColor} bgLuminance={bgLuminance} textMuted={textMuted} />
+        <EditorialHeader config={config} onReset={onReset} primaryColor={primaryColor} bgLuminance={bgLuminance} textMuted={textMuted} secondaryColor={secondaryColor} />
         <div className="flex-1 flex items-center justify-center">
           <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
         </div>
@@ -106,6 +106,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
         primaryColor={primaryColor} 
         bgLuminance={bgLuminance}
         textMuted={textMuted}
+        secondaryColor={secondaryColor}
       />
 
       <div className="flex-1 w-full relative">
@@ -120,84 +121,167 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
         <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
 
         {step === 'upload' && (
-          <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 sm:px-6 md:px-8 lg:px-12 py-12 w-full max-w-3xl mx-auto">
-            {/* Hero / Welcome - Stacked Centered Editorial */}
-            <div className={`${isSmall ? 'mb-12' : 'mb-16'} flex flex-col items-center text-center animate-in fade-in slide-in-from-top-8 duration-1000 w-full`}>
-              {/* Logo with Fashion Aura */}
-              <div className={`relative group ${isSmall ? 'mb-8' : 'mb-10'}`}>
-                <div 
-                  className="absolute inset-0 blur-[60px] opacity-20 scale-150 animate-pulse"
-                  style={{ background: primaryColor }}
-                />
-                <div className={`relative z-10 p-6 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] transition-all duration-700 hover:scale-105`}>
-                  {config.brand.logo ? (
-                    <img
-                      src={config.brand.logo}
-                      alt={config.brand.name}
-                      className={`${isSmall ? 'h-20' : 'h-24 sm:h-28 md:h-32'} w-auto object-contain`}
-                      onError={e => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  ) : (
-                    <div className={`${isSmall ? 'h-20 w-20' : 'h-24 sm:h-28 md:h-32 w-24 sm:w-28 md:w-32'} flex items-center justify-center`}>
-                      <span className="font-black text-6xl italic" style={{ color: primaryColor }}>
-                        {config.brand.name.charAt(0)}
-                      </span>
+          <div className="flex flex-col min-h-[calc(100vh-64px)]">
+            {/* Mobile: Editorial Split Layout - Magazine Style */}
+            {isSmall ? (
+              <div className="flex-1 flex flex-col">
+                {/* Hero Image - Full Width Magazine Cut */}
+                <div className="relative w-full" style={{ minHeight: '45vh' }}>
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ 
+                      backgroundImage: `linear-gradient(to bottom, transparent 40%, ${solidGradientBg}), url(${config.brand.coverImageUrl || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800'})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  />
+                  {/* Editorial Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg)] via-transparent to-transparent" />
+                  
+                  {/* Logo Positioned as Magazine Masthead */}
+                  <div className="absolute top-6 left-6 right-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {config.brand.logo ? (
+                          <img src={config.brand.logo} alt={config.brand.name} className="h-10 w-auto object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: primaryColor }}>
+                            <span className="font-black text-lg italic text-white">{config.brand.name.charAt(0)}</span>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40 italic" style={{ color: textPrimary }}>Digital Experience</span>
                     </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Refined Brand Identity */}
-              <div className="space-y-4 px-4">
-                <h1 
-                  className={`${isSmall ? 'text-3xl' : 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl'} font-black tracking-[-0.05em] uppercase italic leading-none`}
-                  style={{ color: textPrimary }}
-                >
-                  {config.brand.name}
-                </h1>
-                
-                <div className="flex flex-col items-center gap-6">
-                  <div className="flex items-center gap-4 w-full max-w-[200px]">
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-current opacity-20" />
-                    <div className="w-2 h-2 rounded-full rotate-45" style={{ backgroundColor: primaryColor }} />
-                    <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-current opacity-20" />
                   </div>
                   
-                  <p 
-                    className={`${isSmall ? 'text-xs' : 'text-xs sm:text-sm md:text-base'} font-black uppercase tracking-[0.4em] opacity-40 italic max-w-xs mx-auto`}
-                    style={{ color: textPrimary }}
-                  >
-                    Digital Experience
-                  </p>
+                  {/* Issue/Date Line */}
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-[1px] flex-1 bg-current opacity-20" />
+                      <div className="w-1.5 h-1.5 rounded-full rotate-45" style={{ backgroundColor: primaryColor }} />
+                      <div className="h-[1px] flex-1 bg-current opacity-20" />
+                    </div>
+                    <h1 className="text-4xl font-black tracking-tight italic uppercase leading-none" style={{ color: textPrimary }}>
+                      {config.brand.name}
+                    </h1>
+                  </div>
+                </div>
+                
+                {/* Content Below - Editorial Style */}
+                <div className="flex-1 px-6 py-8 space-y-6">
+                  <div className="text-center space-y-2">
+                    <p className="text-[9px] font-black uppercase tracking-[0.5em] opacity-30 italic" style={{ color: textPrimary }}>
+                      Try it on
+                    </p>
+                    <p className="text-sm font-medium opacity-60" style={{ color: textMuted }}>
+                      Upload your photo to see how it looks
+                    </p>
+                  </div>
+                  
+                  <div className="w-full">
+                    <SelfieUploader
+                      onUpload={onSelfieUpload}
+                      primaryColor={primaryColor}
+                      privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al instante"
+                      textColor={textPrimary}
+                      mutedColor={textMuted}
+                      cardBg={cardBg}
+                      cardBorder={bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)'}
+                    />
+                  </div>
+                  
+                  <div className="w-full flex justify-center pt-2">
+                    <button
+                      onClick={props.onBack}
+                      className="group flex items-center gap-2 px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-[0.15em] transition-all border border-white/10 hover:bg-white/5 active:scale-95"
+                      style={{ color: textMuted }}
+                    >
+                      <svg className="w-3 h-3 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                      </svg>
+                      Volver al catálogo
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Back Button (Floating or Integrated) */}
-            <div className="w-full mb-8 flex justify-center">
-              <button
-                onClick={props.onBack}
-                className="group flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-white/5 hover:bg-white/5 active:scale-95"
-                style={{ color: textMuted }}
-              >
-                <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Volver al catálogo
-              </button>
-            </div>
-
-            <div className="w-full max-w-md px-4">
-              <SelfieUploader
-                onUpload={onSelfieUpload}
-                primaryColor={primaryColor}
-                privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al instante"
-                textColor={textPrimary}
-                mutedColor={textMuted}
-                cardBg={cardBg}
-                cardBorder={bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)'}
-              />
-            </div>
+            ) : (
+              /* Desktop: Centered Editorial Layout */
+              <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 sm:px-6 md:px-8 lg:px-12 py-12 w-full max-w-3xl mx-auto">
+                {/* Logo - Clean Editorial Presentation */}
+                <div className={`relative ${isSmall ? 'mb-10' : 'mb-12'}`}>
+                  <div className={`relative z-10 p-5 sm:p-6 rounded-2xl border shadow-[0_4px_24px_rgba(0,0,0,0.12)]`}
+                    style={{ 
+                      backgroundColor: bgLuminance ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.08)',
+                      borderColor: bgLuminance ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)'
+                    }}>
+                    {config.brand.logo ? (
+                      <img
+                        src={config.brand.logo}
+                        alt={config.brand.name}
+                        className={`${isSmall ? 'h-16' : 'h-20 sm:h-24 md:h-28'} w-auto object-contain`}
+                        onError={e => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div className={`${isSmall ? 'h-16 w-16' : 'h-20 sm:h-24 md:h-28 w-20 sm:w-24 md:w-28'} flex items-center justify-center`}>
+                        <span className="font-black text-5xl sm:text-6xl italic" style={{ color: primaryColor }}>
+                          {config.brand.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Refined Brand Identity */}
+                <div className="space-y-4 px-4">
+                  <h1 
+                    className={`${isSmall ? 'text-3xl' : 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl'} font-black tracking-[-0.05em] uppercase italic leading-none`}
+                    style={{ color: textPrimary }}
+                  >
+                    {config.brand.name}
+                  </h1>
+                  
+                  <div className="flex flex-col items-center gap-6">
+                    <div className="flex items-center gap-4 w-full max-w-[200px]">
+                      <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-current opacity-20" />
+                      <div className="w-2 h-2 rounded-full rotate-45" style={{ backgroundColor: primaryColor }} />
+                      <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-current opacity-20" />
+                    </div>
+                    
+                    <p 
+                      className={`${isSmall ? 'text-xs' : 'text-xs sm:text-sm md:text-base'} font-black uppercase tracking-[0.4em] opacity-40 italic max-w-xs mx-auto`}
+                      style={{ color: textPrimary }}
+                    >
+                      Digital Experience
+                    </p>
+                  </div>
+                </div>
+              
+                <div className="w-full max-w-md px-4 mt-10">
+                  <SelfieUploader
+                    onUpload={onSelfieUpload}
+                    primaryColor={primaryColor}
+                    privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al instante"
+                    textColor={textPrimary}
+                    mutedColor={textMuted}
+                    cardBg={cardBg}
+                    cardBorder={bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)'}
+                  />
+                </div>
+                
+                <div className="w-full mb-8 flex justify-center mt-6">
+                  <button
+                    onClick={props.onBack}
+                    className="group flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-white/5 hover:bg-white/5 active:scale-95"
+                    style={{ color: textMuted }}
+                  >
+                    <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Volver al catálogo
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -209,7 +293,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                 <h2 className={`${isSmall ? 'text-3xl' : 'text-5xl lg:text-6xl'} font-black tracking-tighter italic uppercase relative z-10`} style={{ color: textPrimary }}>
                   {welcomeMessage || 'Colección Real'}
                 </h2>
-                <div className="absolute -bottom-2 -right-4 w-12 h-12 rounded-full blur-2xl opacity-40 animate-pulse" style={{ backgroundColor: primaryColor }} />
+                <div className="absolute -bottom-2 -right-4 w-10 h-10 rounded-full" style={{ backgroundColor: primaryColor, opacity: 0.2 }} />
               </div>
               <p className="text-[10px] md:text-xs uppercase tracking-[0.5em] font-black opacity-30 italic" style={{ color: textPrimary }}>
                 Selecciona tu próxima pieza
@@ -224,6 +308,8 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                   onReset={onReset} 
                   primaryColor={primaryColor}
                   textMuted={textMuted}
+                  cardBg={cardBg}
+                  bgLuminance={bgLuminance}
                 />
               </div>
             )}
@@ -271,13 +357,15 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
         )}
       </div>
 
-      {/* Bottom CTA Glassmorphism */}
+      {/* Bottom CTA - Solid Background */}
       {step === 'select' && selectedProduct && (
         <BottomCTAEditorial
           onClick={onProceedToUpload}
           primaryColor={primaryColor}
           buttonText={`Siguiente: ${buttonText || 'Subir foto'}`}
           bgLuminance={bgLuminance}
+          textMuted={textMuted}
+          secondaryColor={secondaryColor}
         />
       )}
       
@@ -288,28 +376,29 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
           buttonText={generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
           caption={generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
           bgLuminance={bgLuminance}
+          textMuted={textMuted}
+          secondaryColor={secondaryColor}
         />
       )}
     </div>
   );
 }
 
-function EditorialHeader({ config, onReset, showReset, primaryColor, bgLuminance, textMuted }: {
+function EditorialHeader({ config, onReset, showReset, primaryColor, bgLuminance, textMuted, secondaryColor }: {
   config: TryOnTemplateProps['config'];
   onReset: () => void;
   showReset?: boolean;
   primaryColor: string;
   bgLuminance: boolean;
   textMuted: string;
+  secondaryColor: string;
 }) {
   return (
     <header 
-      className="sticky top-0 z-40 backdrop-blur-3xl border-b"
+      className="sticky top-0 z-40 border-b"
       style={{ 
-        backgroundColor: bgLuminance 
-          ? 'rgba(255,255,255,0.7)' 
-          : 'rgba(0,0,0,0.5)',
-        borderColor: bgLuminance ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'
+        backgroundColor: bgLuminance ? secondaryColor : '#0a0a0a',
+        borderColor: bgLuminance ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)'
       }}
     >
       <div className="flex items-center justify-between px-6 py-3">
@@ -357,20 +446,22 @@ function EditorialHeader({ config, onReset, showReset, primaryColor, bgLuminance
 }
 
 // ── Selfie Preview Editorial ───────────────────────────────────────────────────
-function SelfiePreviewEditorial({ preview, onReset, primaryColor, textMuted }: {
+function SelfiePreviewEditorial({ preview, onReset, primaryColor, textMuted, cardBg, bgLuminance }: {
   preview: string | null;
   onReset: () => void;
   primaryColor: string;
   textMuted: string;
+  cardBg?: string;
+  bgLuminance?: boolean;
 }) {
   if (!preview) return null;
   return (
     <div 
       className="relative flex items-center gap-3 sm:gap-4 rounded-2xl p-3 sm:p-4 shadow-xl animate-fade-in"
       style={{ 
-        background: 'rgba(255,255,255,0.08)',
-        backdropFilter: 'blur(20px)',
-        border: `1px solid rgba(255,255,255,0.1)`
+        backgroundColor: bgLuminance ? '#ffffff' : 'rgba(255,255,255,0.08)',
+        border: `1px solid ${bgLuminance ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)'}`,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
       }}
     >
       {/* Glow effect */}
@@ -537,7 +628,7 @@ function ProductGridEditorial({
                 {p.price != null && (
                   <div className="absolute top-2 right-2">
                     <span className="px-2 py-1 rounded-lg text-[10px] font-black text-white shadow-lg"
-                      style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
+                      style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
                       ${p.price.toLocaleString('es-CO')}
                     </span>
                   </div>
@@ -601,30 +692,32 @@ function ProductGridEditorial({
   );
 }
 
-// ── Bottom CTA Glassmorphism ───────────────────────────────────────────────────
+// ── Bottom CTA Editorial (Solid, no glassmorphism) ─────────────────────────────────
 function BottomCTAEditorial({
   onClick,
   primaryColor,
   buttonText,
   caption,
   bgLuminance,
+  textMuted,
+  secondaryColor,
 }: {
   onClick?: () => void;
   primaryColor: string;
   buttonText: string;
   caption?: string;
   bgLuminance: boolean;
+  textMuted?: string;
+  secondaryColor: string;
 }) {
   return (
     <div 
       className="fixed bottom-0 left-0 right-0 p-3 sm:p-4 z-50 animate-fade-in-up"
       style={{ 
-        background: bgLuminance 
-          ? 'rgba(255,255,255,0.92)'
-          : 'rgba(0,0,0,0.85)',
-        backdropFilter: 'blur(20px)',
-        borderTop: `1px solid ${bgLuminance ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)'}`,
+        backgroundColor: bgLuminance ? secondaryColor : '#0a0a0a',
+        borderTop: `1px solid ${bgLuminance ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)'}`,
         paddingBottom: 'max(env(safe-area-inset-bottom), 12px)',
+        boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
       }}
     >
       <div className="max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto space-y-2">
@@ -642,7 +735,7 @@ function BottomCTAEditorial({
           </svg>
         </button>
         {caption && (
-          <p className="text-center text-[9px] sm:text-[10px] font-medium uppercase tracking-wider" style={{ color: bgLuminance ? '#666' : '#fff9' }}>
+          <p className="text-center text-[9px] sm:text-[10px] font-medium uppercase tracking-wider" style={{ color: textMuted }}>
             {caption}
           </p>
         )}
