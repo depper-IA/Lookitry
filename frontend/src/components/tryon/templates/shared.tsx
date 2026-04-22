@@ -5,7 +5,7 @@ import type { TryOnConfigResponse } from '@/types';
 import type { Product, Step } from './types';
 
 // Helper para determinar si un color es claro u oscuro
-function isLightBg(hex: string): boolean {
+export function isLightBg(hex: string): boolean {
   const clean = hex.replace('#', '');
   const r = parseInt(clean.substring(0, 2), 16);
   const g = parseInt(clean.substring(2, 4), 16);
