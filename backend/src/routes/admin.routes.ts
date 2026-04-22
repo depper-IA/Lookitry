@@ -256,11 +256,11 @@ router.patch('/social-api-configs/:platform/active', requirePermission('settings
 router.delete('/social-api-configs/:platform', requirePermission('settings'), deleteSocialApiConfig);
 
 // Historial de Generaciones (Try-On)
+router.get('/generations/stats', requirePermission('brands'), getGenerationsStats);
 router.get('/generations', requirePermission('brands'), getGenerations);
 router.get('/generations/:id', requirePermission('brands'), getGenerationById);
 router.patch('/generations/:id/retry', requirePermission('brands'), retryGeneration);
 router.get('/brands/:brandId/generations', requirePermission('brands'), getBrandGenerations);
-router.get('/generations/stats', requirePermission('brands'), getGenerationsStats);
 
 // Tickets de Soporte
 router.get('/tickets', requirePermission('brands'), getTickets);
