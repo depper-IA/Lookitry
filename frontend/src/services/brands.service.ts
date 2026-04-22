@@ -47,6 +47,7 @@ apiKey: response.data.api_key,
       shareMessage: response.data.share_message,
       // Widget playlist - map from snake_case
       widgetProductIds: response.data.widget_product_ids || [],
+      widgetCoverImage: response.data.widget_cover_image || null,
     };
 
     return brandData;
@@ -90,6 +91,7 @@ apiKey: response.data.api_key,
       welcome_message: data.welcomeMessage,
       share_message: data.shareMessage,
       header_color: data.headerColor,
+      widget_cover_image: data.widgetCoverImage !== undefined ? (data.widgetCoverImage || null) : undefined,
     };
     
     const response = await api.patch<any>('/brands/me', backendData);
@@ -122,6 +124,7 @@ apiKey: response.data.api_key,
       apiKey: response.data.api_key,
       socialLinks: response.data.social_links,
       onboardingDismissed: response.data.onboarding_dismissed,
+      widgetCoverImage: response.data.widget_cover_image || null,
     };
     
     return brandData;

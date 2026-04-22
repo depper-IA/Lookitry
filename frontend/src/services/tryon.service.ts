@@ -46,6 +46,7 @@ class TryOnService {
           socialLinks: data?.brand?.social_links ?? {},
           hasLandingPage: data?.brand?.has_landing_page ?? false,
           customDomain: data?.brand?.custom_domain ?? null,
+          widgetCoverImage: data?.brand?.widget_cover_image ?? null,
         },
         products: (data?.products ?? []).map((p: any) => ({
           id: p?.id ?? '',

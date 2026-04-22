@@ -65,6 +65,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     buttonText: brand.buttonText || 'Probarme esto',
     welcomeMessage: brand.welcomeMessage || '',
     shareMessage: brand.shareMessage || '',
+    widgetCoverImage: brand.coverImageUrl || '',
   });
 
   useEffect(() => {
@@ -124,6 +125,32 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     }
   };
 
+  const handleWidgetCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const reader = new FileReader();
+      const url = await new Promise<string>((resolve, reject) => {
+        reader.onload = async () => {
+          try {
+            const base64 = (reader.result as string).split(',')[1];
+            const uploadedUrl = await uploadService.uploadImage(base64, `widget-cover-${Date.now()}.${file.name.split('.').pop()}`, false);
+            resolve(uploadedUrl);
+          } catch (err) { reject(err); }
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+      setFormData((prev) => ({ ...prev, widgetCoverImage: url }));
+      toast.success('Imagen de portada actualizada');
+    } catch {
+      toast.error('Error al subir la imagen. Intenta de nuevo.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     setIsSubmitting(true);
@@ -165,7 +192,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
           ))}
         </div>
 
-        <div className="hidden xl:block">
+        <div className="w-full flex flex-col items-center xl:block mb-8 xl:mb-0">
           <label className="mb-3 block text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] text-center">
             Vista Previa Real
           </label>
@@ -192,6 +219,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                   welcomeMessage={formData.welcomeMessage || ''}
                   brandName={formData.name || ''}
                   brandLogo={formData.logo || undefined}
+                  widgetCoverImage={formData.widgetCoverImage}
                   isPro={isPro}
                   products={products}
                 />
@@ -268,6 +296,49 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               </div>
             </div>
             
+            {/* Widget Cover Image — PRO only */}
+            {isPro && (
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-3">
+                  <label className="block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Imagen de portada del widget</label>
+                  <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-full">PRO</span>
+                </div>
+                <div className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-base)] p-4 sm:p-5 space-y-4">
+                  {/* Preview */}
+                  <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-center">
+                    {formData.widgetCoverImage ? (
+                      <img src={formData.widgetCoverImage} alt="Portada del widget" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 opacity-30">
+                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-[10px] font-medium">Sin imagen — se usará gradiente</span>
+                      </div>
+                    )}
+                  </div>
+                  {/* Actions */}
+                  <div className="flex items-center gap-3">
+                    <label className={`inline-flex items-center gap-2 rounded-2xl bg-[var(--text-primary)] px-4 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-[var(--bg-card)] cursor-pointer transition-opacity ${isUploading ? 'opacity-50 pointer-events-none' : 'hover:opacity-90'}`}>
+                      <Upload size={14} />
+                      {isUploading ? 'Subiendo...' : 'Subir imagen'}
+                      <input type="file" className="hidden" accept="image/*" onChange={handleWidgetCoverUpload} disabled={isUploading} />
+                    </label>
+                    {formData.widgetCoverImage && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData((prev) => ({ ...prev, widgetCoverImage: '' }))}
+                        className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] hover:text-red-500 transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-[var(--text-muted)]">Aparece como hero en el paso de subir selfie (Mobile). Sin imagen, se usa un gradiente con tu color de marca.</p>
+                </div>
+              </div>
+            )}
+
             <div className="mb-8">
               <label className="mb-4 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Seleccionar Plantilla</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">

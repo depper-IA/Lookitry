@@ -64,6 +64,7 @@ export interface Brand {
   shareMessage?: string | null;
   // Widget playlist (featured products)
   widgetProductIds?: string[];
+  widgetCoverImage?: string | null;
 }
 
 export type ReviewStatus = 'pending' | 'approved' | 'rejected';
@@ -213,6 +214,7 @@ export interface UpdateBrandConfigDto {
   headerColor?: string | null;
   customDomain?: string | null;
   onboardingDismissed?: boolean;
+  widgetCoverImage?: string | null; // PRO: imagen de portada exclusiva del widget
 }
 
 // Widget templates
@@ -249,6 +251,7 @@ export interface TryOnConfigResponse {
     socialLinks?: Record<string, unknown>;
     hasLandingPage?: boolean;
     customDomain?: string | null;
+    widgetCoverImage?: string | null; // PRO: imagen de portada exclusiva del widget
   };
   products: Array<{
     id: string;

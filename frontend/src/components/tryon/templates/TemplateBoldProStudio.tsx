@@ -82,6 +82,18 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
       className="font-sans min-h-screen min-h-[100dvh] relative overflow-hidden flex flex-col" 
       style={{ backgroundColor: bgColor, color: textPrimary }}
     >
+      {config.brand.widgetCoverImage && (
+        <div className="absolute top-0 left-0 right-0 h-[45vh] md:h-[55vh] pointer-events-none z-0">
+          <div 
+            className="absolute inset-0 bg-cover bg-center opacity-[0.85] mix-blend-luminosity"
+            style={{ backgroundImage: `url(${config.brand.widgetCoverImage})` }}
+          />
+          <div 
+            className="absolute inset-0"
+            style={{ background: `linear-gradient(to bottom, transparent 0%, ${bgColor} 100%)` }}
+          />
+        </div>
+      )}
       {/* Ambient background - responsive sizes */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-20 -left-20 md:-top-40 md:-left-40 w-64 h-64 md:w-[520px] md:h-[520px] rounded-full blur-3xl transition-all duration-1000" style={{ background: `${primaryColor}25` }} />
@@ -95,10 +107,10 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
         <div className={`w-full ${isSmall ? 'px-4' : 'px-8 md:px-12'} animate-in fade-in slide-in-from-bottom-4 duration-700`}
           style={isSmall ? {} : { maxWidth: '1400px' }}
         >
-          {/* Hero / Welcome - Asymmetric on desktop */}
-          <div className={`${isSmall ? 'mb-8' : 'mb-16'} ${isSmall ? 'flex flex-col items-center text-center' : 'flex flex-col items-start text-left'}`}>
+          {/* Hero / Welcome */}
+          <div className={`${isSmall ? 'mb-8' : 'mb-16'} flex flex-col items-center text-center`}>
             {/* Logo Container with Glow */}
-            <div className={`relative group ${isSmall ? 'mb-6' : 'mb-10'} animate-in zoom-in duration-700 ${isSmall ? '' : 'self-center'}`}>
+            <div className={`relative group ${isSmall ? 'mb-6' : 'mb-10'} animate-in zoom-in duration-700`}>
               <div 
                 className="absolute inset-0 blur-3xl opacity-30 group-hover:opacity-50 transition-opacity duration-700 scale-150"
                 style={{ background: primaryColor }}
@@ -121,8 +133,8 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
               </div>
             </div>
             
-            {/* Brand Name & Title - Larger on desktop */}
-            <div className={`space-y-4 ${isSmall ? 'animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300' : 'w-full max-w-3xl'}`}>
+            {/* Brand Name & Title */}
+            <div className={`space-y-4 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-1000 ${isSmall ? 'delay-300' : 'w-full max-w-3xl'}`}>
               <h1 
                 className={`${isSmall ? 'text-2xl' : 'text-5xl md:text-6xl lg:text-7xl'} font-black tracking-tighter uppercase italic leading-none`}
                 style={{ color: textPrimary }}
@@ -130,10 +142,10 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                 {config.brand.name}
               </h1>
               
-              <div className={`flex flex-col ${isSmall ? 'items-center gap-4' : 'items-start gap-6'}`}>
+              <div className="flex flex-col items-center gap-4 md:gap-6">
                 <div className={`${isSmall ? 'w-12 h-1.5' : 'w-20 h-2'} rounded-full`} style={{ backgroundColor: primaryColor }} />
                 <h2 
-                  className={`${isSmall ? 'text-sm' : 'text-2xl md:text-3xl'} font-bold tracking-[0.3em] uppercase opacity-70 italic max-w-2xl ${isSmall ? 'mx-auto' : ''}`}
+                  className={`${isSmall ? 'text-sm' : 'text-2xl md:text-3xl'} font-bold tracking-[0.3em] uppercase opacity-70 italic max-w-2xl mx-auto`}
                   style={{ color: textPrimary }}
                 >
                   {welcomeMessage || `Catálogo de ${config.brand.name}`}

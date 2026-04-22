@@ -93,6 +93,12 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
   if (step === 'generating') {
     return (
       <div className="flex flex-col min-h-screen min-h-[100dvh] items-center justify-center p-4 md:p-8 relative overflow-hidden" style={{ backgroundColor: bgColor }}>
+        {config.brand.widgetCoverImage && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-[0.06] mix-blend-luminosity"
+            style={{ backgroundImage: `url(${config.brand.widgetCoverImage})` }}
+          />
+        )}
         {/* Ambient glow - responsive */}
         <div 
           className="absolute w-48 h-48 md:w-96 md:h-96 rounded-full blur-3xl opacity-20"
@@ -124,7 +130,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
   return (
     <div 
       ref={containerRef}
-      className={`flex font-sans min-h-screen min-h-[100dvh] ${isSmall ? 'flex-col' : 'flex-row'}`} 
+      className={`relative flex font-sans min-h-screen min-h-[100dvh] ${isSmall ? 'flex-col' : 'flex-row'}`} 
       style={{ 
         backgroundColor: bgColor,
         paddingLeft: isSmall ? 'max(16px, env(safe-area-inset-left))' : 0,
@@ -133,6 +139,12 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
         paddingBottom: isSmall ? 'max(16px, env(safe-area-inset-bottom))' : 0,
       }}
     >
+      {config.brand.widgetCoverImage && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-[0.06] mix-blend-luminosity z-0"
+          style={{ backgroundImage: `url(${config.brand.widgetCoverImage})` }}
+        />
+      )}
       {/* ── Sidebar / Header ───────────────────────────────────────────── */}
       <div
         className={`relative flex flex-col z-20 transition-all duration-500 overflow-hidden ${
