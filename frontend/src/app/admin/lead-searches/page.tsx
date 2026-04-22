@@ -188,7 +188,7 @@ export default function LeadSearchesPage() {
       </div>
 
       {/* QUOTA CARDS MEJORADOS */}
-      {quota && (
+      {quota ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {/* Card Diario */}
           <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
@@ -231,6 +231,55 @@ export default function LeadSearchesPage() {
                 className="h-2 rounded-full transition-all duration-500"
                 style={{ width: `${(quota.monthly_used / quota.monthly_limit) * 100}%`, backgroundColor: getQuotaColor((quota.monthly_used / quota.monthly_limit) * 100) }}
               />
+            </div>
+          </div>
+
+          {/* Card Info */}
+          <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Sobre la quota</span>
+            <div className="space-y-2 text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
+              <p>Google Places free tier permite hasta <strong style={{ color: 'var(--text-primary)' }}>28,000 búsquedas al mes</strong>.</p>
+              <p>El límite diario es de 500 búsquedas. La quota se reinicia cada día y cada mes automáticamente.</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* Card Diario -默认值 */}
+          <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Hoy</span>
+              <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
+                0% usado
+              </span>
+            </div>
+            <p className="text-4xl font-bold tracking-tight mb-1" style={{ color: '#10b981' }}>
+              500
+            </p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              búsquedas restantes hoy
+            </p>
+            <div className="w-full rounded-full h-2 mt-3" style={{ backgroundColor: 'var(--border-color)' }}>
+              <div className="h-2 rounded-full" style={{ width: '0%', backgroundColor: '#10b981' }} />
+            </div>
+          </div>
+
+          {/* Card Mensual -默认值 */}
+          <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Este mes</span>
+              <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
+                0% usado
+              </span>
+            </div>
+            <p className="text-4xl font-bold tracking-tight mb-1" style={{ color: '#10b981' }}>
+              28.000
+            </p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              búsquedas restantes este mes
+            </p>
+            <div className="w-full rounded-full h-2 mt-3" style={{ backgroundColor: 'var(--border-color)' }}>
+              <div className="h-2 rounded-full" style={{ width: '0%', backgroundColor: '#10b981' }} />
             </div>
           </div>
 
