@@ -29,7 +29,7 @@ export default function LeadModal({ lead, onClose, onSave }: LeadModalProps) {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
-      const url = lead ? `/api/admin/leads/${lead.id}` : `/api/admin/leads`;
+      const url = lead ? `/admin/leads/${lead.id}` : `/admin/leads`;
       if (lead) {
         await adminApi.patch(url, form);
       } else {
