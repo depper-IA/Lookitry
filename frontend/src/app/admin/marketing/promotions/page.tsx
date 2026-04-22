@@ -337,13 +337,33 @@ export default function PromotionsPage() {
 
 
   const loadPromos = useCallback(async () => {
-    const res = await fetch(`${API_URL}/api/admin/promotions`, { credentials: 'include' });
-    if (res.ok) { const d = await res.json(); setPromos(d.data ?? []); }
+    try {
+      const res = await fetch(`${API_URL}/api/admin/promotions`, { credentials: 'include' });
+      if (res.ok) { 
+        const d = await res.json(); 
+        setPromos(d.data ?? []); 
+      } else {
+        const text = await res.text();
+        setError(`Error cargando promociones: ${res.status} - ${text}`);
+      }
+    } catch (e: any) {
+      setError(`Error de red: ${e.message}`);
+    }
   }, []);
 
   const loadCoupons = useCallback(async () => {
-    const res = await fetch(`${API_URL}/api/admin/coupons`, { credentials: 'include' });
-    if (res.ok) { const d = await res.json(); setCoupons(d.data ?? []); }
+    try {
+      const res = await fetch(`${API_URL}/api/admin/coupons`, { credentials: 'include' });
+      if (res.ok) { 
+        const d = await res.json(); 
+        setCoupons(d.data ?? []); 
+      } else {
+        const text = await res.text();
+        setError(`Error cargando cupones: ${res.status} - ${text}`);
+      }
+    } catch (e: any) {
+      setError(`Error de red: ${e.message}`);
+    }
   }, []);
 
   useEffect(() => {

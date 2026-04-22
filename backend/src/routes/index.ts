@@ -20,6 +20,7 @@ import trialRoutes from './trial.routes';
 import reviewsRoutes from './reviews.routes';
 import adminReviewsRoutes from './adminReviews.routes';
 import couponsRoutes from './coupons.routes';
+import couponsPublicRoutes from './couponsPublic.routes';
 import enterpriseRoutes from './enterprise.routes';
 import agentRoutes from './agent.routes';
 import reviewsPublicRoutes from './reviewsPublic.routes';
@@ -50,6 +51,7 @@ router.use('/reviews', reviewsRoutes);
 router.use('/admin/reviews', adminReviewsRoutes);
 router.use('/admin/coupons', couponsRoutes);
 router.use('/admin/enterprise', enterpriseRoutes);
+router.use('/coupons', couponsPublicRoutes);
 router.use('/agent', agentRoutes);
 router.use('/category-attributes', categoryAttributesRoutes);
 
