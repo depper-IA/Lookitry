@@ -162,6 +162,37 @@ export const registerRateLimiter = rateLimit({
   },
 });
 
+/**
+ * Rate limiter para login de admin
+ * 5 intentos por 15 minutos por IP — protección contra fuerza bruta para panel admin
+ */
+export const adminLoginRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: {
+    error: 'ADMIN_LOGIN_RATE_LIMIT_EXCEEDED',
+    message: 'Demasiados intentos de inicio de sesión. Por favor espera 15 minutos.',
+    retryAfter: '15 minutos',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    console.warn(`⚠️  Admin login rate limit excedido para IP: ${req.ip}`);
+    res.status(429).json({
+      error: 'ADMIN_LOGIN_RATE_LIMIT_EXCEEDED',
+      message: 'Demasiados intentos de inicio de sesión. Por favor espera 15 minutos.',
+      retryAfter: '15 minutos',
+      timestamp: new Date().toISOString(),
+    });
+  },
+  skip: (req: Request) => {
+    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
+      return true;
+    }
+    return false;
+  },
+});
+
 // Store en memoria para rate limiting por brandSlug
 const slugStore = new Map<string, { count: number; resetAt: number }>();
 

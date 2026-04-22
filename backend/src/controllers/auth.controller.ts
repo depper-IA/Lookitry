@@ -20,7 +20,7 @@ function setCookieToken(res: Response, token: string): void {
     httpOnly: true,
     secure: IS_PROD,           // Solo HTTPS en producción
     sameSite: 'lax', // 'lax' para compatibilidad con logout cross-origin
-    maxAge: 30 * 24 * 60 * 60 * 1000,  // 30 días en ms
+    maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 días en ms
     path: '/',
   };
 

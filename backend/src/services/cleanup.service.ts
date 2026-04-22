@@ -22,11 +22,11 @@ export class CleanupService {
     try {
       console.log('[Cleanup] Iniciando limpieza de imágenes de productos eliminados...');
 
-      // Obtener productos eliminados (deleted_at no es null)
+      // Obtener productos eliminados (is_active = false indica soft delete)
       const { data: deletedProducts, error } = await supabaseAdmin
         .from('products')
-        .select('id, image_url, deleted_at')
-        .not('deleted_at', 'is', null);
+        .select('id, image_url, updated_at')
+        .eq('is_active', false);
 
       if (error) {
         console.error('[Cleanup] Error al obtener productos eliminados:', error);
@@ -73,12 +73,12 @@ export class CleanupService {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - this.config.productImageRetentionDays);
 
-      // Obtener productos antiguos eliminados
+      // Obtener productos antiguos eliminados (is_active = false)
       const { data: oldProducts, error } = await supabaseAdmin
         .from('products')
-        .select('id, image_url, deleted_at')
-        .not('deleted_at', 'is', null)
-        .lt('deleted_at', cutoffDate.toISOString());
+        .select('id, image_url, updated_at')
+        .eq('is_active', false)
+        .lt('updated_at', cutoffDate.toISOString());
 
       if (error) {
         console.error('[Cleanup] Error al obtener productos antiguos:', error);

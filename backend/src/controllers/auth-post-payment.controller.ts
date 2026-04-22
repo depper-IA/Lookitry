@@ -23,7 +23,7 @@ function setCookieToken(res: Response, token: string): void {
     httpOnly: true,
     secure: IS_PROD,
     sameSite: IS_PROD ? 'none' : 'lax',
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
     path: '/',
   };
 

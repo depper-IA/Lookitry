@@ -397,6 +397,9 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
   }
 
   async login(data: LoginDto): Promise<AuthResponse> {
+    const ip = data.ip || 'unknown';
+    const fingerprint = data.fingerprint || null;
+
     // Buscar marca por email — usar supabaseAdmin para bypassear RLS
     const { data: brand, error } = await supabaseAdmin
       .from('brands')
@@ -405,6 +408,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
       .single();
 
     if (error || !brand) {
+      console.warn(`[Auth] Login fallido - email no encontrado: ${data.email} desde IP: ${ip}`);
       throw new Error('Credenciales inválidas');
     }
 
@@ -412,8 +416,11 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
     const isPasswordValid = await bcrypt.compare(data.password, brand.password);
 
     if (!isPasswordValid) {
+      console.warn(`[Auth] Login fallido - password inválido para brand: ${brand.id} (${data.email}) desde IP: ${ip}`);
       throw new Error('Credenciales inválidas');
     }
+
+    console.info(`[Auth] Login exitoso para brand: ${brand.id} (${data.email}) desde IP: ${ip}`);
 
     // Generar token
     const token = generateToken({
