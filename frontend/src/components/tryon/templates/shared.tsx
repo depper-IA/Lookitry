@@ -156,6 +156,7 @@ export function StepBar({ step, primaryColor }: { step: Step; primaryColor: stri
 // ── Selector de productos amigable (con toda la información del editor) ────────
 export function FriendlyProductSelector({
   products, selected, onSelect, primaryColor, generatedProducts, textColor, textMutedColor,
+  showHeader = true,
 }: {
   products: Product[];
   selected: Product | null;
@@ -164,6 +165,7 @@ export function FriendlyProductSelector({
   generatedProducts: Map<string, string>;
   textColor?: string;
   textMutedColor?: string;
+  showHeader?: boolean;
 }) {
   const bgLuminance = isLightBg(primaryColor);
   const textMain = textColor || (bgLuminance ? '#050505' : '#ffffff');
@@ -193,10 +195,12 @@ export function FriendlyProductSelector({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="mb-3 md:mb-4 text-center">
-        <p className="text-sm font-black uppercase italic tracking-tight" style={{ color: textMain }}>¿Qué quieres probarte?</p>
-        <p className="text-[10px] font-medium uppercase tracking-widest mt-0.5" style={{ color: textMuted }}>Toca el producto que más te guste</p>
-      </div>
+      {showHeader && (
+        <div className="mb-3 md:mb-4 text-center">
+          <p className="text-sm font-black uppercase italic tracking-tight" style={{ color: textMain }}>¿Qué quieres probarte?</p>
+          <p className="text-[10px] font-medium uppercase tracking-widest mt-0.5" style={{ color: textMuted }}>Toca el producto que más te guste</p>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2">
         {products.map((p, index) => {
           const sel = selected?.id === p.id;
