@@ -15,6 +15,7 @@ Este es el catalogo de habilidades reales que los agentes utilizan para construi
 ## 🛡️ Calidad y Control
 - [[./verification-before-completion]]: Garantia de que todo funcione antes de entregarlo.
 - [[./code-reviewer]]: Estandares de limpieza y modularidad de codigo.
+- [[./refactor-and-dead-code-detection]]: Refactorizacion obligatoria + deteccion de codigo muerto.
 
 ## 📱 Marketing y Redes Sociales
 - [[./social-automation-buffer]]: Automatización de publicaciones en Buffer + GCP Imagen.
