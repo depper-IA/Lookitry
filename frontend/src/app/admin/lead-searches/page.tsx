@@ -416,7 +416,7 @@ function SearchModal({ onClose, onSave, setError }: { onClose: () => void; onSav
     setSaving(false);
   };
 
-  const keywordExamples = ['boutique', 'ropa mujer', 'denim', 'accesorios moda', 'zapatos', 'tienda ropa'];
+  const keywordExamples = ['boutique', 'ropa mujer', 'personalizados', 'diseño', 'diseñador', 'denim', 'accesorios moda'];
   const parsedKeywords = form.keywords.split(',').map((k) => k.trim()).filter(Boolean);
 
   return (
@@ -469,14 +469,31 @@ function SearchModal({ onClose, onSave, setError }: { onClose: () => void; onSav
                 <option value="USA">USA</option>
                 <option value="España">España</option>
               </select>
-              <input
-                type="text"
+              <select
                 value={form.city}
-                onChange={(e) => setForm({ ...form, city: e.target.value })}
-                placeholder="Ciudad (opcional)"
+                onChange={(e) => setForm({ ...form, city: e.target.value === '__other__' ? '' : e.target.value })}
                 className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all"
                 style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-              />
+              >
+                <option value="">Toda Colombia</option>
+                <option value="Cali">Cali</option>
+                <option value="Bogotá">Bogotá</option>
+                <option value="Medellín">Medellín</option>
+                <option value="Barranquilla">Barranquilla</option>
+                <option value="Cartagena">Cartagena</option>
+                <option value="Bucaramanga">Bucaramanga</option>
+                <option value="__other__">Otra ciudad...</option>
+              </select>
+              {form.city === '' && (
+                <input
+                  type="text"
+                  value={form.city}
+                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  placeholder="Escribe la ciudad"
+                  className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all mt-2"
+                  style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                />
+              )}
             </div>
             <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
               Si no especificas ciudad, se buscarán negocios en todo el país
