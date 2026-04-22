@@ -309,7 +309,10 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Formato de email inválido' });
       }
 
-      const result = await authService.login(data);
+      const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || '';
+      const fingerprint = req.body.fingerprint || null;
+
+      const result = await authService.login({ ...data, ip, fingerprint });
       // Emitir token como cookie HTTP-Only (más seguro que localStorage)
       if (result.token) setCookieToken(res, result.token);
       return res.status(200).json(result);
@@ -318,6 +321,10 @@ export class AuthController {
 
       if (error.message === 'Credenciales inválidas') {
         return res.status(401).json({ error: 'INVALID_CREDENTIALS', message: error.message });
+      }
+
+      if (error.message.includes('bloqueada')) {
+        return res.status(423).json({ error: 'ACCOUNT_LOCKED', message: error.message });
       }
 
       if (error.message === 'EMAIL_NOT_VERIFIED') {

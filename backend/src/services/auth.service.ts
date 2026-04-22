@@ -7,6 +7,13 @@ import { generateToken } from '../utils/jwt';
 import { pricingService } from './pricing.service';
 import { attachLedgerSnapshotToNotes } from '../utils/paymentLedger';
 import { recordTrialEvent } from '../utils/brandLifecycle';
+import { redis } from '../config/redis';
+
+// ── Constants para lockout ────────────────────────────────────────────────────
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MINUTES = 15;
+const LOCKOUT_KEY_PREFIX = 'auth:lockout:';
+const FAILED_KEY_PREFIX = 'auth:failed:';
 
 // ── Helpers de campaña de trial ───────────────────────────────────────────────
 
@@ -396,6 +403,129 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
     };
   }
 
+  // ── Lockout helpers (Redis con fallback a DB) ─────────────────────────────
+
+  /**
+   * Verifica si una marca está bloqueada (usa Redis, fallback a DB)
+   */
+  private async isLockedOut(brandId: string): Promise<{ locked: boolean; reason?: string }> {
+    const redisKey = `${LOCKOUT_KEY_PREFIX}${brandId}`;
+
+    // 1️⃣ Verificar en Redis primero (más rápido)
+    try {
+      const ttl = await redis.ttl(redisKey);
+      if (ttl > 0) {
+        const secondsLeft = await redis.ttl(redisKey);
+        const minutesLeft = Math.ceil(secondsLeft / 60);
+        return {
+          locked: true,
+          reason: `Cuenta bloqueada. Intenta de nuevo en ${minutesLeft} minuto(s).`,
+        };
+      }
+    } catch {
+      // Redis no disponible, fallback a DB
+    }
+
+    // 2️⃣ Fallback: verificar en DB directamente
+    const { data: brand } = await supabaseAdmin
+      .from('brands')
+      .select('locked_until')
+      .eq('id', brandId)
+      .single();
+
+    if (brand?.locked_until) {
+      const lockedUntil = new Date(brand.locked_until);
+      if (lockedUntil > new Date()) {
+        const minutesLeft = Math.ceil((lockedUntil.getTime() - Date.now()) / 60000);
+        return {
+          locked: true,
+          reason: `Cuenta bloqueada. Intenta de nuevo en ${minutesLeft} minuto(s).`,
+        };
+      }
+    }
+
+    return { locked: false };
+  }
+
+  /**
+   * Registra un intento fallido y aplica lockout si es necesario
+   */
+  private async recordFailedAttempt(brandId: string, ip: string): Promise<void> {
+    const redisKey = `${FAILED_KEY_PREFIX}${brandId}`;
+
+    // 1️⃣ Intentar registrar en Redis
+    try {
+      const attempts = await redis.incr(redisKey);
+      await redis.expire(redisKey, LOCKOUT_DURATION_MINUTES * 60);
+
+      if (attempts >= MAX_FAILED_ATTEMPTS) {
+        // Bloquear en Redis
+        await redis.setex(`${LOCKOUT_KEY_PREFIX}${brandId}`, LOCKOUT_DURATION_MINUTES * 60, '1');
+        await redis.del(redisKey); // Limpiar contador
+        console.warn(`[Auth] Brand ${brandId} bloqueado por ${LOCKOUT_DURATION_MINUTES} minutos (IP: ${ip})`);
+      }
+    } catch {
+      // Redis no disponible, fallback a DB
+      await this.recordFailedAttemptDB(brandId);
+    }
+  }
+
+  /**
+   * Fallback a DB cuando Redis no está disponible
+   */
+  private async recordFailedAttemptDB(brandId: string): Promise<void> {
+    const { data: brand } = await supabaseAdmin
+      .from('brands')
+      .select('failed_login_attempts')
+      .eq('id', brandId)
+      .single();
+
+    const currentAttempts = brand?.failed_login_attempts || 0;
+    const newAttempts = currentAttempts + 1;
+
+    if (newAttempts >= MAX_FAILED_ATTEMPTS) {
+      const lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60000);
+      await supabaseAdmin
+        .from('brands')
+        .update({
+          failed_login_attempts: 0,
+          locked_until: lockedUntil.toISOString(),
+        })
+        .eq('id', brandId);
+    } else {
+      await supabaseAdmin
+        .from('brands')
+        .update({ failed_login_attempts: newAttempts })
+        .eq('id', brandId);
+    }
+  }
+
+  /**
+   * Resetea contador de intentos fallidos tras login exitoso
+   */
+  private async resetFailedAttempts(brandId: string): Promise<void> {
+    const redisKey = `${FAILED_KEY_PREFIX}${brandId}`;
+
+    // Limpiar Redis
+    try {
+      await redis.del(redisKey);
+      await redis.del(`${LOCKOUT_KEY_PREFIX}${brandId}`);
+    } catch {
+      // Ignorar errores de Redis
+    }
+
+    // Limpiar DB
+    await supabaseAdmin
+      .from('brands')
+      .update({
+        failed_login_attempts: 0,
+        locked_until: null,
+      })
+      .eq('id', brandId);
+  }
+
+  // ── Login ──────────────────────────────────────────────────────────────────
+
   async login(data: LoginDto): Promise<AuthResponse> {
     const ip = data.ip || 'unknown';
     const fingerprint = data.fingerprint || null;
@@ -412,14 +542,24 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
       throw new Error('Credenciales inválidas');
     }
 
+    // Verificar si está bloqueada
+    const lockCheck = await this.isLockedOut(brand.id);
+    if (lockCheck.locked) {
+      console.warn(`[Auth] Login bloqueado para brand: ${brand.id} - ${lockCheck.reason}`);
+      throw new Error(lockCheck.reason!);
+    }
+
     // Verificar contraseña
     const isPasswordValid = await bcrypt.compare(data.password, brand.password);
 
     if (!isPasswordValid) {
       console.warn(`[Auth] Login fallido - password inválido para brand: ${brand.id} (${data.email}) desde IP: ${ip}`);
+      await this.recordFailedAttempt(brand.id, ip);
       throw new Error('Credenciales inválidas');
     }
 
+    // Login exitoso - resetear contadores
+    await this.resetFailedAttempts(brand.id);
     console.info(`[Auth] Login exitoso para brand: ${brand.id} (${data.email}) desde IP: ${ip}`);
 
     // Generar token

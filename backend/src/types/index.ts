@@ -115,6 +115,8 @@ export interface RegisterBrandDto {
 export interface LoginDto {
   email: string;
   password: string;
+  ip?: string;        // IP del cliente para auditoría
+  fingerprint?: string; // Fingerprint anti-abuso
 }
 
 export interface AuthResponse {
