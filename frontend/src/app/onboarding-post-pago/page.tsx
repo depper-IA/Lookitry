@@ -132,7 +132,7 @@ function OnboardingContent() {
       setAvailabilityResult({
         brandExists: data.brandExists,
         slugExists: data.slugExists,
-        suggestedSlug: data.suggestedSlug,
+        suggestedSlug: data.suggestedSuffix || data.suggestedSlug || '',
       });
 
       // Generate slug based on result
@@ -141,10 +141,12 @@ function OnboardingContent() {
     } catch (err: any) {
       console.error('Error verificando disponibilidad:', err);
       setSlugError(err.message || 'No se pudo verificar');
+      // Even on error, set the slug so the preview works
+      setSlug(slugify(brandName));
     } finally {
       setCheckingAvailability(false);
     }
-  }, [form.slugSuffix]);
+  }, []); // Empty deps - brandName is passed as parameter, not closure
 
   const handleNameBlur = () => {
     if (form.name.trim().length >= 2) {
