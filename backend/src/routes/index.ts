@@ -26,6 +26,7 @@ import agentRoutes from './agent.routes';
 import reviewsPublicRoutes from './reviewsPublic.routes';
 import categoryAttributesRoutes from './categoryAttributes.routes';
 import landingStatsRoutes from './landingStats.routes';
+import homeRoutes from './home.routes';
 
 const router = Router();
 
@@ -54,5 +55,6 @@ router.use('/admin/enterprise', enterpriseRoutes);
 router.use('/coupons', couponsPublicRoutes);
 router.use('/agent', agentRoutes);
 router.use('/category-attributes', categoryAttributesRoutes);
+router.use('/home/tryon', homeRoutes);
 
 export default router;
