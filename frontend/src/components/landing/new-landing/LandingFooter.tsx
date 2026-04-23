@@ -120,7 +120,7 @@ export default function LandingFooter() {
   };
 
   return (
-    <footer className="theme-bg-base theme-text relative z-10 -mb-16 overflow-x-hidden pt-12 sm:pt-20 md:mb-0 md:pt-24 lg:pt-28" role="contentinfo">
+    <footer className="theme-bg-base theme-text relative z-10 overflow-x-hidden pt-12 sm:pt-20 md:pt-24 lg:pt-28 pb-20 md:pb-0" role="contentinfo">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-12">
         <div className="mb-0 md:hidden">
           <div className="mb-5 flex flex-col items-center text-center">
