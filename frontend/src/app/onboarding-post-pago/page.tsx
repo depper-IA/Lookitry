@@ -137,13 +137,7 @@ function OnboardingContent() {
 
       // Generate slug based on result
       const baseSlug = slugify(brandName);
-      if (data.brandExists && form.slugSuffix) {
-        setSlug(`${baseSlug}-${form.slugSuffix}`);
-      } else if (data.brandExists) {
-        setSlug(baseSlug);
-      } else {
-        setSlug(baseSlug);
-      }
+      setSlug(baseSlug); // Siempre mostrar el slug base primero
     } catch (err: any) {
       console.error('Error verificando disponibilidad:', err);
       setSlugError(err.message || 'No se pudo verificar');
@@ -160,14 +154,35 @@ function OnboardingContent() {
 
   const handleSuffixChange = (value: string) => {
     setForm(prev => ({ ...prev, slugSuffix: value }));
-    const baseSlug = slugify(form.name);
-    if (availabilityResult?.brandExists && value) {
-      setSlug(`${baseSlug}-${value}`);
-      setSlugError('');
-    } else if (availabilityResult?.brandExists) {
-      setSlug(baseSlug);
-    }
   };
+
+  // Verificar disponibilidad del slug cuando cambia el sufijo
+  useEffect(() => {
+    if (!form.slugSuffix || !availabilityResult?.brandExists || !form.name) return;
+
+    const baseSlug = slugify(form.name);
+    const fullSlug = `${baseSlug}-${form.slugSuffix}`;
+
+    const checkSuffixAvailability = async () => {
+      setSlugError('');
+      try {
+        const response = await fetch('/api/brands/check-availability', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brandName: `${form.name} ${form.slugSuffix}` }),
+        });
+        const data = await response.json();
+        if (data.slugExists) {
+          setSlugError('Este nombre completo ya existe, intenta otro');
+        }
+      } catch (err) {
+        console.error('Error verificando disponibilidad del sufijo:', err);
+      }
+    };
+
+    const timeoutId = setTimeout(checkSuffixAvailability, 300);
+    return () => clearTimeout(timeoutId);
+  }, [form.slugSuffix, form.name, availabilityResult?.brandExists]);
 
   const validatePassword = (pwd: string) => {
     if (pwd.length < 8) return 'Mínimo 8 caracteres';
@@ -198,17 +213,12 @@ function OnboardingContent() {
       return;
     }
 
-    // Check slug availability one more time if brand exists
-    if (availabilityResult?.brandExists) {
-      if (availabilityResult.slugExists && !form.slugSuffix) {
-        setSlugError('Agrega algo extra al nombre para diferenciarlo');
-        return;
-      }
-      if (availabilityResult.slugExists && form.slugSuffix) {
-        setSlugError('Este nombre ya existe, intenta otro');
-        return;
-      }
+    // Verificar disponibilidad del slug base (sin sufijo personalizado)
+    if (availabilityResult?.brandExists && availabilityResult.slugExists && !form.slugSuffix) {
+      setSlugError('Agrega algo extra al nombre para diferenciarlo');
+      return;
     }
+    // Si brandExists con slugSuffix o si es brand nuevo, el backend genera slug único automáticamente
 
     if (!form.password.trim()) {
       setError('La contraseña es requerida');

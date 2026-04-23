@@ -372,7 +372,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
           </div>
         </header>
 
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 pt-16 sm:p-4 sm:pt-20 md:p-6 md:pt-6 md:pb-6 xl:p-8 xl:pt-10 pb-24 sm:pb-24 md:pb-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 pt-16 sm:p-4 sm:pt-20 md:p-6 md:pt-6 md:pb-24 xl:p-8 xl:pt-10 pb-28 sm:pb-28 md:pb-24">
           {!isDashboardHome && <DashboardNotifications />}
           {!isDashboardHome && <TrialBanner />}
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">{children}</div>

@@ -519,7 +519,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </header>
 
-          <main className="flex-1 p-5 sm:p-7">{children}</main>
+          <main className="flex-1 p-5 sm:p-7 pb-24 sm:pb-24">{children}</main>
         </div>
 
         <AdminBottomNav />
