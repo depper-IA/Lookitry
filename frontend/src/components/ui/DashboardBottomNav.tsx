@@ -23,9 +23,10 @@ export function DashboardBottomNav() {
     <nav
       role="navigation"
       aria-label="Navegación del dashboard"
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-safe"
+      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
     >
-      <div className="mx-auto max-w-sm px-3 pb-2 pt-1">
+      <div className="mx-auto max-w-sm px-3 pt-1">
         <div className="flex items-center justify-center gap-0.5 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 shadow-2xl shadow-black/20 dark:shadow-black/40 px-1.5 py-1.5 pb-safe">
           <Link
             href="/dashboard"
