@@ -888,3 +888,20 @@ INSERT INTO category_attributes (category_key, category_label, attributes) VALUE
   'General',
   '[{"key": "color", "label": "Color", "type": "text"}, {"key": "marca", "label": "Marca", "type": "text"}, {"key": "material", "label": "Material", "type": "text"}]'
 );
+
+-- ============================================
+-- HOME TRYON TRIALS (IP-based limiting)
+-- ============================================
+
+CREATE TABLE home_tryon_trials (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  ip_address text NOT NULL,
+  product_id uuid NOT NULL,
+  brand_id uuid NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  user_agent text,
+  CONSTRAINT fk_home_tryon_trials_brand FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_home_tryon_trials_ip ON home_tryon_trials(ip_address);
+CREATE INDEX idx_home_tryon_trials_ip_created ON home_tryon_trials(ip_address, created_at);

@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, Upload, RotateCcw, Download } from 'lucide-react';
+import { UpgradeModal } from '@/components/ui/UpgradeModal';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div
@@ -21,7 +22,137 @@ const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) 
   </div>
 );
 
+interface Product {
+  id: string;
+  name: string;
+  short_description: string | null;
+  image_url: string;
+  category: string;
+}
+
+interface HomeTryonConfig {
+  brand: { id: string; name: string; slug: string };
+  products: Product[];
+}
+
+type TryOnStep = 'select' | 'selfie' | 'loading' | 'result';
+
 export default function LandingHero() {
+  const [config, setConfig] = useState<HomeTryonConfig | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [step, setStep] = useState<TryOnStep>('select');
+  const [selfie, setSelfie] = useState<string | null>(null);
+  const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
+  const [resultImage, setResultImage] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [hasUsedTrial, setHasUsedTrial] = useState(false);
+
+  // Load config on mount
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const res = await fetch('/api/home/tryon/config');
+        const data = await res.json();
+        setConfig(data);
+        if (data.products?.length > 0) {
+          setSelectedProduct(data.products[0]);
+        }
+      } catch (err) {
+        console.error('Error loading home tryon config:', err);
+      }
+    };
+    loadConfig();
+
+    // Check if already used trial
+    const checkTrial = async () => {
+      try {
+        const res = await fetch('/api/home/tryon/check');
+        const data = await res.json();
+        setHasUsedTrial(data.hasTrialed);
+      } catch (err) {
+        console.error('Error checking trial:', err);
+      }
+    };
+    checkTrial();
+  }, []);
+
+  const handleProductSelect = (product: Product) => {
+    setSelectedProduct(product);
+    if (step === 'select') {
+      setStep('selfie');
+    }
+  };
+
+  const handleSelfieChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const base64 = ev.target?.result as string;
+      setSelfie(base64.split(',')[1]); // Remove data:image/...;base64,
+      setSelfiePreview(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleGenerate = async () => {
+    if (!selfie || !selectedProduct) return;
+
+    setIsGenerating(true);
+    setError(null);
+    setStep('loading');
+
+    try {
+      const res = await fetch('/api/home/tryon/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: selectedProduct.id,
+          selfieBase64: selfie,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 429 || data.error === 'TRIAL_LIMIT_EXCEEDED') {
+        setShowUpgradeModal(true);
+        setStep('select');
+        setHasUsedTrial(true);
+        return;
+      }
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Error generando prueba');
+      }
+
+      setResultImage(data.resultImageUrl);
+      setStep('result');
+    } catch (err: any) {
+      console.error('Generation error:', err);
+      setError(err.message || 'Error en el servicio');
+      setStep('selfie');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleReset = () => {
+    setSelfie(null);
+    setSelfiePreview(null);
+    setResultImage(null);
+    setError(null);
+    setStep('select');
+  };
+
+  const handleBackToSelect = () => {
+    setStep('select');
+    setSelfie(null);
+    setSelfiePreview(null);
+  };
+
   return (
     <section
       id="hero"
@@ -29,12 +160,9 @@ export default function LandingHero() {
       aria-label="Seccion principal"
     >
       <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        {/* Gradientes Premium Lookitry */}
         <div className="absolute top-[-15%] right-[-10%] h-[100vw] w-[100vw] rounded-full bg-[#FF5C3A]/10 blur-[180px] sm:h-[80vw] sm:w-[80vw]" />
         <div className="absolute bottom-[-15%] left-[-15%] h-[80vw] w-[80vw] rounded-full bg-[#FF5C3A]/5 blur-[200px]" />
         <div className="absolute top-[20%] left-[-10%] h-[40vw] w-[40vw] rounded-full bg-white/5 blur-[120px] dark:bg-white/2" />
-        
-        {/* Glow central suave */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[60vh] w-[60vw] bg-[#FF5C3A]/5 blur-[250px] opacity-20" />
       </div>
 
@@ -79,8 +207,10 @@ export default function LandingHero() {
           </div>
         </div>
 
+        {/* PROBADOR FUNCIONAL */}
         <div className="flex w-full items-center justify-center lg:justify-end">
           <div className="group relative z-10 w-full max-w-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#141414] p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] sm:max-w-[500px] sm:rounded-[2rem] sm:p-4 lg:max-w-[620px]">
+            {/* Browser chrome */}
             <div className="mb-4 flex items-center gap-2 sm:mb-6 sm:gap-3" aria-hidden="true">
               <div className="flex gap-1 sm:gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#ff5c5c] sm:h-2 sm:w-2"></span>
@@ -88,75 +218,206 @@ export default function LandingHero() {
                 <span className="h-1.5 w-1.5 rounded-full bg-[#28c840] sm:h-2 sm:w-2"></span>
               </div>
               <div className="flex-1 truncate rounded-md border border-white/5 bg-[#1c1c1c] px-2 py-1 text-center font-dm-sans text-[7px] uppercase tracking-widest text-white/20 sm:px-4 sm:text-[9px]">
-                lookitry.com/mi-marca
+                lookitry.com/pruebalo
               </div>
             </div>
 
-            <div className="group/upload relative mb-3 flex flex-col items-center justify-center rounded-xl border border-white/5 bg-[#1c1c1c] p-4 text-center sm:mb-4 sm:rounded-2xl sm:p-6">
-              <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-white/20 sm:top-3 sm:left-6 sm:text-[8px]">Paso 1: Tu Foto</div>
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-white/10 bg-white/5 text-white/20 transition-all duration-300 group-hover/upload:border-[#FF5C3A]/30 sm:mb-4 sm:h-16 sm:w-16">
-                <Camera size={24} strokeWidth={1} aria-hidden="true" />
-              </div>
-              <p className="text-[8px] font-bold uppercase tracking-widest text-white/40 sm:text-[10px]">Sube una selfie</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 sm:gap-4">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-white/10 bg-[#1a1a1a] sm:rounded-2xl">
-                <Image
-                  src="/images/photo-1589156229687-496a31ad1d1f.jpeg"
-                  alt="Modelo Probador Virtual Lookitry"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 600px) 100vw, 300px"
-                />
-                <div className="absolute top-2 left-2 rounded-full bg-[#FF5C3A] px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white shadow-xl sm:top-3 sm:left-4 sm:px-3 sm:py-1 sm:text-[8px]">
-                  Original
+            {/* STEP: SELECT PRODUCT */}
+            {step === 'select' && config && (
+              <div className="space-y-4">
+                <div className="mb-2 px-0.5 text-[7px] font-bold uppercase tracking-[0.15em] text-white/30 sm:mb-1 sm:px-1 sm:text-[8px] sm:tracking-[0.2em]">
+                  Selecciona un producto
                 </div>
-              </div>
-
-              <div className="flex flex-col gap-2 sm:gap-3">
-                <div className="mb-0.5 px-0.5 text-[7px] font-bold uppercase tracking-[0.15em] text-white/30 sm:mb-1 sm:px-1 sm:text-[8px] sm:tracking-[0.2em]">
-                  Paso 2: Elige Producto
-                </div>
-
-                {[
-                  { name: 'Camisa Lino Beige', price: '$120K', img: '/products/camisa_lino_beige.png', active: true },
-                  { name: 'Zapatilla Urban', price: '$240K', img: '/images/photo-1549298916-b41d501d3772.jpeg', active: false },
-                  { name: 'Bolso Artisan', price: '$180K', img: '/images/photo-1584917865442-de89df76afd3.jpeg', active: false },
-                  { name: 'Zapatilla Blanca', price: '$350K', img: '/products/zapatilla_blanca.png', active: false }
-                ].map((prod, i) => (
-                  <div
-                    key={i}
-                    className={`group/item flex cursor-pointer items-center gap-2 rounded-lg border p-1.5 transition-all sm:gap-3 sm:rounded-xl sm:p-2.5 ${
-                      prod.active ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/5' : 'border-white/10 bg-white/5 hover:border-white/20'
-                    }`}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Seleccionar ${prod.name}`}
-                  >
-                    <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a] sm:h-10 sm:w-10">
-                      <Image src={prod.img} alt={prod.name} fill className="object-cover" />
-                    </div>
-                    <div className="flex min-w-0 flex-col overflow-hidden">
-                      <span className={`truncate text-[8px] font-bold sm:text-[10px] ${prod.active ? 'text-white' : 'text-white/60'}`}>{prod.name}</span>
-                      <span className="text-[7px] font-medium text-white/30 sm:text-[8px]">{prod.price}</span>
-                    </div>
-                    {prod.active && (
-                      <div className="ml-auto flex h-3 w-3 shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] sm:h-3.5 sm:w-3.5" aria-hidden="true">
-                        <Check size={8} className="text-white" />
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                  {config.products.map((prod) => (
+                    <div
+                      key={prod.id}
+                      onClick={() => handleProductSelect(prod)}
+                      className={`group/item flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-2 transition-all sm:gap-3 sm:p-3 ${
+                        selectedProduct?.id === prod.id
+                          ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/5'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Seleccionar ${prod.name}`}
+                    >
+                      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-[#2a2a2a]">
+                        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" />
                       </div>
-                    )}
-                  </div>
-                ))}
+                      <div className="w-full text-center">
+                        <span className={`block text-[10px] font-bold sm:text-xs ${selectedProduct?.id === prod.id ? 'text-white' : 'text-white/60'}`}>
+                          {prod.name}
+                        </span>
+                      </div>
+                      {selectedProduct?.id === prod.id && (
+                        <div className="absolute top-2 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF5C3A] sm:h-5 sm:w-5" aria-hidden="true">
+                          <Check size={10} className="text-white sm:text-xs" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setStep('selfie')}
+                  disabled={!selectedProduct}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Camera size={16} />
+                  Subir Selfie
+                </button>
+                {hasUsedTrial && (
+                  <p className="text-[9px] text-center text-[#FF5C3A]/70">
+                    Ya usaste tu prueba gratis ·{' '}
+                    <Link href="/planes" className="underline hover:text-[#FF5C3A]">
+                      Ver planes
+                    </Link>
+                  </p>
+                )}
+              </div>
+            )}
 
-                <button className="mt-1 w-full rounded-lg bg-[#FF5C3A] py-2.5 text-[9px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 sm:mt-2 sm:rounded-xl sm:py-3.5 sm:text-[11px]">
-                  Ver Probador IA
+            {/* STEP: SELFIE */}
+            {step === 'selfie' && selectedProduct && (
+              <div className="space-y-4">
+                {/* Selected product preview */}
+                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2">
+                  <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-[#2a2a2a]">
+                    <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-white">{selectedProduct.name}</p>
+                    <p className="text-[8px] text-white/40">Producto seleccionado</p>
+                  </div>
+                  <button onClick={handleBackToSelect} className="ml-auto rounded-full p-1.5 text-white/40 hover:bg-white/10 hover:text-white">
+                    <X size={14} />
+                  </button>
+                </div>
+
+                {/* Selfie upload area */}
+                <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/20 bg-white/5 p-6 text-center">
+                  {selfiePreview ? (
+                    <div className="relative w-full">
+                      <div className="relative mx-auto h-48 w-48 overflow-hidden rounded-xl">
+                        <Image src={selfiePreview} alt="Tu selfie" fill className="object-cover" />
+                      </div>
+                      <button
+                        onClick={() => { setSelfie(null); setSelfiePreview(null); }}
+                        className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-white/20 bg-white/5">
+                        <Upload size={24} className="text-white/40" />
+                      </div>
+                      <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-white/40">
+                        Sube tu selfie
+                      </p>
+                    </>
+                  )}
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="user"
+                      onChange={handleSelfieChange}
+                      className="hidden"
+                    />
+                    <span className="rounded-lg bg-[#FF5C3A]/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30">
+                      {selfiePreview ? 'Cambiar' : 'Elegir archivo'}
+                    </span>
+                  </label>
+                </div>
+
+                {error && (
+                  <p className="text-center text-[10px] text-red-400">{error}</p>
+                )}
+
+                <button
+                  onClick={handleGenerate}
+                  disabled={!selfie || isGenerating}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3.5 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Generando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      Ver Probador IA
+                    </>
+                  )}
                 </button>
               </div>
-            </div>
+            )}
+
+            {/* STEP: LOADING */}
+            {step === 'loading' && (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/5 py-12">
+                <div className="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-[#FF5C3A]/20 border-t-[#FF5C3A]">
+                  <div className="sr-only">Cargando</div>
+                </div>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-white/60">
+                  Generando tu prueba...
+                </p>
+                <p className="mt-2 text-[9px] text-white/30">
+                  Puede tomar hasta 20 segundos
+                </p>
+              </div>
+            )}
+
+            {/* STEP: RESULT */}
+            {step === 'result' && resultImage && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  {selfiePreview && (
+                    <div className="relative overflow-hidden rounded-xl border border-white/10">
+                      <Image src={selfiePreview} alt="Tu selfie" fill className="object-cover" />
+                      <div className="absolute top-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white backdrop-blur-sm sm:text-[8px]">
+                        Original
+                      </div>
+                    </div>
+                  )}
+                  <div className="relative overflow-hidden rounded-xl border border-[#FF5C3A]/30 shadow-lg shadow-[#FF5C3A]/10">
+                    <Image src={resultImage} alt="Resultado del probador" fill className="object-cover" />
+                    <div className="absolute top-2 left-2 rounded-full bg-[#FF5C3A] px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white shadow-xl sm:text-[8px]">
+                      IA
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleReset}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-white/60 transition-all hover:bg-white/10 hover:text-white"
+                  >
+                    <RotateCcw size={12} />
+                    Nueva prueba
+                  </button>
+                  <Link
+                    href="/planes"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-2.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e]"
+                  >
+                    <Sparkles size={12} />
+                    Ver planes
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
     </section>
   );
 }
