@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, Upload, RotateCcw, Download } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, Upload, RotateCcw } from 'lucide-react';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
@@ -49,7 +49,6 @@ export default function LandingHero() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [hasUsedTrial, setHasUsedTrial] = useState(false);
 
-  // Load config on mount
   useEffect(() => {
     const loadConfig = async () => {
       try {
@@ -65,7 +64,6 @@ export default function LandingHero() {
     };
     loadConfig();
 
-    // Check if already used trial
     const checkTrial = async () => {
       try {
         const res = await fetch('/api/home/tryon/check');
@@ -80,9 +78,6 @@ export default function LandingHero() {
 
   const handleProductSelect = (product: Product) => {
     setSelectedProduct(product);
-    if (step === 'select') {
-      setStep('selfie');
-    }
   };
 
   const handleSelfieChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,7 +87,7 @@ export default function LandingHero() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const base64 = ev.target?.result as string;
-      setSelfie(base64.split(',')[1]); // Remove data:image/...;base64,
+      setSelfie(base64.split(',')[1]);
       setSelfiePreview(base64);
     };
     reader.readAsDataURL(file);
@@ -147,7 +142,7 @@ export default function LandingHero() {
     setStep('select');
   };
 
-  const handleBackToSelect = () => {
+  const handleBack = () => {
     setStep('select');
     setSelfie(null);
     setSelfiePreview(null);
@@ -167,6 +162,7 @@ export default function LandingHero() {
       </div>
 
       <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        {/* LEFT: Text Content */}
         <div className="text-center lg:text-left">
           <SectionTag text="Revolucion Visual con IA" />
           <h1 className="mb-6 font-jakarta text-3xl font-black leading-[1.1] tracking-[-0.03em] sm:mb-8 sm:text-[44px] sm:tracking-[-0.04em] md:text-[56px] lg:text-[64px]">
@@ -207,10 +203,10 @@ export default function LandingHero() {
           </div>
         </div>
 
-        {/* PROBADOR FUNCIONAL */}
+        {/* RIGHT: PROBADOR FUNCIONAL - Matching Wideframe Style */}
         <div className="flex w-full items-center justify-center lg:justify-end">
           <div className="group relative z-10 w-full max-w-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#141414] p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] sm:max-w-[500px] sm:rounded-[2rem] sm:p-4 lg:max-w-[620px]">
-            {/* Browser chrome */}
+            {/* Browser Chrome */}
             <div className="mb-4 flex items-center gap-2 sm:mb-6 sm:gap-3" aria-hidden="true">
               <div className="flex gap-1 sm:gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#ff5c5c] sm:h-2 sm:w-2"></span>
@@ -222,18 +218,42 @@ export default function LandingHero() {
               </div>
             </div>
 
-            {/* STEP: SELECT PRODUCT */}
+            {/* STEP: SELECT - Wideframe layout: left selfie, right products */}
             {step === 'select' && config && (
-              <div className="space-y-4">
-                <div className="mb-2 px-0.5 text-[7px] font-bold uppercase tracking-[0.15em] text-white/30 sm:mb-1 sm:px-1 sm:text-[8px] sm:tracking-[0.2em]">
-                  Selecciona un producto
+              <div className="flex flex-col gap-3 sm:gap-4">
+                {/* Left: Selfie Upload Area */}
+                <div className="relative flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-[#1c1c1c] p-4 text-center sm:p-6">
+                  <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-white/20 sm:top-3 sm:left-6 sm:text-[8px]">
+                    Tu Foto
+                  </div>
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-white/10 bg-white/5 sm:h-16 sm:w-16">
+                    <Camera size={24} strokeWidth={1} className="text-white/20" aria-hidden="true" />
+                  </div>
+                  <p className="text-[8px] font-bold uppercase tracking-widest text-white/40 sm:text-[10px]">
+                    Sube una selfie
+                  </p>
+                  <label className="mt-3 cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 sm:text-[11px]">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="user"
+                      onChange={handleSelfieChange}
+                      className="hidden"
+                    />
+                    Subir Selfie
+                  </label>
                 </div>
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+
+                {/* Right: Product Grid */}
+                <div className="flex flex-col gap-2 sm:gap-3">
+                  <div className="px-0.5 text-[7px] font-bold uppercase tracking-[0.15em] text-white/30 sm:mb-1 sm:px-1 sm:text-[8px] sm:tracking-[0.2em]">
+                    Elige un Producto
+                  </div>
                   {config.products.map((prod) => (
                     <div
                       key={prod.id}
                       onClick={() => handleProductSelect(prod)}
-                      className={`group/item flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-2 transition-all sm:gap-3 sm:p-3 ${
+                      className={`group/item flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all sm:gap-3 sm:rounded-xl sm:p-3 ${
                         selectedProduct?.id === prod.id
                           ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/5'
                           : 'border-white/10 bg-white/5 hover:border-white/20'
@@ -242,32 +262,36 @@ export default function LandingHero() {
                       tabIndex={0}
                       aria-label={`Seleccionar ${prod.name}`}
                     >
-                      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-[#2a2a2a]">
+                      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a] sm:h-14 sm:w-14">
                         <Image src={prod.image_url} alt={prod.name} fill className="object-cover" />
                       </div>
-                      <div className="w-full text-center">
-                        <span className={`block text-[10px] font-bold sm:text-xs ${selectedProduct?.id === prod.id ? 'text-white' : 'text-white/60'}`}>
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <span className={`truncate text-[9px] font-bold sm:text-[11px] ${selectedProduct?.id === prod.id ? 'text-white' : 'text-white/60'}`}>
                           {prod.name}
                         </span>
+                        <span className="text-[7px] text-white/30 sm:text-[8px] truncate">{prod.short_description || prod.category}</span>
                       </div>
                       {selectedProduct?.id === prod.id && (
-                        <div className="absolute top-2 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF5C3A] sm:h-5 sm:w-5" aria-hidden="true">
-                          <Check size={10} className="text-white sm:text-xs" />
+                        <div className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] sm:h-5 sm:w-5" aria-hidden="true">
+                          <Check size={8} className="text-white sm:text-xs" />
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
+
+                {/* CTA Button */}
                 <button
-                  onClick={() => setStep('selfie')}
-                  disabled={!selectedProduct}
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => selfie && setStep('selfie')}
+                  disabled={!selfie || !selectedProduct}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Camera size={16} />
-                  Subir Selfie
+                  <Sparkles size={16} />
+                  Ver Probador IA
                 </button>
+
                 {hasUsedTrial && (
-                  <p className="text-[9px] text-center text-[#FF5C3A]/70">
+                  <p className="text-center text-[9px] text-[#FF5C3A]/70">
                     Ya usaste tu prueba gratis ·{' '}
                     <Link href="/planes" className="underline hover:text-[#FF5C3A]">
                       Ver planes
@@ -277,30 +301,17 @@ export default function LandingHero() {
               </div>
             )}
 
-            {/* STEP: SELFIE */}
+            {/* STEP: SELFIE (with selected product) */}
             {step === 'selfie' && selectedProduct && (
-              <div className="space-y-4">
-                {/* Selected product preview */}
-                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2">
-                  <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-[#2a2a2a]">
-                    <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" />
+              <div className="flex flex-col gap-3 sm:gap-4">
+                {/* Left: Selfie Preview */}
+                <div className="flex flex-col items-center rounded-xl border border-white/10 bg-[#1c1c1c] p-4 text-center sm:p-6">
+                  <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-white/20 sm:top-3 sm:left-6 sm:text-[8px]">
+                    Tu Foto
                   </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-white">{selectedProduct.name}</p>
-                    <p className="text-[8px] text-white/40">Producto seleccionado</p>
-                  </div>
-                  <button onClick={handleBackToSelect} className="ml-auto rounded-full p-1.5 text-white/40 hover:bg-white/10 hover:text-white">
-                    <X size={14} />
-                  </button>
-                </div>
-
-                {/* Selfie upload area */}
-                <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/20 bg-white/5 p-6 text-center">
                   {selfiePreview ? (
-                    <div className="relative w-full">
-                      <div className="relative mx-auto h-48 w-48 overflow-hidden rounded-xl">
-                        <Image src={selfiePreview} alt="Tu selfie" fill className="object-cover" />
-                      </div>
+                    <div className="relative mb-3 h-32 w-32 overflow-hidden rounded-xl sm:h-40 sm:w-40">
+                      <Image src={selfiePreview} alt="Tu selfie" fill className="object-cover" />
                       <button
                         onClick={() => { setSelfie(null); setSelfiePreview(null); }}
                         className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
@@ -309,16 +320,11 @@ export default function LandingHero() {
                       </button>
                     </div>
                   ) : (
-                    <>
-                      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-white/20 bg-white/5">
-                        <Upload size={24} className="text-white/40" />
-                      </div>
-                      <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-white/40">
-                        Sube tu selfie
-                      </p>
-                    </>
+                    <div className="mb-3 flex h-32 w-32 items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/5 sm:h-40 sm:w-40">
+                      <Camera size={32} className="text-white/20" />
+                    </div>
                   )}
-                  <label className="cursor-pointer">
+                  <label className="cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30">
                     <input
                       type="file"
                       accept="image/*"
@@ -326,20 +332,34 @@ export default function LandingHero() {
                       onChange={handleSelfieChange}
                       className="hidden"
                     />
-                    <span className="rounded-lg bg-[#FF5C3A]/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30">
-                      {selfiePreview ? 'Cambiar' : 'Elegir archivo'}
-                    </span>
+                    {selfiePreview ? 'Cambiar' : 'Subir Selfie'}
                   </label>
                 </div>
 
-                {error && (
-                  <p className="text-center text-[10px] text-red-400">{error}</p>
-                )}
+                {/* Right: Selected Product */}
+                <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#1c1c1c] p-3">
+                  <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a]">
+                    <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" />
+                  </div>
+                  <div className="flex min-w-0 flex-1">
+                    <div>
+                      <p className="text-[11px] font-bold text-white truncate">{selectedProduct.name}</p>
+                      <p className="text-[9px] text-white/40 truncate">{selectedProduct.category}</p>
+                      {selectedProduct.short_description && (
+                        <p className="mt-1 text-[8px] text-white/30 line-clamp-2 hidden sm:block">{selectedProduct.short_description}</p>
+                      )}
+                    </div>
+                  </div>
+                  <button onClick={handleBack} className="rounded-full p-1.5 text-white/40 hover:bg-white/10 hover:text-white">
+                    <X size={14} />
+                  </button>
+                </div>
 
+                {/* Generate Button */}
                 <button
                   onClick={handleGenerate}
                   disabled={!selfie || isGenerating}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3.5 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3.5 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50"
                 >
                   {isGenerating ? (
                     <>
@@ -353,15 +373,17 @@ export default function LandingHero() {
                     </>
                   )}
                 </button>
+
+                {error && (
+                  <p className="text-center text-[10px] text-red-400">{error}</p>
+                )}
               </div>
             )}
 
             {/* STEP: LOADING */}
             {step === 'loading' && (
               <div className="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/5 py-12">
-                <div className="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-[#FF5C3A]/20 border-t-[#FF5C3A]">
-                  <div className="sr-only">Cargando</div>
-                </div>
+                <div className="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-[#FF5C3A]/20 border-t-[#FF5C3A]" />
                 <p className="text-[11px] font-bold uppercase tracking-widest text-white/60">
                   Generando tu prueba...
                 </p>
@@ -373,7 +395,7 @@ export default function LandingHero() {
 
             {/* STEP: RESULT */}
             {step === 'result' && resultImage && (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 <div className="grid grid-cols-2 gap-3">
                   {selfiePreview && (
                     <div className="relative overflow-hidden rounded-xl border border-white/10">
@@ -413,7 +435,6 @@ export default function LandingHero() {
         </div>
       </div>
 
-      {/* Upgrade Modal */}
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
