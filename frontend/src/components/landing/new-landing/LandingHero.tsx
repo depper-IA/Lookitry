@@ -28,6 +28,7 @@ interface Product {
   short_description: string | null;
   image_url: string;
   category: string;
+  price: number | null;
 }
 
 interface HomeTryonConfig {
@@ -269,7 +270,12 @@ export default function LandingHero() {
                         <span className={`truncate text-[9px] font-bold sm:text-[11px] ${selectedProduct?.id === prod.id ? 'text-white' : 'text-white/60'}`}>
                           {prod.name}
                         </span>
-                        <span className="text-[7px] text-white/30 sm:text-[8px] truncate">{prod.short_description || prod.category}</span>
+                        <span className="text-[7px] capitalize text-white/30 sm:text-[8px] truncate">{prod.category}</span>
+                        {prod.price && (
+                          <span className="text-[7px] font-bold text-[#FF5C3A] sm:text-[9px]">
+                            ${prod.price.toLocaleString('es-CO')}
+                          </span>
+                        )}
                       </div>
                       {selectedProduct?.id === prod.id && (
                         <div className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] sm:h-5 sm:w-5" aria-hidden="true">
@@ -344,9 +350,12 @@ export default function LandingHero() {
                   <div className="flex min-w-0 flex-1">
                     <div>
                       <p className="text-[11px] font-bold text-white truncate">{selectedProduct.name}</p>
-                      <p className="text-[9px] text-white/40 truncate">{selectedProduct.category}</p>
+                      <p className="text-[9px] capitalize text-white/40 truncate">{selectedProduct.category}</p>
                       {selectedProduct.short_description && (
                         <p className="mt-1 text-[8px] text-white/30 line-clamp-2 hidden sm:block">{selectedProduct.short_description}</p>
+                      )}
+                      {selectedProduct.price && (
+                        <p className="mt-1 text-[10px] font-bold text-[#FF5C3A]">${selectedProduct.price.toLocaleString('es-CO')}</p>
                       )}
                     </div>
                   </div>

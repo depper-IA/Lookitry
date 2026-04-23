@@ -6,10 +6,9 @@ import { publicRateLimiter } from '../middleware/rateLimiter';
 const router = Router();
 
 // Products for home tryon (Wilkie Devs brand)
-// These are the 3 products: camisa cuadros, bolso onix, casco negro
 const HOME_TRYON_PRODUCT_IDS = [
   '219f8a80-c7a2-46fd-bf4a-42c31621cede', // Camisa a Cuadros
-  'e03ebf7e-780e-4251-873a-411580384f75', // Cartera en cuero negro ónix
+  'ee5bf4ec-da9b-4cd5-b8da-2484797d0a71', // Bolso Nike Verde
   '7bee6762-3791-4330-86c4-7ec424adfb01', // Casco para moto multi-modular Harley-Davidson
 ];
 const HOME_TRYON_BRAND_SLUG = 'wilkie-devs';
@@ -30,7 +29,7 @@ router.get('/config', publicRateLimiter, asyncHandler(async (req, res) => {
   // Get products
   const { data: products } = await supabaseAdmin
     .from('products')
-    .select('id, name, short_description, image_url, category')
+    .select('id, name, short_description, image_url, category, price')
     .in('id', HOME_TRYON_PRODUCT_IDS)
     .eq('is_active', true);
 
