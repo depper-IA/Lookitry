@@ -311,11 +311,11 @@ export default function LandingHero() {
                     onClick={() => {
                       if (hasUsedTrial) {
                         setShowUpgradeModal(true);
-                      } else if (selfie && selectedProduct) {
+                      } else if (selectedProduct) {
                         setStep('selfie');
                       }
                     }}
-                    disabled={!hasUsedTrial && (!selfie || !selectedProduct)}
+                    disabled={!hasUsedTrial && !selectedProduct}
                     className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Sparkles size={16} />
