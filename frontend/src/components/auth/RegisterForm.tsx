@@ -93,13 +93,22 @@ function validateSlug(slug: string): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-async function checkSlugAvailable(slug: string): Promise<boolean> {
+async function checkSlugAvailable(slug: string): Promise<boolean | null> {
   try {
     const res = await fetch(`/api/slug-check?slug=${encodeURIComponent(slug)}`);
+    if (!res.ok) {
+      console.error('Slug check API error:', res.status);
+      return null;
+    }
     const data = await res.json();
+    if (data.error) {
+      console.error('Slug check error:', data.error);
+      return null;
+    }
     return data.available === true;
-  } catch {
-    return false;
+  } catch (err) {
+    console.error('Slug check fetch error:', err);
+    return null;
   }
 }
 
@@ -209,7 +218,15 @@ export default function RegisterForm() {
 
   const slugifyName = useCallback((value: string) => {
     const generated = slugify(value);
-    setForm(prev => ({ ...prev, name: value, slug: prev.slug ? prev.slug : generated }));
+    // Always update slug when name changes, unless user has not interacted yet
+    setForm(prev => {
+      // If slug was manually edited and differs from what we'd generate, keep manual edit
+      if (prev.slug && prev.slug !== slugify(prev.name) && prev.slug !== generated) {
+        return { ...prev, name: value };
+      }
+      // Otherwise auto-generate from name
+      return { ...prev, name: value, slug: generated };
+    });
   }, []);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,16 +243,21 @@ export default function RegisterForm() {
   };
 
   const checkSlug = useCallback(async (slug: string) => {
-    if (!slug || slug.length < 3) return;
-    
+    if (!slug || slug.length < 3) {
+      setSlugAvailable(null);
+      setSlugError('');
+      return;
+    }
+
     const validation = validateSlug(slug);
     if (!validation.valid) {
       setSlugError(validation.error || 'Slug inválido');
       setSlugAvailable(false);
       return;
     }
-    
+
     setSlugChecking(true);
+    setSlugError('');
     try {
       const available = await checkSlugAvailable(slug);
       setSlugAvailable(available);
@@ -244,6 +266,10 @@ export default function RegisterForm() {
       } else {
         setSlugError('');
       }
+    } catch (err) {
+      console.error('Error checking slug availability:', err);
+      setSlugError('Error al verificar. Intenta de nuevo.');
+      setSlugAvailable(null);
     } finally {
       setSlugChecking(false);
     }

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+// Use API_URL instead of BACKEND_URL for consistency (they should be the same in production)
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -17,12 +18,21 @@ export async function GET(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
+      signal: AbortSignal.timeout(10000), // 10 second timeout
     });
+
+    if (!backendRes.ok) {
+      console.error('Backend slug-check error:', backendRes.status, await backendRes.text());
+      return NextResponse.json({ error: 'Error del servidor', available: null }, { status: 500 });
+    }
 
     const data = await backendRes.json();
     return NextResponse.json(data);
-  } catch (error) {
-    console.error('Slug check proxy error:', error);
-    return NextResponse.json({ error: 'Error al verificar slug' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Slug check proxy error:', error?.message || error);
+    if (error?.name === 'TimeoutError') {
+      return NextResponse.json({ error: 'Timeout al verificar slug', available: null }, { status: 504 });
+    }
+    return NextResponse.json({ error: 'Error al verificar slug', available: null }, { status: 500 });
   }
 }
