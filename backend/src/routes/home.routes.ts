@@ -115,7 +115,8 @@ router.post('/generate', asyncHandler(async (req, res) => {
   // Call the existing pruebalo controller to generate
   // We re-use the existing n8n integration
   try {
-    const webhookUrl = process.env.N8N_TRYON_URL || 'https://n8n.wilkiedevs.com/webhook/tryon';
+    const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.wilkiedevs.com/webhook/tryon';
+    console.log(`[HomeTryon] Calling n8n at ${webhookUrl}`);
 
     const n8nResponse = await fetch(webhookUrl, {
       method: 'POST',
@@ -134,11 +135,21 @@ router.post('/generate', asyncHandler(async (req, res) => {
       }),
     });
 
+    console.log(`[HomeTryon] n8n response status: ${n8nResponse.status}`);
+
     if (!n8nResponse.ok) {
       throw new Error(`N8N error: ${n8nResponse.status}`);
     }
 
-    const result = await n8nResponse.json() as { result_image_url?: string; image_url?: string; generation_id?: string };
+    const text = await n8nResponse.text();
+    console.log(`[HomeTryon] n8n response text length: ${text?.length || 0}`);
+
+    if (!text || !text.trim()) {
+      throw new Error('N8N returned empty response');
+    }
+
+    const result = JSON.parse(text) as { result_image_url?: string; image_url?: string; generation_id?: string };
+    console.log(`[HomeTryon] parsed result:`, result);
 
     return res.json({
       success: true,
