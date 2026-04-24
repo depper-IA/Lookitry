@@ -75,6 +75,9 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
   const [trm, setTrm] = useState(pricing.meta?.trm_referencia ?? 3700);
   const [trialPriceCOP, setTrialPriceCOP] = useState(20000);
 
+  // Extract plan configs from pricing prop
+  const { basic, pro, enterprise, descuentos_duracion } = pricing;
+
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
     Promise.all([
