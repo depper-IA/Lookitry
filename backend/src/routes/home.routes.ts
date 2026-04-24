@@ -96,7 +96,7 @@ router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
     const { data: existingTrial } = await supabaseAdmin
       .from('home_tryon_trials')
       .select('id')
-      .eq('ip_address', ip)
+      .eq('ip_address', realIp)
       .maybeSingle();
 
     if (existingTrial) {
@@ -139,7 +139,7 @@ router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
     const { error: insertError } = await supabaseAdmin
       .from('home_tryon_trials')
       .insert({
-        ip_address: ip,
+        ip_address: realIp,
         product_id: productId,
         brand_id: brand.id,
         user_agent: userAgent,
@@ -149,7 +149,7 @@ router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
       console.error('[HomeTryon] Error recording trial:', insertError);
     }
   } else {
-    console.log(`[HomeTryon] Skipping trial recording for whitelisted test IP: ${ip}`);
+    console.log(`[HomeTryon] Skipping trial recording for whitelisted test IP: ${realIp}`);
   }
 
   // Call the existing pruebalo controller to generate
