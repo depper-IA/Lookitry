@@ -72,24 +72,24 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
   const [selectedMonths, setSelectedMonths] = useState(1);
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
   const [trm, setTrm] = useState(pricing.meta?.trm_referencia ?? 3700);
-
-  const { basic, pro, enterprise, descuentos_duracion } = pricing;
+  const [trialPriceCOP, setTrialPriceCOP] = useState(20000);
 
   useEffect(() => {
     const saved = localStorage.getItem('currency') as 'COP' | 'USD';
     if (saved) setCurrency(saved);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    if (apiUrl) {
-      fetch(`${apiUrl}/api/payment-settings/public`)
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (data?.trm && Number(data.trm) > 0) {
-            setTrm(Number(data.trm));
-          }
-        })
-        .catch(() => {});
-    }
+    Promise.all([
+      fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
+      fetch(`${apiUrl}/api/trial-campaign/active`).then(r => r.ok ? r.json() : null),
+    ]).then(([settingsData, campaignData]) => {
+      if (settingsData?.trm && Number(settingsData.trm) > 0) {
+        setTrm(Number(settingsData.trm));
+      }
+      if (campaignData?.priceCOP && Number(campaignData.priceCOP) > 0) {
+        setTrialPriceCOP(Number(campaignData.priceCOP));
+      }
+    }).catch(() => {});
 
     const handleCurrencyChange = () => {
       const current = localStorage.getItem('currency') as 'COP' | 'USD';
@@ -509,7 +509,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               </a>
             </div>
             <p className="theme-text-muted/80 text-sm mt-8">
-              Trial de 7 días por $20.000 COP · Cancela cuando quieras
+              Trial de 7 días por {formatPrice(trialPriceCOP)} · Cancela cuando quieras
             </p>
           </div>
         </section>
