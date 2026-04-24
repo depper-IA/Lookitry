@@ -22,6 +22,11 @@ export async function GET(request: NextRequest) {
     });
 
     if (!backendRes.ok) {
+      // El backend /api/auth/slug-check usa .maybeSingle() — 404 = slug no existe = DISPONIBLE
+      // Cualquier otro error (500, 502, etc.) sí es un error real del servidor
+      if (backendRes.status === 404) {
+        return NextResponse.json({ available: true });
+      }
       console.error('Backend slug-check error:', backendRes.status, await backendRes.text());
       return NextResponse.json({ error: 'Error del servidor', available: null }, { status: 500 });
     }
