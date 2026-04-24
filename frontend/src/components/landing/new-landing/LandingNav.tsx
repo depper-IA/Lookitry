@@ -8,6 +8,7 @@ import { authService } from '@/services/auth.service';
 import { usePromoBanner } from '@/contexts/PromoBannerContext';
 import { usePublicSession } from '@/hooks/usePublicSession';
 import { useTheme } from '@/contexts/ThemeContext';
+import { formatPrice } from '@/utils/currency';
 import { Sun, Moon } from 'lucide-react';
 
 // Precio por defecto del trial (20000 COP) — se actualiza dinámicamente si hay campaña activa
@@ -32,14 +33,21 @@ export default function LandingNav({
   const { session } = usePublicSession();
   const { toggleTheme, isDark } = useTheme();
   const [trialPriceCOP, setTrialPriceCOP] = useState(DEFAULT_TRIAL_PRICE_COP);
+  const [trm, setTrm] = useState(3900);
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-    fetch(`${apiUrl}/api/trial-campaign/active`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.priceCOP && Number(data.priceCOP) > 0) {
-          setTrialPriceCOP(Number(data.priceCOP));
+    // Fetch trial price AND TRM in parallel
+    Promise.all([
+      fetch(`${apiUrl}/api/trial-campaign/active`).then(r => r.ok ? r.json() : null),
+      fetch(`${apiUrl}/api/payments/settings`).then(r => r.ok ? r.json() : null)
+    ])
+      .then(([trialData, paySettings]) => {
+        if (trialData?.priceCOP && Number(trialData.priceCOP) > 0) {
+          setTrialPriceCOP(Number(trialData.priceCOP));
+        }
+        if (paySettings?.trm && Number(paySettings.trm) > 0) {
+          setTrm(Number(paySettings.trm));
         }
       })
       .catch(() => {});
@@ -358,7 +366,7 @@ export default function LandingNav({
               className="group relative hidden overflow-hidden rounded-full bg-[#FF5C3A] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 active:scale-95 sm:px-8 sm:py-3.5 md:inline-flex"
             >
               <span className="relative z-10">
-                Trial 7 días por {trialPriceCOP.toLocaleString('es-CO')} {currency === 'COP' ? 'COP' : 'USD'}
+                Trial 7 días por {formatPrice(trialPriceCOP, currency, trm)}
               </span>
               <div className="pointer-events-none absolute inset-0 translate-y-full bg-white opacity-20 transition-transform duration-300 group-hover:translate-y-0" />
             </Link>
@@ -469,7 +477,7 @@ export default function LandingNav({
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-transform hover:scale-[1.01]"
               >
-                Trial {trialPriceCOP.toLocaleString('es-CO')} {currency === 'COP' ? 'COP' : 'USD'}
+                Trial {formatPrice(trialPriceCOP, currency, trm)}
               </Link>
             </div>
 
