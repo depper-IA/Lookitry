@@ -80,11 +80,11 @@ export function PromoBanner() {
 
   return (
     <div
-      className="relative z-[80] flex w-full items-center justify-center px-10 py-2.5 text-[13px] font-medium shadow-md transition-all duration-300"
+      className="relative z-[80] flex w-full items-center justify-center px-4 sm:px-10 py-2.5 text-[13px] font-medium shadow-md transition-all duration-300"
       style={{ backgroundColor: bg, color: textColor }}
       role="banner"
     >
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-1 text-center">
         <span className="leading-snug">{cfg.text}</span>
 
         {cfg.coupon_code && (
