@@ -19,6 +19,7 @@ import LandingNav from '@/components/landing/new-landing/LandingNav';
 import LandingFooter from '@/components/landing/new-landing/LandingFooter';
 import type { PricingConfig } from '@/lib/pricing';
 import { formatPrice as formatPriceUtil } from '@/utils/currency';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const PREMIUM_FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,100..1000;1,100..1000&display=swap');
@@ -103,14 +104,11 @@ const FAQ = [
 
 export default function MiniLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
+  const { currency, setCurrency } = useCurrency();
   const [pricing, setPricing] = useState<{ mini_landing: { precio_unico_cop: number; precio_original_cop: number } } | null>(null);
   const [trm, setTrm] = useState(3700);
 
   useEffect(() => {
-    const saved = localStorage.getItem('currency') as 'COP' | 'USD';
-    if (saved) setCurrency(saved);
-
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
     Promise.all([
       fetch(`${apiUrl}/api/pricing-config`).then(r => r.ok ? r.json() : null),
@@ -124,14 +122,11 @@ export default function MiniLandingPage() {
         setTrm(Number(settingsData.trm));
       }
     }).catch(() => {});
-
-    const handleCurrencyChange = () => {
-      const current = localStorage.getItem('currency') as 'COP' | 'USD';
-      if (current) setCurrency(current);
-    };
-    window.addEventListener('currencyChange', handleCurrencyChange);
-    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
   }, []);
+
+  const handleManualCurrencyChange = (c: 'COP' | 'USD') => {
+    setCurrency(c);
+  };
 
   const formatPrice = (cop: number) => formatPriceUtil(cop, currency, trm);
 
