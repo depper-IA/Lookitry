@@ -30,7 +30,7 @@ async function getDbWhitelistIps(): Promise<string[]> {
       .maybeSingle();
 
     const ipList = data?.ip_whitelist
-      ? data.ip_whitelist.split(',').map(ip => ip.trim()).filter(Boolean)
+      ? data.ip_whitelist.split(',').map((ip: string) => ip.trim()).filter(Boolean)
       : [];
 
     whitelistCache = { ips: ipList, updatedAt: now };
