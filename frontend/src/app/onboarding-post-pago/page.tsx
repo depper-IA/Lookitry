@@ -297,29 +297,29 @@ function OnboardingContent() {
     : slug;
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#050505]">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 theme-bg-base">
       <div className="w-full max-w-lg">
         <div className="flex flex-col items-center mb-10">
           <Link href="/" className="flex items-center gap-3 group mb-4">
             <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" priority />
-            <span className="font-jakarta font-extrabold text-2xl text-white tracking-tighter">
-              Look<span className="text-[#FF5C3A]">itry</span>
+            <span className="font-jakarta font-extrabold text-2xl theme-text tracking-tighter">
+              Look<span className="text-[var(--accent)]">itry</span>
             </span>
           </Link>
-          <div className="h-1 w-12 rounded-full bg-[#FF5C3A]" />
+          <div className="h-1 w-12 rounded-full bg-[var(--accent)]" />
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl border border-[#FF5C3A]/12 bg-[#0a0a0a] p-8 shadow-2xl md:p-10">
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#FF5C3A]/50 to-transparent" />
+        <div className="relative overflow-hidden rounded-3xl border border-[var(--accent)]/12 theme-bg-card p-8 shadow-2xl md:p-10">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--accent)]/50 to-transparent" />
 
           <div className="mb-10 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20">
               Último paso
             </div>
-            <h1 className="text-3xl font-jakarta font-bold text-white tracking-tight mb-2">
+            <h1 className="text-3xl font-jakarta font-bold theme-text tracking-tight mb-2">
               Configura tu marca
             </h1>
-            <p className="text-sm text-[#999] max-w-xs mx-auto leading-relaxed">
+            <p className="text-sm theme-text-muted max-w-xs mx-auto leading-relaxed">
               Tu pago fue confirmado. Solo necesitamos el nombre de tu marca y crear una contraseña para tu cuenta.
             </p>
           </div>
@@ -333,10 +333,10 @@ function OnboardingContent() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {confirmingPayment && (
-                <div className="rounded-xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 px-4 py-4 text-[#bbb] flex items-start gap-3">
-                  <Loader2 className="w-4 h-4 mt-0.5 text-[#FF5C3A] animate-spin" />
+                <div className="rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/5 px-4 py-4 text-[var(--text)] flex items-start gap-3">
+                  <Loader2 className="w-4 h-4 mt-0.5 text-[var(--accent)] animate-spin" />
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-tight text-[#FF5C3A]">Confirmando pago PayPal</p>
+                    <p className="text-[11px] font-bold uppercase tracking-tight text-[var(--accent)]">Confirmando pago PayPal</p>
                     <p className="text-[12px] leading-relaxed mt-1">Estamos validando tu pago antes de crear la cuenta. No cierres esta ventana.</p>
                   </div>
                 </div>
@@ -344,8 +344,8 @@ function OnboardingContent() {
 
               {/* Nombre de marca */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  <Store className="w-3 h-3 text-[#FF5C3A]" /> Nombre de tu marca
+                <label className="text-[11px] font-bold theme-text-muted uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                  <Store className="w-3 h-3 text-[var(--accent)]" /> Nombre de tu marca
                 </label>
                 <input
                   value={form.name}
@@ -357,21 +357,21 @@ function OnboardingContent() {
                   onBlur={handleNameBlur}
                   required
                   placeholder="Ej: Velvet Studio"
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
+                  className="w-full rounded-xl border theme-border theme-bg-input theme-text placeholder-[var(--text-muted)] outline-none transition-all shadow-inner focus:border-[var(--accent)]"
                 />
               </div>
 
               {/* Preview del slug */}
               {form.name.length >= 2 && (
                 <div className="space-y-3">
-                  <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#050505]/50 px-4 py-3">
+                  <div className="rounded-xl border theme-border bg-[var(--bg-base)]/50 px-4 py-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Globe className="w-3.5 h-3.5 text-[#666]" />
-                        <span className="text-xs text-[#999]">Así aparecerá en internet:</span>
+                        <Globe className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                        <span className="text-xs theme-text-muted">Así aparecerá en internet:</span>
                       </div>
                       {checkingAvailability ? (
-                        <Loader2 className="w-4 h-4 text-[#FF5C3A] animate-spin" />
+                        <Loader2 className="w-4 h-4 text-[var(--accent)] animate-spin" />
                       ) : availabilityResult ? (
                         availabilityResult.slugExists ? (
                           <XCircle className="w-4 h-4 text-red-500" />
@@ -380,21 +380,21 @@ function OnboardingContent() {
                         )
                       ) : null}
                     </div>
-                    <p className="text-sm text-white font-medium mt-1.5 font-mono">
-                      lookitry.com/sitio/<span className="text-[#FF5C3A]">{finalSlug || slugify(form.name)}</span>
+                    <p className="text-sm theme-text font-medium mt-1.5 font-mono">
+                      lookitry.com/sitio/<span className="text-[var(--accent)]">{finalSlug || slugify(form.name)}</span>
                     </p>
                   </div>
 
                   {/* Campo extra si el nombre ya existe */}
                   {availabilityResult?.brandExists && (
-                    <div className="rounded-xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 px-4 py-3 space-y-3">
+                    <div className="rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/5 px-4 py-3 space-y-3">
                       <div className="flex items-start gap-2">
-                        <AlertCircle className="w-4 h-4 text-[#FF5C3A] mt-0.5 flex-shrink-0" />
+                        <AlertCircle className="w-4 h-4 text-[var(--accent)] mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
-                          <p className="text-xs text-[#bbb]">
+                          <p className="text-xs theme-text">
                             Este nombre ya existe en nuestra plataforma
                           </p>
-                          <p className="text-[11px] text-[#999] mt-1">
+                          <p className="text-[11px] theme-text-muted mt-1">
                             Agrega algo extra al final para diferenciarlo
                           </p>
                         </div>
@@ -403,15 +403,15 @@ function OnboardingContent() {
                         value={form.slugSuffix}
                         onChange={e => handleSuffixChange(e.target.value)}
                         placeholder='Ej: "pro" o "store"'
-                        className="w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2.5 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                        className="w-full rounded-lg border theme-border theme-bg-input theme-text placeholder-[var(--text-muted)] outline-none transition-all focus:border-[var(--accent)]"
                       />
                       {form.slugSuffix && (
-                        <p className="text-[11px] text-[#999]">
-                          Así quedará: <span className="text-white font-mono">lookitry.com/sitio/{slugify(form.name)}-{form.slugSuffix}</span>
+                        <p className="text-[11px] theme-text-muted">
+                          Así quedará: <span className="theme-text font-mono">lookitry.com/sitio/{slugify(form.name)}-{form.slugSuffix}</span>
                         </p>
                       )}
                       {!form.slugSuffix && availabilityResult?.slugExists && (
-                        <p className="text-[11px] text-[#FF5C3A]">
+                        <p className="text-[11px] text-[var(--accent)]">
                           Si lo dejas vacío, agregaremos un número aleatorio
                         </p>
                       )}
@@ -431,7 +431,7 @@ function OnboardingContent() {
               {/* Contraseña con checklist */}
               <div className="space-y-2">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                  <label className="text-[11px] font-bold theme-text-muted uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
                     Crear contraseña
                   </label>
                   <div className="relative">
@@ -440,12 +440,12 @@ function OnboardingContent() {
                       value={form.password}
                       onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))}
                       placeholder="Mínimo 8 caracteres"
-                      className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 pr-10 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
+                      className="w-full rounded-xl border theme-border theme-bg-input theme-text placeholder-[var(--text-muted)] px-4 py-3 pr-10 text-sm outline-none transition-all shadow-inner focus:border-[var(--accent)]"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666] hover:text-white transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-muted transition-colors hover:theme-text"
                       aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -454,7 +454,7 @@ function OnboardingContent() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                  <label className="text-[11px] font-bold theme-text-muted uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
                     Confirmar contraseña
                   </label>
                   <input
@@ -462,14 +462,14 @@ function OnboardingContent() {
                     value={form.confirmPassword}
                     onChange={e => setForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                     placeholder="Repite tu contraseña"
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
-                    style={{ borderColor: form.confirmPassword && form.confirmPassword !== form.password ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl border theme-border theme-bg-input theme-text placeholder-[var(--text-muted)] px-4 py-3 text-sm outline-none transition-all shadow-inner focus:border-[var(--accent)]"
+                    style={{ borderColor: form.confirmPassword && form.confirmPassword !== form.password ? 'rgba(239,68,68,0.4)' : 'var(--border-color)' }}
                   />
                 </div>
 
                 {/* Password requirements checklist */}
-                <div className="rounded-xl border border-[rgba(255,255,255,0.05)] bg-[#050505]/50 px-4 py-3 space-y-2">
-                  <p className="text-[10px] font-bold text-[#666] uppercase tracking-wider mb-2">Requisitos de la contraseña:</p>
+                <div className="rounded-xl border theme-border bg-[var(--bg-base)]/50 px-4 py-3 space-y-2">
+                  <p className="text-[10px] font-bold theme-text-muted uppercase tracking-wider mb-2">Requisitos de la contraseña:</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
                     {[
                       { test: form.password.length >= 8, label: 'Mínimo 8 caracteres' },
@@ -478,12 +478,12 @@ function OnboardingContent() {
                       { test: /[0-9]/.test(form.password), label: 'Al menos un número' },
                       { test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.password), label: 'Al menos un carácter especial (!@#$%^&*)' },
                     ].map(({ test, label }) => (
-                      <div key={label} className={`flex items-center gap-2 text-[11px] transition-colors ${test ? 'text-green-500' : 'text-[#999]'}`}>
+                      <div key={label} className={`flex items-center gap-2 text-[11px] transition-colors ${test ? 'text-green-500' : 'theme-text-muted'}`}>
                         {test ? (
                           <Check className="w-3.5 h-3.5 flex-shrink-0" />
                         ) : (
                           <span className="w-3.5 h-3.5 flex items-center justify-center flex-shrink-0">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#555]" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
                           </span>
                         )}
                         {label}
@@ -491,7 +491,7 @@ function OnboardingContent() {
                     ))}
                   </div>
                   {form.confirmPassword && (
-                    <div className={`flex items-center gap-2 text-[11px] mt-2 pt-2 border-t border-[rgba(255,255,255,0.05)] transition-colors ${form.confirmPassword === form.password && form.password.length >= 8 ? 'text-green-500' : 'text-red-400'}`}>
+                    <div className={`flex items-center gap-2 text-[11px] mt-2 pt-2 border-t theme-border transition-colors ${form.confirmPassword === form.password && form.password.length >= 8 ? 'text-green-500' : 'text-red-400'}`}>
                       {form.confirmPassword === form.password && form.password.length >= 8 ? (
                         <Check className="w-3.5 h-3.5 flex-shrink-0" />
                       ) : (
@@ -516,9 +516,9 @@ function OnboardingContent() {
               <button
                 type="submit"
                 disabled={loading || success || confirmingPayment || !paymentChecked || checkingAvailability}
-                className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[#FF5C3A] font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all active:scale-95 hover:bg-[#ff6c4d] disabled:opacity-50"
+                className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[var(--accent)] font-bold text-white shadow-xl shadow-[var(--accent)]/20 transition-all active:scale-95 hover:brightness-110 disabled:opacity-50"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#FF5C3A] to-[#ff7a5f] opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] to-[var(--accent)] opacity-100 transition-opacity" />
                 <div className="relative flex items-center justify-center gap-3">
                   {loading ? (
                     <>
@@ -543,7 +543,7 @@ function OnboardingContent() {
             </form>
           )}
 
-          <p className="text-center text-xs text-[#999] mt-8">
+          <p className="text-center text-xs theme-text-muted mt-8">
             Al registrarte, aceptas nuestros Términos y Condiciones
           </p>
         </div>
