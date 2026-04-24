@@ -48,12 +48,12 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
 
           {/* Title */}
           <h2 id="upgrade-modal-title" className="mb-3 font-jakarta text-2xl font-black text-white tracking-tight">
-            ¡Ya usaste tu prueba gratis!
+            ¡Ya usaste tu generación gratuita!
           </h2>
 
           {/* Description */}
           <p className="mb-8 font-dm-sans text-base leading-relaxed text-white/70">
-            Has descubierto cómo funciona el probador virtual con IA. Ahora{' '}
+            Has probado el probador virtual con IA. Ahora{' '}
             <span className="font-bold text-white">úsalo sin límites</span> en tu propia tienda con cualquiera de nuestros planes.
           </p>
 

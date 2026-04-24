@@ -287,20 +287,28 @@ export default function LandingHero() {
                 </div>
 
                 {/* CTA Button */}
-                <button
-                  onClick={() => selfie && setStep('selfie')}
-                  disabled={!selfie || !selectedProduct}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Sparkles size={16} />
-                  Ver Probador IA
-                </button>
+                <div className="flex flex-col items-center gap-2">
+                  {!hasUsedTrial && (
+                    <span className="flex items-center gap-1 rounded-full bg-[#FF5C3A]/10 px-3 py-1 text-[9px] font-semibold text-[#FF5C3A]">
+                      <Sparkles size={10} />
+                      1 generación gratis
+                    </span>
+                  )}
+                  <button
+                    onClick={() => selfie && setStep('selfie')}
+                    disabled={!selfie || !selectedProduct}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Sparkles size={16} />
+                    Ver Probador IA
+                  </button>
+                </div>
 
                 {hasUsedTrial && (
-                  <p className="text-center text-[9px] text-[#FF5C3A]/70">
-                    Ya usaste tu prueba gratis ·{' '}
-                    <Link href="/planes" className="underline hover:text-[#FF5C3A]">
-                      Ver planes
+                  <p className="text-center text-[9px] text-white/50">
+                    Ya usaste tu prueba gratuita.{' '}
+                    <Link href="/planes" className="underline text-[#FF5C3A] hover:text-[#ff7b5e]">
+                      Ver planes y precios
                     </Link>
                   </p>
                 )}
