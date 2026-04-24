@@ -13,6 +13,19 @@ const HOME_TRYON_PRODUCT_IDS = [
 ];
 const HOME_TRYON_BRAND_SLUG = 'wilkie-devs';
 
+/**
+ * Sanitizes product name for use in AI prompts.
+ * Prevents prompt injection by stripping dangerous characters.
+ * Only allows alphanumeric, spaces, hyphens, underscores, and basic punctuation.
+ */
+function sanitizeProductNameForPrompt(input: string): string {
+  if (!input || typeof input !== 'string') return '';
+  return input
+    .replace(/[^a-zA-Z0-9\s\-_,.#()]/g, '') // Whitelist: letters, numbers, spaces, safe punctuation
+    .trim()
+    .slice(0, 50); // Limit length to prevent buffer overflow
+}
+
 // GET /api/home/tryon/config - Get products and brand config for home tryon
 router.get('/config', publicRateLimiter, asyncHandler(async (req, res) => {
   // Get brand info
@@ -141,7 +154,7 @@ router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
         product_id: product.id,
         selfie_url: `data:image/jpeg;base64,${selfieBase64}`,
         product_image_url: product.image_url,
-        prompt: `Try on ${product.name}`,
+        prompt: `Virtual try-on with: ${sanitizeProductNameForPrompt(product.name)}`,
         category: 'demo-home',
         generation_id: `home-demo-${Date.now()}`,
       }),
