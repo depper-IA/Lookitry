@@ -635,7 +635,7 @@ export default function TrialCheckoutPage() {
                         <span className="text-[11px] text-[#999]">Tarjetas, PSE, Nequi · COP</span>
                       </div>
                     </div>
-                    <Image src="/wompi-logo.svg" alt="Wompi" width={60} height={20} className="object-contain opacity-70" />
+                    <img src="/wompi-logo.svg" alt="Wompi" className="h-5 w-auto object-contain opacity-70" />
                   </button>
 
                   <button
@@ -657,7 +657,7 @@ export default function TrialCheckoutPage() {
                         <span className="text-[11px] text-[#999]">Tarjetas globales · USD</span>
                       </div>
                     </div>
-                    <Image src="/payment-paypal.svg" alt="PayPal" width={60} height={20} className="object-contain opacity-70" />
+                    <img src="/payment-paypal.svg" alt="PayPal" className="h-5 w-auto object-contain opacity-70" />
                   </button>
                 </div>
 
@@ -719,10 +719,10 @@ export default function TrialCheckoutPage() {
               <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 delay-100">
                 <div className="flex items-center gap-2">
                   {paymentMethod === 'paypal' ? (
-                    <Image src="/payment-paypal.svg" alt="PayPal" width={55} height={20} className="object-contain opacity-90" />
+                    <img src="/payment-paypal.svg" alt="PayPal" className="h-5 w-auto object-contain opacity-90" />
                   ) : (
                     <div className="relative">
-                      <Image src="/wompi-logo.svg" alt="Wompi" width={55} height={20} className={`object-contain ${currency === 'USD' ? 'opacity-30' : 'opacity-90'}`} />
+                      <img src="/wompi-logo.svg" alt="Wompi" className={`h-5 w-auto object-contain ${currency === 'USD' ? 'opacity-30' : 'opacity-90'}`} />
                       {currency === 'USD' && (
                         <span className="absolute -top-1 -right-1 text-[7px] font-black text-[#FF5C3A] bg-[#0d0d0d] px-1 rounded">USD</span>
                       )}
