@@ -315,7 +315,7 @@ export default function LandingHero() {
                     Ver Probador IA
                   </button>
                   {!hasUsedTrial && (
-                    <span className="text-[9px] text-white/30">Solo 1 prueba gratuita por IP</span>
+                    <span className="text-[9px] font-medium text-white/50">Solo 1 prueba gratuita por IP</span>
                   )}
                 </div>
               </div>
@@ -352,7 +352,7 @@ export default function LandingHero() {
                       onChange={handleSelfieChange}
                       className="hidden"
                     />
-                    {selfiePreview ? 'Cambiar' : 'Subir Selfie'}
+                    {selfiePreview ? 'Cambiar' : 'Sube tu foto'}
                   </label>
                 </div>
 
