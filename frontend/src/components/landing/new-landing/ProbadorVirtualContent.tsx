@@ -17,6 +17,7 @@ import {
 
 import LandingNav from '@/components/landing/new-landing/LandingNav';
 import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const PREMIUM_FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,100..1000;1,100..1000&display=swap');
@@ -25,16 +26,10 @@ const PREMIUM_FONTS = `
 `;
 
 export default function ProbadorVirtualContent() {
-  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('currency') as 'COP' | 'USD';
-    if (saved) setCurrency(saved);
-  }, []);
+  const { currency, setCurrency } = useCurrency();
 
   const handleCurrencyChange = (c: 'COP' | 'USD') => {
     setCurrency(c);
-    localStorage.setItem('currency', c);
   };
 
   return (

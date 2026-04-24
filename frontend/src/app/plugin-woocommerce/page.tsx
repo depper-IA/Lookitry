@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import LandingNav from '@/components/landing/new-landing/LandingNav';
 import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const PREMIUM_FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,100..1000;1,100..1000&display=swap');
@@ -109,17 +110,11 @@ const technicalSpecs = [
 ];
 
 export default function PluginWooCommercePage() {
-  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
+  const { currency, setCurrency } = useCurrency();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('currency') as 'COP' | 'USD' | null;
-    if (saved) setCurrency(saved);
-  }, []);
 
   const handleCurrencyChange = (nextCurrency: 'COP' | 'USD') => {
     setCurrency(nextCurrency);
-    localStorage.setItem('currency', nextCurrency);
   };
 
   const proPrice = currency === 'COP' ? '350.000' : '89';

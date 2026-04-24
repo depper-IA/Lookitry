@@ -7,6 +7,7 @@ import LandingFooter from '@/components/landing/new-landing/LandingFooter';
 import type { PricingConfig, PlanPriceOverride } from '@/lib/pricing';
 import { precioConDescuento } from '@/lib/pricing';
 import { formatPrice as formatPriceUtil } from '@/utils/currency';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const PREMIUM_FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,100..1000;1,100..1000&display=swap');
@@ -70,14 +71,11 @@ interface Props {
 export default function PlanesClient({ pricing, overrides = [] }: Props) {
   const router = useRouter();
   const [selectedMonths, setSelectedMonths] = useState(1);
-  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
+  const { currency, setCurrency } = useCurrency();
   const [trm, setTrm] = useState(pricing.meta?.trm_referencia ?? 3700);
   const [trialPriceCOP, setTrialPriceCOP] = useState(20000);
 
   useEffect(() => {
-    const saved = localStorage.getItem('currency') as 'COP' | 'USD';
-    if (saved) setCurrency(saved);
-
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
     Promise.all([
       fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
@@ -90,20 +88,10 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
         setTrialPriceCOP(Number(campaignData.priceCOP));
       }
     }).catch(() => {});
-
-    const handleCurrencyChange = () => {
-      const current = localStorage.getItem('currency') as 'COP' | 'USD';
-      if (current) setCurrency(current);
-    };
-
-    window.addEventListener('currencyChange', handleCurrencyChange);
-    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
   }, []);
 
   const handleManualCurrencyChange = (c: 'COP' | 'USD') => {
     setCurrency(c);
-    localStorage.setItem('currency', c);
-    window.dispatchEvent(new Event('currencyChange'));
   };
 
   const formatPrice = (cop: number) => formatPriceUtil(cop, currency, trm);

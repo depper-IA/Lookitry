@@ -19,6 +19,7 @@ import { PromoBannerProvider } from '@/contexts/PromoBannerContext';
 
 import { PricingConfig } from '@/lib/pricing';
 import { PublicReview } from '@/types';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface PremiumLandingProps {
   pricing: PricingConfig;
@@ -36,7 +37,7 @@ export default function PremiumLanding({
   trm = 4000
 }: PremiumLandingProps & { realReviewsCount?: number; usingMockReviews?: boolean }) {
 
-  const [navCurrency, setNavCurrency] = useState<'COP' | 'USD'>(currency);
+  const { currency: navCurrency, setCurrency } = useCurrency();
   const [trmState, setTrmState] = useState(trm);
 
   useEffect(() => {
@@ -53,19 +54,8 @@ export default function PremiumLanding({
     }
   }, []);
 
-  useEffect(() => {
-    const handleCurrencyChange = () => {
-      const saved = localStorage.getItem('currency') as 'COP' | 'USD';
-      if (saved) setNavCurrency(saved);
-    };
-    window.addEventListener('currencyChange', handleCurrencyChange);
-    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
-  }, []);
-
   const handleNavCurrencyChange = (c: 'COP' | 'USD') => {
-    setNavCurrency(c);
-    localStorage.setItem('currency', c);
-    window.dispatchEvent(new Event('currencyChange'));
+    setCurrency(c);
   };
 
   return (

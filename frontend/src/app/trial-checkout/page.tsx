@@ -11,6 +11,7 @@ import { StepProgress, Step } from '@/components/payments/StepProgress';
 import { clearCheckoutDraft, loadCheckoutDraft, saveCheckoutDraft } from '@/lib/checkoutDraft';
 import { formatCop, formatUsd, priceInUsd } from '@/lib/paymentDisplay';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 const OA = '#FF5C3A';
@@ -64,7 +65,7 @@ export default function TrialCheckoutPage() {
   const [error, setError] = useState('');
   const [campaign, setCampaign] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
-  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
+  const { currency, setCurrency } = useCurrency();
   const [trm, setTrm] = useState(3900);
   const [guestEmail, setGuestEmail] = useState('');
   const [guestName, setGuestName] = useState('');
@@ -158,12 +159,6 @@ export default function TrialCheckoutPage() {
       })
       .catch(err => console.error('Error loading checkout data:', err));
 
-    const savedCurrency = localStorage.getItem('currency') as 'COP' | 'USD';
-    if (savedCurrency) {
-      setCurrency(savedCurrency);
-      if (savedCurrency === 'USD') setPaymentMethod('paypal');
-    }
-
     const draft = loadCheckoutDraft(TRIAL_DRAFT_KEY);
     if (draft?.email) setGuestEmail(draft.email);
     if (draft?.brandName) setGuestName(draft.brandName);
@@ -192,18 +187,6 @@ export default function TrialCheckoutPage() {
   }, []);
 
   useEffect(() => {
-    const handleCurrencyChange = () => {
-      const saved = localStorage.getItem('currency') as 'COP' | 'USD';
-      if (saved && saved !== currency) {
-        setCurrency(saved);
-        setPaymentMethod(saved === 'USD' ? 'paypal' : 'wompi');
-      }
-    };
-    window.addEventListener('currencyChange', handleCurrencyChange);
-    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
-  }, [currency]);
-
-  useEffect(() => {
     saveCheckoutDraft(TRIAL_DRAFT_KEY, {
       plan: 'TRIAL',
       months: 1,
@@ -226,9 +209,7 @@ export default function TrialCheckoutPage() {
   const toggleCurrency = () => {
     const newCurrency = currency === 'COP' ? 'USD' : 'COP';
     setCurrency(newCurrency);
-    localStorage.setItem('currency', newCurrency);
     setPaymentMethod(newCurrency === 'USD' ? 'paypal' : 'wompi');
-    window.dispatchEvent(new Event('currencyChange'));
   };
 
   // Check email existence
