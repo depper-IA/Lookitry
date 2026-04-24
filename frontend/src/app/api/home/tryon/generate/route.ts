@@ -13,11 +13,17 @@ export async function POST(request: NextRequest) {
     }
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+    // Forward the real client IP from x-forwarded-for (set by Traefik) or use request.ip
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
+      || request.headers.get('cf-connecting-ip') 
+      || request.ip 
+      || '';
+
     const response = await fetch(`${apiUrl}/api/home/tryon/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-forwarded-for': request.headers.get('x-forwarded-for') || '',
+        'x-forwarded-for': clientIP,
         'user-agent': request.headers.get('user-agent') || '',
       },
       body: JSON.stringify({ productId, selfieBase64 }),
