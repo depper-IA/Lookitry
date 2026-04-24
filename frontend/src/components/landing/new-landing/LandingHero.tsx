@@ -212,9 +212,9 @@ export default function LandingHero() {
         <div className="flex w-full items-center justify-center lg:justify-end">
 
           <div className="group relative z-10 w-full max-w-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#141414] p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] sm:max-w-[500px] sm:rounded-[2rem] sm:p-4 lg:max-w-[620px]">
-            <div className="mb-3 flex items-center justify-center gap-2 rounded-full bg-[#FF5C3A]/10 px-4 py-2 text-center">
-              <Sparkles size={12} className="text-[#FF5C3A]" aria-hidden="true" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">Pruébalo ahora mismo</span>
+            <div className="mb-3 flex items-center justify-center gap-2 rounded-full bg-[#ABABAB]/10 px-4 py-2 text-center">
+              <Sparkles size={15} className="text-[#FF5C3A]" aria-hidden="true" />
+              <span className="text-[15px] font-bold uppercase tracking-wider text-[#FF5C3A]">Pruébalo ahora mismo</span>
             </div>
 
             {/* Browser Chrome */}
@@ -224,7 +224,7 @@ export default function LandingHero() {
                 <span className="h-1.5 w-1.5 rounded-full bg-[#ffbd2e] sm:h-2 sm:w-2"></span>
                 <span className="h-1.5 w-1.5 rounded-full bg-[#28c840] sm:h-2 sm:w-2"></span>
               </div>
-              <div className="flex-1 truncate rounded-md border border-white/5 bg-[#1c1c1c] px-2 py-1 text-center font-dm-sans text-[7px] uppercase tracking-widest text-white/20 sm:px-4 sm:text-[9px]">
+              <div className="flex-1 truncate rounded-md border border-white/5 bg-[#1c1c1c] px-2 py-1 text-center font-dm-sans text-[7px] uppercase tracking-widest text-[#C7C7C7] sm:px-4 sm:text-[9px]">
                 lookitry.com/marca/tu-marca
               </div>
             </div>
@@ -244,9 +244,7 @@ export default function LandingHero() {
                       <Camera size={24} strokeWidth={1} className="text-white/20" aria-hidden="true" />
                     )}
                   </div>
-                  <p className="text-[8px] font-bold uppercase tracking-widest text-white/40 sm:text-[10px]">
-                    Sube tu foto
-                  </p>
+
                   <label className="mt-3 cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 sm:text-[11px]">
                     <input
                       type="file"
@@ -255,8 +253,11 @@ export default function LandingHero() {
                       onChange={handleSelfieChange}
                       className="hidden"
                     />
-                    Subir Selfie
+                    Sube tu foto
                   </label>
+                  <p className="text-[8px] font-bold capitalize tracking-widest text-white/40 sm:text-[10px]">
+                    preferiblemente cuerpo completo
+                  </p>
                 </div>
 
                 {/* Right: Product Grid */}
@@ -316,7 +317,7 @@ export default function LandingHero() {
                     Ver Probador IA
                   </button>
                   {!hasUsedTrial && (
-                    <span className="flex items-center gap-1 rounded-full bg-[#FF5C3A]/10 px-3 py-1 text-[9px] font-semibold text-[#FF5C3A]">
+                    <span className="flex items-center gap-1 rounded-full bg-[#ABABAB]/10 px-3 py-1 text-[9px] font-semibold text-[#FFFFFF]">
                       <Sparkles size={10} />
                       1 generación gratis
                     </span>
