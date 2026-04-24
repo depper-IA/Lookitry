@@ -91,6 +91,13 @@ import {
   getTicketMessages,
   addTicketMessage,
 } from '../controllers/admin/tickets.admin.controller';
+import {
+  getWidgetIpWhitelist,
+  addWidgetIpWhitelist,
+  updateWidgetIpWhitelist,
+  deleteWidgetIpWhitelist,
+  checkWidgetIpWhitelist,
+} from '../controllers/widgetIpWhitelist.controller';
 
 const router = Router();
 
@@ -272,5 +279,12 @@ router.post('/tickets/bulk-action', requirePermission('brands'), bulkActionTicke
 router.get('/tickets/stats', requirePermission('brands'), getTicketsStats);
 router.get('/tickets/:id/messages', requirePermission('brands'), getTicketMessages);
 router.post('/tickets/:id/messages', requirePermission('brands'), addTicketMessage);
+
+// Widget IP Whitelist
+router.get('/widget-ip-whitelist', requirePermission('settings'), getWidgetIpWhitelist);
+router.post('/widget-ip-whitelist', requirePermission('settings'), addWidgetIpWhitelist);
+router.put('/widget-ip-whitelist/:id', requirePermission('settings'), updateWidgetIpWhitelist);
+router.delete('/widget-ip-whitelist/:id', requirePermission('settings'), deleteWidgetIpWhitelist);
+router.get('/widget-ip-whitelist/check/:ip', requirePermission('settings'), checkWidgetIpWhitelist);
 
 export default router;

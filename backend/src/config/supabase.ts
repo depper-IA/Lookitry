@@ -1361,6 +1361,35 @@ export interface Database {
           created_at?: string;
         };
       };
+      widget_ip_whitelist: {
+        Row: {
+          id: string;
+          ip_address: string;
+          description: string | null;
+          is_active: boolean;
+          created_at: string | null;
+          created_by: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          ip_address: string;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string | null;
+          created_by?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          ip_address?: string;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string | null;
+          created_by?: string | null;
+          updated_at?: string | null;
+        };
+      };
     };
   };
 }
