@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { X, Sparkles, ArrowRight, Zap, Crown, Gift } from 'lucide-react';
+import { X, Sparkles, ArrowRight, Zap, Crown, Gift, Infinity, Palette, Smartphone } from 'lucide-react';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -64,13 +64,13 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           {/* Features preview */}
           <div className="mb-8 grid grid-cols-3 gap-3">
             {[
-              { icon: '⚡', label: 'Pruebas ilimitadas' },
-              { icon: '🎨', label: 'Tu catálogo completo' },
-              { icon: '📱', label: 'Widget integrable' },
-            ].map((feature, i) => (
+              { icon: Infinity, label: 'Pruebas ilimitadas' },
+              { icon: Palette, label: 'Tu catálogo completo' },
+              { icon: Smartphone, label: 'Widget integrable' },
+            ].map(({ icon: Icon, label }, i) => (
               <div key={i} className="rounded-xl border border-white/10 bg-white/[3%] p-3">
-                <span className="mb-1 block text-xl">{feature.icon}</span>
-                <span className="text-[10px] font-medium uppercase tracking-wide text-white/50">{feature.label}</span>
+                <Icon size={24} className="mx-auto mb-2 text-[#FF5C3A]" />
+                <span className="text-[10px] font-medium uppercase tracking-wide text-white/50">{label}</span>
               </div>
             ))}
           </div>

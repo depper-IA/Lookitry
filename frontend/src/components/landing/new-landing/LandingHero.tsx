@@ -288,31 +288,20 @@ export default function LandingHero() {
 
                 {/* CTA Button */}
                 <div className="flex flex-col items-center gap-2">
-                  {!hasUsedTrial ? (
-                    <>
-                      <span className="flex items-center gap-1 rounded-full bg-[#FF5C3A]/10 px-3 py-1 text-[9px] font-semibold text-[#FF5C3A]">
-                        <Sparkles size={10} />
-                        1 generación gratis
-                      </span>
-                      <button
-                        onClick={() => selfie && setStep('selfie')}
-                        disabled={!selfie || !selectedProduct}
-                        className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Sparkles size={16} />
-                        Ver Probador IA
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => setShowUpgradeModal(true)}
-                      className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#FF5C3A] to-[#ff7b5e] py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                      <Sparkles size={16} />
-                      Desbloquear Pruebas Ilimitadas
-                      <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-                    </button>
+                  {!hasUsedTrial && (
+                    <span className="flex items-center gap-1 rounded-full bg-[#FF5C3A]/10 px-3 py-1 text-[9px] font-semibold text-[#FF5C3A]">
+                      <Sparkles size={10} />
+                      1 generación gratis
+                    </span>
                   )}
+                  <button
+                    onClick={() => hasUsedTrial ? setShowUpgradeModal(true) : (selfie && setStep('selfie'))}
+                    disabled={!selfie || !selectedProduct}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Sparkles size={16} />
+                    Ver Probador IA
+                  </button>
                 </div>
               </div>
             )}
