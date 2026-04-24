@@ -80,7 +80,13 @@ router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
   const userAgent = req.headers['user-agent'] || '';
   const { productId, selfieBase64 } = req.body;
 
-  console.log(`[HomeTryon] IP check - x-forwarded-for: ${req.headers['x-forwarded-for']}, req.ip: ${req.ip}, realIp: ${realIp}`);
+  // DEBUG: Log all IPs for troubleshooting
+  console.log(`[HomeTryon] ===== DEBUG IP =====`);
+  console.log(`[HomeTryon] x-forwarded-for: ${req.headers['x-forwarded-for']}`);
+  console.log(`[HomeTryon] req.ip: ${req.ip}`);
+  console.log(`[HomeTryon] realIp (used): ${realIp}`);
+  console.log(`[HomeTryon] isWhitelistedSync(${realIp}): ${isWhitelistedSync(realIp)}`);
+  console.log(`[HomeTryon] ==========================`);
 
   // Check if IP is whitelisted - use the real IP (x-forwarded-for)
   const isTestIp = isWhitelistedSync(realIp);
