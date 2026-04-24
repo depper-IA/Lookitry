@@ -1,6 +1,15 @@
 import rateLimit from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 
+// IPs en whitelist (no se aplica rate limiting)
+const WHITELIST_IPS = [
+  '161.18.87.45', // Travis - desarrollo
+];
+
+const isWhitelisted = (ip: string): boolean => {
+  return WHITELIST_IPS.includes(ip);
+};
+
 /**
  * Rate limiter para endpoints públicos
  * 500 requests por 15 minutos por IP (Aumentado de 100)
@@ -27,9 +36,11 @@ export const publicRateLimiter = rateLimit({
   },
   // Omitir rate limiting para ciertas condiciones
   skip: (req: Request) => {
+    const ip = req.ip || '';
+    // Skip si está en whitelist
+    if (isWhitelisted(ip)) return true;
     // Omitir rate limiting para localhost en desarrollo (::1, 127.0.0.1, ::ffff:127.0.0.1)
     if (process.env.NODE_ENV === 'development') {
-      const ip = req.ip || '';
       if (ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127.') || ip === 'localhost') {
         return true;
       }
@@ -62,7 +73,9 @@ export const generationRateLimiter = rateLimit({
     });
   },
   skip: (req: Request) => {
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
+    const ip = req.ip || '';
+    if (isWhitelisted(ip)) return true;
+    if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
     return false;
@@ -93,7 +106,9 @@ export const authRateLimiter = rateLimit({
     });
   },
   skip: (req: Request) => {
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
+    const ip = req.ip || '';
+    if (isWhitelisted(ip)) return true;
+    if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
     return false;
@@ -124,7 +139,9 @@ export const loginRateLimiter = rateLimit({
     });
   },
   skip: (req: Request) => {
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
+    const ip = req.ip || '';
+    if (isWhitelisted(ip)) return true;
+    if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
     return false;
@@ -155,7 +172,9 @@ export const registerRateLimiter = rateLimit({
     });
   },
   skip: (req: Request) => {
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
+    const ip = req.ip || '';
+    if (isWhitelisted(ip)) return true;
+    if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
     return false;
@@ -186,7 +205,9 @@ export const adminLoginRateLimiter = rateLimit({
     });
   },
   skip: (req: Request) => {
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
+    const ip = req.ip || '';
+    if (isWhitelisted(ip)) return true;
+    if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
     return false;
@@ -276,11 +297,14 @@ export const globalRateLimiter = rateLimit({
     });
   },
   skip: (req: Request) => {
+    const ip = req.ip || '';
+    // Skip si está en whitelist
+    if (isWhitelisted(ip)) return true;
     // Omitir health check del rate limiting global
     if (req.path === '/health') {
       return true;
     }
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
+    if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
     return false;
