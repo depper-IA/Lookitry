@@ -130,8 +130,8 @@ export default function MiniLandingPage() {
 
   const formatPrice = (cop: number) => formatPriceUtil(cop, currency, trm);
 
-  const miniLandingPrice = pricing?.precio_unico_cop ?? 650000;
-  const miniLandingOriginal = pricing?.precio_original_cop ?? 900000;
+  const miniLandingPrice = pricing?.mini_landing?.precio_unico_cop ?? 650000;
+  const miniLandingOriginal = pricing?.mini_landing?.precio_original_cop ?? 900000;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-dm-sans selection:bg-[#FF5C3A]/30 selection:text-white overflow-x-clip">
