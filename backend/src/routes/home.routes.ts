@@ -75,14 +75,18 @@ router.get('/check', publicRateLimiter, asyncHandler(async (req, res) => {
 
 // POST /api/home/tryon/generate - Generate try-on for home demo
 router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
-  const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0] || 'unknown';
+  // Prioridad: x-forwarded-for (real client IP through Traefik) > req.ip (Docker internal)
+  const realIp = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || 'unknown';
   const userAgent = req.headers['user-agent'] || '';
   const { productId, selfieBase64 } = req.body;
 
-  // Check if IP is whitelisted (use real IP from x-forwarded-for, not req.ip which is Docker internal)
-  const isTestIp = isWhitelistedSync(ip);
+  console.log(`[HomeTryon] IP check - x-forwarded-for: ${req.headers['x-forwarded-for']}, req.ip: ${req.ip}, realIp: ${realIp}`);
 
-if (!productId || !selfieBase64) {
+  // Check if IP is whitelisted - use the real IP (x-forwarded-for)
+  const isTestIp = isWhitelistedSync(realIp);
+  console.log(`[HomeTryon] isTestIp for ${realIp}: ${isTestIp}`);
+
+  if (!productId || !selfieBase64) {
     return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'productId and selfieBase64 are required' });
   }
 

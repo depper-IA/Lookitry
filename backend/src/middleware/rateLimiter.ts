@@ -108,7 +108,8 @@ export const publicRateLimiter = rateLimit({
   legacyHeaders: false, // Deshabilitar headers `X-RateLimit-*`
   // Handler personalizado cuando se excede el límite
   handler: (req: Request, res: Response) => {
-    console.warn(`⚠️  Rate limit excedido para IP: ${req.ip}`);
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || 'unknown';
+    console.warn(`⚠️  Rate limit excedido para IP: ${ip}`);
     res.status(429).json({
       error: 'RATE_LIMIT_EXCEEDED',
       message: 'Demasiadas solicitudes desde esta IP, por favor intenta de nuevo más tarde.',
@@ -118,7 +119,8 @@ export const publicRateLimiter = rateLimit({
   },
   // Omitir rate limiting para ciertas condiciones
   skip: (req: Request) => {
-    const ip = req.ip || '';
+    // Prioridad: x-forwarded-for (real client IP through Traefik) > req.ip (Docker internal)
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
     // Skip si está en whitelist (sync check - locals + hardcoded)
     if (isWhitelistedSync(ip)) return true;
     // Omitir rate limiting para localhost en desarrollo
@@ -155,7 +157,7 @@ export const generationRateLimiter = rateLimit({
     });
   },
   skip: (req: Request) => {
-    const ip = req.ip || '';
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
     if (isWhitelistedSync(ip)) return true;
     if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
