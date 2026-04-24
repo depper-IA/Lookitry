@@ -58,18 +58,10 @@ router.get('/config', asyncHandler(async (req, res) => {
 
 // GET /api/home/tryon/check - Check if IP has already trialed
 router.get('/check', asyncHandler(async (req, res) => {
-  const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0] || 'unknown';
-  const userAgent = req.headers['user-agent'] || '';
-
-  const { data: existingTrial } = await supabaseAdmin
-    .from('home_tryon_trials')
-    .select('id, created_at')
-    .eq('ip_address', ip)
-    .maybeSingle();
-
+  // DISABLED: Always allow trials for testing
   return res.json({
-    hasTrialed: !!existingTrial,
-    trialCount: existingTrial ? 1 : 0,
+    hasTrialed: false,
+    trialCount: 0,
   });
 }));
 
