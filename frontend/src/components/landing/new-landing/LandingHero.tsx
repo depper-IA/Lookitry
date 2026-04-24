@@ -8,11 +8,10 @@ import { UpgradeModal } from '@/components/ui/UpgradeModal';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div
-    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[9px] font-medium uppercase tracking-[0.15em] shadow-sm transition-all sm:mb-8 sm:px-4 sm:py-2 sm:text-[10px] sm:tracking-[0.2em] ${
-      light
-        ? 'bg-black/5 border-black/10 text-black/40 dark:bg-white/5 dark:border-white/10 dark:text-white/60'
-        : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
-    } mb-6`}
+    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[9px] font-medium uppercase tracking-[0.15em] shadow-sm transition-all sm:mb-8 sm:px-4 sm:py-2 sm:text-[10px] sm:tracking-[0.2em] ${light
+      ? 'bg-black/5 border-black/10 text-black/40 dark:bg-white/5 dark:border-white/10 dark:text-white/60'
+      : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
+      } mb-6`}
   >
     <span
       className={`h-1.5 w-1.5 rounded-full animate-pulse ${light ? 'bg-black/20 dark:bg-white/40' : 'bg-[#FF5C3A]'}`}
@@ -208,9 +207,11 @@ export default function LandingHero() {
         </div>
 
         {/* RIGHT: PROBADOR FUNCIONAL - Matching Wideframe Style */}
+        {/* Notice - CTA to try */}
+
         <div className="flex w-full items-center justify-center lg:justify-end">
+
           <div className="group relative z-10 w-full max-w-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#141414] p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] sm:max-w-[500px] sm:rounded-[2rem] sm:p-4 lg:max-w-[620px]">
-            {/* Notice - CTA to try */}
             <div className="mb-3 flex items-center justify-center gap-2 rounded-full bg-[#FF5C3A]/10 px-4 py-2 text-center">
               <Sparkles size={12} className="text-[#FF5C3A]" aria-hidden="true" />
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">Pruébalo ahora mismo</span>
@@ -267,11 +268,10 @@ export default function LandingHero() {
                     <div
                       key={prod.id}
                       onClick={() => handleProductSelect(prod)}
-                      className={`group/item flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all sm:gap-3 sm:rounded-xl sm:p-3 ${
-                        selectedProduct?.id === prod.id
-                          ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/5'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
+                      className={`group/item flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all sm:gap-3 sm:rounded-xl sm:p-3 ${selectedProduct?.id === prod.id
+                        ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/5'
+                        : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
                       role="button"
                       tabIndex={0}
                       aria-label={`Seleccionar ${prod.name}`}
@@ -301,12 +301,6 @@ export default function LandingHero() {
 
                 {/* CTA Button */}
                 <div className="flex flex-col items-center gap-2">
-                  {!hasUsedTrial && (
-                    <span className="flex items-center gap-1 rounded-full bg-[#FF5C3A]/10 px-3 py-1 text-[9px] font-semibold text-[#FF5C3A]">
-                      <Sparkles size={10} />
-                      1 generación gratis
-                    </span>
-                  )}
                   <button
                     onClick={() => {
                       if (hasUsedTrial) {
@@ -322,7 +316,10 @@ export default function LandingHero() {
                     Ver Probador IA
                   </button>
                   {!hasUsedTrial && (
-                    <span className="text-[9px] font-medium text-white/50">Solo 1 prueba gratuita por IP</span>
+                    <span className="flex items-center gap-1 rounded-full bg-[#FF5C3A]/10 px-3 py-1 text-[9px] font-semibold text-[#FF5C3A]">
+                      <Sparkles size={10} />
+                      1 generación gratis
+                    </span>
                   )}
                 </div>
               </div>
