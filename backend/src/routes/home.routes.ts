@@ -26,7 +26,7 @@ function sanitizeProductNameForPrompt(input: string): string {
 }
 
 // GET /api/home/tryon/config - Get products and brand config for home tryon
-router.get('/config', publicRateLimiter, asyncHandler(async (req, res) => {
+router.get('/config', asyncHandler(async (req, res) => {
   // Get brand info
   const { data: brand } = await supabaseAdmin
     .from('brands')
@@ -56,7 +56,7 @@ router.get('/config', publicRateLimiter, asyncHandler(async (req, res) => {
 }));
 
 // GET /api/home/tryon/check - Check if IP has already trialed
-router.get('/check', publicRateLimiter, asyncHandler(async (req, res) => {
+router.get('/check', asyncHandler(async (req, res) => {
   const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0] || 'unknown';
   const userAgent = req.headers['user-agent'] || '';
 
