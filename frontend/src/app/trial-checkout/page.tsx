@@ -265,6 +265,7 @@ export default function TrialCheckoutPage() {
       setGuestName(data.name || '');
       setEmailError('');
       setEmailExists({ exists: false });
+      setCurrentStep(3);
     } else {
       localStorage.setItem('brand', JSON.stringify(data.brand));
       if (data.token) localStorage.setItem('token', data.token);
