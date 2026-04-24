@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, Upload, RotateCcw } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, Upload } from 'lucide-react';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
@@ -53,14 +53,21 @@ export default function LandingHero() {
   useEffect(() => {
     const loadConfig = async () => {
       try {
+        console.log('[HomeTryon] Loading config...');
         const res = await fetch('/api/home/tryon/config');
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
+        console.log('[HomeTryon] Config loaded:', data);
+        if (!data || !data.products) {
+          throw new Error('No se pudieron cargar los productos de prueba.');
+        }
         setConfig(data);
-        if (data.products?.length > 0) {
+        if (data.products.length > 0) {
           setSelectedProduct(data.products[0]);
         }
-      } catch (err) {
-        console.error('Error loading home tryon config:', err);
+      } catch (err: any) {
+        console.error('[HomeTryon] Error loading config:', err);
+        setError(err.message || 'Error al conectar con el servidor.');
       }
     };
     loadConfig();
@@ -69,9 +76,10 @@ export default function LandingHero() {
       try {
         const res = await fetch('/api/home/tryon/check');
         const data = await res.json();
+        console.log('[HomeTryon] Trial status:', data);
         setHasUsedTrial(data.hasTrialed);
       } catch (err) {
-        console.error('Error checking trial:', err);
+        console.error('[HomeTryon] Error checking trial:', err);
       }
     };
     checkTrial();
@@ -90,6 +98,7 @@ export default function LandingHero() {
       const base64 = ev.target?.result as string;
       setSelfie(base64.split(',')[1]);
       setSelfiePreview(base64);
+      setStep('selfie'); // Auto-avanzar al paso de previsualización
     };
     reader.readAsDataURL(file);
   };
@@ -133,14 +142,6 @@ export default function LandingHero() {
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  const handleReset = () => {
-    setSelfie(null);
-    setSelfiePreview(null);
-    setResultImage(null);
-    setError(null);
-    setStep('select');
   };
 
   const handleBack = () => {
@@ -233,11 +234,15 @@ export default function LandingHero() {
                   <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-white/20 sm:top-3 sm:left-6 sm:text-[8px]">
                     Tu Foto
                   </div>
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-white/10 bg-white/5 sm:h-16 sm:w-16">
-                    <Camera size={24} strokeWidth={1} className="text-white/20" aria-hidden="true" />
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-white/10 bg-white/5 sm:h-16 sm:w-16 overflow-hidden">
+                    {selfiePreview ? (
+                      <img src={selfiePreview} alt="Preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <Camera size={24} strokeWidth={1} className="text-white/20" aria-hidden="true" />
+                    )}
                   </div>
                   <p className="text-[8px] font-bold uppercase tracking-widest text-white/40 sm:text-[10px]">
-                    Sube una selfie
+                    Sube tu foto
                   </p>
                   <label className="mt-3 cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 sm:text-[11px]">
                     <input
@@ -331,7 +336,7 @@ export default function LandingHero() {
                   </div>
                   {selfiePreview ? (
                     <div className="relative mb-3 h-32 w-32 overflow-hidden rounded-xl sm:h-40 sm:w-40">
-                      <Image src={selfiePreview} alt="Tu selfie" fill className="object-cover" />
+                      <img src={selfiePreview} alt="Tu selfie" className="h-full w-full object-cover" />
                       <button
                         onClick={() => { setSelfie(null); setSelfiePreview(null); }}
                         className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
@@ -419,37 +424,28 @@ export default function LandingHero() {
             {/* STEP: RESULT */}
             {step === 'result' && resultImage && (
               <div className="flex flex-col gap-3 sm:gap-4">
-                <div className="grid grid-cols-2 gap-3">
-                  {selfiePreview && (
-                    <div className="relative overflow-hidden rounded-xl border border-white/10">
-                      <Image src={selfiePreview} alt="Tu selfie" fill className="object-cover" />
-                      <div className="absolute top-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white backdrop-blur-sm sm:text-[8px]">
-                        Original
-                      </div>
-                    </div>
-                  )}
-                  <div className="relative overflow-hidden rounded-xl border border-[#FF5C3A]/30 shadow-lg shadow-[#FF5C3A]/10">
-                    <Image src={resultImage} alt="Resultado del probador" fill className="object-cover" />
-                    <div className="absolute top-2 left-2 rounded-full bg-[#FF5C3A] px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white shadow-xl sm:text-[8px]">
-                      IA
-                    </div>
+                {/* Solo imagen generada - sin selfie original */}
+                <div className="relative overflow-hidden rounded-xl border border-[#FF5C3A]/30 shadow-lg shadow-[#FF5C3A]/10 aspect-square">
+                  <img src={resultImage} alt="Resultado del probador" className="h-full w-full object-cover" />
+                  <div className="absolute top-2 left-2 rounded-full bg-[#FF5C3A] px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white shadow-xl sm:text-[8px]">
+                    IA
                   </div>
                 </div>
 
+                {/* Botones: Ver planes (gris) + Trial (naranja) */}
                 <div className="flex gap-2">
-                  <button
-                    onClick={handleReset}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-white/60 transition-all hover:bg-white/10 hover:text-white"
-                  >
-                    <RotateCcw size={12} />
-                    Nueva prueba
-                  </button>
                   <Link
                     href="/planes"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-white/60 transition-all hover:bg-white/10 hover:text-white"
+                  >
+                    Ver planes
+                  </Link>
+                  <Link
+                    href="/trial-checkout"
                     className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-2.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e]"
                   >
                     <Sparkles size={12} />
-                    Ver planes
+                    Obtén Trial
                   </Link>
                 </div>
               </div>
