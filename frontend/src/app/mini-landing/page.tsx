@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Globe,
@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import LandingNav from '@/components/landing/new-landing/LandingNav';
 import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import type { PricingConfig } from '@/lib/pricing';
+import { formatPrice as formatPriceUtil } from '@/utils/currency';
 
 const PREMIUM_FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,100..1000;1,100..1000&display=swap');
@@ -101,6 +103,40 @@ const FAQ = [
 
 export default function MiniLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
+  const [pricing, setPricing] = useState<{ mini_landing: { precio_unico_cop: number; precio_original_cop: number } } | null>(null);
+  const [trm, setTrm] = useState(3700);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('currency') as 'COP' | 'USD';
+    if (saved) setCurrency(saved);
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    Promise.all([
+      fetch(`${apiUrl}/api/pricing-config`).then(r => r.ok ? r.json() : null),
+      fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
+    ]).then(([pricingData, settingsData]) => {
+      if (pricingData?.data) {
+        const row = pricingData.data.find((d: any) => d.id === 'mini_landing');
+        if (row?.data) setPricing(row.data);
+      }
+      if (settingsData?.trm && Number(settingsData.trm) > 0) {
+        setTrm(Number(settingsData.trm));
+      }
+    }).catch(() => {});
+
+    const handleCurrencyChange = () => {
+      const current = localStorage.getItem('currency') as 'COP' | 'USD';
+      if (current) setCurrency(current);
+    };
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
+  }, []);
+
+  const formatPrice = (cop: number) => formatPriceUtil(cop, currency, trm);
+
+  const miniLandingPrice = pricing?.precio_unico_cop ?? 650000;
+  const miniLandingOriginal = pricing?.precio_original_cop ?? 900000;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-dm-sans selection:bg-[#FF5C3A]/30 selection:text-white overflow-x-clip">
@@ -141,7 +177,7 @@ export default function MiniLandingPage() {
               <div className="mt-10 flex flex-wrap items-center gap-6">
                 <div className="flex items-center gap-2 text-white/40 text-xs font-bold uppercase tracking-widest">
                   <ShieldCheck size={14} className="text-[#FF5C3A]" />
-                  Pago único de $650.000 COP
+                  Pago único de {formatPrice(miniLandingPrice)} COP
                 </div>
                 <div className="flex items-center gap-2 text-white/40 text-xs font-bold uppercase tracking-widest">
                   <Zap size={14} className="text-[#FF5C3A]" />
@@ -300,10 +336,10 @@ export default function MiniLandingPage() {
                 <div className="p-12 md:p-16 lg:p-20 flex flex-col justify-center items-center text-center">
                   <div className="text-[11px] text-white/40 uppercase tracking-widest font-bold mb-3">Precio de lanzamiento</div>
                   <div className="flex items-end gap-3 mb-2">
-                    <span className="font-jakarta text-6xl font-black text-white tracking-tight">$650.000</span>
+                    <span className="font-jakarta text-6xl font-black text-white tracking-tight">{formatPrice(miniLandingPrice)}</span>
                     <span className="text-white/40 font-bold pb-2">COP</span>
                   </div>
-                  <div className="text-white/30 font-dm-sans text-base line-through mb-6">Precio regular: $900.000 COP</div>
+                  <div className="text-white/30 font-dm-sans text-base line-through mb-6">Precio regular: {formatPrice(miniLandingOriginal)} COP</div>
 
                   <div className="w-full space-y-3 mt-4">
                     {[
@@ -368,7 +404,7 @@ export default function MiniLandingPage() {
                 Obtener mi Mini-Landing ahora <ArrowRight size={22} />
               </Link>
               <p className="mt-5 text-white/20 text-xs uppercase tracking-widest font-bold">
-                Pago único $650.000 COP · Sin mensualidad adicional
+                Pago único {formatPrice(miniLandingPrice)} COP · Sin mensualidad adicional
               </p>
             </div>
           </div>
