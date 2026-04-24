@@ -204,7 +204,7 @@ export async function middleware(request: NextRequest) {
       `script-src ${scriptSrc}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://*.supabase.co https://*.minio.wilkiedevs.com https://wilkiedevs.com https://*.wilkiedevs.com https://*.lookitry.com https://images.unsplash.com https://*.unsplash.com https://*.cloudflare.com https://*.woocommerce.com https://*.shopify.com https://*.myshopify.com",
-      `connect-src 'self' http://localhost:3001 http://100.85.125.102:3001 https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co https://accounts.google.com https://www.googleapis.com https://www.google.com https://challenges.cloudflare.com https://minio.wilkiedevs.com https://freeipapi.com https://ipapi.com`,
+      `connect-src 'self' http://localhost:3001 http://100.85.125.102:3001 https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co https://accounts.google.com https://www.googleapis.com https://www.google.com https://challenges.cloudflare.com https://minio.wilkiedevs.com https://freeipapi.com https://freeipapi.com/api/json/ https://ipapi.com https://ipapi.com/api/json/ https://ipapi.co https://ipapi.co/api/json/`,
       "font-src 'self' https://fonts.gstatic.com",
       "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://accounts.google.com https://www.google.com https://*.wordpress.com https://*.wixsite.com https://*.shopify.com",
       "media-src 'self'"
