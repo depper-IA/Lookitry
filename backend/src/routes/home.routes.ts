@@ -74,21 +74,26 @@ router.get('/check', publicRateLimiter, asyncHandler(async (req, res) => {
 }));
 
 // POST /api/home/tryon/generate - Generate try-on for home demo
-router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
-  // Prioridad: x-forwarded-for (real client IP through Traefik) > req.ip (Docker internal)
-  const realIp = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || 'unknown';
+// NOTA: Sin rateLimiter aquí - solo verificamos trial limit para IPs no-whitelistadas
+router.post('/generate', asyncHandler(async (req, res) => {
+  // Prioridad: cf-connecting-ip (Cloudflare) > x-forwarded-for > req.ip (Docker internal)
+  const realIp = req.headers['cf-connecting-ip']?.toString().split(',')[0]?.trim()
+    || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim()
+    || req.ip
+    || 'unknown';
   const userAgent = req.headers['user-agent'] || '';
   const { productId, selfieBase64 } = req.body;
 
   // DEBUG: Log all IPs for troubleshooting
   console.log(`[HomeTryon] ===== DEBUG IP =====`);
+  console.log(`[HomeTryon] cf-connecting-ip: ${req.headers['cf-connecting-ip']}`);
   console.log(`[HomeTryon] x-forwarded-for: ${req.headers['x-forwarded-for']}`);
   console.log(`[HomeTryon] req.ip: ${req.ip}`);
   console.log(`[HomeTryon] realIp (used): ${realIp}`);
   console.log(`[HomeTryon] isWhitelistedSync(${realIp}): ${isWhitelistedSync(realIp)}`);
   console.log(`[HomeTryon] ==========================`);
 
-  // Check if IP is whitelisted - use the real IP (x-forwarded-for)
+  // Check if IP is whitelisted - use the real IP
   const isTestIp = isWhitelistedSync(realIp);
   console.log(`[HomeTryon] isTestIp for ${realIp}: ${isTestIp}`);
 
@@ -97,7 +102,6 @@ router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
   }
 
   // Check if IP already trialed (skip for whitelisted IPs)
-  // isTestIp was already declared above (line 83)
   if (!isTestIp) {
     const { data: existingTrial } = await supabaseAdmin
       .from('home_tryon_trials')
