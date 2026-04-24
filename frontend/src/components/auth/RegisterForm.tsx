@@ -95,7 +95,7 @@ function validateSlug(slug: string): { valid: boolean; error?: string } {
 
 async function checkSlugAvailable(slug: string): Promise<boolean | null> {
   try {
-    const res = await fetch(`/api/slug-check?slug=${encodeURIComponent(slug)}`);
+    const res = await fetch(`/api/auth/slug-check?slug=${encodeURIComponent(slug)}`);
     if (!res.ok) {
       console.error('Slug check API error:', res.status);
       return null;
