@@ -13,17 +13,18 @@ export async function POST(request: NextRequest) {
     }
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-    // Forward the real client IP from x-forwarded-for (set by Traefik) or use request.ip
-    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
-      || request.headers.get('cf-connecting-ip') 
-      || request.ip 
+    // Priority: cf-connecting-ip (Cloudflare real client IP) > x-forwarded-for > request.ip
+    // This ensures the real client IP reaches the backend for whitelist checking
+    const realClientIP = request.headers.get('cf-connecting-ip')
+      || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.ip
       || '';
 
     const response = await fetch(`${apiUrl}/api/home/tryon/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-forwarded-for': clientIP,
+        'x-forwarded-for': realClientIP,
         'user-agent': request.headers.get('user-agent') || '',
       },
       body: JSON.stringify({ productId, selfieBase64 }),

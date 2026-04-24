@@ -148,6 +148,7 @@ const adminNav = [
     items: [
       { href: '/admin/payment-settings', label: 'Pagos', icon: PaymentsIcon },
       { href: '/admin/pricing', label: 'Precios', icon: PricingIcon },
+      { href: '/admin/widget-ip-whitelist', label: 'Widget IPs', icon: Shield },
       { href: '/admin/social-api-config', label: 'Social APIs', icon: GlobeIcon },
       { href: '/admin/enterprise', label: 'Enterprise', icon: EnterpriseIcon },
     ],
@@ -221,6 +222,7 @@ const pageTitleMap: Record<string, string> = {
   '/admin/config/contact': 'Contacto y Precios',
   '/admin/config/launch': 'Launch',
   '/admin/config/health': 'Salud del Sistema',
+  '/admin/widget-ip-whitelist': 'Widget IP Whitelist',
 };
 
 // ── Main Layout ───────────────────────────────────────────────────────────────

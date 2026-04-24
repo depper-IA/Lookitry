@@ -23,18 +23,35 @@ async function getDbWhitelistIps(): Promise<string[]> {
   }
 
   try {
-    const { data } = await supabaseAdmin
-      .from('payment_settings')
-      .select('ip_whitelist')
-      .eq('id', 1)
-      .maybeSingle();
+    // Fetch from both payment_settings.ip_whitelist and widget_ip_whitelist table
+    const [settingsResult, widgetResult] = await Promise.all([
+      supabaseAdmin
+        .from('payment_settings')
+        .select('ip_whitelist')
+        .eq('id', 1)
+        .maybeSingle(),
+      supabaseAdmin
+        .from('widget_ip_whitelist')
+        .select('ip_address')
+        .eq('is_active', true),
+    ]);
 
-    const ipList = data?.ip_whitelist
-      ? data.ip_whitelist.split(',').map((ip: string) => ip.trim()).filter(Boolean)
+    // Parse IPs from payment_settings (comma-separated string)
+    const settingsIps = settingsResult?.data?.ip_whitelist
+      ? settingsResult.data.ip_whitelist.split(',').map((ip: string) => ip.trim()).filter(Boolean)
       : [];
 
-    whitelistCache = { ips: ipList, updatedAt: now };
-    return ipList;
+    // Parse IPs from widget_ip_whitelist table
+    const widgetIps = widgetResult?.data
+      ? widgetResult.data.map((row: any) => row.ip_address).filter(Boolean)
+      : [];
+
+    // Combine and deduplicate
+    const allIps = [...new Set([...settingsIps, ...widgetIps])];
+
+    whitelistCache = { ips: allIps, updatedAt: now };
+    console.log(`[RateLimiter] Loaded ${allIps.length} whitelisted IPs (${settingsIps.length} from settings, ${widgetIps.length} from widget_ip_whitelist)`);
+    return allIps;
   } catch (err) {
     console.error('[RateLimiter] Error fetching DB whitelist:', err);
     return whitelistCache.ips; // Devolver cache viejo si falla
