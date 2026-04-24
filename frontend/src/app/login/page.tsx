@@ -21,13 +21,13 @@ export default function LoginPage({
         <div className="w-[60%] relative overflow-hidden flex flex-col theme-bg-base">
           {/* Rich gradient background - adapts to theme */}
           <div
-            className="absolute inset-0 dark:opacity-100 opacity-0"
+            className="absolute inset-0 opacity-0 dark:opacity-100"
             style={{
               background: 'linear-gradient(145deg, #050505 0%, #0f0a08 25%, #0a0a0a 50%, #080510 75%, #050505 100%)',
             }}
           />
           <div
-            className="absolute inset-0 opacity-0 dark:opacity-100"
+            className="absolute inset-0 opacity-100 dark:opacity-0"
             style={{
               background: 'linear-gradient(145deg, #f5f2ee 0%, #ede9e4 25%, #fafafa 50%, #f0ede8 75%, #f5f2ee 100%)',
             }}
@@ -214,7 +214,8 @@ export default function LoginPage({
 
         {/* RIGHT SIDE - Login Form (40%) */}
         <div
-          className="w-[40%] flex flex-col justify-center overflow-hidden px-8 theme-bg-base"
+          className="w-[40%] flex flex-col justify-center overflow-hidden px-8 dark"
+          style={{ backgroundColor: '#080808' }}
         >
           <div className="w-full max-w-[420px] mx-auto px-4">
             <LoginForm redirectTo={redirectTo} compact hideLogo />
@@ -223,7 +224,7 @@ export default function LoginPage({
       </div>
 
       {/* Mobile fallback - original centered layout */}
-      <div className="lg:hidden min-h-screen flex items-center justify-center px-4 py-12 theme-bg-base">
+      <div className="lg:hidden min-h-screen flex items-center justify-center px-4 py-12 dark" style={{ backgroundColor: '#0a0a0a' }}>
         <div className="w-full max-w-md">
           <LoginForm redirectTo={redirectTo} />
         </div>
