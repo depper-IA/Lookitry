@@ -518,34 +518,6 @@ export default function SubscriptionPage() {
          </div>
       </motion.div>
 
-      {/* ══ PASARELAS DE PAGO ══ */}
-      <motion.div variants={itemVariants} className="bg-[var(--bg-card)] rounded-3xl md:rounded-[3.5rem] border border-[var(--border-color)] p-8 md:p-16 shadow-xl shadow-black/5 space-y-8 relative overflow-hidden group">
-         <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none"><Cpu size={180} /></div>
-         <div className="flex items-center gap-4 mb-6 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] border border-[#FF5C3A]/20 shadow-inner">
-               <Cpu size={24} />
-            </div>
-            <div>
-               <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight font-jakarta">Pagos y pasarelas</h3>
-               <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-1">Soporte nativo para transacciones seguras</p>
-            </div>
-         </div>
-         
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 relative z-10">
-            {[
-              { name: 'Bancolombia', img: '/integrations/bancolombia.svg' },
-              { name: 'Nequi', img: '/integrations/logo-nequi.svg' },
-              { name: 'PSE', img: '/integrations/logo-pse.svg' },
-              { name: 'Visa', img: '/integrations/visa.svg' }
-            ].map(p => (
-              <div key={p.name} className="p-6 md:p-8 rounded-2xl bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center grayscale hover:grayscale-0 hover:border-[#FF5C3A]/30 transition-all group/p shadow-sm hover:shadow-lg">
-                 <img src={p.img} alt={p.name} className="h-6 md:h-7 w-auto object-contain group-hover/p:scale-110 transition-transform" />
-              </div>
-            ))}
-         </div>
-         <p className="text-[10px] font-medium text-[var(--text-muted)] text-center opacity-60">Procesamos tus pagos localmente en Colombia vía Wompi y mundialmente vía PayPal.</p>
-      </motion.div>
-
       {/* ══ HISTORIAL & SOPORTE ══ */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8 xl:gap-10">
          <div className="lg:col-span-2 bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-6 md:p-8 xl:p-12 space-y-8 shadow-xl shadow-black/5">
