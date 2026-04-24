@@ -1,5 +1,28 @@
 # CHANGELOG — Lookitry
 
+## 24 de Abril 2026 — Fix Sistema de Sesiones en Registro
+
+### Bug Corregido
+
+**Problema:** Cuando un usuario con sesión activa intentaba registrar una cuenta nueva, el sistema redirigía al dashboard de la cuenta vieja en lugar de crear la cuenta nueva.
+
+**Causa raíz:** `auth.controller.ts` detectaba la sesión existente y retornaba 200 con `redirectTo: '/dashboard'` en lugar de proceder con el registro.
+
+### Solución Implementada
+
+| Antes | Después |
+|-------|---------|
+| Sesión activa = Rechazar registro + redirect | Sesión activa = Logout automático + Registrar cuenta nueva |
+
+**Cambios:**
+- Agregada función `clearCookieToken()` en `auth.controller.ts`
+- Modificado método `register()` para cerrar sesión existente antes de crear cuenta nueva
+- Usuario con sesión activa ahora puede registrarse sin necesidad de logout manual
+
+**Archivo modificado:** `backend/src/controllers/auth.controller.ts` (líneas 34-47, 52-65)
+
+---
+
 ## 22 de Abril 2026 — Auditoría Sistema de Leads + Enriquecimiento
 
 ### 🔴 Auditoría Crítica Completada
