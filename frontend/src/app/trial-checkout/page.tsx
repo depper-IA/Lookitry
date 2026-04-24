@@ -657,18 +657,15 @@ export default function TrialCheckoutPage() {
                 <div className="space-y-4 mb-8">
                   <button
                     onClick={() => {
-                      if (currency === 'USD') return;
                       setPaymentMethod('wompi');
                       setCurrency('COP');
                       localStorage.setItem('currency', 'COP');
+                      window.dispatchEvent(new Event('currencyChange'));
                     }}
-                    disabled={currency === 'USD'}
                     className={`w-full flex items-center justify-between rounded-2xl border p-5 transition-all ${
-                      currency === 'USD'
-                        ? 'opacity-30 cursor-not-allowed border-[#1f1f1f] bg-[#0a0a0a]'
-                        : paymentMethod === 'wompi'
-                          ? 'border-[#FF5C3A] bg-[#FF5C3A]/5'
-                          : 'border-[#1f1f1f] bg-[#0a0a0a] hover:border-[#FF5C3A]/30'
+                      paymentMethod === 'wompi'
+                        ? 'border-[#FF5C3A] bg-[#FF5C3A]/5'
+                        : 'border-[#1f1f1f] bg-[#0a0a0a] hover:border-[#FF5C3A]/30'
                     }`}
                   >
                     <div className="flex items-center gap-4">
