@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { supabaseAdmin } from '../config/supabase';
+import { uploadService } from '../services/upload.service';
 
 const router = Router();
 
@@ -76,7 +77,6 @@ router.get('/check', asyncHandler(async (req, res) => {
 // NOTA: Sin restricciones para testing - cualquier persona puede probar
 router.post('/generate', asyncHandler(async (req, res) => {
   // NO verificamos IP ni trial limit - solo procesamos la generación
-  const userAgent = req.headers['user-agent'] || '';
   const { productId, selfieBase64 } = req.body;
 
   if (!productId || !selfieBase64) {
@@ -112,8 +112,26 @@ router.post('/generate', asyncHandler(async (req, res) => {
   // NOTE: Trial recording disabled for easier testing
   // TODO: Re-enable after testing is complete
 
-  // Call the existing pruebalo controller to generate
-  // We re-use the existing n8n integration
+  // 1. Convert base64 to buffer and upload to MinIO
+  let selfieUrl: string;
+  try {
+    // Remove data:image/...;base64, prefix if present
+    const base64Data = selfieBase64.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const uploadResult = await uploadService.uploadImageBuffer({
+      buffer,
+      filename: `selfie-${Date.now()}.jpg`,
+      temporary: true,
+    });
+    selfieUrl = uploadResult.url;
+    console.log(`[HomeTryon] Selfie uploaded to: ${selfieUrl}`);
+  } catch (uploadError: any) {
+    console.error('[HomeTryon] Error uploading selfie:', uploadError);
+    return res.status(500).json({ error: 'UPLOAD_ERROR', message: 'Error uploading selfie' });
+  }
+
+  // 2. Call n8n with URL instead of base64
   try {
     const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.wilkiedevs.com/webhook/tryon';
     console.log(`[HomeTryon] Calling n8n at ${webhookUrl}`);
@@ -127,7 +145,7 @@ router.post('/generate', asyncHandler(async (req, res) => {
       body: JSON.stringify({
         brand_id: brand.id,
         product_id: product.id,
-        selfie_url: `data:image/jpeg;base64,${selfieBase64}`,
+        selfie_url: selfieUrl,
         product_image_url: product.image_url,
         prompt: `Virtual try-on with: ${sanitizeProductNameForPrompt(product.name)}`,
         category: 'demo-home',
