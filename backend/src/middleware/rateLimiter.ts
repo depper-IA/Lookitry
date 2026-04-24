@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 // IPs en whitelist (no se aplica rate limiting)
 const WHITELIST_IPS = [
   '161.18.87.45', // Travis - desarrollo
+  '161.18.93.138', // Sam Wilkie
 ];
 
 const isWhitelisted = (ip: string): boolean => {
