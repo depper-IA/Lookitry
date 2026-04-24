@@ -47,6 +47,7 @@ function OnboardingContent() {
   const [resolvedRef, setResolvedRef] = useState(refFromQuery);
   const [confirmingPayment, setConfirmingPayment] = useState(paymentMethod === 'paypal' && Boolean(paypalOrderId));
   const [paymentChecked, setPaymentChecked] = useState(paymentMethod !== 'paypal' || !paypalOrderId);
+  const [pendingEmail, setPendingEmail] = useState('');
 
   // Availability states
   const [checkingAvailability, setCheckingAvailability] = useState(false);
@@ -100,6 +101,49 @@ function OnboardingContent() {
     };
 
     confirmPaypalPayment();
+
+    // Precargar datos del pending_registration para flujo trial
+    const loadPendingData = async () => {
+      if (!refFromQuery) return;
+      try {
+        const res = await fetch(`/api/auth/pending-registration/${encodeURIComponent(refFromQuery)}`);
+        if (res.ok) {
+          const pending = await res.json();
+          if (pending?.brand_name) {
+            const baseSlug = slugify(pending.brand_name);
+            setForm(prev => ({ ...prev, name: pending.brand_name }));
+            setSlug(baseSlug);
+            // Verificar disponibilidad en background
+            setCheckingAvailability(true);
+            try {
+              const response = await fetch('/api/brands/check-availability', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ brandName: pending.brand_name }),
+              });
+              const data = await response.json();
+              if (response.ok) {
+                setAvailabilityResult({
+                  brandExists: data.brandExists,
+                  slugExists: data.slugExists,
+                  suggestedSlug: data.suggestedSuffix || data.suggestedSlug || '',
+                });
+              }
+            } catch {
+              // No mostrar error al precargar
+            } finally {
+              setCheckingAvailability(false);
+            }
+          }
+          if (pending?.email) {
+            setPendingEmail(pending.email);
+          }
+        }
+      } catch (err) {
+        console.error('Error cargando datos del registro pendiente:', err);
+      }
+    };
+    loadPendingData();
 
     return () => {
       cancelled = true;
@@ -314,13 +358,15 @@ function OnboardingContent() {
 
           <div className="mb-10 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20">
-              Último paso
+              {isTrial ? 'Activación de prueba' : 'Último paso'}
             </div>
             <h1 className="text-3xl font-jakarta font-bold theme-text tracking-tight mb-2">
-              Configura tu marca
+              {isTrial ? 'Activa tu prueba' : 'Configura tu marca'}
             </h1>
             <p className="text-sm theme-text-muted max-w-xs mx-auto leading-relaxed">
-              Tu pago fue confirmado. Solo necesitamos el nombre de tu marca y crear una contraseña para tu cuenta.
+              {isTrial
+                ? 'Tu pago fue confirmado. Crea tu contraseña para activar 7 días de acceso.'
+                : 'Tu pago fue confirmado. Solo necesitamos el nombre de tu marca y crear una contraseña para tu cuenta.'}
             </p>
           </div>
 
