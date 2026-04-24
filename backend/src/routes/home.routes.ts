@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { supabaseAdmin } from '../config/supabase';
 import { UploadService } from '../services/upload.service';
+import { isWhitelistedSync } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -58,18 +59,36 @@ router.get('/config', asyncHandler(async (req, res) => {
 
 // GET /api/home/tryon/check - Check if IP has already trialed
 router.get('/check', asyncHandler(async (req, res) => {
-  // DISABLED: Always allow trials for testing
+  const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 'unknown';
+
+  // Whitelisted IPs (Travis & Sam's dev PCs) bypass trial limit
+  if (isWhitelistedSync(ip)) {
+    return res.json({
+      hasTrialed: false,
+      trialCount: 0,
+      isWhitelisted: true,
+    });
+  }
+
+  const { data: existingTrial } = await supabaseAdmin
+    .from('home_tryon_trials')
+    .select('id, created_at')
+    .eq('ip_address', ip)
+    .maybeSingle();
+
   return res.json({
-    hasTrialed: false,
-    trialCount: 0,
+    hasTrialed: !!existingTrial,
+    trialCount: existingTrial ? 1 : 0,
+    isWhitelisted: false,
   });
 }));
 
 // POST /api/home/tryon/generate - Generate try-on for home demo
-// NOTA: Sin restricciones para testing - cualquier persona puede probar
+// Whitelisted IPs bypass trial limit, others get 1 trial only
 router.post('/generate', asyncHandler(async (req, res) => {
-  // NO verificamos IP ni trial limit - solo procesamos la generación
   const { productId, selfieBase64 } = req.body;
+  const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 'unknown';
+  const isTestIp = isWhitelistedSync(ip);
 
   if (!productId || !selfieBase64) {
     return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'productId and selfieBase64 are required' });
@@ -99,6 +118,23 @@ router.post('/generate', asyncHandler(async (req, res) => {
 
   if (!product) {
     return res.status(404).json({ error: 'Product not found' });
+  }
+
+  // Check trial for non-whitelisted IPs only
+  if (!isTestIp) {
+    const { data: existingTrial } = await supabaseAdmin
+      .from('home_tryon_trials')
+      .select('id')
+      .eq('ip_address', ip)
+      .maybeSingle();
+
+    if (existingTrial) {
+      return res.status(429).json({
+        error: 'TRIAL_LIMIT_EXCEEDED',
+        message: 'Ya usaste tu prueba gratuita',
+        redirectTo: '/planes'
+      });
+    }
   }
 
   // NOTE: Trial recording disabled for easier testing
@@ -161,6 +197,17 @@ router.post('/generate', asyncHandler(async (req, res) => {
 
     const result = JSON.parse(text) as { result_image_url?: string; image_url?: string; imageUrl?: string; generation_id?: string };
     console.log(`[HomeTryon] parsed result:`, result);
+
+    // Record trial for non-whitelisted IPs
+    if (!isTestIp) {
+      await supabaseAdmin
+        .from('home_tryon_trials')
+        .insert({
+          ip_address: ip,
+          product_id: productId,
+          brand_id: brand.id,
+        });
+    }
 
     return res.json({
       success: true,
