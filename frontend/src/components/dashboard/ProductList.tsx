@@ -674,35 +674,10 @@ function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// EMPTY STATE
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function EmptyState() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="text-center p-16 rounded-3xl"
-      style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}
-    >
-      <div
-        className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center"
-        style={{ background: DESIGN.accentSubtle, border: `1px solid ${DESIGN.accentGlow}` }}
-      >
-        <Package className="w-10 h-10" style={{ color: DESIGN.accent }} />
-      </div>
-      <h3 className="text-xl font-bold uppercase tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>Sin Productos</h3>
-      <p className="text-sm max-w-xs mx-auto" style={{ color: 'var(--text-secondary)' }}>Agrega tu primer producto para comenzar.</p>
-    </motion.div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // MAIN EXPORT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function ProductList({ products, viewMode = 'grid', onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: ProductListProps) {
-  if (products.length === 0) return <EmptyState />;
   return (
     <div className="pb-20">
       <AnimatePresence mode="popLayout">

@@ -31,23 +31,37 @@ function setCookieToken(res: Response, token: string): void {
   res.cookie('token', token, cookieOptions);
 }
 
+function clearCookieToken(res: Response): void {
+  const clearOptions: any = {
+    path: '/',
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: 'lax',
+  };
+
+  if (COOKIE_DOMAIN && IS_PROD) {
+    clearOptions.domain = COOKIE_DOMAIN;
+  }
+
+  res.clearCookie('token', clearOptions);
+}
+
 export class AuthController {
   async register(req: Request, res: Response) {
     try {
-      // Si el usuario ya tiene sesión activa, rechazar el registro
+      // Si el usuario ya tiene sesión activa, cerrar la sesión antes de registrar
       const token = (req as any).cookies?.token || req.headers.authorization?.replace('Bearer ', '');
       if (token) {
         try {
           const { verifyToken } = await import('../utils/jwt');
           const payload = verifyToken(token);
           if (payload.brandId) {
-            return res.status(200).json({
-              needsOnboarding: false,
-              redirectTo: '/dashboard',
-              message: 'Ya tienes una sesión activa. Redirigiendo...',
-            });
+            console.log('[Auth] Closing existing session before new registration');
+            clearCookieToken(res);
           }
-        } catch {}
+        } catch {
+          // Token inválido, ignorar y continuar
+        }
       }
 
       const data: RegisterBrandDto = req.body;
