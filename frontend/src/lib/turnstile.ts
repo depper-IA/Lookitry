@@ -87,8 +87,10 @@ export async function loadTurnstileWidget(
       return null;
     }
 
-    // Ensure the container is empty before rendering
-    container.innerHTML = '';
+    // Ensure the container is empty before rendering (use removeChildren for React compatibility)
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
 
     const widgetId = window.turnstile.render(container, {
       sitekey: siteKey,
