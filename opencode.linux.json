@@ -43,8 +43,21 @@
       }
     },
     "openrouter": {
+      "npm": "@ai-sdk/openrouter",
       "options": {
         "timeout": 120000
+      },
+      "apiKey": "***REMOVED-SECRET***",
+      "models": {
+        "kimi-2.6": {
+          "name": "moonshotai/kimi-2.6"
+        },
+        "kimi-2.5": {
+          "name": "moonshotai/kimi-2.5"
+        },
+        "deepseek-chat": {
+          "name": "deepseek/deepseek-chat-v3"
+        }
       }
     }
   },
