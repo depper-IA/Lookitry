@@ -153,6 +153,14 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
+
+    // Save protection: block if locked template selected
+    const selectedTemplate = TEMPLATES.find(t => t.id === formData.widgetTemplate);
+    if (selectedTemplate?.proOnly && !isPro) {
+      toast.error('Mejora a Pro para usar esta plantilla');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const dataToSubmit = isPro ? formData : { ...formData, slug: undefined };
@@ -342,14 +350,14 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
             <div className="mb-8">
               <label className="mb-4 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Seleccionar Plantilla</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
-                {TEMPLATES.filter((tpl) => isPro || !tpl.proOnly).map((tpl) => (
+                {TEMPLATES.map((tpl) => (
                   <TemplatePreviewCard
                     key={tpl.id}
                     id={tpl.id}
                     label={tpl.label}
                     description={tpl.description}
                     isSelected={formData.widgetTemplate === tpl.id}
-                    isDisabled={Boolean(tpl.proOnly) && !isPro}
+                    isLocked={Boolean(tpl.proOnly) && !isPro}
                     isPro={isPro}
                     primaryColor={formData.primaryColor || '#FF5C3A'}
                     secondaryColor={formData.secondaryColor || '#FFFFFF'}

@@ -280,7 +280,7 @@ export default function CheckoutLandingPage() {
                 onClick={() => setPaymentMethod('paypal')}
                 className={`flex-1 flex flex-col items-center gap-2 py-4 rounded-2xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-[#0070ba]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
               >
-                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto" />
+                <img src="/payment-paypal.svg" alt="PayPal" className="h-4 w-auto" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-white">PayPal / USD</span>
               </button>
             </div>

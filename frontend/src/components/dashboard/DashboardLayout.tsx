@@ -298,7 +298,8 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
 
       <div className={`flex h-screen flex-col overflow-hidden transition-all duration-300 ${sidebarOpen ? 'blur-[2px]' : ''} ${isCollapsed ? 'lg:pl-[88px] xl:pl-[96px]' : 'lg:pl-[96px] xl:pl-[240px] 2xl:pl-[280px]'}`}>
         {showVerificationBanner && (
-          <div className="flex w-full flex-shrink-0 items-center justify-between gap-4 border-b px-6 py-3 animate-in fade-in slide-in-from-top duration-500" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <div className="fixed left-0 right-0 top-16 z-50 flex w-full flex-shrink-0 items-center justify-between gap-4 border-b px-4 py-3 animate-in fade-in slide-in-from-top duration-500 md:static md:top-auto md:z-auto md:border-b md:px-6 lg:static lg:z-auto"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
             <div className="min-w-0 flex items-center gap-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FF5C3A]/10">
                 <svg className="h-4 w-4 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
