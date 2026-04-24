@@ -82,7 +82,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
     Promise.all([
       fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
-      fetch(`${apiUrl}/api/trial-campaign/active`).then(r => r.ok ? r.json() : null),
+      fetch(`${apiUrl}/api/trial/status`).then(r => r.ok ? r.json() : null),
     ]).then(([settingsData, campaignData]) => {
       if (settingsData?.trm && Number(settingsData.trm) > 0) {
         setTrm(Number(settingsData.trm));
