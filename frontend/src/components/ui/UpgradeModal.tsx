@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { X, Sparkles, ArrowRight, Zap, Crown, Gift, Infinity, Palette, Smartphone } from 'lucide-react';
+import { X, Sparkles, ArrowRight, Zap, Crown, Gift, Infinity as UnlimitedIcon, Palette, Smartphone } from 'lucide-react';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -64,7 +64,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           {/* Features preview */}
           <div className="mb-8 grid grid-cols-3 gap-3">
             {[
-              { icon: Infinity, label: 'Pruebas ilimitadas' },
+              { icon: UnlimitedIcon, label: 'Pruebas reales en tu tienda' },
               { icon: Palette, label: 'Tu catálogo completo' },
               { icon: Smartphone, label: 'Widget integrable' },
             ].map(({ icon: Icon, label }, i) => (

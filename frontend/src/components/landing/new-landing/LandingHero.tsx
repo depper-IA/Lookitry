@@ -207,6 +207,12 @@ export default function LandingHero() {
         {/* RIGHT: PROBADOR FUNCIONAL - Matching Wideframe Style */}
         <div className="flex w-full items-center justify-center lg:justify-end">
           <div className="group relative z-10 w-full max-w-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#141414] p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] sm:max-w-[500px] sm:rounded-[2rem] sm:p-4 lg:max-w-[620px]">
+            {/* Notice - CTA to try */}
+            <div className="mb-3 flex items-center justify-center gap-2 rounded-full bg-[#FF5C3A]/10 px-4 py-2 text-center">
+              <Sparkles size={12} className="text-[#FF5C3A]" aria-hidden="true" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">Pruébalo ahora mismo</span>
+            </div>
+
             {/* Browser Chrome */}
             <div className="mb-4 flex items-center gap-2 sm:mb-6 sm:gap-3" aria-hidden="true">
               <div className="flex gap-1 sm:gap-1.5">
@@ -215,7 +221,7 @@ export default function LandingHero() {
                 <span className="h-1.5 w-1.5 rounded-full bg-[#28c840] sm:h-2 sm:w-2"></span>
               </div>
               <div className="flex-1 truncate rounded-md border border-white/5 bg-[#1c1c1c] px-2 py-1 text-center font-dm-sans text-[7px] uppercase tracking-widest text-white/20 sm:px-4 sm:text-[9px]">
-                lookitry.com/pruebalo
+                lookitry.com/marca/tu-marca
               </div>
             </div>
 
@@ -295,13 +301,22 @@ export default function LandingHero() {
                     </span>
                   )}
                   <button
-                    onClick={() => hasUsedTrial ? setShowUpgradeModal(true) : (selfie && setStep('selfie'))}
-                    disabled={!selfie || !selectedProduct}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => {
+                      if (hasUsedTrial) {
+                        setShowUpgradeModal(true);
+                      } else if (selfie && selectedProduct) {
+                        setStep('selfie');
+                      }
+                    }}
+                    disabled={!hasUsedTrial && (!selfie || !selectedProduct)}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Sparkles size={16} />
                     Ver Probador IA
                   </button>
+                  {!hasUsedTrial && (
+                    <span className="text-[9px] text-white/30">Solo 1 prueba gratuita por IP</span>
+                  )}
                 </div>
               </div>
             )}
