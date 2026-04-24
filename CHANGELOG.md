@@ -1,5 +1,29 @@
 # CHANGELOG — Lookitry
 
+## 24 de Abril 2026 — Mejoras Trial Widget + Premium Modal
+
+### Cambios Implementados
+
+**1. Botón "Ver Probador IA" ahora abre modal premium cuando ya usó su prueba**
+- Cuando `hasUsedTrial = true`, el botón abre el `UpgradeModal` en lugar de dejar pasar el flujo
+- El texto del botón permanece como "Ver Probador IA" (sin cambios)
+
+**2. Badge "1 generación gratis" visible cuando hay pruebas disponibles**
+- Aparece encima del botón cuando el usuario aún no ha usado su prueba
+
+**3. Modal premium rediseñado**
+- Icono Crown en lugar de emoji
+- Features con iconos lucide-react (Infinity, Palette, Smartphone)
+- CTA principal: "Comenzar con Plan Trial" → `/planes?trial=true`
+- CTA secundario: "Ver todos los planes y precios" → `/planes`
+- Sin emojis en la UI (cumple regla de diseño)
+
+**Archivos modificados:**
+- `frontend/src/components/landing/new-landing/LandingHero.tsx`
+- `frontend/src/components/ui/UpgradeModal.tsx`
+
+---
+
 ## 24 de Abril 2026 — Fix Sistema de Sesiones en Registro
 
 ### Bug Corregido
