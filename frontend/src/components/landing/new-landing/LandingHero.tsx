@@ -434,10 +434,10 @@ export default function LandingHero() {
                   </div>
                   <button
                     onClick={handleBack}
-                    className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-all hover:bg-black/70 hover:scale-110"
-                    aria-label="Nueva prueba"
+                    className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition-all hover:bg-black/60 hover:text-white"
+                    aria-label="Limpiar"
                   >
-                    <RotateCcw size={14} />
+                    <RotateCcw size={12} />
                   </button>
                 </div>
 
