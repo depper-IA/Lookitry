@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { sanitizeError } from '../utils/sanitizeError';
+import { refreshWhitelistCache } from '../middleware/rateLimiter';
 
 const TABLE = 'widget_ip_whitelist';
 
@@ -145,5 +146,19 @@ export const checkWidgetIpWhitelist = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('[WidgetIpWhitelist] Error checking:', error);
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al verificar IP') });
+  }
+};
+
+/**
+ * POST /api/admin/widget-ip-whitelist/refresh-cache
+ * Force refresh the whitelist cache (for immediate effect after adding IPs)
+ */
+export const refreshWidgetIpWhitelistCache = async (_req: Request, res: Response) => {
+  try {
+    await refreshWhitelistCache();
+    return res.json({ message: 'Cache refreshed successfully' });
+  } catch (error: any) {
+    console.error('[WidgetIpWhitelist] Error refreshing cache:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al refrescar cache') });
   }
 };

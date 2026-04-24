@@ -16,6 +16,42 @@ interface WhitelistCache {
 let whitelistCache: WhitelistCache = { ips: [], updatedAt: 0 };
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
 
+// Función para forzar refresh del cache (útil para testing)
+export const refreshWhitelistCache = async (): Promise<void> => {
+  const now = Date.now();
+  try {
+    const [settingsResult, widgetResult] = await Promise.all([
+      supabaseAdmin
+        .from('payment_settings')
+        .select('ip_whitelist')
+        .eq('id', 1)
+        .maybeSingle(),
+      supabaseAdmin
+        .from('widget_ip_whitelist')
+        .select('ip_address')
+        .eq('is_active', true),
+    ]);
+
+    const settingsIps = settingsResult?.data?.ip_whitelist
+      ? settingsResult.data.ip_whitelist.split(',').map((ip: string) => ip.trim()).filter(Boolean)
+      : [];
+
+    const widgetIps = widgetResult?.data
+      ? widgetResult.data.map((row: any) => row.ip_address).filter(Boolean)
+      : [];
+
+    const allIps = [...new Set([...settingsIps, ...widgetIps])];
+
+    whitelistCache = { ips: allIps, updatedAt: now };
+    console.log(`[RateLimiter] Cache refreshed: ${allIps.length} IPs (${settingsIps.length} from settings, ${widgetIps.length} from widget_ip_whitelist)`);
+  } catch (err) {
+    console.error('[RateLimiter] Error refreshing cache:', err);
+  }
+};
+
+// Inicializar cache al cargar el módulo
+refreshWhitelistCache().catch(console.error);
+
 async function getDbWhitelistIps(): Promise<string[]> {
   const now = Date.now();
   if (whitelistCache.ips.length > 0 && (now - whitelistCache.updatedAt) < CACHE_TTL_MS) {
@@ -73,8 +109,9 @@ export const isWhitelistedSync = (ip: string): boolean => {
     return true;
   }
   if (HARDCODED_WHITELIST_IPS.includes(ip)) return true;
-  if (whitelistCache.ips.includes(ip)) return true;
-  return false;
+  const isWhitelisted = whitelistCache.ips.includes(ip);
+  console.log(`[isWhitelistedSync] Checking IP: ${ip}, whitelistCache.ips: ${JSON.stringify(whitelistCache.ips)}, result: ${isWhitelisted}`);
+  return isWhitelisted;
 };
 
 export const isWhitelisted = async (ip: string): Promise<boolean> => {

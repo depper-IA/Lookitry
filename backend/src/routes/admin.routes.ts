@@ -97,6 +97,7 @@ import {
   updateWidgetIpWhitelist,
   deleteWidgetIpWhitelist,
   checkWidgetIpWhitelist,
+  refreshWidgetIpWhitelistCache,
 } from '../controllers/widgetIpWhitelist.controller';
 
 const router = Router();
@@ -286,5 +287,6 @@ router.post('/widget-ip-whitelist', requirePermission('settings'), addWidgetIpWh
 router.put('/widget-ip-whitelist/:id', requirePermission('settings'), updateWidgetIpWhitelist);
 router.delete('/widget-ip-whitelist/:id', requirePermission('settings'), deleteWidgetIpWhitelist);
 router.get('/widget-ip-whitelist/check/:ip', requirePermission('settings'), checkWidgetIpWhitelist);
+router.post('/widget-ip-whitelist/refresh-cache', requirePermission('settings'), refreshWidgetIpWhitelistCache);
 
 export default router;
