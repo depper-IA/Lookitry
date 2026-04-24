@@ -16,6 +16,39 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 const OA = '#FF5C3A';
 const TRIAL_DRAFT_KEY = 'lookitry:trial-checkout-draft';
 
+// Emil Kowalski Design System - Custom Easing & Motion
+const CSS_VARS = `
+  :root {
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-fast: 160ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px -15px rgba(255, 92, 58, 0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(0) scale(0.97);
+    }
+    .input-field:hover {
+      border-color: #333;
+    }
+    .input-field:focus {
+      border-color: #FF5C3A;
+      box-shadow: 0 0 0 3px rgba(255, 92, 58, 0.1), 0 0 20px rgba(255, 92, 58, 0.15);
+    }
+    .payment-option:hover {
+      border-color: rgba(255, 92, 58, 0.4);
+      background: rgba(255, 92, 58, 0.03);
+    }
+  }
+`;
+
 function IconCheck() {
   return (
     <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke={OA} viewBox="0 0 24 24">
@@ -48,6 +81,17 @@ export default function TrialCheckoutPage() {
   // Email check states
   const [emailChecking, setEmailChecking] = useState(false);
   const [emailExists, setEmailExists] = useState<{ exists: boolean; name?: string; plan?: string } | null>(null);
+
+  // Inject Emil Kowalski CSS Variables
+  useEffect(() => {
+    const styleId = 'emil-kowalski-css';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = CSS_VARS;
+      document.head.appendChild(style);
+    }
+  }, []);
 
   // Guard: si el usuario ya tiene trial activo o plan pago, redirigir al dashboard
   useEffect(() => {
