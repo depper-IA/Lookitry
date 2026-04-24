@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, Upload } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, Upload, RotateCcw } from 'lucide-react';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
@@ -148,6 +148,8 @@ export default function LandingHero() {
     setStep('select');
     setSelfie(null);
     setSelfiePreview(null);
+    setResultImage(null);
+    setError(null);
   };
 
   return (
@@ -430,6 +432,13 @@ export default function LandingHero() {
                   <div className="absolute top-2 left-2 rounded-full bg-[#FF5C3A] px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white shadow-xl sm:text-[8px]">
                     IA
                   </div>
+                  <button
+                    onClick={handleBack}
+                    className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-all hover:bg-black/70 hover:scale-110"
+                    aria-label="Nueva prueba"
+                  >
+                    <RotateCcw size={14} />
+                  </button>
                 </div>
 
                 {/* Botones: Ver planes (gris) + Trial (naranja) */}
