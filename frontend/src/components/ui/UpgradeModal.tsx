@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { X, Sparkles, ArrowRight, Zap } from 'lucide-react';
+import { X, Sparkles, ArrowRight, Zap, Crown, Gift } from 'lucide-react';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -18,18 +18,18 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-md" aria-hidden="true" />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-md overflow-hidden rounded-3xl bg-[#0a0a0a] border border-white/10 shadow-2xl shadow-black/50"
+        className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-[#0a0a0a] border border-white/10 shadow-2xl shadow-black/50"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="upgrade-modal-title"
       >
-        {/* Glow effect */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-32 w-64 bg-[#FF5C3A]/20 blur-[80px]" aria-hidden="true" />
+        {/* Premium glow effect */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-48 w-80 bg-gradient-to-b from-[#FF5C3A]/30 to-transparent blur-[100px]" aria-hidden="true" />
 
         {/* Close button */}
         <button
@@ -40,21 +40,25 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           <X size={20} />
         </button>
 
-        <div className="relative p-8 text-center">
+        <div className="relative px-8 pt-10 pb-8 text-center">
           {/* Icon */}
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#FF5C3A]/20 to-[#FF5C3A]/5 border border-[#FF5C3A]/20">
-            <Sparkles size={36} className="text-[#FF5C3A]" />
+          <div className="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#FF5C3A]/30 to-[#FF5C3A]/5 border border-[#FF5C3A]/30">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#FF5C3A]/20 to-transparent animate-pulse" />
+            <Crown size={40} className="text-[#FF5C3A]" />
           </div>
 
           {/* Title */}
-          <h2 id="upgrade-modal-title" className="mb-3 font-jakarta text-2xl font-black text-white tracking-tight">
-            ¡Ya usaste tu generación gratuita!
+          <h2 id="upgrade-modal-title" className="mb-4 font-jakarta text-3xl font-black text-white tracking-tight">
+            ¡Lleva tu tienda al{' '}
+            <span className="bg-gradient-to-r from-[#FF5C3A] to-[#ff9a7a] bg-clip-text text-transparent">
+              siguiente nivel!
+            </span>
           </h2>
 
           {/* Description */}
-          <p className="mb-8 font-dm-sans text-base leading-relaxed text-white/70">
-            Has probado el probador virtual con IA. Ahora{' '}
-            <span className="font-bold text-white">úsalo sin límites</span> en tu propia tienda con cualquiera de nuestros planes.
+          <p className="mb-8 font-dm-sans text-base leading-relaxed text-white/60">
+            Has experimentado el poder del probador virtual con IA.{' '}
+            <span className="font-semibold text-white">Imagina esto en tu propia tienda</span> — con tu catálogo, tu marca y clientes reales.
           </p>
 
           {/* Features preview */}
@@ -64,26 +68,37 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
               { icon: '🎨', label: 'Tu catálogo completo' },
               { icon: '📱', label: 'Widget integrable' },
             ].map((feature, i) => (
-              <div key={i} className="rounded-xl border border-white/5 bg-white/[3%] p-3">
+              <div key={i} className="rounded-xl border border-white/10 bg-white/[3%] p-3">
                 <span className="mb-1 block text-xl">{feature.icon}</span>
                 <span className="text-[10px] font-medium uppercase tracking-wide text-white/50">{feature.label}</span>
               </div>
             ))}
           </div>
 
-          {/* CTA Button */}
+          {/* CTA Principal - Trial Plan */}
           <Link
-            href="/planes"
+            href="/planes?trial=true"
             onClick={onClose}
-            className="group flex items-center justify-center gap-3 w-full rounded-2xl bg-[#FF5C3A] px-8 py-4 font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-[1.02] hover:bg-[#ff6c4d] active:scale-[0.98]"
+            className="group relative mb-4 flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-[#FF5C3A] to-[#ff7b5e] px-8 py-5 font-bold text-white shadow-2xl shadow-[#FF5C3A]/30 transition-all hover:scale-[1.02] hover:shadow-[#FF5C3A]/40 active:scale-[0.98]"
           >
-            <Zap size={20} />
-            Ver Planes y Precios
+            <Gift size={22} />
+            <span className="text-lg">Comenzar con Plan Trial</span>
             <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
           </Link>
 
+          {/* Secondary - Otros Planes */}
+          <Link
+            href="/planes"
+            onClick={onClose}
+            className="group flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[3%] px-6 py-3 font-medium text-white/70 transition-all hover:border-white/30 hover:bg-white/[6%] hover:text-white"
+          >
+            <Zap size={16} className="text-[#FF5C3A]" />
+            <span>Ver todos los planes y precios</span>
+            <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+          </Link>
+
           {/* Small print */}
-          <p className="mt-4 text-xs text-white/30">
+          <p className="mt-6 text-xs text-white/30">
             Desde $180.000 COP/mes · Sin compromiso · Cancela cuando quieras
           </p>
         </div>
