@@ -9,6 +9,7 @@ import { TemplateShowcase } from './templates/TemplateShowcase';
 import { TemplateModernSidebar } from './templates/TemplateModernSidebar';
 import { TemplateBoldProStudio } from './templates/TemplateBoldProStudio';
 import type { Layout, Product, Step } from './templates/types';
+import { UpgradeModal } from '@/components/ui/UpgradeModal';
 
 interface TryOnWidgetProps {
   brandSlug: string;
@@ -61,6 +62,7 @@ export function TryOnWidget({
   const [notice, setNotice] = useState<string | null>(null);
   const [uploadPrivacyNotice, setUploadPrivacyNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   // Productos ya generados en esta sesión: productId → imageUrl
   const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
   // Hash de la selfie actual para cachear resultados por selfie específica
@@ -265,7 +267,12 @@ export function TryOnWidget({
       } catch (err: any) {
         const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
         setErrorIsService(isService);
-        setError(isService ? 'SERVICE_CREDITS_EXHAUSTED' : (err.message || 'Algo salió mal. Intenta de nuevo.'));
+        if (isService) {
+          setShowUpgradeModal(true);
+          setError('SERVICE_CREDITS_EXHAUSTED');
+        } else {
+          setError(err.message || 'Algo salió mal. Intenta de nuevo.');
+        }
         setStep('upload');
         if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, EMBED_ORIGIN);
         return;
@@ -299,7 +306,12 @@ export function TryOnWidget({
       const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
       setErrorIsService(isService);
       setNotice(null);
-      setError(err.message || 'Algo salió mal. Intenta de nuevo.');
+      if (isService) {
+        setShowUpgradeModal(true);
+        setError('SERVICE_CREDITS_EXHAUSTED');
+      } else {
+        setError(err.message || 'Algo salió mal. Intenta de nuevo.');
+      }
       setStep('upload');
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, EMBED_ORIGIN);
     }
@@ -401,16 +413,25 @@ export function TryOnWidget({
     onDismissNotice: () => setNotice(null),
   } as const;
 
-  switch (effectiveLayout) {
-    case 'bare':
-      return isEmbed ? <TemplateLandingEmbed {...templateProps} /> : <TemplateBare {...templateProps} />;
-    case 'sidebar':
-      return <TemplateModernSidebar {...templateProps} />;
-    case 'centered':
-      return <TemplateBoldProStudio {...templateProps} />;
-    case 'showcase':
-    default:
-      return <TemplateShowcase {...templateProps} />;
-  }
+  const renderTemplate = () => {
+    switch (effectiveLayout) {
+      case 'bare':
+        return isEmbed ? <TemplateLandingEmbed {...templateProps} /> : <TemplateBare {...templateProps} />;
+      case 'sidebar':
+        return <TemplateModernSidebar {...templateProps} />;
+      case 'centered':
+        return <TemplateBoldProStudio {...templateProps} />;
+      case 'showcase':
+      default:
+        return <TemplateShowcase {...templateProps} />;
+    }
+  };
+
+  return (
+    <>
+      <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+      {renderTemplate()}
+    </>
+  );
 }
 

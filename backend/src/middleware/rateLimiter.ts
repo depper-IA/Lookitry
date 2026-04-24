@@ -1,15 +1,96 @@
 import rateLimit from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
+import { supabaseAdmin } from '../config/supabase';
 
-// IPs en whitelist (no se aplica rate limiting)
-const WHITELIST_IPS = [
+// IPs en whitelist hardcodeada (desarrollo优先级)
+const HARDCODED_WHITELIST_IPS = [
   '161.18.87.45', // Travis - desarrollo
   '161.18.93.138', // Sam Wilkie
 ];
 
-const isWhitelisted = (ip: string): boolean => {
-  return WHITELIST_IPS.includes(ip);
+// Cache para IPs de payment_settings (actualiza cada 5 minutos)
+interface WhitelistCache {
+  ips: string[];
+  updatedAt: number;
+}
+let whitelistCache: WhitelistCache = { ips: [], updatedAt: 0 };
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+async function getDbWhitelistIps(): Promise<string[]> {
+  const now = Date.now();
+  if (whitelistCache.ips.length > 0 && (now - whitelistCache.updatedAt) < CACHE_TTL_MS) {
+    return whitelistCache.ips;
+  }
+
+  try {
+    const { data } = await supabaseAdmin
+      .from('payment_settings')
+      .select('ip_whitelist')
+      .eq('id', 1)
+      .maybeSingle();
+
+    const ipList = data?.ip_whitelist
+      ? data.ip_whitelist.split(',').map(ip => ip.trim()).filter(Boolean)
+      : [];
+
+    whitelistCache = { ips: ipList, updatedAt: now };
+    return ipList;
+  } catch (err) {
+    console.error('[RateLimiter] Error fetching DB whitelist:', err);
+    return whitelistCache.ips; // Devolver cache viejo si falla
+  }
+}
+
+// Helper sincronico para chequear whitelist (usa cache sincrono como fallback)
+function isIpWhitelistedSync(ip: string, dbIps: string[]): boolean {
+  if (HARDCODED_WHITELIST_IPS.includes(ip)) return true;
+  if (dbIps.includes(ip)) return true;
+  return false;
+}
+
+// Helper sincronico para chequear whitelist (para usar en skip functions)
+// Usa el cache sincrono (se actualiza cuando getDbWhitelistIps corre)
+export const isWhitelistedSync = (ip: string): boolean => {
+  // Locals siempre pasan
+  if (ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127.') || ip === 'localhost') {
+    return true;
+  }
+  if (HARDCODED_WHITELIST_IPS.includes(ip)) return true;
+  if (whitelistCache.ips.includes(ip)) return true;
+  return false;
 };
+
+export const isWhitelisted = async (ip: string): Promise<boolean> => {
+  // Primero chequear sync (locals + hardcoded)
+  if (isWhitelistedSync(ip)) return true;
+  // Luego chequear DB whitelist async
+  const dbIps = await getDbWhitelistIps();
+  return dbIps.includes(ip);
+};
+
+// Nueva función para verificar bypass de testing (consulta DB lazy)
+let testBypassCache: { allowed: boolean; updatedAt: number } = { allowed: false, updatedAt: 0 };
+const BYPASS_CACHE_TTL = 60 * 1000; // 1 minuto
+
+export async function isTestBypassAllowed(): Promise<boolean> {
+  const now = Date.now();
+  if (now - testBypassCache.updatedAt < BYPASS_CACHE_TTL) {
+    return testBypassCache.allowed;
+  }
+
+  try {
+    const { data } = await supabaseAdmin
+      .from('payment_settings')
+      .select('bypass_ip_protection')
+      .eq('id', 1)
+      .maybeSingle();
+
+    testBypassCache = { allowed: data?.bypass_ip_protection === true, updatedAt: now };
+    return testBypassCache.allowed;
+  } catch {
+    return testBypassCache.allowed;
+  }
+}
 
 /**
  * Rate limiter para endpoints públicos
@@ -38,9 +119,9 @@ export const publicRateLimiter = rateLimit({
   // Omitir rate limiting para ciertas condiciones
   skip: (req: Request) => {
     const ip = req.ip || '';
-    // Skip si está en whitelist
-    if (isWhitelisted(ip)) return true;
-    // Omitir rate limiting para localhost en desarrollo (::1, 127.0.0.1, ::ffff:127.0.0.1)
+    // Skip si está en whitelist (sync check - locals + hardcoded)
+    if (isWhitelistedSync(ip)) return true;
+    // Omitir rate limiting para localhost en desarrollo
     if (process.env.NODE_ENV === 'development') {
       if (ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127.') || ip === 'localhost') {
         return true;
@@ -75,7 +156,7 @@ export const generationRateLimiter = rateLimit({
   },
   skip: (req: Request) => {
     const ip = req.ip || '';
-    if (isWhitelisted(ip)) return true;
+    if (isWhitelistedSync(ip)) return true;
     if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
@@ -108,7 +189,7 @@ export const authRateLimiter = rateLimit({
   },
   skip: (req: Request) => {
     const ip = req.ip || '';
-    if (isWhitelisted(ip)) return true;
+    if (isWhitelistedSync(ip)) return true;
     if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
@@ -141,7 +222,7 @@ export const loginRateLimiter = rateLimit({
   },
   skip: (req: Request) => {
     const ip = req.ip || '';
-    if (isWhitelisted(ip)) return true;
+    if (isWhitelistedSync(ip)) return true;
     if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
@@ -174,7 +255,7 @@ export const registerRateLimiter = rateLimit({
   },
   skip: (req: Request) => {
     const ip = req.ip || '';
-    if (isWhitelisted(ip)) return true;
+    if (isWhitelistedSync(ip)) return true;
     if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
@@ -207,7 +288,7 @@ export const adminLoginRateLimiter = rateLimit({
   },
   skip: (req: Request) => {
     const ip = req.ip || '';
-    if (isWhitelisted(ip)) return true;
+    if (isWhitelistedSync(ip)) return true;
     if (process.env.NODE_ENV === 'development' && ip === '::1') {
       return true;
     }
@@ -299,8 +380,8 @@ export const globalRateLimiter = rateLimit({
   },
   skip: (req: Request) => {
     const ip = req.ip || '';
-    // Skip si está en whitelist
-    if (isWhitelisted(ip)) return true;
+    // Skip si está en whitelist (sync check)
+    if (isWhitelistedSync(ip)) return true;
     // Omitir health check del rate limiting global
     if (req.path === '/health') {
       return true;
