@@ -137,11 +137,13 @@ router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
         'Authorization': `Bearer ${process.env.N8N_WEBHOOK_SECRET || ''}`
       },
       body: JSON.stringify({
+        brand_id: brand.id,
+        product_id: product.id,
         selfie_url: `data:image/jpeg;base64,${selfieBase64}`,
         product_image_url: product.image_url,
-        product_name: product.name,
-        brand_name: brand.name,
+        prompt: `Try on ${product.name}`,
         category: 'demo-home',
+        generation_id: `home-demo-${Date.now()}`,
       }),
     });
 
