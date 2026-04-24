@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { supabaseAdmin } from '../config/supabase';
-import { publicRateLimiter, isWhitelistedSync } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -74,48 +73,14 @@ router.get('/check', publicRateLimiter, asyncHandler(async (req, res) => {
 }));
 
 // POST /api/home/tryon/generate - Generate try-on for home demo
-// NOTA: Sin rateLimiter aquí - solo verificamos trial limit para IPs no-whitelistadas
+// NOTA: Sin restricciones para testing - cualquier persona puede probar
 router.post('/generate', asyncHandler(async (req, res) => {
-  // Prioridad: cf-connecting-ip (Cloudflare) > x-forwarded-for > req.ip (Docker internal)
-  const realIp = req.headers['cf-connecting-ip']?.toString().split(',')[0]?.trim()
-    || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim()
-    || req.ip
-    || 'unknown';
+  // NO verificamos IP ni trial limit - solo procesamos la generación
   const userAgent = req.headers['user-agent'] || '';
   const { productId, selfieBase64 } = req.body;
 
-  // DEBUG: Log all IPs for troubleshooting
-  console.log(`[HomeTryon] ===== DEBUG IP =====`);
-  console.log(`[HomeTryon] cf-connecting-ip: ${req.headers['cf-connecting-ip']}`);
-  console.log(`[HomeTryon] x-forwarded-for: ${req.headers['x-forwarded-for']}`);
-  console.log(`[HomeTryon] req.ip: ${req.ip}`);
-  console.log(`[HomeTryon] realIp (used): ${realIp}`);
-  console.log(`[HomeTryon] isWhitelistedSync(${realIp}): ${isWhitelistedSync(realIp)}`);
-  console.log(`[HomeTryon] ==========================`);
-
-  // Check if IP is whitelisted - use the real IP
-  const isTestIp = isWhitelistedSync(realIp);
-  console.log(`[HomeTryon] isTestIp for ${realIp}: ${isTestIp}`);
-
   if (!productId || !selfieBase64) {
     return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'productId and selfieBase64 are required' });
-  }
-
-  // Check if IP already trialed (skip for whitelisted IPs)
-  if (!isTestIp) {
-    const { data: existingTrial } = await supabaseAdmin
-      .from('home_tryon_trials')
-      .select('id')
-      .eq('ip_address', realIp)
-      .maybeSingle();
-
-    if (existingTrial) {
-      return res.status(429).json({
-        error: 'TRIAL_LIMIT_EXCEEDED',
-        message: 'Ya usaste tu prueba gratuita',
-        redirectTo: '/planes'
-      });
-    }
   }
 
   // Validate product is one of our home tryon products
@@ -144,23 +109,8 @@ router.post('/generate', asyncHandler(async (req, res) => {
     return res.status(404).json({ error: 'Product not found' });
   }
 
-  // Record this trial BEFORE generation (skip for whitelisted test IPs)
-  if (!isTestIp) {
-    const { error: insertError } = await supabaseAdmin
-      .from('home_tryon_trials')
-      .insert({
-        ip_address: realIp,
-        product_id: productId,
-        brand_id: brand.id,
-        user_agent: userAgent,
-      });
-
-    if (insertError) {
-      console.error('[HomeTryon] Error recording trial:', insertError);
-    }
-  } else {
-    console.log(`[HomeTryon] Skipping trial recording for whitelisted test IP: ${realIp}`);
-  }
+  // NOTE: Trial recording disabled for easier testing
+  // TODO: Re-enable after testing is complete
 
   // Call the existing pruebalo controller to generate
   // We re-use the existing n8n integration
