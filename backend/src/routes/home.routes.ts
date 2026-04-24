@@ -167,12 +167,12 @@ router.post('/generate', asyncHandler(async (req, res) => {
       throw new Error('N8N returned empty response');
     }
 
-    const result = JSON.parse(text) as { result_image_url?: string; image_url?: string; generation_id?: string };
+    const result = JSON.parse(text) as { result_image_url?: string; image_url?: string; imageUrl?: string; generation_id?: string };
     console.log(`[HomeTryon] parsed result:`, result);
 
     return res.json({
       success: true,
-      resultImageUrl: result.result_image_url || result.image_url,
+      resultImageUrl: result.result_image_url || result.image_url || result.imageUrl,
       generationId: result.generation_id,
     });
   } catch (error: any) {
