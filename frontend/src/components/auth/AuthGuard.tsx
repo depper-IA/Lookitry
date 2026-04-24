@@ -8,7 +8,7 @@ interface AuthGuardProps {
   redirectTo?: string;
 }
 
-const PUBLIC_ROUTES = ['/', '/login', '/register', '/checkout', '/trial-checkout', '/pago-exitoso', '/onboarding-post-pago'];
+const PUBLIC_ROUTES = ['/', '/login', '/checkout', '/trial-checkout', '/pago-exitoso', '/onboarding-post-pago'];
 
 export default function AuthGuard({ children, redirectTo = '/dashboard' }: AuthGuardProps) {
   const router = useRouter();

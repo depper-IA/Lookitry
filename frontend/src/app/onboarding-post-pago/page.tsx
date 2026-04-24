@@ -182,6 +182,11 @@ function OnboardingContent() {
       // Generate slug based on result
       const baseSlug = slugify(brandName);
       setSlug(baseSlug); // Siempre mostrar el slug base primero
+
+      // Auto-generar sufijo si el nombre completo ya existe
+      if (data.brandExists && data.slugExists) {
+        autoGenerateSuffix(brandName, baseSlug);
+      }
     } catch (err: any) {
       console.error('Error verificando disponibilidad:', err);
       setSlugError(err.message || 'No se pudo verificar');
@@ -191,6 +196,33 @@ function OnboardingContent() {
       setCheckingAvailability(false);
     }
   }, []); // Empty deps - brandName is passed as parameter, not closure
+
+  // Auto-genera un sufijo único cuando el nombre ya está ocupado
+  const autoGenerateSuffix = async (brandName: string, baseSlug: string) => {
+    const suffixes = ['pro', 'studio', 'shop', 'store', 'online', 'boutique', 'moda', 'wear'];
+    // Barajar para no siempre empezar con el mismo
+    const shuffled = [...suffixes].sort(() => Math.random() - 0.5);
+
+    for (const suffix of shuffled) {
+      setForm(prev => ({ ...prev, slugSuffix: suffix }));
+      try {
+        const response = await fetch('/api/brands/check-availability', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brandName: `${brandName} ${suffix}` }),
+        });
+        const data = await response.json();
+        if (response.ok && !data.slugExists) {
+          return; // Encontramos uno disponible
+        }
+      } catch {
+        // Continuar con siguiente
+      }
+    }
+    // Si ninguno de los prefijados sirve, usar número aleatorio
+    const randomSuffix = Math.floor(100 + Math.random() * 900).toString();
+    setForm(prev => ({ ...prev, slugSuffix: randomSuffix }));
+  };
 
   const handleNameBlur = () => {
     if (form.name.trim().length >= 2) {
