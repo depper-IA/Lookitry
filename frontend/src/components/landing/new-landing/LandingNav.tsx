@@ -39,8 +39,8 @@ export default function LandingNav({
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
     // Fetch trial price AND TRM in parallel
     Promise.all([
-      fetch(`${apiUrl}/api/trial-campaign/active`).then(r => r.ok ? r.json() : null),
-      fetch(`${apiUrl}/api/payments/settings`).then(r => r.ok ? r.json() : null)
+      fetch(`${apiUrl}/api/trial/status`).then(r => r.ok ? r.json() : null),
+      fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null)
     ])
       .then(([trialData, paySettings]) => {
         if (trialData?.priceCOP && Number(trialData.priceCOP) > 0) {
