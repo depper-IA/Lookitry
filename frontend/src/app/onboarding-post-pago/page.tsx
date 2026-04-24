@@ -44,6 +44,8 @@ function OnboardingContent() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptDataAuth, setAcceptDataAuth] = useState(false);
   const [resolvedRef, setResolvedRef] = useState(refFromQuery);
   const [confirmingPayment, setConfirmingPayment] = useState(paymentMethod === 'paypal' && Boolean(paypalOrderId));
   const [paymentChecked, setPaymentChecked] = useState(paymentMethod !== 'paypal' || !paypalOrderId);
@@ -314,6 +316,15 @@ function OnboardingContent() {
       return;
     }
 
+    if (!acceptTerms) {
+      setError('Debes aceptar los Términos y Condiciones');
+      return;
+    }
+    if (!acceptDataAuth) {
+      setError('Debes autorizar el tratamiento de tus datos personales');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -435,7 +446,8 @@ function OnboardingContent() {
                   onBlur={handleNameBlur}
                   required
                   placeholder="Ej: Velvet Studio"
-                  className="w-full rounded-xl border theme-border theme-bg-input theme-text placeholder-[var(--text-muted)] outline-none transition-all shadow-inner focus:border-[var(--accent)]"
+                  className="w-full rounded-2xl border-2 border-[#222] bg-[#0a0a0a] text-[#fff] placeholder-[#666] px-5 py-4 outline-none transition-all duration-300 focus:border-[#FF5C3A] focus:shadow-[0_0_20px_rgba(255,92,58,0.15)] placeholder:italic"
+                  style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}
                 />
               </div>
 
@@ -520,7 +532,38 @@ function OnboardingContent() {
                       placeholder="Mínimo 8 caracteres"
                       className="w-full rounded-xl border theme-border theme-bg-input theme-text placeholder-[var(--text-muted)] px-4 py-3 pr-10 text-sm outline-none transition-all shadow-inner focus:border-[var(--accent)]"
                     />
-                    <button
+{/* Terms */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="acceptTerms"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                  />
+                  <label htmlFor="acceptTerms" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                    Acepto los{' '}
+                    <Link href="/terminos" target="_blank" className="text-[#FF5C3A] hover:underline">Términos y Condiciones</Link>
+                    {' '}del servicio.
+                  </label>
+                </div>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="acceptDataAuth"
+                    checked={acceptDataAuth}
+                    onChange={(e) => setAcceptDataAuth(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                  />
+                  <label htmlFor="acceptDataAuth" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                    Autorizo el tratamiento de mis datos de acuerdo a la{' '}
+                    <Link href="/politicas-privacidad" target="_blank" className="text-[#FF5C3A] hover:underline">Política de Privacidad</Link>.
+                  </label>
+                </div>
+              </div>
+
+              <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-muted transition-colors hover:theme-text"

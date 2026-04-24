@@ -205,7 +205,7 @@ export async function findOrCreateBrandFromGoogle(
     isNewBrand: true,
     accountLinked: false,
     pendingRegistrationId: pendingReg.id,
-    redirectTo: '/checkout', // NUEVO: usuario nuevo va directo al funnel de pago
+    redirectTo: '/trial-checkout', // NUEVO: usuario nuevo va al flujo trial
   };
 }
 

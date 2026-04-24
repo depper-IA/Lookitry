@@ -13,7 +13,11 @@ export function RouteChrome() {
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/embed/') ||
     pathname.startsWith('/sitio/') ||
-    pathname.startsWith('/marca/')
+    pathname.startsWith('/marca/') ||
+    pathname.startsWith('/trial-checkout') ||
+    pathname.startsWith('/onboarding-post-pago') ||
+    pathname.startsWith('/pago-exitoso') ||
+    pathname.startsWith('/checkout')
   ) {
     return null;
   }
