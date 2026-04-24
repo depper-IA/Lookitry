@@ -633,37 +633,6 @@ function OnboardingContent() {
                 </div>
               </div>
 
-              {/* Terms */}
-              <div className="space-y-3 pt-2 animate-in fade-in slide-in-from-bottom-2 duration-300 delay-200">
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="acceptTerms"
-                    checked={acceptTerms}
-                    onChange={(e) => setAcceptTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer transition-transform hover:scale-105"
-                  />
-                  <label htmlFor="acceptTerms" className="text-xs text-[#999] leading-relaxed cursor-pointer hover:text-[#bbb] transition-colors">
-                    Acepto los{' '}
-                    <Link href="/terminos" target="_blank" className="text-[#FF5C3A] hover:underline">Términos y Condiciones</Link>
-                    {' '}del servicio.
-                  </label>
-                </div>
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="acceptDataAuth"
-                    checked={acceptDataAuth}
-                    onChange={(e) => setAcceptDataAuth(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer transition-transform hover:scale-105"
-                  />
-                  <label htmlFor="acceptDataAuth" className="text-xs text-[#999] leading-relaxed cursor-pointer hover:text-[#bbb] transition-colors">
-                    Autorizo el tratamiento de mis datos de acuerdo a la{' '}
-                    <Link href="/politicas-privacidad" target="_blank" className="text-[#FF5C3A] hover:underline">Política de Privacidad</Link>.
-                  </label>
-                </div>
-              </div>
-
               {/* Error general */}
               {error && (
                 <div className="bg-red-500/5 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -699,12 +668,43 @@ function OnboardingContent() {
                   )}
                 </div>
               </button>
+
+              {/* Legal checkboxes - AFTER submit button */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="acceptTerms"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                    required
+                  />
+                  <label htmlFor="acceptTerms" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                    Acepto los{' '}
+                    <Link href="/terminos" target="_blank" className="text-[#FF5C3A] hover:underline">Términos y Condiciones</Link>
+                    {' '}del servicio.
+                  </label>
+                </div>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="acceptDataAuth"
+                    checked={acceptDataAuth}
+                    onChange={(e) => setAcceptDataAuth(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                    required
+                  />
+                  <label htmlFor="acceptDataAuth" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                    Autorizo el tratamiento de mis datos de acuerdo a la{' '}
+                    <Link href="/politicas-privacidad" target="_blank" className="text-[#FF5C3A] hover:underline">Política de Privacidad</Link>.
+                  </label>
+                </div>
+              </div>
             </form>
           )}
 
-          <p className="text-center text-xs theme-text-muted mt-8 animate-in fade-in duration-500 delay-300">
-            Al registrarte, aceptas nuestros Términos y Condiciones
-          </p>
+
         </div>
       </div>
     </div>
