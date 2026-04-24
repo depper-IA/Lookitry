@@ -79,12 +79,15 @@ router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
   const userAgent = req.headers['user-agent'] || '';
   const { productId, selfieBase64 } = req.body;
 
-  if (!productId || !selfieBase64) {
+  // Check if IP is whitelisted (use real IP from x-forwarded-for, not req.ip which is Docker internal)
+  const isTestIp = isWhitelistedSync(ip);
+
+if (!productId || !selfieBase64) {
     return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'productId and selfieBase64 are required' });
   }
 
   // Check if IP already trialed (skip for whitelisted IPs)
-  const isTestIp = isWhitelistedSync(ip);
+  // isTestIp was already declared above (line 83)
   if (!isTestIp) {
     const { data: existingTrial } = await supabaseAdmin
       .from('home_tryon_trials')
