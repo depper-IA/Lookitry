@@ -27,6 +27,12 @@
 
 **Nota**: Sammy (agente IA) no está desplegado en VPS.
 
+## Deployment
+
+- **Deploy VPS**: Usar siempre `python scripts/_deploy_now.py` (NO GitHub Actions)
+- **GitHub Actions**: Solo para sync del plugin WordPress (`sync-plugin.yml`)
+- **Workflows activos**: `.github/workflows/sync-plugin.yml` (WordPress only)
+
 ## Recientes
 
 - **2026-04-22**: Auditoría de login completada
