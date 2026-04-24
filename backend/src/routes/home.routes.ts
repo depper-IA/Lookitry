@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { supabaseAdmin } from '../config/supabase';
-import { publicRateLimiter } from '../middleware/rateLimiter';
+import { publicRateLimiter, isWhitelistedSync } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -83,19 +83,22 @@ router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'productId and selfieBase64 are required' });
   }
 
-  // Check if IP already trialed
-  const { data: existingTrial } = await supabaseAdmin
-    .from('home_tryon_trials')
-    .select('id')
-    .eq('ip_address', ip)
-    .maybeSingle();
+  // Check if IP already trialed (skip for whitelisted IPs)
+  const isTestIp = isWhitelistedSync(ip);
+  if (!isTestIp) {
+    const { data: existingTrial } = await supabaseAdmin
+      .from('home_tryon_trials')
+      .select('id')
+      .eq('ip_address', ip)
+      .maybeSingle();
 
-  if (existingTrial) {
-    return res.status(429).json({
-      error: 'TRIAL_LIMIT_EXCEEDED',
-      message: 'Ya usaste tu prueba gratuita',
-      redirectTo: '/planes'
-    });
+    if (existingTrial) {
+      return res.status(429).json({
+        error: 'TRIAL_LIMIT_EXCEEDED',
+        message: 'Ya usaste tu prueba gratuita',
+        redirectTo: '/planes'
+      });
+    }
   }
 
   // Validate product is one of our home tryon products
@@ -124,18 +127,22 @@ router.post('/generate', publicRateLimiter, asyncHandler(async (req, res) => {
     return res.status(404).json({ error: 'Product not found' });
   }
 
-  // Record this trial BEFORE generation (to prevent race conditions)
-  const { error: insertError } = await supabaseAdmin
-    .from('home_tryon_trials')
-    .insert({
-      ip_address: ip,
-      product_id: productId,
-      brand_id: brand.id,
-      user_agent: userAgent,
-    });
+  // Record this trial BEFORE generation (skip for whitelisted test IPs)
+  if (!isTestIp) {
+    const { error: insertError } = await supabaseAdmin
+      .from('home_tryon_trials')
+      .insert({
+        ip_address: ip,
+        product_id: productId,
+        brand_id: brand.id,
+        user_agent: userAgent,
+      });
 
-  if (insertError) {
-    console.error('[HomeTryon] Error recording trial:', insertError);
+    if (insertError) {
+      console.error('[HomeTryon] Error recording trial:', insertError);
+    }
+  } else {
+    console.log(`[HomeTryon] Skipping trial recording for whitelisted test IP: ${ip}`);
   }
 
   // Call the existing pruebalo controller to generate
