@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { supabaseAdmin } from '../config/supabase';
-import { uploadService } from '../services/upload.service';
+import { UploadService } from '../services/upload.service';
 
 const router = Router();
 
@@ -114,6 +114,7 @@ router.post('/generate', asyncHandler(async (req, res) => {
 
   // 1. Convert base64 to buffer and upload to MinIO
   let selfieUrl: string;
+  const uploadService = new UploadService();
   try {
     // Remove data:image/...;base64, prefix if present
     const base64Data = selfieBase64.replace(/^data:image\/\w+;base64,/, '');
