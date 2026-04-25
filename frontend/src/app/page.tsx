@@ -39,7 +39,7 @@ export default async function HomePage() {
   let dynamicReviews: any[] = [];
   try {
     const res = await fetch(`${API_URL}/api/reviews/public`, { 
-        next: { revalidate: 3600 } 
+        next: { revalidate: 1800 } 
     });
     if (res.ok) {
         const data = await res.json();
