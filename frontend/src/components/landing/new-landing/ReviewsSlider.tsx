@@ -150,7 +150,7 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
                                   className={
                                     review.reviewer_name?.trim() === 'Wilkie Devs' || 
                                     review.avatar_url?.includes('wilkiedevs.com')
-                                      ? 'h-8 sm:h-9 w-auto object-contain shrink-0 bg-[#0a0a0a] rounded-md p-1.5 shadow-sm'
+                                      ? 'h-8 sm:h-9 w-auto object-contain shrink-0 bg-transparent rounded-md p-1.5 shadow-sm'
                                       : 'h-9 w-9 sm:h-10 sm:w-10 rounded-full object-contain shrink-0 bg-white'
                                   }
                                   loading="lazy"

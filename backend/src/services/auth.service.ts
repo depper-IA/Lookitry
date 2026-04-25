@@ -585,30 +585,63 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
   }
 
   async verifyEmail(token: string): Promise<{ ok: boolean; message: string; brandId?: string }> {
+    console.log('[verifyEmail] Token recibido:', token.substring(0, 20) + '...');
+
     const { data: brand } = await supabaseAdmin
       .from('brands')
-      .select('id, email_verified')
+      .select('id, email_verified, email')
       .eq('email_verification_token', token)
       .single();
+
+    console.log('[verifyEmail] Brand encontrado:', brand ? { id: brand.id, email: brand.email, email_verified: brand.email_verified } : 'NO');
 
     if (!brand) {
       return { ok: false, message: 'Token inválido o expirado' };
     }
 
     if (brand.email_verified) {
+      console.log('[verifyEmail] Brand ya estaba verificado:', brand.id);
       return { ok: true, message: 'El correo ya fue verificado anteriormente' };
     }
 
-    await supabaseAdmin
+    console.log('[verifyEmail] Verificando brand:', brand.id);
+    const { data: updateResult, error: updateError } = await supabaseAdmin
       .from('brands')
       .update({ email_verified: true, email_verification_token: null, email_verified_at: new Date().toISOString() })
-      .eq('id', brand.id);
+      .eq('id', brand.id)
+      .select('id, email_verified')
+      .single();
+
+    console.log('[verifyEmail] Resultado de update:', updateResult, 'Error:', updateError);
+
+    if (updateError) {
+      console.error('[verifyEmail] Error en update:', updateError);
+      return { ok: false, message: 'Error al actualizar verificación' };
+    }
+
+    // Importar dinámicamente para evitar circular dependency
+    import('../utils/brandConfigCache').then(({ invalidateBrandConfigCache }) => {
+      // Necesitamos el slug del brand para invalidar el cache
+      supabaseAdmin
+        .from('brands')
+        .select('slug')
+        .eq('id', brand.id)
+        .single()
+        .then(({ data: brandData }) => {
+          if (brandData?.slug) {
+            console.log('[verifyEmail] Invalidando cache para slug:', brandData.slug);
+            invalidateBrandConfigCache(brandData.slug);
+          }
+        })
+        .catch(err => console.error('[verifyEmail] Error al obtener slug para invalidate:', err));
+    }).catch(err => console.error('[verifyEmail] Error importando brandConfigCache:', err));
 
     const verifiedBrand = await this.getBrandById(brand.id);
     if (verifiedBrand?.trial_end_date) {
       await recordTrialEvent(brand.id, 'trial_email_verified').catch(() => {});
     }
 
+    console.log('[verifyEmail] Verificación completada para brand:', brand.id);
     return { ok: true, message: 'Correo verificado correctamente', brandId: brand.id };
   }
 
