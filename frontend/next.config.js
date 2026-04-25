@@ -5,6 +5,10 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   eslint: { ignoreDuringBuilds: false },
+  // Optimización: no transpilar para older browsers (ES6+ para navegadores modernos)
+  experimental: {
+    optimizePackageImports: ['framer-motion', 'lucide-react'],
+  },
   async redirects() {
     return [
       // Redirecciones de páginas 404
