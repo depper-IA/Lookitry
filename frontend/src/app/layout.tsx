@@ -98,15 +98,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: BASE_URL,
-    languages: {
-      'es': BASE_URL,
-      'es-CO': BASE_URL,
-      'es-MX': BASE_URL,
-      'es-AR': BASE_URL,
-      'es-CL': BASE_URL,
-      'es-PE': BASE_URL,
-      'es-VE': BASE_URL,
-    },
   },
 };
 
