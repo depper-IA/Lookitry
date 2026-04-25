@@ -6,14 +6,25 @@ import { Store, Zap, MessageCircle, Check } from 'lucide-react';
 interface LandingStatsData {
   total_brands: number;
   total_generations: number;
-  satisfaction_rating: number;
+  satisfaction_rating: number | null;
 }
 
-// Round up to nearest multiple of 5, then add + prefix
+// Format brands with + prefix (real data from DB)
 function formatBrands(raw: number): string {
-  const adjusted = raw + 15;
-  const rounded = Math.ceil(adjusted / 5) * 5;
-  return `+${rounded}`;
+  if (raw <= 0) return '+0';
+  return `+${raw}`;
+}
+
+// Format generations: real DB data + 1000 offset, then format k/M
+function formatGenerations(raw: number): string {
+  const adjusted = raw + 1000;
+  if (adjusted >= 1000000) {
+    return `${(adjusted / 1000000).toFixed(1)}M`;
+  }
+  if (adjusted >= 1000) {
+    return `${(adjusted / 1000).toFixed(0)}k`;
+  }
+  return adjusted.toString();
 }
 
 export default function LandingStats() {
@@ -29,7 +40,6 @@ export default function LandingStats() {
         setStats(data);
       } catch (error) {
         console.error('Error fetching landing stats:', error);
-        // Don't set fallback hardcoded stats - show nothing or retry later
         setStats(null);
       } finally {
         setLoading(false);
@@ -39,31 +49,31 @@ export default function LandingStats() {
   }, []);
 
   const displayStats = stats ? [
-    { 
-      val: formatBrands(stats.total_brands), 
-      label: 'Marcas activas', 
-      icon: <Store className="text-[#FF5C3A]" aria-hidden="true" /> 
+    {
+      val: formatBrands(stats.total_brands),
+      label: 'Marcas activas',
+      icon: <Store className="text-[#FF5C3A]" aria-hidden="true" />
     },
     {
-      val: formatNumber(stats.total_generations + 3500),
+      val: formatGenerations(stats.total_generations),
       label: 'Generaciones IA',
       icon: <Zap className="text-[#FF5C3A]" aria-hidden="true" />
     },
-    { 
-      val: '24/7', 
-      label: 'Soporte VIP', 
-      icon: <MessageCircle className="text-[#FF5C3A]" aria-hidden="true" /> 
+    {
+      val: '24/7',
+      label: 'Soporte VIP',
+      icon: <MessageCircle className="text-[#FF5C3A]" aria-hidden="true" />
     },
-    { 
-      val: stats.satisfaction_rating.toFixed(1), 
-      label: 'satisfaccion', 
-      icon: <Check className="text-[#FF5C3A]" aria-hidden="true" /> 
+    {
+      val: stats.satisfaction_rating ? stats.satisfaction_rating.toFixed(1) : 'N/A',
+      label: 'satisfaccion',
+      icon: <Check className="text-[#FF5C3A]" aria-hidden="true" />
     },
   ] : [
-    { val: '+50', label: 'Marcas activas', icon: <Store className="text-[#FF5C3A]" aria-hidden="true" /> },
-    { val: '400k', label: 'Generaciones IA', icon: <Zap className="text-[#FF5C3A]" aria-hidden="true" /> },
+    { val: '+0', label: 'Marcas activas', icon: <Store className="text-[#FF5C3A]" aria-hidden="true" /> },
+    { val: '1k', label: 'Generaciones IA', icon: <Zap className="text-[#FF5C3A]" aria-hidden="true" /> },
     { val: '24/7', label: 'Soporte VIP', icon: <MessageCircle className="text-[#FF5C3A]" aria-hidden="true" /> },
-    { val: '4.9', label: 'satisfaccion', icon: <Check className="text-[#FF5C3A]" aria-hidden="true" /> },
+    { val: 'N/A', label: 'satisfaccion', icon: <Check className="text-[#FF5C3A]" aria-hidden="true" /> },
   ];
 
   return (
@@ -83,14 +93,4 @@ export default function LandingStats() {
       </div>
     </section>
   );
-}
-
-function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1)}M`;
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(0)}k`;
-  }
-  return num.toString();
 }

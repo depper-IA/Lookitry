@@ -1,26 +1,38 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase';
+import { redis } from '../config/redis';
+
+const CACHE_KEY = 'landing_stats';
+const CACHE_TTL = 15 * 60; // 15 minutes
 
 const router = Router();
 
 router.get('/', async (_req, res) => {
   try {
-    // Count ALL brands (respecting archiving? No, usually landing stats show the total growth)
-    // But maybe we should only count non-archived ones for a "current" look.
-    // However, the landing usually highlights "total brands we helped".
+    // Try cache first
+    if (redis) {
+      const cached = await redis.get(CACHE_KEY);
+      if (cached) {
+        return res.status(200).json(JSON.parse(cached));
+      }
+    }
+
+    // Count brands with ACTIVE subscription status only
     const { count: brandsCount, error: brandsError } = await supabaseAdmin
       .from('brands')
-      .select('id', { count: 'exact', head: true });
+      .select('id', { count: 'exact', head: true })
+      .in('subscription_status', ['active', 'expiring_soon', 'trial']);
 
     if (brandsError) {
       console.error('[LandingStats] Brands Error:', brandsError);
       throw brandsError;
     }
 
-    // Count total generations
+    // Count successful generations only
     const { count: generationsCount, error: generationsError } = await supabaseAdmin
       .from('generations')
-      .select('id', { count: 'exact', head: true });
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'SUCCESS');
 
     if (generationsError) {
       console.error('[LandingStats] Generations Error:', generationsError);
@@ -39,26 +51,35 @@ router.get('/', async (_req, res) => {
     }
 
     let avgRating = 0;
+    let reviewsCount = 0;
     if (reviewsData && reviewsData.length > 0) {
       const sum = reviewsData.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
       avgRating = sum / reviewsData.length;
+      reviewsCount = reviewsData.length;
     }
 
     // Round to 1 decimal
     const satisfaction = Math.round(avgRating * 10) / 10;
 
-    return res.status(200).json({
-      total_brands: (brandsCount ?? 0) + 120, // Offset for marketing if needed, or just brandsCount
-      total_generations: (generationsCount ?? 0) + 15000, // Offset
-      satisfaction_rating: satisfaction || 4.8, // Fallback to 4.8 if no reviews
-      reviews_count: reviewsData?.length ?? 0,
-    });
+    const result = {
+      total_brands: brandsCount ?? 0,
+      total_generations: generationsCount ?? 0,
+      satisfaction_rating: satisfaction || null, // null if no reviews (no fake fallback)
+      reviews_count: reviewsCount,
+    };
+
+    // Cache result
+    if (redis) {
+      await redis.setEx(CACHE_KEY, CACHE_TTL, JSON.stringify(result));
+    }
+
+    return res.status(200).json(result);
   } catch (error: any) {
     console.error('CRITICAL: Error fetching landing stats:', error);
-    return res.status(500).json({ 
-      error: 'INTERNAL_ERROR', 
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
       message: 'Error al obtener las estadísticas.',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
