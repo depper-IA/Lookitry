@@ -336,11 +336,13 @@ export function TryOnWidget({
 
   useEffect(() => {
     if (!isEmbed) return;
+    const container = document.getElementById('tryon-widget-container');
+    if (!container) return;
     const notifyHeight = () =>
-      window.parent?.postMessage({ type: 'TRYON_RESIZE', data: { height: document.documentElement.scrollHeight } }, EMBED_ORIGIN);
+      window.parent?.postMessage({ type: 'TRYON_RESIZE', data: { height: container.scrollHeight } }, EMBED_ORIGIN);
     notifyHeight();
     const observer = new ResizeObserver(notifyHeight);
-    observer.observe(document.body);
+    observer.observe(container);
     return () => observer.disconnect();
   }, [isEmbed, EMBED_ORIGIN]);
 
@@ -428,10 +430,10 @@ export function TryOnWidget({
   };
 
   return (
-    <>
+    <div id="tryon-widget-container">
       <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
       {renderTemplate()}
-    </>
+    </div>
   );
 }
 
