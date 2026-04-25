@@ -166,8 +166,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }}
           />
         )}
-        {/* Google Identity Services — afterInteractive funciona correctamente en App Router */}
-        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
+        {/* Google Identity Services — lazyOnload para no bloquear renderizado */}
+        <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" />
         <ThemeProvider>
           <Suspense fallback={null}>
             <Analytics />
