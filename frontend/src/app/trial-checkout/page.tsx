@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import Script from 'next/script';
 import { Mail, ChevronLeft, ChevronRight, CreditCard, LayoutPanelLeft, AlertCircle } from 'lucide-react';
 import { api } from '@/services/api';
 import { authService } from '@/services/auth.service';
@@ -369,6 +370,8 @@ export default function TrialCheckoutPage() {
 
   return (
     <main className="min-h-screen bg-[#030303] text-white selection:bg-[#FF5C3A]/30">
+      {/* Google Identity Services — solo en páginas de auth */}
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       <nav className="border-b border-white/5 bg-black/50 backdrop-blur-xl px-4 md:px-8 h-16 flex items-center justify-between sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-2.5">
           <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
