@@ -1,5 +1,28 @@
 # CHANGELOG — Lookitry
 
+## 24 de Abril 2026 — Fix Verificación de Email + Logging
+
+### Bug Corregido
+
+**Problema:** Usuarios que confirmaban su email seguían viendo el aviso "Verificación pendiente" en el dashboard, incluso cuando la confirmación aparentemente funcionaba.
+
+**Causa raíz:** 
+1. No había logs para diagnosticar qué pasaba en `verifyEmail()`
+2. El cache de brand config (Redis) no se invalidaba tras la verificación, por lo que seguía sirviendo datos obsoletos con `email_verified: false`
+
+### Solución Implementada
+
+| Cambio | Descripción |
+|--------|-------------|
+| Logging extensivo | Console logs en cada paso de `verifyEmail()` para facilitar debugging futuro |
+| Manejo de errores | El update ahora verifica si hubo error y retorna mensaje apropiado |
+| Invalidación de cache | `invalidateBrandConfigCache()` se llama tras verificar exitosamente |
+
+**Archivos modificados:**
+- `backend/src/services/auth.service.ts` — método `verifyEmail()` reescrito con logging y cache invalidation
+
+---
+
 ## 24 de Abril 2026 — Mejoras Trial Widget + Premium Modal
 
 ### Cambios Implementados
