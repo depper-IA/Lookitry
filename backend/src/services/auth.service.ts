@@ -619,22 +619,8 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
       return { ok: false, message: 'Error al actualizar verificación' };
     }
 
-    // Importar dinámicamente para evitar circular dependency
-    import('../utils/brandConfigCache').then(({ invalidateBrandConfigCache }) => {
-      // Necesitamos el slug del brand para invalidar el cache
-      supabaseAdmin
-        .from('brands')
-        .select('slug')
-        .eq('id', brand.id)
-        .single()
-        .then(({ data: brandData }) => {
-          if (brandData?.slug) {
-            console.log('[verifyEmail] Invalidando cache para slug:', brandData.slug);
-            invalidateBrandConfigCache(brandData.slug);
-          }
-        })
-        .catch((err: unknown) => console.error('[verifyEmail] Error al obtener slug para invalidate:', err));
-    }).catch((err: unknown) => console.error('[verifyEmail] Error importando brandConfigCache:', err));
+    // Invalida cache de brand config (async, no bloquea respuesta)
+    this.invalidateBrandCacheAsync(brand.id).catch((err: unknown) => console.error('[verifyEmail] Error invalidating cache:', err));
 
     const verifiedBrand = await this.getBrandById(brand.id);
     if (verifiedBrand?.trial_end_date) {
@@ -643,6 +629,23 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
     console.log('[verifyEmail] Verificación completada para brand:', brand.id);
     return { ok: true, message: 'Correo verificado correctamente', brandId: brand.id };
+  }
+
+  private async invalidateBrandCacheAsync(brandId: string): Promise<void> {
+    try {
+      const { invalidateBrandConfigCache } = await import('../utils/brandConfigCache');
+      const { data: brandData } = await supabaseAdmin
+        .from('brands')
+        .select('slug')
+        .eq('id', brandId)
+        .single();
+      if (brandData?.slug) {
+        console.log('[verifyEmail] Invalidando cache para slug:', brandData.slug);
+        invalidateBrandConfigCache(brandData.slug);
+      }
+    } catch (err) {
+      console.error('[verifyEmail] Error invalidating brand config cache:', err);
+    }
   }
 
   async getBrandById(brandId: string): Promise<Brand | null> {
