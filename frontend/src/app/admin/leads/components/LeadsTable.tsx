@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { Lead, LeadStatus, STATUS_COLORS, cleanLeadName } from '../types';
 import { IconStar, IconEye, IconEdit, IconTrash } from './LeadIcons';
 
@@ -22,11 +23,18 @@ export default function LeadsTable({
 }: LeadsTableProps) {
   return (
     <tbody>
-      {leads.map((lead) => (
-        <tr
+      {leads.map((lead, index) => (
+        <motion.tr
           key={lead.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.03 }}
+          whileHover={{
+            y: -2,
+            boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)",
+          }}
           style={{ borderBottom: '1px solid var(--border-color)' }}
-          className="hover:bg-[var(--bg-hover)] transition-colors"
+          className="transition-all cursor-pointer"
         >
           <td className="px-6 py-4">
             <div>
@@ -56,11 +64,12 @@ export default function LeadsTable({
             </div>
           </td>
           <td className="px-6 py-4">
-            <select
+            <motion.select
               value={lead.status}
               onChange={(e) => onStatusChange(lead.id, e.target.value as LeadStatus)}
               disabled={actionLoading === lead.id}
-              className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-base)] px-2 py-1.5 text-xs font-medium outline-none"
+              whileFocus={{ scale: 1.05, borderColor: "#FF5C3A" }}
+              className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-base)] px-2 py-1.5 text-xs font-medium outline-none transition-all"
               style={{ color: STATUS_COLORS[lead.status], backgroundColor: `${STATUS_COLORS[lead.status]}20` }}
             >
               <option value="new">Nuevo</option>
@@ -69,38 +78,44 @@ export default function LeadsTable({
               <option value="interested">Interesado</option>
               <option value="not_interested">No interesado</option>
               <option value="client">Cliente</option>
-            </select>
+            </motion.select>
           </td>
           <td className="px-6 py-4">
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{lead.source}</span>
           </td>
           <td className="px-6 py-4">
             <div className="flex items-center gap-2">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => onViewDetail(lead)}
                 className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
                 title="Ver detalle"
               >
                 <IconEye />
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => onEdit(lead)}
                 className="p-2 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
                 title="Editar"
               >
                 <IconEdit />
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1, backgroundColor: 'rgba(239,68,68,0.1)' }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => onDelete(lead.id)}
                 disabled={actionLoading === lead.id}
-                className="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors disabled:opacity-50"
+                className="p-2 rounded-lg text-red-400 transition-colors disabled:opacity-50"
                 title="Eliminar"
               >
                 <IconTrash />
-              </button>
+              </motion.button>
             </div>
           </td>
-        </tr>
+        </motion.tr>
       ))}
     </tbody>
   );

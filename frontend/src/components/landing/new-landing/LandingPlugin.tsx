@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { Zap, RefreshCw, Settings, Download } from 'lucide-react';
 
 export default function LandingPlugin() {
@@ -42,13 +43,21 @@ export default function LandingPlugin() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16 md:mb-20">
           {features.map((item, i) => (
-            <div key={i} className="group p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] bg-[#141414] dark:bg-[#fcfaf8] border border-white/5 dark:border-[#eeebe7] hover:bg-[#1a1a1a] dark:hover:bg-white hover:shadow-2xl hover:shadow-[#FF5C3A]/5 transition-all duration-500">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mb-4 sm:mb-6 group-hover:scale-110 group-hover:bg-[#FF5C3A] group-hover:text-white transition-all duration-500">
+            <motion.div
+              key={i}
+              whileHover={{ y: -10 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="group p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] bg-[#141414] dark:bg-[#fcfaf8] border border-white/5 dark:border-[#eeebe7] hover:bg-[#1a1a1a] dark:hover:bg-white hover:shadow-2xl hover:shadow-[#FF5C3A]/5 transition-all duration-500"
+            >
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mb-4 sm:mb-6 group-hover:bg-[#FF5C3A] group-hover:text-white transition-all duration-500"
+              >
                 {item.icon}
-              </div>
+              </motion.div>
               <h4 className="font-jakarta font-bold text-lg sm:text-xl text-white dark:text-black mb-3 sm:mb-4"> {item.title}</h4>
               <p className="text-white/60 dark:text-[#666] text-sm leading-relaxed font-dm-sans">{item.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
 

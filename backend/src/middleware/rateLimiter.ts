@@ -382,6 +382,13 @@ function createSlugRateLimiter() {
       return;
     }
 
+    // Bypass para IPs en whitelist (Travis, Sam, etc.)
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+    if (isWhitelistedSync(ip)) {
+      next();
+      return;
+    }
+
     const now = Date.now();
     const entry = slugStore.get(brandSlug);
 
