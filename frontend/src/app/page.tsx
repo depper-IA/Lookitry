@@ -1,10 +1,10 @@
 import dynamic from 'next/dynamic';
 import { getPricingConfig, type PricingConfig } from '@/lib/pricing';
 
-// Carga dinámica para evitar errores de GSAP/Window en el build de servidor
+// Carga dinámica para code splitting (SSR habilitado para buen FCP/LCP)
 const PremiumLanding = dynamic(
   () => import('@/components/landing/PremiumLanding'),
-  { ssr: false }
+  { ssr: true }
 );
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
