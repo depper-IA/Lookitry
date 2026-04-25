@@ -1,5 +1,52 @@
 # CHANGELOG — Lookitry
 
+## 25 de Abril 2026 — Optimización Performance (PageSpeed)
+
+### Diagnóstico PageSpeed
+
+| Métrica | Antes | Después | Objetivo |
+|---------|-------|--------|----------|
+| Performance Móvil | 37 | TBD | 80+ |
+| LCP | 6.5s | TBD | <2.5s |
+| TBT | 16.3s | TBD | <200ms |
+| JS No Utilizado | 234 KiB | TBD | <100 KiB |
+| First Load JS (/) | N/A | 85.2 kB | <100 kB |
+
+### Código Splitting Implementado
+
+**Archivo:** `frontend/src/components/landing/PremiumLanding.tsx`
+
+| Componente | Tipo de Carga | SSR |
+|------------|--------------|-----|
+| LandingNav | Immediate | Yes |
+| LandingHero | Immediate | Yes |
+| LandingStats | Immediate | Yes |
+| LandingSteps | Immediate | Yes |
+| LandingMiniLanding | Immediate | Yes |
+| LandingPlugin | Immediate | Yes |
+| PromoBanner | Immediate | Yes |
+| **LandingPricing** | **Lazy** | Yes |
+| **LandingPayments** | **Lazy** | Yes |
+| **ReviewsSlider** | **Lazy** | Yes |
+| **LandingFaq** | **Lazy** | Yes |
+| **LandingFooter** | **Lazy** | Yes |
+| **ActiveCouponsBanner** | **Lazy** | Yes |
+| **PromoModal** | **Lazy** | **No** (localStorage) |
+
+### Hallazgos
+
+- **GSAP:** NO está en uso — 0 KiB de impacto
+- **Framer Motion:** Imports CORRECTOS con desestructuración (tree-shaking OK)
+- **Problema Principal:** Todos los componentes se cargaban upfront
+
+### Pendiente
+
+- [ ] Verificar impacto real en PageSpeed post-deploy
+- [ ] Optimizar imágenes con next/image (lazy loading nativo)
+- [ ] Revisar Lighthouse opportunities para más mejoras
+
+---
+
 ## 25 de Abril 2026 — Animaciones Motion (Sprint 1-3)
 
 ### Overview
