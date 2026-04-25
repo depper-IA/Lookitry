@@ -310,15 +310,17 @@ export default function LandingHero() {
                 <div className="flex flex-col items-center gap-2">
                   <button
                     onClick={() => {
-                      if (hasUsedTrial) {
+                      // Priority 1: No selfie? → Go take selfie (even if trial exhausted)
+                      if (!selfie) {
+                        setStep('selfie');
+                      }
+                      // Priority 2: Has trialed? → Show upgrade modal
+                      else if (hasUsedTrial) {
                         setShowUpgradeModal(true);
-                      } else if (selectedProduct) {
-                        // If no selfie, go to selfie step. If selfie exists, go directly to generate
-                        if (!selfie) {
-                          setStep('selfie');
-                        } else {
-                          handleGenerate();
-                        }
+                      }
+                      // Priority 3: Has product + selfie? → Generate directly
+                      else if (selectedProduct) {
+                        handleGenerate();
                       }
                     }}
                     disabled={!hasUsedTrial && !selectedProduct}
