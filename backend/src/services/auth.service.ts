@@ -633,8 +633,8 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
             invalidateBrandConfigCache(brandData.slug);
           }
         })
-        .catch(err => console.error('[verifyEmail] Error al obtener slug para invalidate:', err));
-    }).catch(err => console.error('[verifyEmail] Error importando brandConfigCache:', err));
+        .catch((err: unknown) => console.error('[verifyEmail] Error al obtener slug para invalidate:', err));
+    }).catch((err: unknown) => console.error('[verifyEmail] Error importando brandConfigCache:', err));
 
     const verifiedBrand = await this.getBrandById(brand.id);
     if (verifiedBrand?.trial_end_date) {
