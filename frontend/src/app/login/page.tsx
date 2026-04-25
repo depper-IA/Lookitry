@@ -2,6 +2,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import AuthGuard from '@/components/auth/AuthGuard';
 import Image from 'next/image';
 import Link from 'next/link';
+import Script from 'next/script';
 
 export default function LoginPage({
   searchParams,
@@ -15,6 +16,8 @@ export default function LoginPage({
 
   return (
     <AuthGuard redirectTo="/dashboard">
+      {/* Google Identity Services — solo en páginas de auth */}
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       {/* Split screen layout - 60/40 premium split */}
       <div className="hidden lg:flex h-dvh overflow-hidden">
         {/* LEFT SIDE - Promotional Panel (60%) */}
