@@ -145,8 +145,14 @@ export default function LandingHero() {
 
   const handleBack = () => {
     setStep('select');
-    setSelfie(null);
-    setSelfiePreview(null);
+    // Keep selfie when going back to change product
+    setResultImage(null);
+    setError(null);
+  };
+
+  // Separate handler for changing product (preserves selfie)
+  const handleChangeProduct = () => {
+    setStep('select');
     setResultImage(null);
     setError(null);
   };
@@ -307,14 +313,19 @@ export default function LandingHero() {
                       if (hasUsedTrial) {
                         setShowUpgradeModal(true);
                       } else if (selectedProduct) {
-                        setStep('selfie');
+                        // If no selfie, go to selfie step. If selfie exists, go directly to generate
+                        if (!selfie) {
+                          setStep('selfie');
+                        } else {
+                          handleGenerate();
+                        }
                       }
                     }}
                     disabled={!hasUsedTrial && !selectedProduct}
                     className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Sparkles size={16} />
-                    Ver Probador IA
+                    {selfie ? 'Generar Prueba' : 'Ver Probador IA'}
                   </button>
                   {!hasUsedTrial && (
                     <span className="flex items-center gap-1 rounded-full bg-[#ABABAB]/10 px-3 py-1 text-[9px] font-semibold text-[#FFFFFF]">
@@ -378,7 +389,7 @@ export default function LandingHero() {
                       )}
                     </div>
                   </div>
-                  <button onClick={handleBack} className="rounded-full p-1.5 text-white/40 hover:bg-white/10 hover:text-white">
+                  <button onClick={handleChangeProduct} className="rounded-full p-1.5 text-white/40 hover:bg-white/10 hover:text-white">
                     <X size={14} />
                   </button>
                 </div>
