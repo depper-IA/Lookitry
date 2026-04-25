@@ -1,5 +1,102 @@
 # CHANGELOG — Lookitry
 
+## 25 de Abril 2026 — Animaciones Motion (Sprint 1-3)
+
+### Overview
+
+Implementación de animaciones premium en toda la plataforma usando Framer Motion. El sitio ahora se siente **vivo y dinámico** sin perder profesionalidad.
+
+### SPRINT 1: Landing Page
+
+| Componente | Animación Implementada |
+|------------|----------------------|
+| **LandingHero** | Parallax blobs con `useParallax()` hook, scroll reveal con stagger, micro-interacciones en botones (scale + shimmer) |
+| **LandingNav** | Mega menu con stagger items (50ms delay), magnetic CTA button, currency selector slide animation |
+| **LandingPricing** | Cards con scroll reveal + hover depth (`y: -8`), Pro badge bounce-in, feature list stagger |
+| **LandingFooter** | Social icons scale+rotate hover, footer links underline animation, logo glow hover |
+| **ReviewsSlider** | Cards con hover elevation, rating stars stagger, avatar pulse |
+| **LandingFaq** | Accordion expand/collapse con height animation, chevron rotate |
+| **LandingSteps** | Steps con stagger reveal, step numbers bounce-in, icons hover scale |
+| **LandingPlugin** | Browser mockup hover parallax, feature icons scale+rotate |
+
+### SPRINT 2: User Dashboard
+
+| Componente | Animación Implementada |
+|------------|----------------------|
+| **DashboardLayout** | Sidebar hover con `x: 5`, active nav indicator con `layoutId` (spring physics) |
+| **Dashboard Main** | Stats cards stagger reveal, activity timeline con pulse dots |
+| **ProductList** | Product cards hover depth (`y: -5`, shadow elevation), stagger grid |
+| **UsageStats** | Progress bars animados con `whileInView`, usage alert pulse glow cuando >80% |
+| **CheckoutStepper** | Step indicators con progress line animation, connector `scaleX` |
+| **PlanSelection** | Plan cards con selected glow, price count-up animation |
+| **UserDataStep** | Floating labels con CSS peer, input focus scale, error shake, success check |
+| **PaymentMethod** | Payment cards hover, loading spinner (rotate 360°), processing state |
+| **OrderSummary** | Items slide-in, price emphasis animation |
+
+### SPRINT 3: Admin Dashboard
+
+| Componente | Animación Implementada |
+|------------|----------------------|
+| **Admin Dashboard** | Metric cards stagger reveal, critical pulse indicator, count-up values |
+| **BrandTable** | Table rows stagger (30ms delay), hover `x: 3`, status badges bounce-in |
+| **BrandDetailsModal** | Modal entry con spring physics (`scale: 0.9→1`), backdrop fade |
+| **Admin Forms** | Input focus scale, toggle slides, save button loading states |
+| **Leads** | Lead cards hover elevation, status filter pills, outreach ripple |
+| **AdminNotifications** | Slide-in/out with AnimatePresence, dismiss animation |
+| **Email Campaigns** | Campaign cards hover, stats pulse |
+
+### Global CSS Improvements
+
+| Mejora | Descripción |
+|-------|-------------|
+| `prefers-reduced-motion` | Media query que desactiva todas las animaciones para usuarios con preferencia de movimiento reducido |
+| Focus ring premium | `outline: 2px solid #FF5C3A` + `box-shadow: 0 0 0 6px rgba(255,92,58,0.2)` |
+| Animation utilities | `fadeInUp`, `fadeInLeft`, `fadeInRight`, `scaleIn`, `float`, `blobMorph`, `shimmer`, `pulseGlow` + stagger delays |
+
+### Technical Details
+
+- **Biblioteca:** Framer Motion v12.38.0
+- **Easing:** Custom cubic-bezier `[0.16, 1, 0.3, 1]` (ease-out-quart)
+- **Spring physics:** `stiffness: 300-400`, `damping: 17-20`
+- **Scroll reveals:** `viewport={{ once: true, margin: "-100px" }}`
+- **Stagger:** `staggerChildren: 0.05-0.12` entre elementos
+
+### Archivos Modificados (26 archivos)
+
+```
+frontend/src/app/globals.css
+frontend/src/app/dashboard/page.tsx
+frontend/src/app/admin/dashboard/page.tsx
+frontend/src/app/admin/revenue/page.tsx
+frontend/src/app/admin/pricing/page.tsx
+frontend/src/app/admin/payment-settings/page.tsx
+frontend/src/app/admin/leads/page.tsx
+frontend/src/app/admin/leads/components/*.tsx
+frontend/src/components/landing/new-landing/LandingHero.tsx
+frontend/src/components/landing/new-landing/LandingNav.tsx
+frontend/src/components/landing/new-landing/LandingPricing.tsx
+frontend/src/components/landing/new-landing/LandingFooter.tsx
+frontend/src/components/landing/new-landing/LandingFaq.tsx
+frontend/src/components/landing/new-landing/LandingSteps.tsx
+frontend/src/components/landing/new-landing/LandingPlugin.tsx
+frontend/src/components/landing/new-landing/ReviewsSlider.tsx
+frontend/src/components/dashboard/DashboardLayout.tsx
+frontend/src/components/dashboard/ProductList.tsx
+frontend/src/components/dashboard/UsageStats.tsx
+frontend/src/components/dashboard/WidgetPreview.tsx
+frontend/src/components/checkout/CheckoutStepper.tsx
+frontend/src/components/checkout/PlanSelectionStep.tsx
+frontend/src/components/checkout/UserDataStep.tsx
+frontend/src/components/checkout/PaymentMethodStep.tsx
+frontend/src/components/checkout/OrderSummary.tsx
+frontend/src/components/admin/brands/BrandTable.tsx
+frontend/src/components/admin/brands/BrandDetailsModal.tsx
+frontend/src/components/admin/AdminNotifications.tsx
+frontend/src/components/admin/blog/PostsTable.tsx
+```
+
+---
+
 ## 24 de Abril 2026 — Fix Verificación de Email + Logging
 
 ### Bug Corregido
