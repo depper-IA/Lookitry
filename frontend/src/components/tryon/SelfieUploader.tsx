@@ -183,12 +183,13 @@ export function SelfieUploader({
         <div className="space-y-3">
           <AnimatePresence mode="wait">
             {compressing ? (
-              <motion.div 
+              <motion.div
                 key="loading"
                 className="py-12 flex flex-col items-center justify-center gap-4 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-sm"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
               >
                 <div className="relative">
                   <Loader2 className="w-10 h-10 animate-spin" style={{ color: primaryColor }} />
@@ -199,11 +200,12 @@ export function SelfieUploader({
                 </p>
               </motion.div>
             ) : (
-              <motion.div 
+              <motion.div
                 key="actions"
                 className="space-y-3"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
               >
                 {/* BOTÓN CÁMARA (Acción Principal) */}
                 <button
