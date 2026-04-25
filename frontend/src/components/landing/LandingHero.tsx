@@ -51,8 +51,8 @@ const staggerContainer = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.2
+      staggerChildren: 0.05,
+      delayChildren: 0.1
     }
   }
 };
@@ -257,21 +257,21 @@ export default function LandingHero() {
         {/* Blob principal con parallax + morph */}
         <div
           ref={blob1Ref}
-          className="absolute top-[-15%] right-[-10%] h-[100vw] w-[100vw] rounded-full bg-[#FF5C3A]/10 blur-[180px] animate-blob"
+          className="absolute top-[-15%] right-[-10%] h-[100vw] w-[100vw] rounded-full bg-[#FF5C3A]/10 blur-[60px] animate-blob will-change-transform"
         />
         {/* Blob secundario con parallax inverso */}
         <div
           ref={blob2Ref}
-          className="absolute bottom-[-15%] left-[-15%] h-[80vw] w-[80vw] rounded-full bg-[#FF5C3A]/5 blur-[200px] animate-blob"
+          className="absolute bottom-[-15%] left-[-15%] h-[80vw] w-[80vw] rounded-full bg-[#FF5C3A]/5 blur-[50px] animate-blob will-change-transform"
           style={{ animationDelay: '2s' }}
         />
         {/* Tercer blob pequeño flotante */}
         <div
-          className="absolute top-[20%] left-[-10%] h-[40vw] w-[40vw] rounded-full bg-white/5 blur-[120px] dark:bg-white/2 animate-float"
+          className="absolute top-[20%] left-[-10%] h-[40vw] w-[40vw] rounded-full bg-white/5 blur-[40px] dark:bg-white/2 animate-float will-change-transform"
         />
         {/* Glow central */}
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[60vh] w-[60vw] bg-[#FF5C3A]/5 blur-[250px] opacity-20"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[60vh] w-[60vw] bg-[#FF5C3A]/5 blur-[80px] opacity-20 will-change-transform"
         />
       </div>
 
@@ -303,14 +303,10 @@ export default function LandingHero() {
           </motion.div>
 
           <motion.div variants={revealVariants} className="flex flex-wrap justify-center gap-3 sm:gap-5 lg:justify-start">
-            <motion.div
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
+            <motion.div>
               <Link
                 href="/trial-checkout"
-                className="group relative flex items-center gap-2 rounded-xl bg-[#FF5C3A] px-6 py-4 text-sm font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 hover:bg-[#ff7b5e] sm:gap-3 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base overflow-hidden"
+                className="group relative flex items-center gap-2 rounded-xl bg-[#FF5C3A] px-6 py-4 text-sm font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-[1.03] hover:-translate-y-0.5 hover:bg-[#ff7b5e] active:scale-[0.97] sm:gap-3 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base overflow-hidden duration-200"
               >
                 <span className="relative z-10">Obtén Acceso Premium</span>
                 {/* Shimmer effect on hover */}
@@ -319,14 +315,10 @@ export default function LandingHero() {
               </Link>
             </motion.div>
 
-            <motion.div
-              whileHover={{ scale: 1.02, y: -1 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
+            <motion.div>
               <Link
                 href="#como-funciona"
-                className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-6 py-4 text-sm font-bold text-[#0a0a0a] transition-all hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base"
+                className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-6 py-4 text-sm font-bold text-[#0a0a0a] transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:bg-black/10 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base duration-200"
               >
                 Ver cómo funciona
               </Link>
