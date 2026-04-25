@@ -194,6 +194,26 @@ function AttributePills({ attributes }: { attributes: Record<string, any> }) {
 // PRODUCT CARD
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Animation variants for product cards
+const productVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.4 }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06
+    }
+  }
+};
+
 interface ProductCardProps {
   product: Product;
   variant: 'grid' | 'thumbnails' | 'list';
@@ -218,11 +238,15 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.35, delay: index * 0.04, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="group relative"
+      variants={productVariants}
+      whileHover={{
+        scale: 1.02,
+        y: -5,
+        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.4)",
+        borderColor: "rgba(255, 92, 58, 0.4)"
+      }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="group relative cursor-pointer"
       onMouseEnter={() => { setIsHovered(true); setShowActions(true); }}
       onMouseLeave={() => { setIsHovered(false); setShowActions(false); }}
       style={{ minHeight: cardMinHeight, display: 'flex', flexDirection: 'column' }}
@@ -306,9 +330,19 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
                   <Edit3 size={12} /> Editar
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                  whileHover={{ scale: 1.1, color: "#FF3A5C" }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Shake animation before delete
+                    e.currentTarget.animate([
+                      { transform: 'translateX(0)' },
+                      { transform: 'translateX(-5px)' },
+                      { transform: 'translateX(5px)' },
+                      { transform: 'translateX(0)' }
+                    ], { duration: 300 });
+                    onDelete();
+                  }}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-wider text-white backdrop-blur-md transition-all"
                   style={{ background: 'rgba(239, 68, 68, 0.8)', border: '1px solid rgba(239, 68, 68, 0.4)' }}
                 >
@@ -458,7 +492,13 @@ function ProductCard({ product, variant, onEdit, onDelete, index, isInWidget, on
 
 function GridView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+    >
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
           <ProductCard
@@ -474,13 +514,19 @@ function GridView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget,
           />
         ))}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
 
 function ThumbnailsView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5"
+    >
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
           <ProductCard
@@ -496,7 +542,7 @@ function ThumbnailsView({ products, onEdit, onDelete, widgetProductIds, onAddToW
           />
         ))}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
 

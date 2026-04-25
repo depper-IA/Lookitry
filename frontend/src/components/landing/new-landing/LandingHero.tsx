@@ -1,10 +1,53 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, Upload, RotateCcw } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
+
+// ── Parallax Hook ──────────────────────────────────────────────────────────────
+function useParallax(speed: number = 0.5) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!ref.current) return;
+      const scrollY = window.scrollY;
+      ref.current.style.transform = `translateY(${scrollY * speed}px)`;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [speed]);
+
+  return ref;
+}
+
+// ── Animation Variants ────────────────────────────────────────────────────────
+const revealVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number]
+    }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.1
+    }
+  }
+};
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div
@@ -48,6 +91,26 @@ export default function LandingHero() {
   const [error, setError] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [hasUsedTrial, setHasUsedTrial] = useState(false);
+
+  // Parallax refs para blobs
+  const blob1Ref = useRef<HTMLDivElement>(null);
+  const blob2Ref = useRef<HTMLDivElement>(null);
+
+  // Parallax effect para blobs
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      if (blob1Ref.current) {
+        blob1Ref.current.style.transform = `translateY(${scrollY * 0.15}px)`;
+      }
+      if (blob2Ref.current) {
+        blob2Ref.current.style.transform = `translateY(${scrollY * -0.1}px)`;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -164,42 +227,86 @@ export default function LandingHero() {
       aria-label="Seccion principal"
     >
       <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute top-[-15%] right-[-10%] h-[100vw] w-[100vw] rounded-full bg-[#FF5C3A]/10 blur-[180px] sm:h-[80vw] sm:w-[80vw]" />
-        <div className="absolute bottom-[-15%] left-[-15%] h-[80vw] w-[80vw] rounded-full bg-[#FF5C3A]/5 blur-[200px]" />
-        <div className="absolute top-[20%] left-[-10%] h-[40vw] w-[40vw] rounded-full bg-white/5 blur-[120px] dark:bg-white/2" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[60vh] w-[60vw] bg-[#FF5C3A]/5 blur-[250px] opacity-20" />
+        {/* Blob principal con parallax + morph */}
+        <div
+          ref={blob1Ref}
+          className="absolute top-[-15%] right-[-10%] h-[100vw] w-[100vw] rounded-full bg-[#FF5C3A]/10 blur-[180px] animate-blob"
+        />
+        {/* Blob secundario con parallax inverso */}
+        <div
+          ref={blob2Ref}
+          className="absolute bottom-[-15%] left-[-15%] h-[80vw] w-[80vw] rounded-full bg-[#FF5C3A]/5 blur-[200px] animate-blob"
+          style={{ animationDelay: '2s' }}
+        />
+        {/* Tercer blob pequeño flotante */}
+        <div
+          className="absolute top-[20%] left-[-10%] h-[40vw] w-[40vw] rounded-full bg-white/5 blur-[120px] dark:bg-white/2 animate-float"
+        />
+        {/* Glow central */}
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[60vh] w-[60vw] bg-[#FF5C3A]/5 blur-[250px] opacity-20"
+        />
       </div>
 
       <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
         {/* LEFT: Text Content */}
-        <div className="text-center lg:text-left">
-          <SectionTag text="Revolucion Visual con IA" />
-          <h1 className="mb-6 font-jakarta text-3xl font-black leading-[1.1] tracking-[-0.03em] sm:mb-8 sm:text-[44px] sm:tracking-[-0.04em] md:text-[56px] lg:text-[64px]">
-            <span className="block text-[#0a0a0a] dark:text-white">Vende más con el</span>
-            <span className="block text-[#FF5C3A]">Probador Virtual</span>
-            <span className="block text-[#0a0a0a] dark:text-white">N.1 de Latinoamerica.</span>
-          </h1>
-          <p className="mx-auto mb-8 max-w-xl font-dm-sans text-base font-light leading-[1.6] text-[#666] dark:text-white/80 sm:mb-12 sm:text-lg lg:mx-0">
-            Tu tienda online, <span className="font-bold text-[#FF5C3A]">sin pagar un diseñador.</span> Permite que tus clientes se prueben tu catálogo en segundos con IA.
-          </p>
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="text-center lg:text-left"
+        >
+          <motion.div variants={revealVariants}>
+            <SectionTag text="Revolucion Visual con IA" />
+          </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-5 lg:justify-start">
-            <Link
-              href="/trial-checkout"
-              className="group flex items-center gap-2 rounded-xl bg-[#FF5C3A] px-6 py-4 text-sm font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 hover:bg-[#ff7b5e] sm:gap-3 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base"
-            >
-              Obtén Acceso Premium
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
-            </Link>
-            <Link
-              href="#como-funciona"
-              className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-6 py-4 text-sm font-bold text-[#0a0a0a] transition-all hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base"
-            >
-              Ver cómo funciona
-            </Link>
-          </div>
+          <motion.div variants={revealVariants}>
+            <h1 className="mb-6 font-jakarta text-3xl font-black leading-[1.1] tracking-[-0.03em] sm:mb-8 sm:text-[44px] sm:tracking-[-0.04em] md:text-[56px] lg:text-[64px]">
+              <span className="block text-[#0a0a0a] dark:text-white">Vende más con el</span>
+              <span className="block text-[#FF5C3A]">Probador Virtual</span>
+              <span className="block text-[#0a0a0a] dark:text-white">N.1 de Latinoamerica.</span>
+            </h1>
+          </motion.div>
 
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-6 font-bold uppercase tracking-[0.2em] text-[#666] dark:text-white/80 sm:mt-16 sm:gap-10 sm:text-[10px] sm:tracking-[0.25em] lg:justify-start">
+          <motion.div variants={revealVariants}>
+            <p className="mx-auto mb-8 max-w-xl font-dm-sans text-base font-light leading-[1.6] text-[#666] dark:text-white/80 sm:mb-12 sm:text-lg lg:mx-0">
+              Tu tienda online, <span className="font-bold text-[#FF5C3A]">sin pagar un diseñador.</span> Permite que tus clientes se prueben tu catálogo en segundos con IA.
+            </p>
+          </motion.div>
+
+          <motion.div variants={revealVariants} className="flex flex-wrap justify-center gap-3 sm:gap-5 lg:justify-start">
+            <motion.div
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <Link
+                href="/trial-checkout"
+                className="group relative flex items-center gap-2 rounded-xl bg-[#FF5C3A] px-6 py-4 text-sm font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 hover:bg-[#ff7b5e] sm:gap-3 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base overflow-hidden"
+              >
+                <span className="relative z-10">Obtén Acceso Premium</span>
+                {/* Shimmer effect on hover */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                <ArrowRight size={18} className="relative z-10 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+              </Link>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <Link
+                href="#como-funciona"
+                className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-6 py-4 text-sm font-bold text-[#0a0a0a] transition-all hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base"
+              >
+                Ver cómo funciona
+              </Link>
+            </motion.div>
+          </motion.div>
+
+          <motion.div variants={revealVariants} className="mt-12 flex flex-wrap items-center justify-center gap-6 font-bold uppercase tracking-[0.2em] text-[#666] dark:text-white/80 sm:mt-16 sm:gap-10 sm:text-[10px] sm:tracking-[0.25em] lg:justify-start">
             <div className="flex items-center gap-2 transition-colors hover:text-[#FF5C3A] sm:gap-2.5">
               <ShieldCheck size={14} className="shrink-0 text-[#FF5C3A]" aria-hidden="true" /> 100% Seguro
             </div>
@@ -209,8 +316,8 @@ export default function LandingHero() {
             <div className="flex items-center gap-2 transition-colors hover:text-[#FF5C3A] sm:gap-2.5">
               <Sparkles size={14} className="shrink-0 text-[#FF5C3A]" aria-hidden="true" /> IA Generativa
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* RIGHT: PROBADOR FUNCIONAL - Matching Wideframe Style */}
         {/* Notice - CTA to try */}

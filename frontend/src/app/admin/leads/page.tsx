@@ -139,12 +139,35 @@ export default function LeadsPage() {
             {stats.total.toLocaleString()} leads totales
           </p>
         </div>
-        <button
-          onClick={() => { setEditLead(null); setShowAddModal(true); }}
-          className="flex items-center gap-2 rounded-2xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[var(--accent)]/90"
+        <motion.button
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const ripple = document.createElement('span');
+            ripple.style.cssText = `
+              position: absolute;
+              width: 10px;
+              height: 10px;
+              background: rgba(255,255,255,0.3);
+              border-radius: 50%;
+              left: ${x}px;
+              top: ${y}px;
+              transform: translate(-50%, -50%) scale(0);
+              animation: ripple 0.6s ease-out;
+            `;
+            e.currentTarget.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+            setEditLead(null);
+            setShowAddModal(true);
+          }}
+          className="relative overflow-hidden flex items-center gap-2 rounded-2xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-white transition-colors"
         >
           <IconPlus /> Nuevo Lead
-        </button>
+        </motion.button>
       </div>
 
       {/* Stats Cards */}

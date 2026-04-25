@@ -37,6 +37,7 @@ import {
   sanitizePromptForGeneration,
   addAntiInjectionInstructions,
 } from '../utils/promptSecurity';
+import { isWhitelistedSync } from '../middleware/rateLimiter';
 
 const brandsService = new BrandsService();
 const productsService = new ProductsService();
@@ -299,24 +300,29 @@ export class PruebaloController {
       });
     }
 
-    // 4. Reservar un crÃ©dito real antes de generar.
-    // Si el mensual se agotÃ³, intenta consumir uno extra. Si la IA falla,
-    // el crÃ©dito extra reservado se devuelve en el catch.
+    // 4. Reservar un crédito real antes de generar (Bypass para IPs en whitelist)
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+    const whitelisted = isWhitelistedSync(ip);
     let creditReservation: { source: 'monthly' | 'extra' } | null = null;
-    try {
-      creditReservation = await usageService.reserveGenerationCredit(brand.id);
-    } catch (error: any) {
-      if (error.message === 'INSUFFICIENT_CREDITS') {
-        const usage = await usageService.getUsageStats(brand.id);
-        throw new LimitExceededError(
-          'CrÃ©ditos insuficientes',
-          {
-            used: usage.currentMonth.generationsUsed,
-            limit: usage.currentMonth.generationsLimit,
-          }
-        );
+
+    if (!whitelisted) {
+      try {
+        creditReservation = await usageService.reserveGenerationCredit(brand.id);
+      } catch (error: any) {
+        if (error.message === 'INSUFFICIENT_CREDITS') {
+          const usage = await usageService.getUsageStats(brand.id);
+          throw new LimitExceededError(
+            'Créditos insuficientes',
+            {
+              used: usage.currentMonth.generationsUsed,
+              limit: usage.currentMonth.generationsLimit,
+            }
+          );
+        }
+        throw error;
       }
-      throw error;
+    } else {
+      console.log(`[pruebalo] IP Whitelisted (${ip}): Saltando reserva de créditos.`);
     }
 
     // 5. Subir imagen a MinIO en carpeta temporal

@@ -10,6 +10,29 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+// ── Animation Variants ─────────────────────────────────────────────────────────
+
+const tableRowVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.04, duration: 0.3 }
+  }),
+  hover: { backgroundColor: "rgba(255,255,255,0.02)" }
+};
+
+const actionBtnVariants = {
+  hover: { scale: 1.1 },
+  tap: { scale: 0.9 }
+};
+
+const pageBtnVariants = {
+  hover: { scale: 1.1 },
+  tap: { scale: 0.95 }
+};
 
 interface PostsTableProps {
   posts: BlogPost[];
@@ -57,8 +80,17 @@ export default function PostsTable({
             </tr>
           </thead>
           <tbody className="divide-y border-[var(--border-color)]">
-            {paginatedPosts.map((post) => (
-              <tr key={post.id} className="group hover:bg-black/5 dark:hover:bg-white/[0.02] transition-all">
+            {paginatedPosts.map((post, i) => (
+              <motion.tr
+                key={post.id}
+                custom={i}
+                variants={tableRowVariants}
+                initial="hidden"
+                whileInView="visible"
+                whileHover="hover"
+                viewport={{ once: true }}
+                className="group hover:bg-black/5 dark:hover:bg-white/[0.02] transition-all"
+              >
                 <td className="px-8 py-5">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl overflow-hidden border border-[var(--border-color)] bg-black/10 dark:bg-white/5 flex-shrink-0">
@@ -99,28 +131,37 @@ export default function PostsTable({
                 </td>
                 <td className="px-8 py-5">
                   <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Link
+                    <motion.a
+                      variants={actionBtnVariants}
+                      whileHover="hover"
+                      whileTap="tap"
                       href={`/blog/${post.slug}`}
                       target="_blank"
                       className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-zinc-500 hover:text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-all border border-transparent dark:hover:border-[var(--accent)]/20 shadow-sm"
                     >
                       <ExternalLink className="w-4 h-4" />
-                    </Link>
-                    <Link
+                    </motion.a>
+                    <motion.link
+                      variants={actionBtnVariants}
+                      whileHover="hover"
+                      whileTap="tap"
                       href={`/admin/blog/${post.id}`}
                       className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-zinc-500 hover:text-indigo-500 hover:bg-indigo-500/10 transition-all border border-transparent dark:hover:border-indigo-500/20 shadow-sm"
                     >
                       <Edit className="w-4 h-4" />
-                    </Link>
-                    <button
+                    </motion.link>
+                    <motion.button
+                      variants={actionBtnVariants}
+                      whileHover="hover"
+                      whileTap="tap"
                       onClick={() => onRequestDelete(post.id)}
                       className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-all border border-transparent dark:hover:border-red-500/20 shadow-sm"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </motion.button>
                   </div>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
@@ -131,33 +172,45 @@ export default function PostsTable({
               Página {safeCurrentPage} de {totalPages}
             </span>
             <div className="flex items-center gap-2">
-              <button
+              <motion.button
+                variants={pageBtnVariants}
+                whileHover="hover"
+                whileTap="tap"
                 onClick={() => onPageChange(Math.max(1, safeCurrentPage - 1))}
                 disabled={safeCurrentPage === 1}
                 className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-20 transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
-              </button>
+              </motion.button>
               <div className="flex gap-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <button
+                  <motion.button
                     key={page}
+                    variants={pageBtnVariants}
+                    whileHover="hover"
+                    whileTap="tap"
                     onClick={() => onPageChange(page)}
-                    className={`w-9 h-9 rounded-xl text-[10px] font-black transition-all ${
-                      page === safeCurrentPage ? 'bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/20' : 'hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-primary)]'
-                    }`}
+                    animate={page === safeCurrentPage ? {
+                      backgroundColor: "var(--accent)",
+                      color: "white",
+                      boxShadow: "0 4px 14px 0 rgba(255,92,58,0.39)"
+                    } : {}}
+                    className="w-9 h-9 rounded-xl text-[10px] font-black transition-all"
                   >
                     {page}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
-              <button
+              <motion.button
+                variants={pageBtnVariants}
+                whileHover="hover"
+                whileTap="tap"
                 onClick={() => onPageChange(Math.min(totalPages, safeCurrentPage + 1))}
                 disabled={safeCurrentPage === totalPages}
                 className="p-2.5 rounded-xl border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-20 transition-all"
               >
                 <ChevronRight className="w-4 h-4" />
-              </button>
+              </motion.button>
             </div>
           </div>
         )}

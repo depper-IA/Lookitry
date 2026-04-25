@@ -1,6 +1,7 @@
 'use client';
 
-import { Mail, User, AlertCircle, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, User, AlertCircle, ChevronLeft, ChevronRight, Lock, CheckCircle } from 'lucide-react';
 import { Step } from '@/components/payments/StepProgress';
 import { authService } from '@/services/auth.service';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
@@ -87,30 +88,63 @@ export default function UserDataStep({
             {hasSession && <Lock className="w-3 h-3 text-[#999]" />}
           </label>
           <div className="relative">
-            <input
-              type="email"
-              value={email}
-              onChange={e => {
-                if (hasSession) return; // SECURITY: Prevent email changes when authenticated
-                setEmail(e.target.value);
-                setEmailError('');
-              }}
-              readOnly={hasSession}
-              placeholder="ejemplo@mimarca.com"
-              className={`w-full bg-[#050505] border rounded-xl px-4 py-4 text-white outline-none transition-all ${hasSession ? 'opacity-70 cursor-not-allowed' : ''}`}
-              style={{ borderColor: emailError ? 'rgba(239,68,68,0.5)' : '#222' }}
-              onFocus={e => { e.currentTarget.style.borderColor = OA; }}
-              onBlur={async e => { 
-                e.currentTarget.style.borderColor = emailError ? 'rgba(239,68,68,0.5)' : '#222';
-                if (!hasSession && email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                  await validateStep2();
-                }
-              }}
-            />
+            <motion.div
+              animate={emailError ? {
+                x: [0, -10, 10, -10, 10, 0],
+                borderColor: ["rgba(239,68,68,0.5)", "rgba(239,68,68,0.8)", "rgba(239,68,68,0.5)", "rgba(239,68,68,0.8)", "rgba(239,68,68,0.5)", "#222"]
+              } : {}}
+              transition={{ duration: 0.4 }}
+            >
+              <motion.input
+                whileFocus={{ scale: 1.01 }}
+                transition={{ duration: 0.2 }}
+                type="email"
+                value={email}
+                onChange={e => {
+                  if (hasSession) return; // SECURITY: Prevent email changes when authenticated
+                  setEmail(e.target.value);
+                  setEmailError('');
+                }}
+                readOnly={hasSession}
+                placeholder=" "
+                className={`peer w-full bg-[#050505] border rounded-xl px-4 pt-6 pb-2 text-white outline-none transition-all ${hasSession ? 'opacity-70 cursor-not-allowed' : ''}`}
+                style={{ borderColor: emailError ? 'rgba(239,68,68,0.5)' : '#222' }}
+                onFocus={e => { e.currentTarget.style.borderColor = OA; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(255,92,58,0.1)`; }}
+                onBlur={async e => { 
+                  e.currentTarget.style.borderColor = emailError ? 'rgba(239,68,68,0.5)' : '#222';
+                  e.currentTarget.style.boxShadow = 'none';
+                  if (!hasSession && email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    await validateStep2();
+                  }
+                }}
+              />
+              <motion.label
+                className="absolute left-4 top-4 text-gray-500 pointer-events-none
+                         peer-focus:top-2 peer-focus:text-xs peer-focus:text-[#FF5C3A]
+                         peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-xs
+                         transition-all duration-200"
+                style={{ color: emailError ? '#ef4444' : undefined }}
+              >
+                {hasSession ? email : 'ejemplo@mimarca.com'}
+              </motion.label>
+            </motion.div>
             {emailChecking && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
                 <div className="w-4 h-4 border-2 border-t-[#FF5C3A] border-white/20 rounded-full animate-spin" />
-              </div>
+              </motion.div>
+            )}
+            {!emailError && email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"
+              >
+                <CheckCircle className="w-5 h-5" />
+              </motion.span>
             )}
           </div>
           {emailError && (
@@ -167,17 +201,52 @@ export default function UserDataStep({
               <User className="w-3.5 h-3.5" style={{ color: OA }} />
               Nombre de tu Marca
             </label>
-            <input
-              type="text"
-              value={brandName}
-              onChange={e => { setBrandName(e.target.value); setBrandNameError(''); }}
-              placeholder="Mi Tienda de Moda"
-              className="w-full bg-[#050505] border rounded-xl px-4 py-4 text-white outline-none transition-all"
-              style={{ borderColor: brandNameError ? 'rgba(239,68,68,0.5)' : '#222' }}
-              onFocus={e => { e.currentTarget.style.borderColor = OA; }}
-              onBlur={e => { e.currentTarget.style.borderColor = brandNameError ? 'rgba(239,68,68,0.5)' : '#222'; }}
-            />
-            {brandNameError && <p className="text-[11px] text-red-400 font-medium flex items-center gap-1.5"><AlertCircle className="w-3 h-3" /> {brandNameError}</p>}
+            <div className="relative">
+              <motion.div
+                animate={brandNameError ? {
+                  x: [0, -10, 10, -10, 10, 0],
+                } : {}}
+                transition={{ duration: 0.4 }}
+              >
+                <motion.input
+                  whileFocus={{ scale: 1.01 }}
+                  transition={{ duration: 0.2 }}
+                  type="text"
+                  value={brandName}
+                  onChange={e => { setBrandName(e.target.value); setBrandNameError(''); }}
+                  placeholder=" "
+                  className="peer w-full bg-[#050505] border rounded-xl px-4 pt-6 pb-2 text-white outline-none transition-all"
+                  style={{ borderColor: brandNameError ? 'rgba(239,68,68,0.5)' : '#222' }}
+                  onFocus={e => { e.currentTarget.style.borderColor = OA; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(255,92,58,0.1)`; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = brandNameError ? 'rgba(239,68,68,0.5)' : '#222'; e.currentTarget.style.boxShadow = 'none'; }}
+                />
+                <motion.label
+                  className="absolute left-4 top-4 text-gray-500 pointer-events-none
+                           peer-focus:top-2 peer-focus:text-xs peer-focus:text-[#FF5C3A]
+                           peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:text-xs
+                           transition-all duration-200"
+                  style={{ color: brandNameError ? '#ef4444' : undefined }}
+                >
+                  Mi Tienda de Moda
+                </motion.label>
+              </motion.div>
+              {!brandNameError && brandName && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                </motion.span>
+              )}
+            </div>
+            {brandNameError && <motion.p 
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-[11px] text-red-400 font-medium flex items-center gap-1.5"
+            >
+              <AlertCircle className="w-3 h-3" /> {brandNameError}
+            </motion.p>}
           </div>
         )}
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { CreditCard, AlertCircle } from 'lucide-react';
 import { PlanKey, SubPlan } from '@/app/checkout/page';
@@ -58,8 +59,14 @@ export default function PaymentMethodStep({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.3)" }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => setPaymentMethod('wompi')}
+          animate={paymentMethod === 'wompi' ? {
+            borderColor: OA,
+            boxShadow: "0 0 20px rgba(255, 92, 58, 0.3)"
+          } : {}}
           className="relative p-6 rounded-2xl border-2 flex flex-col gap-4 text-left transition-all"
           style={{
             borderColor: paymentMethod === 'wompi' ? OA : '#1f1f1f',
@@ -68,16 +75,30 @@ export default function PaymentMethodStep({
         >
           <div className="flex justify-between items-start">
             <Image src="/wompi-logo.svg" alt="Wompi" width={100} height={30} className="invert brightness-150 h-10 w-auto" />
-            {paymentMethod === 'wompi' && <div className="w-4 h-4 rounded-full" style={{ backgroundColor: OA }} />}
+            <motion.div
+              animate={{ 
+                scale: paymentMethod === 'wompi' ? 1 : 0,
+                rotate: paymentMethod === 'wompi' ? 180 : 0
+              }}
+              transition={{ duration: 0.4 }}
+              className="w-4 h-4 rounded-full"
+              style={{ backgroundColor: OA }}
+            />
           </div>
           <div>
             <p className="text-xs font-bold text-white uppercase tracking-widest">Tarjeta / PSE / Nequi</p>
             <p className="text-[10px] text-[#999] mt-1">Pago seguro procesado por Bancolombia</p>
           </div>
-        </button>
+        </motion.button>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.3)" }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => setPaymentMethod('paypal')}
+          animate={paymentMethod === 'paypal' ? {
+            borderColor: OA,
+            boxShadow: "0 0 20px rgba(255, 92, 58, 0.3)"
+          } : {}}
           className="relative p-6 rounded-2xl border-2 flex flex-col gap-4 text-left transition-all"
           style={{
             borderColor: paymentMethod === 'paypal' ? OA : '#1f1f1f',
@@ -86,13 +107,21 @@ export default function PaymentMethodStep({
         >
           <div className="flex justify-between items-start">
             <Image src="/payment-paypal.svg" alt="PayPal" width={100} height={30} className="h-10 w-auto" />
-            {paymentMethod === 'paypal' && <div className="w-4 h-4 rounded-full" style={{ backgroundColor: OA }} />}
+            <motion.div
+              animate={{ 
+                scale: paymentMethod === 'paypal' ? 1 : 0,
+                rotate: paymentMethod === 'paypal' ? 180 : 0
+              }}
+              transition={{ duration: 0.4 }}
+              className="w-4 h-4 rounded-full"
+              style={{ backgroundColor: OA }}
+            />
           </div>
           <div>
             <p className="text-xs font-bold text-white uppercase tracking-widest">PayPal / USD Internacional</p>
             <p className="text-[10px] text-[#999] mt-1">TRM actual: {formatCop(trm).replace('COP', '').trim()} COP</p>
           </div>
-        </button>
+        </motion.button>
       </div>
 
       {error && (
@@ -121,17 +150,23 @@ export default function PaymentMethodStep({
       </div>
 
       <div className="flex gap-4 mt-10">
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           onClick={handlePrevStep}
           disabled={loading}
           className="flex-1 bg-[#0d0d0d] hover:bg-[#141414] text-white font-bold py-4 rounded-2xl border border-[#1f1f1f] transition-all flex items-center justify-center gap-2"
         >
           ATRÁS
-        </button>
-        <button
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02, boxShadow: paymentMethod === 'wompi'
+            ? '0 15px 40px -10px rgba(255,92,58,0.6)'
+            : '0 15px 40px -10px rgba(0,112,186,0.6)' }}
+          whileTap={{ scale: 0.97 }}
           onClick={handlePagar}
           disabled={loading}
-          className="flex-[2] text-white font-extrabold py-4 rounded-2xl transition-all flex items-center justify-center gap-3 group"
+          className="relative overflow-hidden flex-[2] text-white font-extrabold py-4 rounded-2xl transition-all flex items-center justify-center gap-3 group"
           style={{
             backgroundColor: OA,
             boxShadow: paymentMethod === 'wompi'
@@ -139,15 +174,41 @@ export default function PaymentMethodStep({
               : '0 10px 30px -10px rgba(0,112,186,0.5)',
           }}
         >
-          {loading ? (
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : (
-            <>
-              <CreditCard className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span>{paymentMethod === 'paypal' ? `PAGAR ${formatUsd(totalPriceUsd)} USD` : `PAGAR ${formatCop(totalPrice)} COP`}</span>
-            </>
-          )}
-        </button>
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center justify-center gap-2"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                />
+                <span>Procesando...</span>
+              </motion.div>
+            ) : (
+              <motion.span
+                key="default"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-3"
+              >
+                <motion.span
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 0.8, repeat: Infinity }}
+                >
+                  <CreditCard className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                </motion.span>
+                <span>{paymentMethod === 'paypal' ? `PAGAR ${formatUsd(totalPriceUsd)} USD` : `PAGAR ${formatCop(totalPrice)} COP`}</span>
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </div>
 
       <div className="mt-8 flex justify-center gap-8 opacity-30">
