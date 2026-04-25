@@ -63,7 +63,13 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
-    googleBot: { index: true, follow: true },
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
   },
   openGraph: {
     type: 'website',
@@ -134,6 +140,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta property="og:site_name" content="Lookitry" />
         <meta property="og:locale" content="es_CO" />
         <meta name="twitter:site" content="@lookitry" />
+        {/* DNS Prefetch y Preconnect para的性能优化 */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://api.lookitry.com" />
+        <link rel="dns-prefetch" href="https://vkdooutklowctuudjnkl.supabase.co" />
         
         {/* Script de tema bloqueante: aplica dark/light ANTES del primer paint para evitar flash */}
         <script

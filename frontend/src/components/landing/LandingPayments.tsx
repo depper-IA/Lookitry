@@ -37,6 +37,7 @@ export default function LandingPayments() {
                 title={logo.name}
                 fill
                 className="object-contain dark:brightness-0 dark:invert"
+                sizes="112px"
               />
             </div>
           ))}

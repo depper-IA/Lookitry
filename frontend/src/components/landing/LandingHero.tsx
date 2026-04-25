@@ -379,7 +379,7 @@ export default function LandingHero() {
                   </div>
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-white/10 bg-white/5 sm:h-16 sm:w-16 overflow-hidden">
                     {selfiePreview ? (
-                      <img src={selfiePreview} alt="Preview" className="h-full w-full object-cover" />
+                      <img src={selfiePreview} alt="Preview" className="h-full w-full object-cover" loading="lazy" decoding="async" />
                     ) : (
                       <Camera size={24} strokeWidth={1} className="text-white/20" aria-hidden="true" />
                     )}
@@ -418,7 +418,7 @@ export default function LandingHero() {
                       aria-label={`Seleccionar ${prod.name}`}
                     >
                       <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a] sm:h-14 sm:w-14">
-                        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" />
+                        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" />
                       </div>
                       <div className="flex min-w-0 flex-1 flex-col">
                         <span className={`truncate text-[9px] font-bold sm:text-[11px] ${selectedProduct?.id === prod.id ? 'text-white' : 'text-white/60'}`}>
@@ -483,7 +483,7 @@ export default function LandingHero() {
                   </div>
                   {selfiePreview ? (
                     <div className="relative mb-3 h-32 w-32 overflow-hidden rounded-xl sm:h-40 sm:w-40">
-                      <img src={selfiePreview} alt="Tu selfie" className="h-full w-full object-cover" />
+                      <img src={selfiePreview} alt="Tu selfie" className="h-full w-full object-cover" loading="lazy" decoding="async" />
                       <button
                         onClick={() => { setSelfie(null); setSelfiePreview(null); }}
                         className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
@@ -573,7 +573,7 @@ export default function LandingHero() {
               <div className="flex flex-col gap-3 sm:gap-4">
                 {/* Solo imagen generada - sin selfie original */}
                 <div className="relative overflow-hidden rounded-xl border border-[#FF5C3A]/30 shadow-lg shadow-[#FF5C3A]/10 aspect-square">
-                  <img src={resultImage} alt="Resultado del probador" className="h-full w-full object-cover" />
+                  <img src={resultImage} alt="Resultado del probador" className="h-full w-full object-cover" loading="lazy" decoding="async" />
                   <div className="absolute top-2 left-2 rounded-full bg-[#FF5C3A] px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white shadow-xl sm:text-[8px]">
                     IA
                   </div>
