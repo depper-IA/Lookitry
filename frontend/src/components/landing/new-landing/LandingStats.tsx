@@ -9,21 +9,15 @@ interface LandingStatsData {
   satisfaction_rating: number | null;
 }
 
-// Format brands with + prefix (real data from DB)
+// Format brands: real data + 10 offset
 function formatBrands(raw: number): string {
-  if (raw <= 0) return '+0';
-  return `+${raw}`;
+  if (raw <= 0) return '+10';
+  return `+${raw + 10}`;
 }
 
-// Format generations: real DB data + 1000 offset, then format k/M
+// Format generations: real data + 1000 offset, show full number
 function formatGenerations(raw: number): string {
   const adjusted = raw + 1000;
-  if (adjusted >= 1000000) {
-    return `${(adjusted / 1000000).toFixed(1)}M`;
-  }
-  if (adjusted >= 1000) {
-    return `${(adjusted / 1000).toFixed(0)}k`;
-  }
   return adjusted.toString();
 }
 
