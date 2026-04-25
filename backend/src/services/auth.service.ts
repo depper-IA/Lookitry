@@ -607,7 +607,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
     console.log('[verifyEmail] Verificando brand:', brand.id);
     const { data: updateResult, error: updateError } = await supabaseAdmin
       .from('brands')
-      .update({ email_verified: true, email_verification_token: null, email_verified_at: new Date().toISOString() })
+      .update({ email_verified: true, email_verification_token: null })
       .eq('id', brand.id)
       .select('id, email_verified')
       .single();
