@@ -35,9 +35,13 @@ export default function LandingNav({
   const [trialPriceCOP, setTrialPriceCOP] = useState(DEFAULT_TRIAL_PRICE_COP);
   const [trm, setTrm] = useState(3900);
 
-  useEffect(() => {
+  // Lazy fetch de trial price y TRM — solo cuando el usuario interactúa con moneda o trial
+  const [trialDataFetched, setTrialDataFetched] = useState(false);
+  
+  const fetchTrialDataIfNeeded = () => {
+    if (trialDataFetched) return;
+    setTrialDataFetched(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-    // Fetch trial price AND TRM in parallel
     Promise.all([
       fetch(`${apiUrl}/api/trial/status`).then(r => r.ok ? r.json() : null),
       fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null)
@@ -51,7 +55,7 @@ export default function LandingNav({
         }
       })
       .catch(() => {});
-  }, []);
+  };
 
   useEffect(() => {
     if (!externalCurrency) {
@@ -83,6 +87,7 @@ export default function LandingNav({
   const currency = externalCurrency || internalCurrency;
 
   const onCurrencyChange = (c: 'COP' | 'USD') => {
+    fetchTrialDataIfNeeded();
     if (externalOnCurrencyChange) {
       externalOnCurrencyChange(c);
     } else {
@@ -360,6 +365,8 @@ export default function LandingNav({
 
             <Link
               href="/trial-checkout"
+              onMouseEnter={fetchTrialDataIfNeeded}
+              onFocus={fetchTrialDataIfNeeded}
               className="group relative hidden overflow-hidden rounded-full bg-[#FF5C3A] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 active:scale-95 sm:px-8 sm:py-3.5 md:inline-flex"
             >
               <span className="relative z-10">
@@ -370,7 +377,10 @@ export default function LandingNav({
 
             <button
               className="p-2 text-[#0a0a0a]/80 transition-colors hover:text-[#0a0a0a] lg:hidden dark:text-white/80 dark:hover:text-white"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => {
+                setMobileMenuOpen(!mobileMenuOpen);
+                if (!mobileMenuOpen) fetchTrialDataIfNeeded();
+              }}
               aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
               aria-expanded={mobileMenuOpen}
             >
@@ -471,7 +481,10 @@ export default function LandingNav({
               )}
               <Link
                 href="/trial-checkout"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => {
+                  fetchTrialDataIfNeeded();
+                  setMobileMenuOpen(false);
+                }}
                 className="flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-transform hover:scale-[1.01]"
               >
                 Trial {formatPrice(trialPriceCOP, currency, trm)}
