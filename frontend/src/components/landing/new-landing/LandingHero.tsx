@@ -10,12 +10,20 @@ import { UpgradeModal } from '@/components/ui/UpgradeModal';
 // ── Parallax Hook ──────────────────────────────────────────────────────────────
 function useParallax(speed: number = 0.5) {
   const ref = useRef<HTMLDivElement>(null);
+  const ticking = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!ref.current) return;
-      const scrollY = window.scrollY;
-      ref.current.style.transform = `translateY(${scrollY * speed}px)`;
+      if (!ticking.current && ref.current) {
+        ticking.current = true;
+        requestAnimationFrame(() => {
+          if (ref.current) {
+            const scrollY = window.scrollY;
+            ref.current.style.transform = `translateY(${scrollY * speed}px)`;
+          }
+          ticking.current = false;
+        });
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -26,24 +34,25 @@ function useParallax(speed: number = 0.5) {
 }
 
 // ── Animation Variants ────────────────────────────────────────────────────────
+// FIX: No opacity:0 — elementos visibles desde el inicio para evitar pantallas negras
 const revealVariants = {
-  hidden: { opacity: 0, y: 50 },
+  hidden: { opacity: 1, y: 25 }, // Ya visible, solo sube un poco
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.8,
+      duration: 0.6,
       ease: [0.16, 1, 0.3, 1] as [number, number, number, number]
     }
   }
 };
 
 const staggerContainer = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 1 }, // Ya visible, sin opacity 0
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.12,
+      staggerChildren: 0.1,
       delayChildren: 0.1
     }
   }
@@ -96,15 +105,22 @@ export default function LandingHero() {
   const blob1Ref = useRef<HTMLDivElement>(null);
   const blob2Ref = useRef<HTMLDivElement>(null);
 
-  // Parallax effect para blobs
+  // Parallax effect para blobs (con throttling para evitar lag)
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      if (blob1Ref.current) {
-        blob1Ref.current.style.transform = `translateY(${scrollY * 0.15}px)`;
-      }
-      if (blob2Ref.current) {
-        blob2Ref.current.style.transform = `translateY(${scrollY * -0.1}px)`;
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          if (blob1Ref.current) {
+            blob1Ref.current.style.transform = `translateY(${scrollY * 0.15}px)`;
+          }
+          if (blob2Ref.current) {
+            blob2Ref.current.style.transform = `translateY(${scrollY * -0.1}px)`;
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
