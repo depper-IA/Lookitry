@@ -57,14 +57,14 @@ function BareStepDots({
         return (
           <div key={s.key} className="flex items-center gap-2">
             <div className="flex flex-col items-center gap-1">
-              <motion.div
-                className="rounded-full"
-                animate={{
+              {/* CSS transition instead of spring physics (performance optimization) */}
+              <div
+                className="rounded-full transition-all duration-200 ease-out"
+                style={{
                   width: active ? 24 : done ? 8 : 6,
                   height: active ? 8 : done ? 8 : 6,
                   backgroundColor: done || active ? primaryColor : textMuted + '44',
                 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               />
             </div>
           </div>
