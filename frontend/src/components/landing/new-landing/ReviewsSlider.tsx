@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import type { PublicReview } from '@/types';
 import { SkeletonCard } from '@/components/ui/Skeleton';
@@ -82,7 +83,13 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
 
   return (
     <section className="bg-white dark:bg-[#0d0d0d] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20" aria-label="Reviews de clientes">
-      <div className="mx-auto max-w-5xl sm:max-w-[1180px]">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="mx-auto max-w-5xl sm:max-w-[1180px]"
+      >
         <div className="mb-8 sm:mb-10 text-center">
           <p className="mb-2 sm:mb-3 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.12em] text-[#FF5C3A]">Reviews</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0a0a0a] dark:text-white md:text-4xl">Lo que dicen nuestras marcas</h2>
@@ -210,7 +217,7 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
             [DEV] Mostrando mock reviews — faltan {Math.max(0, 5 - realReviewsCount)} reviews reales aprobadas
           </p>
         )}
-      </div>
+      </motion.div>
     </section>
   );
 }

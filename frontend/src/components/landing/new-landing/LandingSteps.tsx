@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-6 sm:mb-8 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] border shadow-sm transition-all ${light
@@ -26,15 +27,15 @@ const STEPS = [
   {
     n: '02',
     title: 'Elige el producto',
-    desc: 'Selecciona la prenda, accesorio o calzado del catálogo de tu marca.',
+    desc: 'Selecciona la prenda, accesorio o calzado del catalogo de tu marca.',
     img: '/steps/paso-2.webp',
-    alt: 'Selección de producto en el catálogo del probador virtual',
+    alt: 'Seleccion de producto en el catalogo del probador virtual',
     pos: 'object-center'
   },
   {
     n: '03',
     title: 'Ve el resultado',
-    desc: 'Nuestra tecnología de IA genera una imagen realista del producto puesto en tiempo real.',
+    desc: 'Nuestra tecnologia de IA genera una imagen realista del producto puesto en tiempo real.',
     img: '/steps/paso-3.webp',
     alt: 'Resultado generado por IA del probador virtual de ropa',
     pos: 'object-top'
@@ -43,22 +44,26 @@ const STEPS = [
 
 export default function LandingSteps() {
   return (
-    <section id="como-funciona" className="bg-black dark:bg-white py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Cómo funciona">
+    <section id="como-funciona" className="bg-black dark:bg-white py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Como funciona">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16 md:mb-24">
           <SectionTag text="Proceso impecable" />
           <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white dark:text-black mb-4 sm:mb-6 md:mb-8">
-            Tus clientes lo aman,<br /><span className="text-[#FF5C3A]">tú vendes más.</span>
+            Tus clientes lo aman,<br /><span className="text-[#FF5C3A]">tu vendes mas.</span>
           </h2>
           <p className="font-dm-sans text-base sm:text-lg text-white/60 dark:text-[#666] max-w-2xl mx-auto font-light leading-relaxed">
-            Una experiencia de 3 pasos diseñada para eliminar la fricción técnica y maximizar el deleite del cliente final.
+            Una experiencia de 3 pasos disenada para eliminar la friccion tecnica y maximizar el deleite del cliente final.
           </p>
         </div>
 
         <div className="steps-grid grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 md:gap-10">
           {STEPS.map((step, i) => (
-            <div
+            <motion.div
               key={i}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] }}
               className="step-card group relative"
             >
               <div className="relative aspect-[3/4] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] overflow-hidden mb-6 sm:mb-8 border border-white/10 dark:border-[#e8e4df] bg-[#1a1a1a] dark:bg-[#f0ece8] shadow-sm transition-all duration-500 group-hover:shadow-xl">
@@ -77,13 +82,13 @@ export default function LandingSteps() {
               <p className="font-dm-sans text-white/60 dark:text-[#666] leading-relaxed text-sm font-light">
                 {step.desc}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         <div className="flex justify-center mt-10 sm:mt-12 md:mt-16">
           <Link href="/trial-checkout" className="bg-[#FF5C3A] text-white px-6 sm:px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-[#FF5C3A]/20 text-sm sm:text-base">
-            ¡Comenzar mi transformación ahora!
+            Comenzar mi transformacion ahora
           </Link>
         </div>
       </div>

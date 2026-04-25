@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Check, Tag } from 'lucide-react';
 import { PricingConfig } from '@/lib/pricing';
 import { formatCurrency, formatPrice as formatDynamicPrice } from '@/utils/currency';
@@ -61,9 +62,15 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
 
         <div className="features-grid flex flex-wrap justify-center items-stretch gap-6 sm:gap-8 lg:gap-10">
           {/* Básico */}
-          <div className="feature-card w-full sm:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-2.5rem)] max-w-sm bg-[#f8f6f4] dark:bg-[#1a1a1a] border border-[#e8e4df] dark:border-white/10 rounded-2xl sm:rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 md:p-10 flex flex-col hover:border-[#FF5C3A]/60 transition-all duration-500 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="feature-card w-full sm:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-2.5rem)] max-w-sm bg-[#f8f6f4] dark:bg-[#1a1a1a] border border-[#e8e4df] dark:border-white/10 rounded-2xl sm:rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 md:p-10 flex flex-col hover:border-[#FF5C3A]/60 transition-all duration-500 relative hover:shadow-xl hover:shadow-black/5"
+          >
             {hasBasicDiscount && basicLabel && (
-              <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] sm:text-[9px] font-bold uppercase tracking-widest px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+              <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] sm:text-[9px] font-bold uppercase tracking-widest px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap z-10">
                 <Tag size={10} aria-hidden="true" /> {basicLabel}
               </div>
             )}
@@ -92,20 +99,26 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
                 </li>
               ))}
             </ul>
-            <Link href={`/checkout?plan=BASIC&currency=${currency}`} className="mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white font-bold text-sm text-center hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] transition-all">
+            <Link href={`/checkout?plan=BASIC&currency=${currency}`} className="mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white font-bold text-sm text-center hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] transition-all active:scale-95">
               Contratar Básico
             </Link>
-          </div>
+          </motion.div>
 
           {/* Pro */}
-          <div className="feature-card w-full sm:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-2.5rem)] max-w-sm bg-[#1c1c1c] dark:bg-[#1c1c1c] border border-[#FF5C3A]/60 rounded-2xl sm:rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 md:p-10 flex flex-col relative z-10 shadow-[0_40px_100px_rgba(255,92,58,0.15)] scale-[1.02]">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="feature-card w-full sm:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-2.5rem)] max-w-sm bg-[#1c1c1c] dark:bg-[#1c1c1c] border border-[#FF5C3A]/60 rounded-2xl sm:rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 md:p-10 flex flex-col relative z-10 shadow-[0_40px_100px_rgba(255,92,58,0.15)] scale-[1.02] hover:shadow-[0_50px_120px_rgba(255,92,58,0.25)] transition-all duration-500"
+          >
             {hasProDiscount && proLabel && (
-              <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] sm:text-[9px] font-bold uppercase tracking-widest px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+              <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] sm:text-[9px] font-bold uppercase tracking-widest px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap z-10">
                 <Tag size={10} aria-hidden="true" /> {proLabel}
               </div>
             )}
             {!hasProDiscount && (
-              <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-[#FF5C3A] text-white text-[8px] sm:text-[9px] font-bold uppercase tracking-widest px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-lg whitespace-nowrap">Plan Más Solicitado</div>
+              <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 bg-[#FF5C3A] text-white text-[8px] sm:text-[9px] font-bold uppercase tracking-widest px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-lg whitespace-nowrap z-10">Plan Más Solicitado</div>
             )}
             <div className="text-[#FF5C3A] font-bold text-[9px] sm:text-[10px] uppercase tracking-[.2em] sm:tracking-[.25em] mb-3 sm:mb-4">Profesional</div>
             <h3 className="font-jakarta font-bold text-2xl sm:text-3xl text-white mb-3 sm:mb-4">Pro</h3>
@@ -132,13 +145,19 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
                 </li>
               ))}
             </ul>
-            <Link href={`/checkout?plan=PRO&currency=${currency}`} className="mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] bg-[#FF5C3A] text-white font-bold text-sm text-center hover:bg-white hover:text-black transition-all shadow-xl shadow-[#FF5C3A]/20">
+            <Link href={`/checkout?plan=PRO&currency=${currency}`} className="mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] bg-[#FF5C3A] text-white font-bold text-sm text-center hover:bg-white hover:text-black transition-all shadow-xl shadow-[#FF5C3A]/20 active:scale-95">
               Activar Plan Pro
             </Link>
-          </div>
+          </motion.div>
 
           {/* Enterprise */}
-          <div className="feature-card w-full sm:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-2.5rem)] max-w-sm bg-[#f8f6f4] dark:bg-[#1a1a1a] border border-[#e8e4df] dark:border-white/10 rounded-2xl sm:rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 md:p-10 flex flex-col hover:border-[#FF5C3A]/60 transition-all duration-500">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="feature-card w-full sm:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-2.5rem)] max-w-sm bg-[#f8f6f4] dark:bg-[#1a1a1a] border border-[#e8e4df] dark:border-white/10 rounded-2xl sm:rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 md:p-10 flex flex-col hover:border-[#FF5C3A]/60 transition-all duration-500 hover:shadow-xl hover:shadow-black/5"
+          >
             <div className="text-[#FF5C3A] font-bold text-[9px] sm:text-[10px] uppercase tracking-[.2em] sm:tracking-[.25em] mb-3 sm:mb-4">Retail y Corp</div>
             <h3 className="font-jakarta font-bold text-2xl sm:text-3xl text-black dark:text-white mb-3 sm:mb-4">Enterprise</h3>
             <div className="flex items-baseline gap-2 mb-6 sm:mb-8">
@@ -155,10 +174,10 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
                 </li>
               ))}
             </ul>
-            <Link href="/contacto" className="mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white font-bold text-sm text-center hover:border-[#FF5C3A] hover:text-[#FF5C3A] dark:hover:text-[#FF5C3A] transition-all">
+            <Link href="/contacto" className="mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white font-bold text-sm text-center hover:border-[#FF5C3A] hover:text-[#FF5C3A] dark:hover:text-[#FF5C3A] transition-all active:scale-95">
               Hablar con Ventas
             </Link>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
