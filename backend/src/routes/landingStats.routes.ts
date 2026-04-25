@@ -70,7 +70,7 @@ router.get('/', async (_req, res) => {
 
     // Cache result
     if (redis) {
-      await redis.setEx(CACHE_KEY, CACHE_TTL, JSON.stringify(result));
+      await redis.setex(CACHE_KEY, CACHE_TTL, JSON.stringify(result));
     }
 
     return res.status(200).json(result);
