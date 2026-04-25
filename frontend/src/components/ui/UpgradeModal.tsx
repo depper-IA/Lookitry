@@ -50,7 +50,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           {/* Title */}
           <h2 id="upgrade-modal-title" className="mb-4 font-jakarta text-3xl font-black text-white tracking-tight">
             ¡Lleva tu tienda al{' '}
-            <span className="bg-gradient-to-r from-[#FF5C3A] to-[#ff9a7a] bg-clip-text text-transparent">
+            <span className="text-[#FF5C3A]">
               siguiente nivel!
             </span>
           </h2>
@@ -79,7 +79,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
           <Link
             href="/planes?trial=true"
             onClick={onClose}
-            className="group relative mb-4 flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-[#FF5C3A] to-[#ff7b5e] px-8 py-5 font-bold text-white shadow-2xl shadow-[#FF5C3A]/30 transition-all hover:scale-[1.02] hover:shadow-[#FF5C3A]/40 active:scale-[0.98]"
+            className="group relative mb-4 flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-[#FF5C3A] px-8 py-5 font-bold text-white shadow-2xl shadow-[#FF5C3A]/30 transition-all hover:scale-[1.02] hover:bg-[#e64d2e] hover:shadow-[#FF5C3A]/40 active:scale-[0.98]"
           >
             <Gift size={22} />
             <span className="text-lg">Comenzar con Plan Trial</span>

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import type { Metadata } from 'next';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 
 type ServiceStatus = 'ok' | 'degraded' | 'down';
 

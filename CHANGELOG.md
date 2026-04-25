@@ -72,14 +72,14 @@ frontend/src/app/admin/pricing/page.tsx
 frontend/src/app/admin/payment-settings/page.tsx
 frontend/src/app/admin/leads/page.tsx
 frontend/src/app/admin/leads/components/*.tsx
-frontend/src/components/landing/new-landing/LandingHero.tsx
-frontend/src/components/landing/new-landing/LandingNav.tsx
-frontend/src/components/landing/new-landing/LandingPricing.tsx
-frontend/src/components/landing/new-landing/LandingFooter.tsx
-frontend/src/components/landing/new-landing/LandingFaq.tsx
-frontend/src/components/landing/new-landing/LandingSteps.tsx
-frontend/src/components/landing/new-landing/LandingPlugin.tsx
-frontend/src/components/landing/new-landing/ReviewsSlider.tsx
+frontend/src/components/landing/LandingHero.tsx
+frontend/src/components/landing/LandingNav.tsx
+frontend/src/components/landing/LandingPricing.tsx
+frontend/src/components/landing/LandingFooter.tsx
+frontend/src/components/landing/LandingFaq.tsx
+frontend/src/components/landing/LandingSteps.tsx
+frontend/src/components/landing/LandingPlugin.tsx
+frontend/src/components/landing/ReviewsSlider.tsx
 frontend/src/components/dashboard/DashboardLayout.tsx
 frontend/src/components/dashboard/ProductList.tsx
 frontend/src/components/dashboard/UsageStats.tsx
@@ -139,7 +139,7 @@ frontend/src/components/admin/blog/PostsTable.tsx
 - Sin emojis en la UI (cumple regla de diseño)
 
 **Archivos modificados:**
-- `frontend/src/components/landing/new-landing/LandingHero.tsx`
+- `frontend/src/components/landing/LandingHero.tsx`
 - `frontend/src/components/ui/UpgradeModal.tsx`
 
 ---

@@ -200,7 +200,7 @@ export default function LandingNav({
               {megaMenuOpen && (
                 <div
                   onMouseLeave={() => setMegaMenuOpen(false)}
-                  className="absolute left-1/2 top-full mt-4 -translate-x-1/2 w-[50vw] max-w-[650px] rounded-2xl border border-black/10 bg-white p-5 shadow-2xl dark:border-white/10 dark:bg-[#111] animate-in fade-in slide-in-from-top-2 duration-200"
+                  className="absolute left-1/2 top-full mt-4 -translate-x-1/2 w-[90vw] max-w-2xl rounded-2xl border border-black/10 bg-white p-5 shadow-2xl dark:border-white/10 dark:bg-[#111] animate-in fade-in slide-in-from-top-2 duration-200"
                   role="menu"
                   style={{ left: '50%' }}
                 >
@@ -213,12 +213,9 @@ export default function LandingNav({
                           key={prod.title}
                           href={prod.href}
                           onClick={() => setMegaMenuOpen(false)}
-                          className="group relative flex items-center gap-3 rounded-xl px-3 py-3 transition-all hover:bg-[#FF5C3A]/5"
+                          className="group relative flex items-center gap-3 rounded-xl px-3 py-3 transition-all hover:bg-[#FF5C3A]/5 focus-visible:outline-2 focus-visible:outline-[#FF5C3A] focus-visible:outline-offset-2"
                           role="menuitem"
                         >
-                          {/* Línea accent lateral */}
-                          <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-[#FF5C3A] origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-200 ease-out rounded-full" />
-                          {/* Icono del producto */}
                           <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all duration-200 ${
                             index === 0 ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]' :
                             index === 1 ? 'bg-blue-500/10 text-blue-500' :
@@ -244,7 +241,7 @@ export default function LandingNav({
                           key={link.title}
                           href={link.href}
                           onClick={() => setMegaMenuOpen(false)}
-                          className="group relative flex items-center rounded-xl px-3 py-3 transition-all hover:bg-[#FF5C3A]/5"
+                          className="group relative flex items-center rounded-xl px-3 py-3 transition-all hover:bg-[#FF5C3A]/5 focus-visible:outline-2 focus-visible:outline-[#FF5C3A] focus-visible:outline-offset-2"
                           role="menuitem"
                         >
                           <span className="text-[12px] font-medium text-[#999] group-hover:text-[#FF5C3A] transition-colors duration-150">

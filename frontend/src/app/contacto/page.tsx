@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
-import { ContactCards } from '@/components/landing/new-landing/ContactCards';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
+import { ContactCards } from '@/components/landing/ContactCards';
 
 const BASE_URL = 'https://lookitry.com';
 

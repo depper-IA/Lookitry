@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Crown, ShieldCheck } from 'lucide-react';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 import { useEffect, useState } from 'react';
 import { useCurrency } from '@/hooks/useCurrency';
 
