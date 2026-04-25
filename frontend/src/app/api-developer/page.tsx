@@ -22,8 +22,8 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 
 const PREMIUM_FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,100..1000;1,100..1000&family=JetBrains+Mono:wght@400;500&display=swap');

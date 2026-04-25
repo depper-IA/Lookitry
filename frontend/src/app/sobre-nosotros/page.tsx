@@ -4,8 +4,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { 
   Instagram, 

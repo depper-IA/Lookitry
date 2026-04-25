@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 import type { PricingConfig, PlanPriceOverride } from '@/lib/pricing';
 import { precioConDescuento } from '@/lib/pricing';
 import { formatPrice as formatPriceUtil } from '@/utils/currency';

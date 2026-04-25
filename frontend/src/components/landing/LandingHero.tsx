@@ -118,6 +118,7 @@ export default function LandingHero() {
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
+        ticking = true;
         requestAnimationFrame(() => {
           const scrollY = window.scrollY;
           if (blob1Ref.current) {
@@ -128,12 +129,14 @@ export default function LandingHero() {
           }
           ticking = false;
         });
-        ticking = true;
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      ticking = false;
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -294,7 +297,7 @@ export default function LandingHero() {
           </motion.div>
 
           <motion.div variants={revealVariants}>
-            <p className="mx-auto mb-8 max-w-xl font-dm-sans text-base font-light leading-[1.6] text-[#666] dark:text-white/80 sm:mb-12 sm:text-lg lg:mx-0">
+            <p className="mx-auto mb-8 max-w-xl font-dm-sans text-base font-light leading-[1.6] text-[#555] dark:text-white/80 sm:mb-12 sm:text-lg lg:mx-0">
               Tu tienda online, <span className="font-bold text-[#FF5C3A]">sin pagar un diseñador.</span> Permite que tus clientes se prueben tu catálogo en segundos con IA.
             </p>
           </motion.div>
@@ -330,7 +333,7 @@ export default function LandingHero() {
             </motion.div>
           </motion.div>
 
-          <motion.div variants={revealVariants} className="mt-12 flex flex-wrap items-center justify-center gap-6 font-bold uppercase tracking-[0.2em] text-[#666] dark:text-white/80 sm:mt-16 sm:gap-10 sm:text-[10px] sm:tracking-[0.25em] lg:justify-start">
+          <motion.div variants={revealVariants} className="mt-12 flex flex-wrap items-center justify-center gap-6 font-bold uppercase tracking-[0.2em] text-[#555] dark:text-white/80 sm:mt-16 sm:gap-10 sm:text-[10px] sm:tracking-[0.25em] lg:justify-start">
             <div className="flex items-center gap-2 transition-colors hover:text-[#FF5C3A] sm:gap-2.5">
               <ShieldCheck size={14} className="shrink-0 text-[#FF5C3A]" aria-hidden="true" /> 100% Seguro
             </div>
@@ -382,7 +385,7 @@ export default function LandingHero() {
                     )}
                   </div>
 
-                  <label className="mt-3 cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 sm:text-[11px]">
+                  <label className="mt-3 cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 sm:text-[11px] min-h-11 flex items-center justify-center">
                     <input
                       type="file"
                       accept="image/*"
@@ -493,7 +496,7 @@ export default function LandingHero() {
                       <Camera size={32} className="text-white/20" />
                     </div>
                   )}
-                  <label className="cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30">
+                  <label className="cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 min-h-11 flex items-center justify-center">
                     <input
                       type="file"
                       accept="image/*"

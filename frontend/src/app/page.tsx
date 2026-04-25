@@ -3,7 +3,7 @@ import { getPricingConfig, type PricingConfig } from '@/lib/pricing';
 
 // Carga dinámica para evitar errores de GSAP/Window en el build de servidor
 const PremiumLanding = dynamic(
-  () => import('@/components/landing/new-landing/PremiumLanding'),
+  () => import('@/components/landing/PremiumLanding'),
   { ssr: false }
 );
 

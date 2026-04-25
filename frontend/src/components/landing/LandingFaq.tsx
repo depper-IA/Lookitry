@@ -102,9 +102,9 @@ export default function LandingFaq() {
                 role="tab"
                 aria-selected={active}
                 aria-controls={`faq-panel-${tab.id}`}
-                className={`flex items-center gap-2 sm:gap-2.5 px-4 sm:px-6 md:px-7 py-2.5 sm:py-3 md:py-3.5 rounded-xl sm:rounded-[1.2rem] text-[10px] sm:text-[11px] font-bold uppercase tracking-widest transition-all duration-300 border whitespace-nowrap ${active
+                className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl sm:rounded-[1.2rem] text-[10px] sm:text-[11px] font-bold uppercase tracking-widest transition-all duration-300 border whitespace-nowrap ${active
                     ? 'bg-[#FF5C3A] border-[#FF5C3A] text-white shadow-2xl shadow-[#FF5C3A]/30'
-                    : 'bg-[#f8f6f4] dark:bg-white/5 border-[#e8e4df] dark:border-white/5 text-[#666] dark:text-white/40 hover:bg-[#eeebe7] dark:hover:bg-white/10 hover:text-[#0a0a0a] dark:hover:text-white/60'
+                    : 'bg-[#f8f6f4] dark:bg-white/5 border-[#e8e4df] dark:border-white/5 text-[#555] dark:text-white/40 hover:bg-[#eeebe7] dark:hover:bg-white/10 hover:text-[#0a0a0a] dark:hover:text-white/60'
                   }`}
               >
                 {tab.icon} {tab.label}
@@ -127,13 +127,13 @@ export default function LandingFaq() {
                   <span className={`font-jakarta text-base sm:text-lg font-bold pr-4 transition-all duration-300 ${open ? 'text-[#FF5C3A]' : 'text-[#0a0a0a] dark:text-white/70 group-hover:text-[#0a0a0a] dark:group-hover:text-white'}`}>
                     {item.q}
                   </span>
-                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center shrink-0 transition-all duration-500 ${open ? 'bg-[#FF5C3A] border-[#FF5C3A] rotate-180' : 'border-[#e8e4df] dark:border-white/10 text-[#666] dark:text-white/20'
+                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center shrink-0 transition-all duration-500 ${open ? 'bg-[#FF5C3A] border-[#FF5C3A] rotate-180' : 'border-[#e8e4df] dark:border-white/10 text-[#555] dark:text-white/20'
                     }`} aria-hidden="true">
                     <ChevronDown size={18} />
                   </div>
                 </button>
                 {open && (
-                  <div className="pb-6 sm:pb-8 text-[#666] dark:text-white/50 text-sm leading-relaxed max-w-3xl animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="pb-6 sm:pb-8 text-[#555] dark:text-white/50 text-sm leading-relaxed max-w-3xl animate-in fade-in slide-in-from-top-2 duration-300">
                     {item.a}
                   </div>
                 )}
@@ -143,7 +143,7 @@ export default function LandingFaq() {
         </div>
 
         {/* CTA Marketing */}
-        <div className="mt-12 sm:mt-16 relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a0a0a] via-[#141414] to-[#0a0a0a] dark:from-black dark:via-[#111] dark:to-black p-8 sm:p-10 md:p-12 text-center border border-white/5">
+        <div className="mt-12 sm:mt-16 relative overflow-hidden rounded-3xl bg-[#0a0a0a] border border-[#333] dark:border-white/10 p-8 sm:p-10 md:p-12 text-center">
           {/* Decorative elements */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[1px] bg-gradient-to-r from-transparent via-[#FF5C3A]/50 to-transparent" />
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[150px] h-[1px] bg-gradient-to-r from-transparent via-[#FF5C3A]/30 to-transparent" />

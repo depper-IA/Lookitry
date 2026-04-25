@@ -15,8 +15,8 @@ import {
   ChevronDown,
   Link as LinkIcon
 } from 'lucide-react';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 import type { PricingConfig } from '@/lib/pricing';
 import { formatPrice as formatPriceUtil } from '@/utils/currency';
 import { useCurrency } from '@/hooks/useCurrency';

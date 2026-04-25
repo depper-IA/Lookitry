@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 import { BlogList } from '@/components/blog/BlogList';
 import { BlogHero } from '@/components/blog/BlogHero';
 import { useTheme } from '@/components/blog/BlogThemeWrapper';

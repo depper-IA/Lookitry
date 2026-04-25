@@ -6,8 +6,8 @@ import { Calendar, Tag, ChevronLeft, ArrowUpRight, Zap, BarChart3 } from 'lucide
 import BlogArticle, { TableOfContents } from './BlogArticle';
 import { BlogImageWithFallback } from './BlogImageWithFallback';
 import { useTheme } from './BlogThemeWrapper';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 import { cn } from '@/utils/cn';
 import { getBlogFeaturedImage, getBlogTeaser } from '@/services/blog.service';
 import { BlogShareRail } from './BlogShareRail';

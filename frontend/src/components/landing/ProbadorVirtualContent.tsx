@@ -15,8 +15,8 @@ import {
   Infinity as InfinityIcon,
 } from 'lucide-react';
 
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 import { useCurrency } from '@/hooks/useCurrency';
 
 const PREMIUM_FONTS = `
