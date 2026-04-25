@@ -2,10 +2,11 @@ import rateLimit from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 
-// IPs en whitelist hardcodeada (desarrollo优先级)
+// IPs en whitelist hardcodeada (desarrollo + testing ilimitado)
 const HARDCODED_WHITELIST_IPS = [
   '161.18.87.45', // Travis - desarrollo
   '161.18.93.138', // Sam Wilkie
+  // Añadir IPs reales de desarrollo aquí
 ];
 
 // Cache para IPs de payment_settings (actualiza cada 5 minutos)
