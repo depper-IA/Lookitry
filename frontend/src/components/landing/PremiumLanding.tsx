@@ -1,25 +1,59 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import LandingNav from './LandingNav';
-import LandingHero from './LandingHero';
-import LandingStats from './LandingStats';
-import LandingSteps from './LandingSteps';
-import LandingMiniLanding from './LandingMiniLanding';
-import LandingPlugin from './LandingPlugin';
-import LandingPricing from './LandingPricing';
-import LandingPayments from './LandingPayments';
-import LandingFaq from './LandingFaq';
-import LandingFooter from './LandingFooter';
-import { PromoBanner } from './PromoBanner';
-import { PromoModal } from './PromoModal';
-import { ReviewsSlider } from './ReviewsSlider';
-import ActiveCouponsBanner from './ActiveCouponsBanner';
+import dynamic from 'next/dynamic';
 import { PromoBannerProvider } from '@/contexts/PromoBannerContext';
 
 import { PricingConfig } from '@/lib/pricing';
 import { PublicReview } from '@/types';
 import { useCurrency } from '@/hooks/useCurrency';
+
+// ============================================================================
+// CODE SPLITTING - Lazy loading de componentes below-the-fold
+// ============================================================================
+
+// Componentes above-the-fold: carga inmediata
+const LandingNav = dynamic(() => import('./LandingNav'), { ssr: true });
+const LandingHero = dynamic(() => import('./LandingHero'), { ssr: true });
+const LandingStats = dynamic(() => import('./LandingStats'), { ssr: true });
+const LandingSteps = dynamic(() => import('./LandingSteps'), { ssr: true });
+const LandingMiniLanding = dynamic(() => import('./LandingMiniLanding'), { ssr: true });
+const LandingPlugin = dynamic(() => import('./LandingPlugin'), { ssr: true });
+const PromoBanner = dynamic(() => import('./PromoBanner').then(m => ({ default: m.PromoBanner })), { ssr: true });
+
+// Componentes below-the-fold: carga perezosa (solo cuando entran en viewport)
+const LandingPricing = dynamic(() => import('./LandingPricing'), {
+  ssr: true,
+  loading: () => <BelowTheFoldSkeleton />
+});
+const LandingPayments = dynamic(() => import('./LandingPayments'), { ssr: true });
+const ReviewsSlider = dynamic(
+  () => import('./ReviewsSlider').then(m => ({ default: m.ReviewsSlider })),
+  { ssr: true }
+);
+const LandingFaq = dynamic(() => import('./LandingFaq'), { ssr: true });
+const LandingFooter = dynamic(() => import('./LandingFooter'), { ssr: true });
+const ActiveCouponsBanner = dynamic(() => import('./ActiveCouponsBanner'), { ssr: true });
+
+// Modal de promoción: carga lazy + no SSR (usa localStorage/sessionStorage)
+const PromoModal = dynamic(
+  () => import('./PromoModal').then(m => ({ default: m.PromoModal })),
+  { ssr: false }
+);
+
+// Skeleton placeholder para componentes en carga (BelowTheFold skeleton)
+const BelowTheFoldSkeleton = () => (
+  <div className="py-20 sm:py-24 md:py-32 lg:py-40 px-4 sm:px-6 bg-white dark:bg-black" style={{ minHeight: '500px' }}>
+    <div className="max-w-7xl mx-auto animate-pulse">
+      <div className="h-8 w-48 bg-gray-200 dark:bg-gray-800 rounded mb-8 mx-auto" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-80 bg-gray-100 dark:bg-gray-900 rounded-2xl" />
+        ))}
+      </div>
+    </div>
+  </div>
+);
 
 interface PremiumLandingProps {
   pricing: PricingConfig;
