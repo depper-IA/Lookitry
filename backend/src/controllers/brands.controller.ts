@@ -49,8 +49,8 @@ export class BrandsController {
 
 
       const brand = await brandsService.getBrandById(req.brand.id);
-
-
+      console.log('[DEBUG getMe] req.brand.id:', req.brand.id);
+      console.log('[DEBUG getMe] brand encontrado:', brand);
 
       if (!brand) {
 
