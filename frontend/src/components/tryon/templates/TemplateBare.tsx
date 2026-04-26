@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { GenerationLoader } from '../GenerationLoader';
 import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
+import { TermsCheckbox } from '../TermsCheckbox';
 import type { TryOnTemplateProps } from './types';
 import {
   ErrorBanner,
@@ -99,6 +100,8 @@ export function TemplateBare(props: TryOnTemplateProps) {
     onSelfieUpload,
     onProductSelect,
     onGenerate,
+    termsAccepted,
+    onTermsAccepted,
   } = props;
 
   // Tokens de color derivados del secondaryColor del brand
@@ -365,8 +368,9 @@ export function TemplateBare(props: TryOnTemplateProps) {
                             }
                             onGenerate();
                           }}
+                          disabled={!termsAccepted}
                           aria-label={alreadyGenerated ? 'Ver resultado guardado' : buttonText}
-                          className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group active:scale-[0.98]"
+                          className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-40"
                           style={{
                             backgroundColor: primaryColor,
                             boxShadow: `0 8px 32px ${primaryGlow}`,
@@ -386,6 +390,17 @@ export function TemplateBare(props: TryOnTemplateProps) {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                           </svg>
                         </button>
+
+                        {/* Terms checkbox - solo se muestra si NO está aceptado */}
+                        {!termsAccepted && (
+                          <TermsCheckbox
+                            onAccepted={onTermsAccepted}
+                            isAccepted={termsAccepted}
+                            primaryColor={primaryColor}
+                            textColor={textPrimary}
+                            mutedColor={textMuted}
+                          />
+                        )}
 
                         <p
                           className="text-center text-[10px] font-black uppercase tracking-widest italic opacity-40"

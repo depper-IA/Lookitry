@@ -50,6 +50,10 @@ export interface TryOnTemplateProps {
   onGenerate: () => void;
   onDismissError: () => void;
   onDismissNotice: () => void;
+
+  // Terms acceptance (legal disclaimer)
+  termsAccepted: boolean;
+  onTermsAccepted: () => void;
 }
 
 

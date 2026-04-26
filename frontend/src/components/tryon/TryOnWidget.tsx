@@ -8,8 +8,11 @@ import { TemplateLandingEmbed } from './templates/TemplateLandingEmbed';
 import { TemplateShowcase } from './templates/TemplateShowcase';
 import { TemplateModernSidebar } from './templates/TemplateModernSidebar';
 import { TemplateBoldProStudio } from './templates/TemplateBoldProStudio';
+import { LegalDisclaimerModal } from './LegalDisclaimerModal';
 import type { Layout, Product, Step } from './templates/types';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
+
+const TERMS_STORAGE_KEY = 'tryon_terms_accepted';
 
 interface TryOnWidgetProps {
   brandSlug: string;
@@ -63,10 +66,16 @@ export function TryOnWidget({
   const [uploadPrivacyNotice, setUploadPrivacyNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
   // Productos ya generados en esta sesión: productId → imageUrl
   const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
   // Hash de la selfie actual para cachear resultados por selfie específica
   const [selfieHash, setSelfieHash] = useState<string>('');
+  // Términos aceptados en esta sesión
+  const [termsAccepted, setTermsAccepted] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return sessionStorage.getItem(TERMS_STORAGE_KEY) === 'true';
+  });
 
   // Generar hash SHA-256 de un archivo
   const generateFileHash = async (file: File): Promise<string> => {
@@ -188,12 +197,7 @@ export function TryOnWidget({
     }
     setGeneratedProducts(new Map());
     
-    if (selectedProduct) {
-      // Si el usuario sube la foto y ya había seleccionado el producto, genera automáticamente.
-      handleGenerate(file, selectedProduct, true);
-    } else {
-      // Como seguridad, si logró subir sin producto (bare), pasa a select,
-      // aunque nuestro nuevo diseño en bare deshabilitará el upload si no hay producto.
+    if (!selectedProduct) {
       setStep('select');
     }
   };
@@ -238,6 +242,12 @@ export function TryOnWidget({
     const activeFile = fileOverride || selfieFile;
     const activeProduct = productOverride || selectedProduct;
     if (!activeFile || !activeProduct) return;
+
+    // Si términos no aceptados, mostrar modal en lugar de proceder
+    if (!termsAccepted && !force) {
+      setShowDisclaimerModal(true);
+      return;
+    }
 
     const cached = generatedProducts.get(activeProduct.id);
     if (cached && !force) {
@@ -316,6 +326,13 @@ export function TryOnWidget({
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, EMBED_ORIGIN);
     }
   };
+
+  // Handler cuando el usuario acepta los términos
+  const handleTermsAccepted = useCallback(() => {
+    sessionStorage.setItem(TERMS_STORAGE_KEY, 'true');
+    setTermsAccepted(true);
+    setShowDisclaimerModal(false);
+  }, []);
 
   const EMBED_ORIGIN = useMemo(() => {
     if (typeof window === 'undefined' || !document.referrer) return '*';
@@ -413,6 +430,8 @@ export function TryOnWidget({
     onGenerate: () => handleGenerate(),
     onDismissError: () => setError(null),
     onDismissNotice: () => setNotice(null),
+    termsAccepted,
+    onTermsAccepted: handleTermsAccepted,
   } as const;
 
   const renderTemplate = () => {
@@ -432,6 +451,11 @@ export function TryOnWidget({
   return (
     <div id="tryon-widget-container">
       <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+      <LegalDisclaimerModal
+        isOpen={showDisclaimerModal}
+        onClose={() => setShowDisclaimerModal(false)}
+        brandPrimaryColor={primaryColor}
+      />
       {renderTemplate()}
     </div>
   );

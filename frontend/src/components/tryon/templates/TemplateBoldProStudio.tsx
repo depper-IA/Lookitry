@@ -2,6 +2,7 @@
 
 import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
+import { TermsCheckbox } from '../TermsCheckbox';
 import type { TryOnTemplateProps } from './types';
 import { ErrorBanner, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner, SelfieThumb } from './shared';
 import { useState, useEffect, useRef } from 'react';
@@ -40,6 +41,8 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
     onProductSelect,
     onProceedToUpload,
     onGenerate,
+    termsAccepted,
+    onTermsAccepted,
   } = props;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -403,6 +406,16 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                       <span>{selectedProduct && generatedProducts.has(selectedProduct.id) ? 'Recuperar Look' : buttonText}</span>
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </button>
+                    {/* Terms checkbox - solo se muestra si NO está aceptado */}
+                    {!termsAccepted && (
+                      <TermsCheckbox
+                        onAccepted={onTermsAccepted}
+                        isAccepted={termsAccepted}
+                        primaryColor={primaryColor}
+                        textColor={textPrimary}
+                        mutedColor={textMuted}
+                      />
+                    )}
                     <p className="text-center text-[11px] md:text-sm mt-4 font-medium" style={{ color: textMuted }}>
                       {selectedProduct && generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
                     </p>

@@ -37,6 +37,8 @@ export function WidgetRealPreview({
   const [previewSelfie, setPreviewSelfie] = useState<string | null>(null);
   const [step, setStep] = useState<'upload' | 'select' | 'generating' | 'result'>('select');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  // Terms for preview - always accepted in preview mode
+  const [termsAccepted, setTermsAccepted] = useState(true);
 
   // Configuración de escalado para que el preview se vea EXACTO a un móvil real
   // El marco tiene 260px de ancho. Un móvil estándar tiene ~375px.
@@ -113,6 +115,8 @@ export function WidgetRealPreview({
     onGenerate: () => setStep('generating'),
     onDismissError: () => {},
     onDismissNotice: () => {},
+    termsAccepted,
+    onTermsAccepted: () => setTermsAccepted(true),
   };
 
   const renderTemplate = () => {

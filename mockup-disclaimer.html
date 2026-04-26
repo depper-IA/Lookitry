@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup - Disclaimer Checkbox Try-On</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #0a0a0a; color: #fff; padding: 2rem; }
+  h1 { text-align: center; margin-bottom: 2rem; color: #FF5C3A; }
+  h2 { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 0.1em; margin: 1.5rem 0 1rem; text-align: center; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; }
+  .card { background: #141414; border-radius: 16px; padding: 1.5rem; border: 1px solid #222; }
+  .card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-bottom: 1rem; }
+
+  /* Simulación de widget */
+  .mock-widget { background: #1a1a1a; border-radius: 12px; padding: 1.5rem; }
+  .mock-btn { background: #FF5C3A; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.15em; width: 100%; cursor: pointer; }
+
+  /* Checkbox styles */
+  .checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; padding: 0 4px; }
+  .checkbox-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: #FF5C3A; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
+  .checkbox-row label { font-size: 11px; color: #999; line-height: 1.5; cursor: pointer; }
+  .checkbox-row label a { color: #FF5C3A; text-decoration: none; border-bottom: 1px dashed #FF5C3A; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; }
+  .badge-recomendado { background: #FF5C3A; color: white; }
+  .badge-opcion { background: #333; color: #888; }
+
+  /* Disabled state */
+  .mock-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .mock-btn.active { opacity: 1; cursor: pointer; }
+
+  /* Note */
+  .note { max-width: 600px; margin: 2rem auto 0; text-align: center; color: #555; font-size: 12px; line-height: 1.6; }
+  .note strong { color: #888; }
+
+  /* PRO sections */
+  .generacion-auto { background: #1a1a1a; border-radius: 12px; padding: 1.5rem; margin-top: 1rem; }
+  .generacion-auto h4 { font-size: 12px; color: #666; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; }
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #222; }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle { width: 44px; height: 24px; background: #333; border-radius: 12px; position: relative; cursor: pointer; transition: background 0.2s; }
+  .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; }
+  .toggle.on { background: #FF5C3A; }
+  .toggle.on::after { transform: translateX(20px); }
+</style>
+</head>
+<body>
+
+<h1>DISCLAIMER CHECKBOX — TRY-ON</h1>
+
+<div class="grid">
+
+  <!-- OPCIÓN A: Checkbox + Modal -->
+  <div class="card">
+    <span class="badge badge-recomendado">✓ RECOMENDADO</span>
+    <h3>Opción A: Checkbox + Modal interno</h3>
+
+    <div class="mock-widget">
+      <div style="font-size: 11px; color: #666; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em;">Subiste tu foto ✓</div>
+
+      <button class="mock-btn" disabled>Probarme esto</button>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="a1" onchange="updateBtnA(this)">
+        <label for="a1">
+          Acepto los <a href="#" onclick="openModal(event)">términos de uso</a> de la generación virtual
+        </label>
+      </div>
+    </div>
+
+    <div style="margin-top: 1rem; font-size: 11px; color: #555; line-height: 1.5;">
+      <strong style="color:#888">Cómo funciona:</strong><br>
+      El link "términos de uso" abre un modal encima del widget sin salir de la página. El checkbox habilita el botón.
+    </div>
+  </div>
+
+  <!-- OPCIÓN B: Checkbox + Link externo -->
+  <div class="card">
+    <span class="badge badge-opcion">Alternativa</span>
+    <h3>Opción B: Checkbox + Link a /terminos</h3>
+
+    <div class="mock-widget">
+      <div style="font-size: 11px; color: #666; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em;">Subiste tu foto ✓</div>
+
+      <button class="mock-btn" disabled id="btnB">Probarme esto</button>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="b1" onchange="updateBtnB(this)">
+        <label for="b1">
+          Acepto usar esta imagen solo con consentimiento y conforme a los <a href="/terminos" target="_blank">términos del servicio</a>
+        </label>
+      </div>
+    </div>
+
+    <div style="margin-top: 1rem; font-size: 11px; color: #555; line-height: 1.5;">
+      <strong style="color:#888">Cómo funciona:</strong><br>
+      El link abre /terminos en nueva pestaña. El checkbox habilita el botón.
+    </div>
+  </div>
+
+  <!-- OPCIÓN C: Texto + link sin checkbox -->
+  <div class="card">
+    <span class="badge badge-opcion">Mínimo</span>
+    <h3>Opción C: Solo link sutil (sin checkbox)</h3>
+
+    <div class="mock-widget">
+      <div style="font-size: 11px; color: #666; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em;">Subiste tu foto ✓</div>
+
+      <button class="mock-btn">Probarme esto</button>
+
+      <div style="margin-top: 10px; text-align: center;">
+        <a href="/terminos" target="_blank" style="font-size: 10px; color: #555; text-decoration: none; border-bottom: 1px solid #333;">
+          Al usar aceptas nuestros términos de uso →
+        </a>
+      </div>
+    </div>
+
+    <div style="margin-top: 1rem; font-size: 11px; color: #555; line-height: 1.5;">
+      <strong style="color:#888">Cómo funciona:</strong><br>
+      Sin checkbox, solo link sutil. El botón siempre activo. Menor fricción, menor protección legal.
+    </div>
+  </div>
+
+</div>
+
+<h2>Configuración: Generación Automática</h2>
+
+<div style="max-width: 600px; margin: 0 auto;">
+
+  <div class="generacion-auto">
+    <h4>¿Qué hacer con la generación automática?</h4>
+
+    <div class="toggle-row">
+      <span style="font-size: 13px; color: #aaa;">Eliminar auto-generate al subir selfie</span>
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="toggle-row">
+      <span style="font-size: 13px; color: #aaa;">El usuario siempre pasa por el botón + checkbox</span>
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="toggle-row">
+      <span style="font-size: 13px; color: #aaa;">Guardar timestamp de aceptación en sesión</span>
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <strong>Recomendación técnica:</strong> La Opción A (modal interno) ofrece la mejor experiencia — el usuario no abandona la página, puede leer los términos inline, y el checkbox queda registrado en sesión con timestamp. La Opción C es la más simple pero ofrece menor protección legal porque no hay confirmación activa del usuario.
+</div>
+
+<!-- Modal para opción A -->
+<div id="modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:#141414; border-radius:16px; padding:2rem; max-width:500px; width:100%; max-height:80vh; overflow-y:auto;">
+    <h2 style="color:#FF5C3A; font-size:16px; margin-bottom:1rem;">Términos de Uso — Generación Virtual</h2>
+    <div style="font-size:13px; color:#999; line-height:1.7;">
+      <p style="margin-bottom:1rem;">Al usar la función de probador virtual con IA, aceptas que:</p>
+      <ul style="margin-left:1.5rem; margin-bottom:1rem;">
+        <li>Las imágenes que generes son para uso personal o comercial legítimo.</li>
+        <li>Cuentas con el consentimiento de cualquier persona cuya imagen aparezca en las fotos que subes.</li>
+        <li>No utilizarás las generaciones para suplantar identidades, difamar o infringir derechos de terceros.</li>
+        <li>Lookitry no se responsabiliza por el uso que hagas de las imágenes generadas.</li>
+        <li>Las generaciones pueden ser almacenadas para mejorar el servicio (sin asociarse a datos personales).</li>
+      </ul>
+      <p>Para más detalles consulta nuestros <a href="/terminos" style="color:#FF5C3A;">Términos y Condiciones</a>.</p>
+    </div>
+    <button onclick="closeModal()" style="margin-top:1.5rem; width:100%; padding:12px; background:#FF5C3A; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">
+      Cerrar y continuar
+    </button>
+  </div>
+</div>
+
+<script>
+function updateBtnA(cb) {
+  document.querySelector('.card:first-child .mock-btn').disabled = !cb.checked;
+  document.querySelector('.card:first-child .mock-btn').className = cb.checked ? 'mock-btn active' : 'mock-btn';
+}
+function updateBtnB(cb) {
+  document.getElementById('btnB').disabled = !cb.checked;
+  document.getElementById('btnB').className = cb.checked ? 'mock-btn active' : 'mock-btn';
+}
+function openModal(e) {
+  e.preventDefault();
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+</script>
+
+</body>
+</html>
