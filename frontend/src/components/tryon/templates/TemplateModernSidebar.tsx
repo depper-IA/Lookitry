@@ -41,6 +41,8 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
     onProceedToUpload,
     onGenerate,
     lockProductSelection = false,
+    termsAccepted = false,
+    onTermsAccepted,
   } = props;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -296,6 +298,8 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
               mainCardBg={mainCardBg}
               mainBorderColor={mainBorderColor}
               generatedProducts={generatedProducts}
+              termsAccepted={props.termsAccepted}
+              onTermsAccepted={props.onTermsAccepted}
             />
           )}
 

@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { SelfieUploader } from '../../SelfieUploader';
 import { SelfieThumb, GENERATION_CACHED_HINT, GENERATION_TIME_HINT } from '../shared';
+import { TermsCheckbox } from '../../TermsCheckbox';
 import type { TryOnTemplateProps, Product } from '../types';
 
 interface UploadStepContentProps {
@@ -21,6 +22,8 @@ interface UploadStepContentProps {
   mainCardBg: string;
   mainBorderColor: string;
   generatedProducts: Map<string, string>;
+  termsAccepted?: boolean;
+  onTermsAccepted?: () => void;
 }
 
 export function UploadStepContent({
@@ -39,6 +42,8 @@ export function UploadStepContent({
   mainCardBg,
   mainBorderColor,
   generatedProducts,
+  termsAccepted = false,
+  onTermsAccepted,
 }: UploadStepContentProps) {
   return (
     <div className="max-w-xl mx-auto space-y-4">
@@ -74,7 +79,8 @@ export function UploadStepContent({
             whileTap={{ scale: 0.97 }}
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="w-full py-3.5 rounded-xl font-black uppercase tracking-[0.1em] text-xs text-white shadow-xl hover:shadow-2xl transition-all duration-200 flex items-center justify-center gap-2"
+            disabled={!termsAccepted}
+            className="w-full py-3.5 rounded-xl font-black uppercase tracking-[0.1em] text-xs text-white shadow-xl hover:shadow-2xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-40"
             style={{ 
               backgroundColor: primaryColor,
               boxShadow: `0 8px 30px ${primaryGlow}`,
@@ -95,6 +101,18 @@ export function UploadStepContent({
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </motion.button>
+
+          {/* Terms checkbox - solo se muestra si NO está aceptado */}
+          {!termsAccepted && onTermsAccepted && (
+            <TermsCheckbox
+              onAccepted={onTermsAccepted}
+              isAccepted={termsAccepted}
+              primaryColor={primaryColor}
+              textColor={mainTextPrimary}
+              mutedColor={mainTextMuted}
+            />
+          )}
+
           <p className="text-center text-[10px] mt-3 font-medium" style={{ color: mainTextMuted }}>
             {generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
           </p>

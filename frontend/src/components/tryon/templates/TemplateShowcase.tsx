@@ -12,6 +12,7 @@ import { EditorialHeader } from './components/EditorialHeader';
 import { SelfiePreviewEditorial } from './components/SelfiePreviewEditorial';
 import { ProductGridEditorial } from './components/ProductGridEditorial';
 import { BottomCTAEditorial } from './components/BottomCTAEditorial';
+import { TermsCheckbox } from '../TermsCheckbox';
 
 // ── Template Showcase: Editorial Fashion Vitrine ──────────────────────────────
 export function TemplateShowcase(props: TryOnTemplateProps) {
@@ -38,6 +39,8 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
     onProductSelect,
     onProceedToUpload,
     onGenerate,
+    termsAccepted,
+    onTermsAccepted,
   } = props;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -329,6 +332,8 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
           bgLuminance={bgLuminance}
           textMuted={textMuted}
           secondaryColor={secondaryColor}
+          termsAccepted={termsAccepted}
+          onTermsAccepted={onTermsAccepted}
         />
       )}
     </div>

@@ -3,6 +3,7 @@
 import { GenerationLoader } from '../GenerationLoader';
 import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
+import { TermsCheckbox } from '../TermsCheckbox';
 import type { TryOnTemplateProps } from './types';
 import { ErrorBanner, FriendlyProductSelector, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner, SelfieThumb } from './shared';
 
@@ -41,6 +42,8 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
     onSelfieUpload,
     onProductSelect,
     onGenerate,
+    termsAccepted,
+    onTermsAccepted,
   } = props;
 
   // Lógica exclusiva para Mini-landing: Siempre usamos variables CSS
@@ -178,24 +181,36 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
                     />
                  </div>
 
-                 {selectedProduct && selfiePreview && (
-                    <div className="pt-4 py-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                      <button
-                        onClick={onGenerate}
-                        className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group"
-                        style={{ 
-                          backgroundColor: primaryColor,
-                          boxShadow: `0 8px 32px ${primaryGlow}`
-                        }}
-                      >
-                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                        <span className="relative z-10">{generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}</span>
-                        <svg className="w-4 h-4 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      </button>
-                    </div>
-                 )}
+{selectedProduct && selfiePreview && (
+                     <div className="pt-4 py-8 animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-3">
+                       <button
+                         onClick={onGenerate}
+                         disabled={!termsAccepted}
+                         className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-40"
+                         style={{ 
+                           backgroundColor: primaryColor,
+                           boxShadow: `0 8px 32px ${primaryGlow}`
+                         }}
+                       >
+                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                         <span className="relative z-10">{generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}</span>
+                         <svg className="w-4 h-4 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                           <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                         </svg>
+                       </button>
+
+                       {/* Terms checkbox - solo se muestra si NO está aceptado */}
+                       {!termsAccepted && (
+                         <TermsCheckbox
+                           onAccepted={onTermsAccepted}
+                           isAccepted={termsAccepted}
+                           primaryColor={primaryColor}
+                           textColor={textPrimary}
+                           mutedColor={textMuted}
+                         />
+                       )}
+                     </div>
+                  )}
                </div>
               )}
 
