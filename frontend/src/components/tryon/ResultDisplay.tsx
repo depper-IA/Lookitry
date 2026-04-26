@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { getProxiedImageUrl } from '@/utils/imageProxy';
+import { isLightBg } from './templates/shared';
 
 // ── Focus Trap Hook ─────────────────────────────────────────────────────────────
 function useFocusTrap(isActive: boolean) {
@@ -59,6 +60,41 @@ function useFocusTrap(isActive: boolean) {
   }, [isActive]);
 
   return containerRef;
+}
+
+// ── Helper para colores del modal de feedback ────────────────────────────────
+function getFeedbackModalStyles(textColor: string, cardBg?: string, cardBorder?: string) {
+  // Si cardBg existe y no es muy transparente, usarlo
+  if (cardBg && cardBg.startsWith('#')) {
+    const alphaMatch = cardBg.match(/^#([0-9a-fA-F]{6})([0-9a-fA-F]{2})?$/);
+    if (alphaMatch) {
+      const alpha = alphaMatch[2] ? parseInt(alphaMatch[2], 16) / 255 : 1;
+      if (alpha >= 0.1) {
+        // cardBg es lo suficientemente opaco, inferir tema de cardBg
+        const lightBg = isLightBg(cardBg);
+        return {
+          backgroundColor: lightBg ? '#ffffff' : '#1a1a1a',
+          borderColor: lightBg ? (cardBorder || 'rgba(0,0,0,0.1)') : 'rgba(255,255,255,0.1)',
+        };
+      }
+    }
+  }
+
+  // Detectar tema basándose en textColor
+  const textIsLight = isLightBg(textColor);
+  if (textIsLight) {
+    // Tema oscuro: texto claro → modal oscuro
+    return {
+      backgroundColor: '#1a1a1a',
+      borderColor: 'rgba(255,255,255,0.1)',
+    };
+  } else {
+    // Tema claro: texto oscuro → modal claro
+    return {
+      backgroundColor: '#ffffff',
+      borderColor: cardBorder || 'rgba(0,0,0,0.1)',
+    };
+  }
 }
 
 // ── Marca de agua dinámica (Visual Overlay) ──────────────────────────────────
@@ -640,7 +676,7 @@ export function ResultDisplay({
             aria-labelledby="feedback-title"
             className="rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden border"
             onClick={e => e.stopPropagation()}
-            style={{ backgroundColor: '#1a1a1a', borderColor: 'rgba(255,255,255,0.1)' }}
+            style={getFeedbackModalStyles(textColor, cardBg, cardBorder)}
           >
             {!feedbackSent ? (
               <>
