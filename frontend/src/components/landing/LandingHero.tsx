@@ -3,35 +3,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, Upload, RotateCcw } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
-
-// ── Parallax Hook ──────────────────────────────────────────────────────────────
-function useParallax(speed: number = 0.5) {
-  const ref = useRef<HTMLDivElement>(null);
-  const ticking = useRef(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!ticking.current && ref.current) {
-        ticking.current = true;
-        requestAnimationFrame(() => {
-          if (ref.current) {
-            const scrollY = window.scrollY;
-            ref.current.style.transform = `translateY(${scrollY * speed}px)`;
-          }
-          ticking.current = false;
-        });
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [speed]);
-
-  return ref;
-}
 
 // ── Animation Variants ────────────────────────────────────────────────────────
 const revealVariants = {
@@ -109,23 +83,20 @@ export default function LandingHero() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [hasUsedTrial, setHasUsedTrial] = useState(false);
 
-  // Parallax refs para blobs
+  // Parallax solo para blob1 (más ligero)
   const blob1Ref = useRef<HTMLDivElement>(null);
-  const blob2Ref = useRef<HTMLDivElement>(null);
 
-  // Parallax effect para blobs (con throttling para evitar lag)
   useEffect(() => {
     let ticking = false;
+    let lastScrollY = 0;
+
     const handleScroll = () => {
+      lastScrollY = window.scrollY;
       if (!ticking) {
         ticking = true;
         requestAnimationFrame(() => {
-          const scrollY = window.scrollY;
           if (blob1Ref.current) {
-            blob1Ref.current.style.transform = `translateY(${scrollY * 0.15}px)`;
-          }
-          if (blob2Ref.current) {
-            blob2Ref.current.style.transform = `translateY(${scrollY * -0.1}px)`;
+            blob1Ref.current.style.transform = `translate3d(0, ${lastScrollY * 0.08}px, 0)`;
           }
           ticking = false;
         });
@@ -133,10 +104,7 @@ export default function LandingHero() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      ticking = false;
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -254,14 +222,14 @@ export default function LandingHero() {
       aria-label="Seccion principal"
     >
       <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        {/* Blob principal con parallax + morph */}
+        {/* Blob principal con parallax */}
         <div
           ref={blob1Ref}
           className="absolute top-[-15%] right-[-10%] h-[100vw] w-[100vw] rounded-full bg-[#FF5C3A]/10 blur-[60px] animate-blob will-change-transform"
+          style={{ transform: 'translate3d(0, 0, 0)' }}
         />
-        {/* Blob secundario con parallax inverso */}
+        {/* Blob secundario estático */}
         <div
-          ref={blob2Ref}
           className="absolute bottom-[-15%] left-[-15%] h-[80vw] w-[80vw] rounded-full bg-[#FF5C3A]/5 blur-[50px] animate-blob will-change-transform"
           style={{ animationDelay: '2s' }}
         />
