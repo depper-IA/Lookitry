@@ -137,10 +137,10 @@ style={
         <link rel="dns-prefetch" href="https://api.lookitry.com" />
         <link rel="dns-prefetch" href="https://vkdooutklowctuudjnkl.supabase.co" />
         
-        {/* Script de tema bloqueante: aplica dark/light ANTES del primer paint para evitar flash */}
-        {/* Usar beforeInteractive para que执行 antes del primer paint sin bloquear */}
+        {/* Script de tema bloqueante: aplica dark ANTES del primer paint para evitar flash */}
+        {/* dark es el UNICO default — light solo si el usuario lo elige explicitamente */}
         <Script id="theme-init" strategy="beforeInteractive">
-          {`(function(){try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark');}else if(t==='light'){document.documentElement.classList.remove('dark');}else if(window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){}})();`}
+          {`(function(){try{var t=localStorage.getItem('theme');if(t==='light'){document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');}else{document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');}}catch(e){document.documentElement.classList.add('dark');}})();`}
         </Script>
       </head>
 

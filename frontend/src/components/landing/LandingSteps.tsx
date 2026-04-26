@@ -44,14 +44,14 @@ const STEPS = [
 
 export default function LandingSteps() {
   return (
-    <section id="como-funciona" className="bg-black dark:bg-white py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Como funciona">
+    <section id="como-funciona" className="bg-white dark:bg-black py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Como funciona">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16 md:mb-24">
           <SectionTag text="Proceso impecable" />
-          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white dark:text-black mb-4 sm:mb-6 md:mb-8">
+          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6 md:mb-8">
             Tus clientes lo aman,<br /><span className="text-[#FF5C3A]">tu vendes mas.</span>
           </h2>
-          <p className="font-dm-sans text-base sm:text-lg text-white/60 dark:text-[#666] max-w-2xl mx-auto font-light leading-relaxed">
+          <p className="font-dm-sans text-base sm:text-lg text-[#666] dark:text-white/60 max-w-2xl mx-auto font-light leading-relaxed">
             Una experiencia de 3 pasos disenada para eliminar la friccion tecnica y maximizar el deleite del cliente final.
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function LandingSteps() {
               transition={{ duration: 0.3, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="step-card group relative"
             >
-              <div className="relative aspect-[3/4] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] overflow-hidden mb-6 sm:mb-8 border border-white/10 dark:border-[#e8e4df] bg-[#1a1a1a] dark:bg-[#f0ece8] shadow-sm transition-all duration-300 group-hover:shadow-xl">
+              <div className="relative aspect-[3/4] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] overflow-hidden mb-6 sm:mb-8 border border-white/10 dark:border-[#2a2a2a] bg-[#f0ece8] dark:bg-[#1a1a1a] shadow-sm transition-all duration-300 group-hover:shadow-xl">
                 <Image
                   src={step.img}
                   alt={step.alt}
@@ -78,8 +78,8 @@ export default function LandingSteps() {
                   {step.n}
                 </div>
               </div>
-              <h3 className="font-jakarta text-xl sm:text-2xl font-bold text-white dark:text-black mb-3 sm:mb-4 transition-colors group-hover:text-[#FF5C3A]">{step.title}</h3>
-              <p className="font-dm-sans text-white/60 dark:text-[#666] leading-relaxed text-sm font-light">
+              <h3 className="font-jakarta text-xl sm:text-2xl font-bold text-black dark:text-white mb-3 sm:mb-4 transition-colors group-hover:text-[#FF5C3A]">{step.title}</h3>
+              <p className="font-dm-sans text-[#666] dark:text-white/60 leading-relaxed text-sm font-light">
                 {step.desc}
               </p>
             </motion.div>
