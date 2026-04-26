@@ -199,6 +199,21 @@ export function TemplateBare(props: TryOnTemplateProps) {
                   transition={{ duration: 0.3 }}
                   className="space-y-4"
                 >
+                  {selfiePreview && (
+                    <div className="mb-6">
+                      <SelfieUploader
+                        onUpload={onSelfieUpload}
+                        onReset={onReset}
+                        currentPreview={selfiePreview}
+                        primaryColor={primaryColor}
+                        textColor={textPrimary}
+                        mutedColor={textMuted}
+                        cardBg={cardBg}
+                        cardBorder={borderColor}
+                      />
+                    </div>
+                  )}
+
                   {/* FriendlyProductSelector tiene header, lo ocultamos aquí para evitar duplicación */}
                   <FriendlyProductSelector
                     products={config.products}

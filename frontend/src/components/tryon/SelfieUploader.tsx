@@ -17,6 +17,7 @@ interface SelfieUploaderProps {
   mutedColor?: string;
   cardBg?: string;
   cardBorder?: string;
+  isDesktop?: boolean;
 }
 
 const TIPS = [
@@ -34,28 +35,41 @@ export function SelfieUploader({
   textColor = '#1a1a1a', 
   mutedColor = '#666666',
   cardBg,
-  cardBorder
+  cardBorder,
+  isDesktop: isDesktopProp
 }: SelfieUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
   const [editingSrc, setEditingSrc] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-  const [cameraError, setCameraError] = useState(false);
+  const [isDesktopState, setIsDesktopState] = useState<boolean>(false);
+  const [hasCamera, setHasCamera] = useState<boolean>(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsMobile(/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent));
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    setIsDesktopState(!mobile);
+
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
+      navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+          const videoDevices = devices.filter(device => device.kind === 'videoinput');
+          setHasCamera(videoDevices.length > 0);
+        })
+        .catch(() => setHasCamera(false));
+    } else {
+      setHasCamera(false);
+    }
   }, []);
 
-  // ── Bloquear pegar desde portapapeles (el modelo de IA no lo soporta) ─────
-  // El error "Cannot read clipboard" viene cuando el usuario intenta Ctrl+V / Cmd+V
-  // con una imagen en el portapapeles. Bloqueamos ANTES de que llegue al modelo.
+  const isDesktop = isDesktopProp !== undefined ? isDesktopProp : isDesktopState;
+  const showCamera = hasCamera && !isDesktop;
+
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
-      // Si hay datos de imagen en el portapapeles, prevenir y mostrar mensaje
       const hasImage = Array.from(e.clipboardData?.items || []).some(
         (item) => item.type.startsWith('image/')
       );
@@ -70,7 +84,6 @@ export function SelfieUploader({
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
-    setCameraError(false);
     const validation = validateImageFile(file);
     if (!validation.valid) { 
       setError(validation.error || 'Archivo inválido'); 
@@ -103,13 +116,6 @@ export function SelfieUploader({
     onUpload(file, preview);
   };
 
-  const handleCameraClick = useCallback(() => {
-    if (!cameraRef.current) return;
-    setCameraError(false);
-    cameraRef.current.click();
-  }, []);
-
-  // Drag-and-drop handlers
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -119,7 +125,6 @@ export function SelfieUploader({
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Only deactivate if leaving the drop zone entirely
     if (e.currentTarget === dropRef.current) {
       setDragActive(false);
     }
@@ -154,13 +159,12 @@ export function SelfieUploader({
 
       <div 
         ref={dropRef}
-        className="max-w-md mx-auto space-y-6 relative"
+        className="max-w-lg mx-auto space-y-6 relative"
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        {/* Drag overlay feedback */}
         <AnimatePresence>
           {dragActive && (
             <motion.div
@@ -183,7 +187,6 @@ export function SelfieUploader({
           )}
         </AnimatePresence>
 
-        {/* Decisión principal: Cámara vs Galería O Preview */}
         <div className="space-y-3">
           <AnimatePresence mode="wait">
             {compressing ? (
@@ -206,14 +209,14 @@ export function SelfieUploader({
             ) : currentPreview ? (
               <motion.div
                 key="preview"
-                className="relative group rounded-[2.5rem] overflow-hidden border-2 transition-all duration-500 hover:scale-[1.01]"
+                className="relative group rounded-[2.5rem] overflow-hidden border-2 transition-all duration-500 hover:scale-[1.01] w-full max-w-sm mx-auto"
                 style={{ 
                   borderColor: primaryColor,
-                  boxShadow: `0 20px 40px -12px ${primaryColor}30`
+                  boxShadow: `0 24px 60px -12px ${primaryColor}40`
                 }}
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
+                exit={{ opacity: 0, scale: 0.98 }}
               >
                 <img 
                   src={currentPreview} 
@@ -221,28 +224,23 @@ export function SelfieUploader({
                   className="w-full h-auto aspect-square object-cover"
                 />
                 
-                {/* Overlay con botón de cambiar */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <button
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                  <motion.button
                     onClick={onReset}
-                    className="px-6 py-3 rounded-full bg-white text-black font-black uppercase text-[10px] tracking-widest shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 active:scale-95"
+                    className="px-8 py-4 rounded-full bg-white text-black font-black uppercase text-xs tracking-widest shadow-2xl transition-all duration-300"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     Cambiar foto
-                  </button>
+                  </motion.button>
                 </div>
 
-                {/* Botón X flotante siempre visible */}
                 <button
                   onClick={onReset}
                   className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all hover:bg-black/70 active:scale-90"
                 >
                   <X className="w-5 h-5" />
                 </button>
-
-                <div className="absolute bottom-4 left-4 right-4 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <p className="text-[9px] font-black uppercase tracking-widest text-white/90 italic">Foto lista para la prueba</p>
-                </div>
               </motion.div>
             ) : (
               <motion.div
@@ -252,51 +250,37 @@ export function SelfieUploader({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                {/* BOTÓN CÁMARA (Acción Principal) */}
-                <button
-                  onClick={handleCameraClick}
-                  aria-label="Tomar foto con la cámara frontal"
-                  className="w-full group relative overflow-hidden flex items-center gap-4 p-5 rounded-[2.5rem] transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]"
-                  style={{ 
-                    backgroundColor: primaryColor,
-                    boxShadow: `0 20px 40px -12px ${primaryColor}40`
-                  }}
-                >
-                  <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-                  
-                  <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center shrink-0 border border-white/30 backdrop-blur-md relative z-10 transition-transform group-hover:rotate-12">
-                    <Camera className="w-6 h-6 text-white" strokeWidth={2.5} />
-                  </div>
-                  
-                  <div className="text-left relative z-10">
-                    <p className="text-lg font-black italic uppercase leading-none text-white tracking-tight">Tomar foto ahora</p>
-                    <p className="text-[10px] mt-1 text-white/70 font-bold uppercase tracking-widest">Usar cámara frontal</p>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {showCamera && (
+                    <button
+                      onClick={() => cameraRef.current?.click()}
+                      className="group relative flex flex-col items-center justify-center gap-4 p-8 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative p-4 rounded-2xl bg-white/5 group-hover:scale-110 transition-transform duration-300">
+                        <Camera className="w-8 h-8" style={{ color: primaryColor }} />
+                      </div>
+                      <div className="relative text-center">
+                        <span className="block text-xs font-black uppercase tracking-[0.2em] mb-1" style={{ color: textColor }}>Tomar foto</span>
+                        <span className="block text-[9px] font-medium opacity-50 uppercase tracking-widest" style={{ color: textColor }}>Usa tu cámara</span>
+                      </div>
+                    </button>
+                  )}
 
-                  <ChevronRight className="ml-auto w-5 h-5 text-white/40 group-hover:translate-x-1 transition-transform relative z-10" />
-                </button>
-
-                {/* BOTÓN GALERÍA (Acción Secundaria) */}
-                <button
-                  onClick={() => inputRef.current?.click()}
-                  aria-label="Elegir imagen de la galería"
-                  className="w-full group flex items-center gap-4 p-5 rounded-[2.5rem] border-2 transition-all duration-500 hover:bg-white/5 active:scale-[0.98]"
-                  style={{ 
-                    borderColor: cardBorder || 'rgba(255,255,255,0.1)',
-                    backgroundColor: cardBg || 'transparent'
-                  }}
-                >
-                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/10 transition-colors group-hover:bg-white/10">
-                    <ImageIcon className="w-6 h-6" style={{ color: textColor }} strokeWidth={2} />
-                  </div>
-
-                  <div className="text-left">
-                    <p className="text-base font-black italic uppercase leading-none tracking-tight" style={{ color: textColor }}>Elegir de galería</p>
-                    <p className="text-[10px] mt-1 font-bold uppercase tracking-widest" style={{ color: mutedColor }}>Álbum de fotos</p>
-                  </div>
-
-                  <ChevronRight className="ml-auto w-5 h-5 opacity-20 group-hover:translate-x-1 transition-transform" style={{ color: textColor }} />
-                </button>
+                  <button
+                    onClick={() => inputRef.current?.click()}
+                    className={`group relative flex flex-col items-center justify-center gap-4 p-8 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 overflow-hidden ${!showCamera ? 'sm:col-span-2' : ''}`}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative p-4 rounded-2xl bg-white/5 group-hover:scale-110 transition-transform duration-300">
+                      <ImageIcon className="w-8 h-8" style={{ color: textColor }} />
+                    </div>
+                    <div className="relative text-center">
+                      <span className="block text-xs font-black uppercase tracking-[0.2em] mb-1" style={{ color: textColor }}>Elegir de galería</span>
+                      <span className="block text-[9px] font-medium opacity-50 uppercase tracking-widest" style={{ color: textColor }}>Sube tu imagen</span>
+                    </div>
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

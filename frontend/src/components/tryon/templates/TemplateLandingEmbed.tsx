@@ -5,7 +5,7 @@ import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
 import { TermsCheckbox } from '../TermsCheckbox';
 import type { TryOnTemplateProps } from './types';
-import { ErrorBanner, FriendlyProductSelector, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner, SelfieThumb } from './shared';
+import { ErrorBanner, FriendlyProductSelector, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner } from './shared';
 
 // Helper para determinar si un color es claro u oscuro
 function isLightBg(hex: string): boolean {
@@ -81,6 +81,21 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
             <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
 
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              {selfiePreview && (
+                <div className="mb-6">
+                  <SelfieUploader
+                    onUpload={onSelfieUpload}
+                    onReset={onReset}
+                    currentPreview={selfiePreview}
+                    primaryColor={primaryColor}
+                    textColor={textPrimary}
+                    mutedColor={textMuted}
+                    cardBg={cardBg}
+                    cardBorder={borderColor}
+                  />
+                </div>
+              )}
+
               {/* Selector de producto simple */}
               <FriendlyProductSelector
                 products={config.products}

@@ -118,33 +118,6 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
               transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
               className="flex flex-col min-h-[calc(100vh-64px)]"
             >
-              {selfiePreview && selectedProduct && (
-                <div className="w-full px-4 pt-4">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex items-center gap-3 p-3 rounded-2xl"
-                    style={{ backgroundColor: cardBg, border: `1px solid ${bgLuminance ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)'}` }}
-                  >
-                    <img src={selfiePreview} alt="Tu foto" className="w-12 h-12 rounded-xl object-cover" />
-                    <div className="flex-1">
-                      <p className="text-[11px] font-black uppercase italic" style={{ color: primaryColor }}>
-                        Foto lista
-                      </p>
-                      <p className="text-[9px] font-medium uppercase tracking-wider" style={{ color: textMuted }}>
-                        {selectedProduct.name}
-                      </p>
-                    </div>
-                    <button
-                      onClick={onReset}
-                      className="text-[9px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl transition-all hover:bg-white/10"
-                      style={{ color: textMuted }}
-                    >
-                      Cambiar
-                    </button>
-                  </motion.div>
-                </div>
-              )}
 
               <div className="flex flex-col items-center justify-center flex-1 px-4 sm:px-6 py-12 w-full max-w-2xl mx-auto min-h-[60vh]">
                 <div className="text-center space-y-3 mb-10">
@@ -250,14 +223,16 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
               </div>
 
               {selfiePreview && (
-                <div className="w-full max-w-xl mb-6 sm:mb-8">
-                  <SelfiePreviewEditorial
-                    preview={selfiePreview}
+                <div className="w-full max-w-xl mb-6 sm:mb-8 mx-auto px-4">
+                  <SelfieUploader
+                    onUpload={onSelfieUpload}
                     onReset={onReset}
+                    currentPreview={selfiePreview}
                     primaryColor={primaryColor}
-                    textMuted={textMuted}
+                    textColor={textPrimary}
+                    mutedColor={textMuted}
                     cardBg={cardBg}
-                    bgLuminance={bgLuminance}
+                    cardBorder={bgLuminance ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)'}
                   />
                 </div>
               )}
