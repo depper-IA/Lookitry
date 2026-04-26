@@ -133,7 +133,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
           return (
             <motion.div
               key={item.name}
-              whileHover={{ x: 5, backgroundColor: "rgba(255,255,255,0.05)" }}
+              whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.2 }}
               className="relative"
@@ -153,7 +153,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
                   isCollapsed ? 'justify-center' : 'gap-3 px-5'
                 } ${isActive ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' : 'text-gray-400 hover:text-white'}`}
               >
-                <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-600 group-hover:text-[#FF5C3A]'}`} />
+                <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-[#FF5C3A]'}`} />
                 {!isCollapsed && (
                   <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="block leading-none lg:hidden xl:block">
                     {item.name}
