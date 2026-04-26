@@ -131,7 +131,39 @@ export function ImageEditor({
   // correctamente antes de dibujar en canvas (a diferencia de drawImage normal).
   const getOriginalImg = async (imageSrc: string): Promise<{ file: File; url: string } | null> => {
     try {
+      // Las URLs blob: no se pueden usar con fetch(), usar <img> en su lugar
+      if (imageSrc.startsWith('blob:')) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { resolve(null); return; }
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((b) => {
+              if (!b) { resolve(null); return; }
+              const url = URL.createObjectURL(b);
+              const file = new File([b], 'photo.jpg', { type: 'image/jpeg', lastModified: Date.now() });
+              resolve({ file, url });
+            }, 'image/jpeg', 0.95);
+          };
+          img.onerror = () => {
+            console.error('[ImageEditor] getOriginalImg: failed to load blob image');
+            resolve(null);
+          };
+          img.src = imageSrc;
+        });
+      }
+
+      // Para URLs HTTP normales, usar fetch
       const response = await fetch(imageSrc);
+      if (!response?.ok) {
+        console.error('[ImageEditor] getOriginalImg: fetch response not ok');
+        return null;
+      }
       const blob = await response.blob();
 
       let bitmap: ImageBitmap;
