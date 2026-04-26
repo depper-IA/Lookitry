@@ -46,10 +46,10 @@ export function MobileBottomNav({ pathname }: { pathname: string }) {
           </Link>
 
           <Link
-            href="/probador-virtual"
-            aria-current={isActive('/probador-virtual') ? 'page' : undefined}
+            href="/#hero"
+            aria-current={isActive('/') ? 'page' : undefined}
             className={`${itemClass} ${
-              isActive('/probador-virtual') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
+              isActive('/') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
             }`}
           >
             <Sparkles size={20} />
