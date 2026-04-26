@@ -739,6 +739,7 @@ export interface Database {
           processing_time: number | null;
           prompt_used: string | null;
           input_fingerprint: string | null;
+          client_fingerprint: string | null;
         };
         Insert: {
           id?: string;
@@ -752,6 +753,7 @@ export interface Database {
           processing_time?: number | null;
           prompt_used?: string | null;
           input_fingerprint?: string | null;
+          client_fingerprint?: string | null;
         };
         Update: {
           id?: string;
@@ -765,6 +767,7 @@ export interface Database {
           processing_time?: number | null;
           prompt_used?: string | null;
           input_fingerprint?: string | null;
+          client_fingerprint?: string | null;
         };
       };
       payment_logs: {

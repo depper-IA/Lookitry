@@ -270,6 +270,19 @@ export interface TryOnConfigResponse {
 export interface GenerateTryOnDto {
   productId: string;
   selfieFile: File;
+  clientFingerprint?: string;
+}
+
+export interface GenerateTryOnResponse {
+  success: boolean;
+  generationId: string;
+  imageUrl: string;
+  processingTime: number;
+  reused?: boolean;
+  message?: string;
+  error?: string;
+  attemptsUsed?: number;
+  attemptsLimit?: number;
 }
 
 export interface GenerateTryOnResponse {

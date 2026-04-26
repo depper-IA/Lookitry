@@ -11,6 +11,7 @@ import { TemplateBoldProStudio } from './templates/TemplateBoldProStudio';
 import { LegalDisclaimerModal } from './LegalDisclaimerModal';
 import type { Layout, Product, Step } from './templates/types';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
+import FingerJS from '@fingerprintjs/fingerprintjs';
 
 const TERMS_STORAGE_KEY = 'tryon_terms_accepted';
 
@@ -76,6 +77,23 @@ export function TryOnWidget({
     if (typeof window === 'undefined') return false;
     return sessionStorage.getItem(TERMS_STORAGE_KEY) === 'true';
   });
+
+  // Fingerprint del cliente para límite de intentos por usuario
+  const [clientFingerprint, setClientFingerprint] = useState<string>('');
+
+  // Cargar FingerprintJS al montar el componente
+  useEffect(() => {
+    const loadFingerprint = async () => {
+      try {
+        const fp = await FingerJS.load();
+        const result = await fp.get();
+        setClientFingerprint(result.visitorId);
+      } catch (e) {
+        console.warn('[TryOnWidget] FingerprintJS no disponible:', e);
+      }
+    };
+    loadFingerprint();
+  }, []);
 
   // Generar hash SHA-256 de un archivo
   const generateFileHash = async (file: File): Promise<string> => {
@@ -269,17 +287,20 @@ export function TryOnWidget({
       let processingTime: number | undefined;
 
       try {
-        const result = await tryonService.generate(brandSlug, { productId: activeProduct.id, selfieFile: activeFile });
+        const result = await tryonService.generate(brandSlug, { productId: activeProduct.id, selfieFile: activeFile, clientFingerprint });
         imageUrl = result.imageUrl;
         genId = result.generationId ?? null;
         reused = result.reused ?? false;
         processingTime = result.processingTime;
       } catch (err: any) {
         const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
+        const isClientLimit = err.clientAttemptLimit === true;
         setErrorIsService(isService);
         if (isService) {
           setShowUpgradeModal(true);
           setError('SERVICE_CREDITS_EXHAUSTED');
+        } else if (isClientLimit) {
+          setError(err.message || 'Ya usaste tus 3 intentos para este producto.');
         } else {
           setError(err.message || 'Algo salió mal. Intenta de nuevo.');
         }

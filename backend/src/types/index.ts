@@ -202,6 +202,8 @@ export interface Generation {
 
   processing_time: number | null;
 
+  client_fingerprint: string | null;
+
 }
 
 
