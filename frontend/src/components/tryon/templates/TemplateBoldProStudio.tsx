@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { GenerationLoader } from '../GenerationLoader';
 import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
 import { TermsCheckbox } from '../TermsCheckbox';
@@ -67,8 +68,6 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
     obs.observe(containerRef.current);
     return () => obs.disconnect();
   }, [props.forcedLayout]);
-
-  const isMedium = !isSmall && false; // Reserved for future use
 
   // Colores adaptativos según el fondo
   const bgLuminance = isLightBg(secondaryColor || '#050505');
@@ -210,6 +209,18 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                   cardBorder={cardBorder}
                 />
                 <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
+
+                {/* Generating State */}
+                {step === 'generating' && (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <GenerationLoader
+                      productName={selectedProduct?.name || ''}
+                      primaryColor={primaryColor}
+                      textColor={textPrimary}
+                      mutedColor={textMuted}
+                    />
+                  </div>
+                )}
 
                 {step === 'upload' && (
                   <div className={`space-y-6 mx-auto ${isSmall ? '' : 'max-w-2xl'}`}>
