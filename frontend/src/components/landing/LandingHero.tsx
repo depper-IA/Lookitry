@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, RotateCcw, Image } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, RotateCcw, ImageIcon } from 'lucide-react';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
@@ -385,7 +385,7 @@ export default function LandingHero() {
                       Tomar foto
                     </label>
                     <label className="cursor-pointer rounded-lg bg-white/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white/70 transition-all hover:bg-white/20 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
-                      <Image size={14} strokeWidth={2} aria-hidden="true" />
+                      <ImageIcon size={14} strokeWidth={2} aria-hidden="true" />
                       <input
                         type="file"
                         accept="image/*"
@@ -449,7 +449,7 @@ export default function LandingHero() {
                       {selfiePreview ? 'Tomar otra' : 'Tomar foto'}
                     </label>
                     <label className="cursor-pointer rounded-lg bg-white/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white/70 transition-all hover:bg-white/20 min-h-11 flex items-center justify-center gap-2">
-                      <Image size={14} strokeWidth={2} aria-hidden="true" />
+                      <ImageIcon size={14} strokeWidth={2} aria-hidden="true" />
                       <input
                         type="file"
                         accept="image/*"
