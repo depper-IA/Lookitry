@@ -261,7 +261,7 @@ export function ImageEditor({
   // ────────────────────────────────────────────────────────────────────────────
   return (
     <motion.div 
-      className="fixed inset-0 z-[100] flex flex-col bg-[#0a0a0a]"
+      className="fixed inset-0 z-[100] flex flex-col bg-[#000000]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -312,8 +312,8 @@ export function ImageEditor({
             cropShape="rect"
             showGrid={!isOriginal}
             classes={{
-              containerClassName: '!relative !w-full !h-full !bg-[#0a0a0a]',
-              mediaClassName: '!bg-[#0a0a0a]',
+              containerClassName: '!relative !w-full !h-full !bg-[#000000]',
+              mediaClassName: '!bg-[#000000]',
             }}
           />
         </div>
