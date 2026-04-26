@@ -201,7 +201,7 @@ export function FriendlyProductSelector({
           <p className="text-[10px] font-medium uppercase tracking-widest mt-0.5" style={{ color: textMuted }}>Toca el producto que más te guste</p>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2 sm:gap-4 justify-center">
         {products.map((p, index) => {
           const sel = selected?.id === p.id;
           const alreadyGenerated = generatedProducts.has(p.id);

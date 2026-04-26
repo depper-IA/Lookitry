@@ -72,7 +72,7 @@ export function MobileProductGrid({
       </div>
 
       {/* Products Grid */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2.5 justify-center">
         {products.length > 0 ? (
           products.map((p, idx) => {
             const isSelected = selectedProduct?.id === p.id;
