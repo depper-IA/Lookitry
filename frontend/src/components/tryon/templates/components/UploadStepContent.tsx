@@ -13,6 +13,7 @@ interface UploadStepContentProps {
   onSelfieReset?: () => void;
   onSelfieUpload: (file: File, preview: string) => void;
   onGenerate: () => void;
+  onProductReset?: () => void;
   onBack?: () => void;
   primaryColor: string;
   primaryGlow: string;
@@ -34,6 +35,7 @@ export function UploadStepContent({
   onSelfieReset,
   onSelfieUpload,
   onGenerate,
+  onProductReset,
   onBack,
   primaryColor,
   primaryGlow,
@@ -62,6 +64,48 @@ export function UploadStepContent({
           Volver al catálogo
         </button>
       </div>
+
+      {/* Producto Seleccionado Exterior */}
+      {selectedProduct && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative group overflow-hidden rounded-2xl border transition-all duration-300"
+          style={{ 
+            backgroundColor: mainCardBg,
+            borderColor: mainBorderColor
+          }}
+        >
+          <div className="p-3 flex items-center gap-4">
+            <div className="w-16 h-16 rounded-xl bg-white/5 overflow-hidden border border-white/10 shrink-0">
+              <img 
+                src={selectedProduct.imageUrl} 
+                alt={selectedProduct.name} 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <span className="text-[9px] font-black uppercase tracking-[0.15em] opacity-40">
+                Prenda seleccionada
+              </span>
+              <h4 className="text-sm font-bold truncate pr-8" style={{ color: mainTextPrimary }}>
+                {selectedProduct.name}
+              </h4>
+            </div>
+
+            <button
+              onClick={onProductReset}
+              className="absolute top-2 right-2 p-2 rounded-full bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-500 transition-all active:scale-90"
+              title="Cambiar prenda"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       <SelfieUploader 
         onUpload={onSelfieUpload} 

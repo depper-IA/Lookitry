@@ -48,7 +48,7 @@ export function SelfieUploader({
   const [compressing, setCompressing] = useState(false);
   const [editingSrc, setEditingSrc] = useState<string | null>(null);
   const [isDesktopState, setIsDesktopState] = useState<boolean>(false);
-  const [hasCamera, setHasCamera] = useState<boolean>(true);
+  const [hasCamera, setHasCamera] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
@@ -56,21 +56,24 @@ export function SelfieUploader({
   useEffect(() => {
     const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
     const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-    setIsDesktopState(!mobile);
+    const hasTouch = ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    
+    // Si tiene touch (móvil, tablet, laptop con touch), no lo consideramos "escritorio puro"
+    setIsDesktopState(!mobile && !hasTouch);
 
-    if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
+    if (navigator.mediaDevices) {
       navigator.mediaDevices.enumerateDevices()
         .then(devices => {
           const videoDevices = devices.filter(device => device.kind === 'videoinput');
           setHasCamera(videoDevices.length > 0);
         })
         .catch(() => setHasCamera(false));
-    } else {
-      setHasCamera(false);
     }
   }, []);
 
   const isDesktop = isDesktopProp !== undefined ? isDesktopProp : isDesktopState;
+  
+  // Mostrar cámara si tiene cámara Y (no es escritorio O es laptop/móvil detectado por touch)
   const showCamera = hasCamera && !isDesktop;
 
   useEffect(() => {
@@ -229,20 +232,7 @@ export function SelfieUploader({
                   className="w-full h-auto max-h-[65vh] object-contain mx-auto block"
                 />
 
-                {/* Banner de producto seleccionado */}
-                {selectedProduct && (
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shrink-0">
-                        <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white/60 leading-none mb-1">Prendas a probar</p>
-                        <p className="text-sm font-bold text-white truncate">{selectedProduct.name}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+
                 
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
                   <motion.button

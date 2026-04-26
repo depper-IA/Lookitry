@@ -100,6 +100,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
     onSelfieReset,
     onSelfieUpload,
     onProductSelect,
+    onProductReset,
     onGenerate,
     termsAccepted,
     onTermsAccepted,
@@ -276,41 +277,46 @@ export function TemplateBare(props: TryOnTemplateProps) {
                   transition={{ duration: 0.3 }}
                   className="space-y-5"
                 >
-                  {/* Resumen del producto elegido */}
+                  {/* Producto Seleccionado Exterior */}
                   {selectedProduct && (
-                    <div
-                      className="flex items-center gap-3 p-3 rounded-2xl border backdrop-blur-sm"
-                      style={{ backgroundColor: cardBg, borderColor }}
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="relative group overflow-hidden rounded-2xl border transition-all duration-300"
+                      style={{ 
+                        backgroundColor: cardBg,
+                        borderColor: borderColor
+                      }}
                     >
-                      <img
-                        src={selectedProduct.imageUrl}
-                        alt={selectedProduct.name}
-                        className="h-10 w-10 md:h-14 md:w-14 rounded-xl object-cover shrink-0"
-                        loading="lazy"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p
-                          className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-0.5"
-                          style={{ color: textPrimary }}
+                      <div className="p-3 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-white/5 overflow-hidden border border-white/10 shrink-0">
+                          <img 
+                            src={selectedProduct.imageUrl} 
+                            alt={selectedProduct.name} 
+                            className="w-full h-full object-cover" 
+                          />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[8px] font-black uppercase tracking-[0.15em] opacity-40">
+                            Seleccionado
+                          </span>
+                          <h4 className="text-xs font-bold truncate pr-6" style={{ color: textPrimary }}>
+                            {selectedProduct.name}
+                          </h4>
+                        </div>
+
+                        <button
+                          onClick={onProductReset}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-500 transition-all active:scale-90"
+                          title="Cambiar prenda"
                         >
-                          Producto seleccionado
-                        </p>
-                        <p
-                          className="text-sm font-black italic uppercase truncate"
-                          style={{ color: textPrimary }}
-                        >
-                          {selectedProduct.name}
-                        </p>
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
                       </div>
-                      <button
-                        onClick={() => props.onBack?.()}
-                        aria-label="Cambiar producto"
-                        className="ml-auto text-[9px] font-black uppercase tracking-widest px-3 py-2 rounded-lg border hover:bg-white/5 transition-colors flex-shrink-0"
-                        style={{ borderColor, color: textMuted }}
-                      >
-                        Cambiar
-                      </button>
-                    </div>
+                    </motion.div>
                   )}
 
                   <div className="text-center space-y-1 mt-2">
