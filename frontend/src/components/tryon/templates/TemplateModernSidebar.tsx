@@ -36,6 +36,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
     notice,
     generatedProducts,
     onReset,
+    onSelfieReset,
     onSelfieUpload,
     onProductSelect,
     onProceedToUpload,
@@ -286,6 +287,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
               selfiePreview={selfiePreview}
               selectedProduct={selectedProduct}
               onReset={onReset}
+              onSelfieReset={onSelfieReset}
               onSelfieUpload={onSelfieUpload}
               onGenerate={onGenerate}
               onBack={props.onBack}
@@ -314,6 +316,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                   onProductSelect={onProductSelect}
                   onProceedToUpload={onProceedToUpload}
                   onReset={onReset}
+                  onSelfieReset={onSelfieReset}
                   selfiePreview={selfiePreview}
                   primaryColor={primaryColor}
                   primaryGlow={primaryGlow}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import type { Product } from './templates/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { compressImage, validateImageFile } from '@/utils/imageCompression';
 import { ImageEditor } from './ImageEditor';
@@ -9,7 +10,9 @@ import { Camera, Image as ImageIcon, Lightbulb, User, Eye, X, Loader2, ChevronRi
 interface SelfieUploaderProps {
   onUpload: (file: File, preview: string) => void;
   onReset?: () => void;
+  onSelfieReset?: () => void;
   currentPreview?: string | null;
+  selectedProduct?: Product | null;
   primaryColor?: string;
   welcomeMessage?: string;
   privacyNotice?: string;
@@ -29,7 +32,9 @@ const TIPS = [
 export function SelfieUploader({ 
   onUpload, 
   onReset,
+  onSelfieReset,
   currentPreview,
+  selectedProduct,
   primaryColor = '#FF5C3A', 
   privacyNotice, 
   textColor = '#1a1a1a', 
@@ -209,7 +214,7 @@ export function SelfieUploader({
             ) : currentPreview ? (
               <motion.div
                 key="preview"
-                className="relative group rounded-[2.5rem] overflow-hidden border-2 transition-all duration-500 hover:scale-[1.01] w-full max-w-sm mx-auto"
+                className="relative group rounded-[2.5rem] overflow-hidden border-2 transition-all duration-500 hover:scale-[1.01] w-full max-w-sm mx-auto bg-black/20"
                 style={{ 
                   borderColor: primaryColor,
                   boxShadow: `0 24px 60px -12px ${primaryColor}40`
@@ -221,12 +226,27 @@ export function SelfieUploader({
                 <img 
                   src={currentPreview} 
                   alt="Tu selfie" 
-                  className="w-full h-auto aspect-square object-cover"
+                  className="w-full h-auto max-h-[65vh] object-contain mx-auto block"
                 />
+
+                {/* Banner de producto seleccionado */}
+                {selectedProduct && (
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shrink-0">
+                        <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/60 leading-none mb-1">Prendas a probar</p>
+                        <p className="text-sm font-bold text-white truncate">{selectedProduct.name}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
                   <motion.button
-                    onClick={onReset}
+                    onClick={onSelfieReset || onReset}
                     className="px-8 py-4 rounded-full bg-white text-black font-black uppercase text-xs tracking-widest shadow-2xl transition-all duration-300"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -236,7 +256,7 @@ export function SelfieUploader({
                 </div>
 
                 <button
-                  onClick={onReset}
+                  onClick={onSelfieReset || onReset}
                   className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all hover:bg-black/70 active:scale-90"
                 >
                   <X className="w-5 h-5" />

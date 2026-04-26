@@ -10,6 +10,7 @@ interface UploadStepContentProps {
   selfiePreview: string | null;
   selectedProduct: Product | null;
   onReset: () => void;
+  onSelfieReset?: () => void;
   onSelfieUpload: (file: File, preview: string) => void;
   onGenerate: () => void;
   onBack?: () => void;
@@ -30,6 +31,7 @@ export function UploadStepContent({
   selfiePreview,
   selectedProduct,
   onReset,
+  onSelfieReset,
   onSelfieUpload,
   onGenerate,
   onBack,
@@ -64,7 +66,9 @@ export function UploadStepContent({
       <SelfieUploader 
         onUpload={onSelfieUpload} 
         onReset={onReset}
+        onSelfieReset={onSelfieReset}
         currentPreview={selfiePreview}
+        selectedProduct={selectedProduct}
         primaryColor={primaryColor} 
         welcomeMessage={welcomeMessage} 
         textColor={mainTextPrimary} 

@@ -97,6 +97,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
     notice,
     generatedProducts,
     onReset,
+    onSelfieReset,
     onSelfieUpload,
     onProductSelect,
     onGenerate,
@@ -204,7 +205,9 @@ export function TemplateBare(props: TryOnTemplateProps) {
                       <SelfieUploader
                         onUpload={onSelfieUpload}
                         onReset={onReset}
+                        onSelfieReset={onSelfieReset}
                         currentPreview={selfiePreview}
+                        selectedProduct={selectedProduct}
                         primaryColor={primaryColor}
                         textColor={textPrimary}
                         mutedColor={textMuted}
@@ -328,7 +331,9 @@ export function TemplateBare(props: TryOnTemplateProps) {
                   <SelfieUploader
                     onUpload={onSelfieUpload}
                     onReset={onReset}
+                    onSelfieReset={onSelfieReset}
                     currentPreview={selfiePreview}
+                    selectedProduct={selectedProduct}
                     primaryColor={primaryColor}
                     welcomeMessage={welcomeMessage}
                     privacyNotice="Procesamiento local seguro"

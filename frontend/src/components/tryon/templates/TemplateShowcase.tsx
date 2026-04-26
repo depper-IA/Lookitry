@@ -35,6 +35,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
     notice,
     generatedProducts,
     onReset,
+    onSelfieReset,
     onSelfieUpload,
     onProductSelect,
     onProceedToUpload,
@@ -227,7 +228,9 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                   <SelfieUploader
                     onUpload={onSelfieUpload}
                     onReset={onReset}
+                    onSelfieReset={onSelfieReset}
                     currentPreview={selfiePreview}
+                    selectedProduct={selectedProduct}
                     primaryColor={primaryColor}
                     textColor={textPrimary}
                     mutedColor={textMuted}

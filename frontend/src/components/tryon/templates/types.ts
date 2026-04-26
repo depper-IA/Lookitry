@@ -43,6 +43,7 @@ export interface TryOnTemplateProps {
   generatedProducts: Map<string, string>;
 
   onReset: () => void;
+  onSelfieReset?: () => void;
   onSelfieUpload: (file: File, preview: string) => void;
   onProductSelect: (p: Product) => void;
   onProceedToUpload?: () => void;

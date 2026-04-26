@@ -39,6 +39,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
     generatedProducts,
     lockProductSelection,
     onReset,
+    onSelfieReset,
     onSelfieUpload,
     onProductSelect,
     onGenerate,
@@ -86,7 +87,9 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
                   <SelfieUploader
                     onUpload={onSelfieUpload}
                     onReset={onReset}
+                    onSelfieReset={onSelfieReset}
                     currentPreview={selfiePreview}
+                    selectedProduct={selectedProduct}
                     primaryColor={primaryColor}
                     textColor={textPrimary}
                     mutedColor={textMuted}
@@ -187,7 +190,9 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
                     <SelfieUploader 
                       onUpload={onSelfieUpload} 
                       onReset={onReset}
+                      onSelfieReset={onSelfieReset}
                       currentPreview={selfiePreview}
+                      selectedProduct={selectedProduct}
                       primaryColor={primaryColor} 
                       welcomeMessage={welcomeMessage} 
                       privacyNotice="Tu selfie se elimina al instante tras procesar" 

@@ -37,6 +37,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
     notice,
     generatedProducts,
     onReset,
+    onSelfieReset,
     onSelfieUpload,
     onProductSelect,
     onProceedToUpload,
@@ -227,7 +228,9 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                   <SelfieUploader
                     onUpload={onSelfieUpload}
                     onReset={onReset}
+                    onSelfieReset={onSelfieReset}
                     currentPreview={selfiePreview}
+                    selectedProduct={selectedProduct}
                     primaryColor={primaryColor}
                     welcomeMessage={welcomeMessage}
                     textColor={textPrimary}
@@ -244,7 +247,9 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                     <SelfieUploader
                       onUpload={onSelfieUpload}
                       onReset={onReset}
+                      onSelfieReset={onSelfieReset}
                       currentPreview={selfiePreview}
+                      selectedProduct={selectedProduct}
                       primaryColor={primaryColor}
                       textColor={textPrimary}
                       mutedColor={textMuted}
