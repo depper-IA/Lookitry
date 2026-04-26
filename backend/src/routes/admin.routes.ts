@@ -138,7 +138,7 @@ router.post('/brands/:id/send-reset-email', requirePermission('brands'), sendBra
 router.post('/brands/:id/reset', requirePermission('brands'), resetBrand);
 router.get('/brands/list', requirePermission('brands'), getBrandsList);
 
-// Mini-landings — panel de control
+// Mini-landings â panel de control
 router.get('/mini-landings', requirePermission('brands'), getMiniLandingsAdmin);
 router.patch('/mini-landings/:id/suspend', requirePermission('brands'), suspendMiniLanding);
 router.patch('/mini-landings/:id/restore', requirePermission('brands'), restoreMiniLanding);
@@ -150,7 +150,7 @@ router.get('/notifications', requirePermission('notifications'), getAdminNotific
 router.get('/notification-preferences', requirePermission('notifications'), getNotificationPreferences);
 router.patch('/notification-preferences/:type', requirePermission('notifications'), updateNotificationPreference);
 
-// Gestión de admins — solo quien tenga permiso 'admins'
+// Gestión de admins â solo quien tenga permiso 'admins'
 router.get('/admins', requirePermission('admins'), listAdmins);
 router.post('/admins', requirePermission('admins'), createAdmin);
 router.patch('/admins/:id/permissions', requirePermission('admins'), updateAdminPermissions);
@@ -158,7 +158,7 @@ router.put('/admins/:id/password', requirePermission('admins'), changeAdminPassw
 router.post('/admins/:id/send-credentials', requirePermission('admins'), sendAdminCredentials);
 router.delete('/admins/:id', requirePermission('admins'), deleteAdmin);
 
-// Perfil propio — cualquier admin autenticado
+// Perfil propio â cualquier admin autenticado
 router.put('/admins/me/password', changeOwnPassword);
 
 // Campañas de trial

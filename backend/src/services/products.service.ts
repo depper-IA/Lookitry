@@ -523,7 +523,7 @@ export class ProductsService {
                 .update({ description: res.description })
                 .eq('id', p.id);
             }
-          }).catch(err => console.error(`❌ Error descripción IA para ${p.id}:`, err.message));
+          }).catch(err => console.error(`â Error descripción IA para ${p.id}:`, err.message));
         }
       });
     }

@@ -257,7 +257,7 @@ function generateArticleHTML(
           if (!dropCapApplied && !para.startsWith('<') && para.length > 0) {
             const firstLetter = para.charAt(0);
             // Only apply drop-cap if the first character is a letter (will be capitalized anyway)
-            if (/[a-zA-ZáéíóúñÁÉÍÓÚÑ]/.test(firstLetter)) {
+            if (/[a-zA-ZáéíóúñÑÑÑÑÑÑ]/.test(firstLetter)) {
               const rest = para.slice(1);
               para = `<span class="drop-cap" style="float: left; font-size: 4rem; line-height: 0.8; font-weight: 800; color: #FF5C3A; margin-right: 0.8rem; margin-top: 0.5rem; text-shadow: 2px 2px 0px rgba(255,92,58,0.2);">${firstLetter.toUpperCase()}</span>${rest}`;
               dropCapApplied = true;
@@ -367,7 +367,7 @@ function generateArticleHTML(
               <span style="color: #FF5C3A; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px;">Herramienta recomendada</span>
             </div>
             <div>
-              <h3 style="color: #ffffff; margin: 0 0 0.5rem 0; font-size: 1.4rem; font-weight: 700; line-height: 1.3;">¿Listo para reducir devoluciones en tu ecommerce?</h3>
+              <h3 style="color: #ffffff; margin: 0 0 0.5rem 0; font-size: 1.4rem; font-weight: 700; line-height: 1.3;">Â¿Listo para reducir devoluciones en tu ecommerce?</h3>
               <p style="color: #999999; margin: 0; font-size: 0.95rem; line-height: 1.6; max-width: 85%;">Permite que tus clientes se prueben virtualmente las prendas antes de comprar. <strong style="color: #ccc;">Hasta 35% más conversión</strong> y <strong style="color: #ccc;">devoluciones reducidas</strong> en tiendas que ya usan Lookitry.</p>
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
@@ -383,7 +383,7 @@ function generateArticleHTML(
         sectionsHtml += `
         <div style="border-top: 1px dashed #333; border-bottom: 1px dashed #333; padding: 1.5rem 0; margin: 2rem 0;">
           <p style="margin: 0; font-size: 1.1rem; line-height: 1.6; text-align: center;">
-            <strong style="color: #FF5C3A;">¡No te quedes atrás en innovación!</strong> El futuro del retail online ya está aquí. Las marcas que implementaron <a href="/register" style="color: #fff; font-weight: bold; text-decoration: underline; text-decoration-color: #FF5C3A; text-underline-offset: 3px;">Lookitry.com</a> han visto cómo aumentan sus tickets promedio creando experiencias inolvidables. <a href="/planes" style="color: #FF5C3A; font-weight: 600; text-decoration: none;">Crear cuenta de demostración ahora →</a>
+            <strong style="color: #FF5C3A;">Â¡No te quedes atrás en innovación!</strong> El futuro del retail online ya está aquí. Las marcas que implementaron <a href="/register" style="color: #fff; font-weight: bold; text-decoration: underline; text-decoration-color: #FF5C3A; text-underline-offset: 3px;">Lookitry.com</a> han visto cómo aumentan sus tickets promedio creando experiencias inolvidables. <a href="/planes" style="color: #FF5C3A; font-weight: 600; text-decoration: none;">Crear cuenta de demostración ahora â</a>
           </p>
         </div>`;
       }
@@ -458,8 +458,8 @@ async function getCtaTemplates(): Promise<Record<string, CtaTemplate>> {
 
   //Defaults
   return {
-    trial: { title: '¿Listo para probar Lookitry?', button_text: 'Comenzar trial', button_url: '/trial' },
-    features: { title: '¿Quieres más conversiones?', button_text: 'Ver demo', button_url: '/demo' },
+    trial: { title: 'Â¿Listo para probar Lookitry?', button_text: 'Comenzar trial', button_url: '/trial' },
+    features: { title: 'Â¿Quieres más conversiones?', button_text: 'Ver demo', button_url: '/demo' },
     pricing: { title: 'Elige tu plan', button_text: 'Ver precios', button_url: '/planes' },
     lead_magnet: { title: 'Descarga la guía', button_text: 'Descargar', button_url: '/guia-descarga' },
   };

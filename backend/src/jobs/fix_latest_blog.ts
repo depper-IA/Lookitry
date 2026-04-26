@@ -1,10 +1,10 @@
 /**
- * ⚠️ DEPRECATED/OBSOLETE SCRIPT ⚠️
+ * â ï¸ DEPRECATED/OBSOLETE SCRIPT â ï¸
  * 
- * ESTE SCRIPT NO DEBE EJECUTARSE SOBRE ARTÍCULOS GENERADOS POR generateArticleHTML().
+ * ESTE SCRIPT NO DEBE EJECUTARSE SOBRE ARTÑCULOS GENERADOS POR generateArticleHTML().
  * 
- * RAZÓN: Este script fue diseñado para modernizar artículos HTML antiguos (pre-2026).
- * Los artículos nuevos generados por blog.controller.ts → generateArticleHTML() YA tienen:
+ * RAZÑN: Este script fue diseñado para modernizar artículos HTML antiguos (pre-2026).
+ * Los artículos nuevos generados por blog.controller.ts â generateArticleHTML() YA tienen:
  *   - Drop-caps correctos (solo en el primer párrafo del artículo)
  *   - CTAs inline en las posiciones correctas
  *   - Interlinking blocks correctos
@@ -14,7 +14,7 @@
  *   - CTAs fragmentados/huerfanos (por conflicto de inserciones)
  *   - HTML inválido con elementos huérfanos
  * 
- * ÚNICO USO VÁLIDO: Ejecutar UNA SOLA VEZ sobre artículos muy antiguos que NO fueron
+ * ÑNICO USO VÑLIDO: Ejecutar UNA SOLA VEZ sobre artículos muy antiguos que NO fueron
  * generados por generateArticleHTML() y que necesitan modernización de estilos.
  * 
  * Para limpiar artículos duplicados en producción, usar script de cleanup específico.
@@ -32,7 +32,7 @@ const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SE
 // Early exit if run accidentally - prevents data corruption
 const LEGACY_MODE_ONLY = false; // Set to true ONLY when specifically cleaning old pre-2026 articles
 if (!LEGACY_MODE_ONLY) {
-  console.error('❌ fix_latest_blog.ts is DEPRECATED and should not be run.');
+  console.error('â fix_latest_blog.ts is DEPRECATED and should not be run.');
   console.error('   This script is kept for historical reference only.');
   console.error('   For cleaning articles, use a targeted cleanup script instead.');
   process.exit(1);
@@ -76,7 +76,7 @@ async function main() {
   html = html.replace(/<p>/g, '<p style="text-align: justify; line-height: 1.8; margin-bottom: 1.5rem;">');
 
   // 3. Apply Drop Cap to the very first section's first paragraph
-  const dropCapRegex = /(<section[^>]*>\s*<h2>[^<]+<\/h2>\s*<p style="[^"]+">)([A-ZÁÉÍÓÚÑ])/i;
+  const dropCapRegex = /(<section[^>]*>\s*<h2>[^<]+<\/h2>\s*<p style="[^"]+">)([A-ZÑÑÑÑÑÑ])/i;
   html = html.replace(dropCapRegex, (match: string, prefix: string, firstLetter: string) => {
     return `${prefix}<span class="drop-cap" style="float: left; font-size: 4rem; line-height: 0.8; font-weight: 800; color: #FF5C3A; margin-right: 0.8rem; margin-top: 0.5rem; text-shadow: 2px 2px 0px rgba(255,92,58,0.2);">${firstLetter.toUpperCase()}</span>`;
   });
@@ -85,7 +85,7 @@ async function main() {
   const interlinkHtml = `
   <div class="blog-interlink-box" style="background: rgba(255, 92, 58, 0.05); border-left: 4px solid #FF5C3A; padding: 1.5rem; margin: 3rem 0; border-radius: 0 8px 8px 0;">
     <h3 style="margin-top: 0; color: #FF5C3A; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">
-      📚 Lectura Recomendada
+      ð Lectura Recomendada
     </h3>
     <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc;">
       ${recentPosts.map(p => `<li style="margin-bottom: 0.8rem;"><a href="/blog/${p.slug}" style="color: #fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.3); text-underline-offset: 4px; font-weight: 500; transition: color 0.2s;">${p.title}</a></li>`).join('')}
@@ -101,7 +101,7 @@ async function main() {
     <a href="/register" style="display: inline-block; background: linear-gradient(to right, #FF5C3A, #ff7e63); color: #fff; padding: 1rem 2.5rem; border-radius: 9999px; font-weight: 700; font-size: 1.1rem; text-decoration: none;">Comenzar Ahora</a>
   </div>`;
 
-  const cta1 = getCta("¿Quieres reducir las devoluciones?", "El probador virtual de Lookitry ayuda a tus clientes a elegir la talla correcta.", "Probar Gratis");
+  const cta1 = getCta("Â¿Quieres reducir las devoluciones?", "El probador virtual de Lookitry ayuda a tus clientes a elegir la talla correcta.", "Probar Gratis");
   const cta2 = getCta("Lleva la experiencia VIP a tu web", "Personaliza el widget con los colores de tu marca y ofrece una experiencia única.", "Registrar Marca");
 
   // 6. Inject elements into specific section breaks

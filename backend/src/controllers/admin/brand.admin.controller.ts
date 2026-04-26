@@ -340,7 +340,7 @@ export const sendBrandResetEmail = async (req: any, res: Response) => {
 
     await emailService.sendEmail({
       to: brand.email,
-      subject: 'Recuperación de contraseña — Lookitry',
+      subject: 'Recuperación de contraseña â Lookitry',
       html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
         <h2 style="color:#FF5C3A;margin-bottom:8px">Recuperación de contraseña</h2>
         <p style="color:#6b7280;margin-bottom:24px">Hola <strong>${brand.name}</strong>, recibiste este correo porque se solicitó un restablecimiento de contraseña para tu cuenta.</p>

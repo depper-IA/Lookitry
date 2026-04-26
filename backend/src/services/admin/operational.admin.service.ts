@@ -7,7 +7,7 @@ type PricingMetaData = {
 };
 
 /**
- * Operational Admin Service — Mission Control, Admin Metadata y Audit Log.
+ * Operational Admin Service â Mission Control, Admin Metadata y Audit Log.
  * Extraído de AdminService para mejorar mantenibilidad.
  */
 export class OperationalAdminService {

@@ -38,9 +38,9 @@ export async function runOnboardingReminder() {
     if (error) throw new Error('Error al obtener marcas verificadas: ' + error.message);
 
     if (!brands || brands.length === 0) {
-      console.log('ℹ️  No hay marcas verificadas en ventana de 24h para notificar');
+      console.log('â¹ï¸  No hay marcas verificadas en ventana de 24h para notificar');
       console.log('\n=================================================');
-      console.log('Job completado — no había marcas para procesar');
+      console.log('Job completado â no había marcas para procesar');
       console.log('=================================================');
       return { processed: 0, sent: 0 };
     }
@@ -66,21 +66,21 @@ export async function runOnboardingReminder() {
           await notificationService.sendOnboardingProductReminder(brand as Brand);
           sentCount++;
         } catch (err) {
-          console.error(`   ❌ Error enviando onboarding reminder a ${brand.email}:`, err);
+          console.error(`   â Error enviando onboarding reminder a ${brand.email}:`, err);
         }
       } else {
-        console.log(`   ⏭️  ${brand.email} ya tiene productos — omitido`);
+        console.log(`   â­ï¸  ${brand.email} ya tiene productos â omitido`);
       }
     }
 
-    console.log(`\n   ✅ ${sentCount} recordatorio(s) de onboarding enviado(s)`);
+    console.log(`\n   â ${sentCount} recordatorio(s) de onboarding enviado(s)`);
     console.log('\n=================================================');
     console.log('Job completado');
     console.log('=================================================');
 
     return { processed: brands.length, sent: sentCount };
   } catch (error) {
-    console.error('\n❌ Error durante job de onboarding:', error);
+    console.error('\nâ Error durante job de onboarding:', error);
     console.error('\n=================================================');
     console.error('Job finalizado con errores');
     console.error('=================================================');

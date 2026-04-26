@@ -36,15 +36,15 @@ describe('E2E: Flujos de Checkout y Registro', () => {
 
   beforeAll(async () => {
     if (supabase) {
-      console.log('\n✅ Supabase client initialized');
+      console.log('\nâ Supabase client initialized');
     } else {
-      console.log('\n⚠️ Supabase no configurado, usando modo limitado');
+      console.log('\nâ ï¸ Supabase no configurado, usando modo limitado');
     }
   });
 
   afterAll(async () => {
     if (supabase && testCleanup.length > 0) {
-      console.log('\n🧹 Limpiando datos de prueba...');
+      console.log('\nð§¹ Limpiando datos de prueba...');
       for (const email of testCleanup) {
         try {
           await supabase.from('brands').delete().eq('email', email);
@@ -57,7 +57,7 @@ describe('E2E: Flujos de Checkout y Registro', () => {
 
   describe('Flujo 1: Trial', () => {
     it('1.1. Verifica que registro requiere CAPTCHA (Turnstile)', async () => {
-      console.log('\n🧪 Trial 1.1: Verificando que registro requiere CAPTCHA...');
+      console.log('\nð§ª Trial 1.1: Verificando que registro requiere CAPTCHA...');
       
       const registerRes = await api.post('/api/auth/register', {
         email: generateRandomEmail(),
@@ -76,7 +76,7 @@ describe('E2E: Flujos de Checkout y Registro', () => {
     });
 
     it('1.2. Usuario con sesión activa NO puede comprar Trial (retorna 409)', async () => {
-      console.log('\n🧪 Trial 1.2: Verificando que usuario con sesión NO puede comprar Trial...');
+      console.log('\nð§ª Trial 1.2: Verificando que usuario con sesión NO puede comprar Trial...');
       
       await delay(1000);
       
@@ -93,18 +93,18 @@ describe('E2E: Flujos de Checkout y Registro', () => {
       
       if (checkoutRes.status === 409) {
         expect(checkoutRes.data.error).toBe('AUTHENTICATED_TRIAL_DISABLED');
-        console.log('   ✅ Usuario con sesión bloquado de Trial');
+        console.log('   â Usuario con sesión bloquado de Trial');
       } else {
-        console.log('   ℹ️  Sin sesión activa, checkout procede normalmente');
+        console.log('   â¹ï¸  Sin sesión activa, checkout procede normalmente');
         expect(checkoutRes.status).toBe(200);
       }
     });
 
     it('1.3. Usuario autenticado intentando Trial recibe error específico', async () => {
-      console.log('\n🧪 Trial 1.3: Verificando protección específica para usuario con sesión...');
+      console.log('\nð§ª Trial 1.3: Verificando protección específica para usuario con sesión...');
       
       if (!supabase) {
-        console.log('   ⚠️  Supabase no disponible, saltando test');
+        console.log('   â ï¸  Supabase no disponible, saltando test');
         return;
       }
 
@@ -119,7 +119,7 @@ describe('E2E: Flujos de Checkout y Registro', () => {
       const { data: brand, error } = await supabase.from('brands').insert(testBrand).select().single();
 
       if (error || !brand) {
-        console.log('   ⚠️  No se pudo crear brand de prueba:', error?.message);
+        console.log('   â ï¸  No se pudo crear brand de prueba:', error?.message);
         return;
       }
 
@@ -144,13 +144,13 @@ describe('E2E: Flujos de Checkout y Registro', () => {
 
       expect(checkoutRes.status).toBe(409);
       expect(checkoutRes.data.error).toBe('AUTHENTICATED_TRIAL_DISABLED');
-      console.log('   ✅ Usuario autenticado bloqueado de Trial');
+      console.log('   â Usuario autenticado bloqueado de Trial');
     });
   });
 
   describe('Flujo 2: BASIC', () => {
     it('2.1. Checkout para plan BASIC', async () => {
-      console.log('\n🧪 BASIC 2.1: Generando checkout para BASIC...');
+      console.log('\nð§ª BASIC 2.1: Generando checkout para BASIC...');
       await delay(1000);
       
       const checkoutRes = await api.get('/api/payments/wompi/checkout-url', {
@@ -165,13 +165,13 @@ describe('E2E: Flujos de Checkout y Registro', () => {
       
       expect(checkoutRes.status).toBe(200);
       expect(checkoutRes.data.checkoutUrl).toBeDefined();
-      console.log('   ✅ Checkout URL generado correctamente');
+      console.log('   â Checkout URL generado correctamente');
     });
   });
 
   describe('Flujo 3: PRO', () => {
     it('3.1. Checkout para plan PRO', async () => {
-      console.log('\n🧪 PRO 3.1: Generando checkout para PRO...');
+      console.log('\nð§ª PRO 3.1: Generando checkout para PRO...');
       await delay(1000);
       
       const checkoutRes = await api.get('/api/payments/wompi/checkout-url', {
@@ -189,7 +189,7 @@ describe('E2E: Flujos de Checkout y Registro', () => {
     });
 
     it('3.2. Checkout con descuento por meses (3 meses)', async () => {
-      console.log('\n🧪 PRO 3.2: Checkout PRO con 3 meses (descuento 5%)...');
+      console.log('\nð§ª PRO 3.2: Checkout PRO con 3 meses (descuento 5%)...');
       await delay(1000);
       
       const basePrice = 250000;
@@ -211,7 +211,7 @@ describe('E2E: Flujos de Checkout y Registro', () => {
     });
 
     it('3.3. Checkout con descuento 6 meses (10%)', async () => {
-      console.log('\n🧪 PRO 3.3: Checkout PRO con 6 meses (descuento 10%)...');
+      console.log('\nð§ª PRO 3.3: Checkout PRO con 6 meses (descuento 10%)...');
       await delay(1000);
       
       const basePrice = 250000;
@@ -235,7 +235,7 @@ describe('E2E: Flujos de Checkout y Registro', () => {
 
   describe('Flujo 4: PRO + 6 meses + Landing (Bundle)', () => {
     it('4.1. Checkout bundle PRO+6meses+Landing', async () => {
-      console.log('\n🧪 Bundle 4.1: Generando checkout PRO + 6 meses + Landing...');
+      console.log('\nð§ª Bundle 4.1: Generando checkout PRO + 6 meses + Landing...');
       await delay(1000);
       
       const basePrice = 250000;
@@ -263,13 +263,13 @@ describe('E2E: Flujos de Checkout y Registro', () => {
       
       expect(checkoutRes.status).toBe(200);
       expect(checkoutRes.data.checkoutUrl).toBeDefined();
-      console.log('   ✅ Checkout URL generado correctamente');
+      console.log('   â Checkout URL generado correctamente');
     });
   });
 
   describe('Validaciones de seguridad', () => {
     it('5.1. Bloquea email temporal (yopmail)', async () => {
-      console.log('\n🧪 Validación 5.1: Verificando bloqueo de email temporal...');
+      console.log('\nð§ª Validación 5.1: Verificando bloqueo de email temporal...');
       await delay(1000);
       
       const registerRes = await api.post('/api/auth/register', {
@@ -289,7 +289,7 @@ describe('E2E: Flujos de Checkout y Registro', () => {
     });
 
     it('5.2. Bloquea slug reservado (admin)', async () => {
-      console.log('\n🧪 Validación 5.2: Verificando bloqueo de slug reservado...');
+      console.log('\nð§ª Validación 5.2: Verificando bloqueo de slug reservado...');
       await delay(1000);
       
       const registerRes = await api.post('/api/auth/register', {
@@ -311,7 +311,7 @@ describe('E2E: Flujos de Checkout y Registro', () => {
 
   describe('Payment Settings', () => {
     it('6.1. Obtiene configuración de pagos pública', async () => {
-      console.log('\n🧪 Payment Settings 6.1: Obteniendo configuración pública...');
+      console.log('\nð§ª Payment Settings 6.1: Obteniendo configuración pública...');
       
       const res = await api.get('/api/payment-settings/public');
       
@@ -319,7 +319,7 @@ describe('E2E: Flujos de Checkout y Registro', () => {
       
       expect([200, 404]).toContain(res.status);
       if (res.status === 200) {
-        console.log('   ✅ Configuración obtenida');
+        console.log('   â Configuración obtenida');
         console.log('   Wompi enabled:', res.data.wompiEnabled);
         console.log('   PayPal enabled:', res.data.paypalEnabled);
       }
@@ -327,5 +327,5 @@ describe('E2E: Flujos de Checkout y Registro', () => {
   });
 });
 
-console.log('\n🚀 Iniciando tests E2E de checkout y registro...');
+console.log('\nð Iniciando tests E2E de checkout y registro...');
 console.log('   API URL:', API_URL);

@@ -182,7 +182,7 @@ export const registerSubscriptionPayment = async (req: Request, res: Response) =
 
     emailService.sendEmail({
       to: brand.email,
-      subject: `Tu plan ${planUpper} está activo — Lookitry`,
+      subject: `Tu plan ${planUpper} está activo â Lookitry`,
       html: purchaseConfirmationEmail(
         { name: brand.name, email: brand.email },
         planUpper,
