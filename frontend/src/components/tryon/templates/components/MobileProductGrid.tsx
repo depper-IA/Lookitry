@@ -11,6 +11,7 @@ interface MobileProductGridProps {
   onProductSelect: (p: Product) => void;
   onProceedToUpload?: () => void;
   onReset: () => void;
+  onSelfieReset?: () => void;
   selfiePreview: string | null;
   primaryColor: string;
   primaryGlow: string;
@@ -28,6 +29,7 @@ export function MobileProductGrid({
   onProductSelect,
   onProceedToUpload,
   onReset,
+  onSelfieReset,
   selfiePreview,
   primaryColor,
   primaryGlow,
@@ -45,7 +47,9 @@ export function MobileProductGrid({
           <SelfieUploader
             onUpload={() => {}} // Not really used in this context but required by type
             onReset={onReset}
+            onSelfieReset={onSelfieReset}
             currentPreview={selfiePreview}
+            selectedProduct={selectedProduct}
             primaryColor={primaryColor}
             textColor={mainTextPrimary}
             mutedColor={mainTextMuted}

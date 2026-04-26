@@ -171,6 +171,21 @@ export function TryOnWidget({
     };
   }, [selfiePreview]);
 
+  const handleSelfieReset = useCallback(() => {
+    setSelfiePreview(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setSelfieFile(null);
+    setSelfieHash('');
+    setResultImageUrl(null);
+    setGenerationId(null);
+    setNotice(null);
+    setGeneratedProducts(new Map());
+    // Volvemos al paso de subida para que pueda elegir otra foto
+    setStep('upload');
+  }, []);
+
   const handleReset = useCallback(() => {
     if (selfieHash) {
       const key = getCacheKey(brandSlug, selfieHash);
