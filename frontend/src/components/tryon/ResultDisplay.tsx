@@ -216,9 +216,25 @@ export function ResultDisplay({
   const feedbackTrapRef = useFocusTrap(feedbackOpen);
   const lightboxTrapRef = useFocusTrap(lightboxOpen);
 
-  const handleDownload = () => {
-    const downloadUrl = getProxiedImageUrl(imageUrl, brandPlan, true);
-    window.location.href = downloadUrl;
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const downloadUrl = getProxiedImageUrl(imageUrl, brandPlan, true);
+      const response = await fetch(downloadUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lookitry-${productName?.replace(/\s+/g, '-').toLowerCase() || 'generacion'}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Download error:', e);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   // Mensaje de compartir: usar custom del backend (PRO/ENTERPRISE) o generar dinámicamente
@@ -376,7 +392,7 @@ export function ResultDisplay({
           <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_280px] lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
             <div 
               className="rounded-[28px] border p-3 shadow-sm md:p-4"
-              style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6' }}
+            style={{ backgroundColor: '#1a1a1a', borderColor: 'rgba(255,255,255,0.1)' }}
             >
               <ResultImage
                 imageUrl={imageUrl}
@@ -624,7 +640,7 @@ export function ResultDisplay({
             aria-labelledby="feedback-title"
             className="rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden border"
             onClick={e => e.stopPropagation()}
-            style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6' }}
+            style={{ backgroundColor: '#1a1a1a', borderColor: 'rgba(255,255,255,0.1)' }}
           >
             {!feedbackSent ? (
               <>
