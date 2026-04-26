@@ -35,7 +35,6 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
     notice,
     generatedProducts,
     onReset,
-    onSelfieReset,
     onSelfieUpload,
     onProductSelect,
     onProceedToUpload,
@@ -147,18 +146,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                   />
                 </div>
 
-                <div className="w-full flex justify-center mt-10">
-                  <button
-                    onClick={props.onBack}
-                    className="group flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-white/5 hover:bg-white/10 active:scale-95"
-                    style={{ color: textMuted, backgroundColor: cardBg }}
-                  >
-                    <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    Volver al catálogo
-                  </button>
-                </div>
+
               </div>
             </motion.div>
           )}
@@ -185,7 +173,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                 {/* Overlay Premium para contraste asegurado */}
                 <div className="absolute inset-0 bg-black/40" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg)] via-black/20 to-black/60" />
-                
+
                 <div className="relative z-10 flex flex-col items-center justify-center text-center w-full max-w-4xl mx-auto">
                   {config.brand.logo ? (
                     <img
@@ -201,14 +189,14 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                       </span>
                     </div>
                   )}
-                  
+
                   <div className="inline-block relative">
                     <h2 className={`${isSmall ? 'text-4xl' : 'text-5xl lg:text-7xl'} font-black tracking-[-0.03em] italic uppercase relative z-10 text-white drop-shadow-lg`}>
                       {welcomeMessage || 'Colección Real'}
                     </h2>
                     <div className="absolute -bottom-2 -right-4 w-12 h-12 rounded-full blur-xl" style={{ backgroundColor: primaryColor, opacity: 0.6 }} />
                   </div>
-                  
+
                   <div className="flex items-center gap-4 mt-6 max-w-[200px] w-full text-white">
                     <div className="h-[1px] flex-1 bg-white opacity-40" />
                     <div className="w-2 h-2 rounded-full rotate-45 shadow-sm" style={{ backgroundColor: primaryColor }} />
@@ -228,9 +216,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                   <SelfieUploader
                     onUpload={onSelfieUpload}
                     onReset={onReset}
-                    onSelfieReset={onSelfieReset}
                     currentPreview={selfiePreview}
-                    selectedProduct={selectedProduct}
                     primaryColor={primaryColor}
                     textColor={textPrimary}
                     mutedColor={textMuted}

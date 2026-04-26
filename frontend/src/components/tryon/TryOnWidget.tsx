@@ -186,6 +186,11 @@ export function TryOnWidget({
     setStep('upload');
   }, []);
 
+  const handleProductReset = useCallback(() => {
+    setSelectedProduct(null);
+    setStep('select');
+  }, []);
+
   const handleReset = useCallback(() => {
     if (selfieHash) {
       const key = getCacheKey(brandSlug, selfieHash);
@@ -214,7 +219,7 @@ export function TryOnWidget({
     });
     setSelfieFile(file); 
     setNotice(null);
-    setUploadPrivacyNotice('Tu selfie solo se usa en tu navegador y se elimina al subir una nueva foto');
+    setUploadPrivacyNotice('Tu selfie solo se usa en tu navegador y se devuelve al subir una nueva foto');
     
     // Generar hash de la selfie para cachear resultados específicos por selfie
     let newHash = '';
@@ -459,8 +464,10 @@ export function TryOnWidget({
     generatedProducts,
     lockProductSelection: isLocked,
     onReset: handleReset,
+    onSelfieReset: handleSelfieReset,
     onSelfieUpload: handleSelfieUpload,
     onProductSelect: handleProductSelect,
+    onProductReset: handleProductReset,
     onProceedToUpload: () => setStep('upload'),
     onBack: () => setStep('select'),
     onGenerate: () => handleGenerate(),
