@@ -22,18 +22,19 @@ const LandingPlugin = dynamic(() => import('./LandingPlugin'), { ssr: true });
 const PromoBanner = dynamic(() => import('./PromoBanner').then(m => ({ default: m.PromoBanner })), { ssr: true });
 
 // Componentes below-the-fold: carga perezosa (solo cuando entran en viewport)
+// ssr:false = no render server-side = carga más rápida, menos blocking
 const LandingPricing = dynamic(() => import('./LandingPricing'), {
-  ssr: true,
+  ssr: false,
   loading: () => <BelowTheFoldSkeleton />
 });
-const LandingPayments = dynamic(() => import('./LandingPayments'), { ssr: true });
+const LandingPayments = dynamic(() => import('./LandingPayments'), { ssr: false });
 const ReviewsSlider = dynamic(
   () => import('./ReviewsSlider').then(m => ({ default: m.ReviewsSlider })),
-  { ssr: true }
+  { ssr: false }
 );
-const LandingFaq = dynamic(() => import('./LandingFaq'), { ssr: true });
-const LandingFooter = dynamic(() => import('./LandingFooter'), { ssr: true });
-const ActiveCouponsBanner = dynamic(() => import('./ActiveCouponsBanner'), { ssr: true });
+const LandingFaq = dynamic(() => import('./LandingFaq'), { ssr: false });
+const LandingFooter = dynamic(() => import('./LandingFooter'), { ssr: false });
+const ActiveCouponsBanner = dynamic(() => import('./ActiveCouponsBanner'), { ssr: false });
 
 // Modal de promoción: carga lazy + no SSR (usa localStorage/sessionStorage)
 const PromoModal = dynamic(

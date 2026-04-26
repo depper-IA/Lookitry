@@ -23,6 +23,7 @@
     "@supabase/supabase-js": "^2.39.0",
     "@types/dompurify": "^3.0.5",
     "country-state-city": "^3.2.1",
+    "critters": "^0.0.23",
     "dompurify": "^3.3.3",
     "framer-motion": "^12.38.0",
     "gsap": "^3.14.2",

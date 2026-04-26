@@ -18,7 +18,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-md" aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/80" aria-hidden="true" />
 
       {/* Modal */}
       <div
@@ -29,7 +29,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
         aria-labelledby="upgrade-modal-title"
       >
         {/* Premium glow effect */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-48 w-80 bg-gradient-to-b from-[#FF5C3A]/30 to-transparent blur-[100px]" aria-hidden="true" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-48 w-80 bg-gradient-to-b from-[#FF5C3A]/30 to-transparent" aria-hidden="true" />
 
         {/* Close button */}
         <button

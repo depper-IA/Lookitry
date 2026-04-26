@@ -60,18 +60,18 @@ export default function LandingSteps() {
           {STEPS.map((step, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.3, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="step-card group relative"
             >
-              <div className="relative aspect-[3/4] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] overflow-hidden mb-6 sm:mb-8 border border-white/10 dark:border-[#e8e4df] bg-[#1a1a1a] dark:bg-[#f0ece8] shadow-sm transition-all duration-500 group-hover:shadow-xl">
+              <div className="relative aspect-[3/4] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] overflow-hidden mb-6 sm:mb-8 border border-white/10 dark:border-[#e8e4df] bg-[#1a1a1a] dark:bg-[#f0ece8] shadow-sm transition-all duration-300 group-hover:shadow-xl">
                 <Image
                   src={step.img}
                   alt={step.alt}
                   fill
-                  className={`object-cover ${step.pos} transition-transform duration-1000 group-hover:scale-110`}
+                  className={`object-cover ${step.pos} transition-transform duration-300`}
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
                 <div className="absolute top-4 sm:top-6 md:top-8 left-4 sm:left-6 md:left-8 w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 bg-[#FF5C3A] text-white rounded-xl sm:rounded-2xl flex items-center justify-center font-jakarta font-bold text-lg sm:text-xl shadow-2xl">

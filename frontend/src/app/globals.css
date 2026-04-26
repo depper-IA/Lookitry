@@ -397,6 +397,14 @@ textarea:focus-visible {
 .delay-700 { animation-delay: 700ms; }
 .delay-800 { animation-delay: 800ms; }
 
+/* ── Landing Hero Gradient (CLS fix) ──────────────────────────────────────── */
+.hero-gradient {
+  background:
+    radial-gradient(ellipse at 70% 20%, rgba(255,92,58,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 80%, rgba(255,92,58,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(255,92,58,0.05) 0%, transparent 60%);
+}
+
 /* ── ACCESSIBILITY: prefers-reduced-motion ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
