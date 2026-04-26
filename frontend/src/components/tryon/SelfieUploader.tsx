@@ -181,7 +181,9 @@ export function SelfieUploader({
               </div>
             </motion.div>
           )}
-                {/* Decisión principal: Cámara vs Galería O Preview */}
+        </AnimatePresence>
+
+        {/* Decisión principal: Cámara vs Galería O Preview */}
         <div className="space-y-3">
           <AnimatePresence mode="wait">
             {compressing ? (
