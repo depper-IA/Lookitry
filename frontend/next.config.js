@@ -6,9 +6,14 @@ const nextConfig = {
   output: 'standalone',
   eslint: { ignoreDuringBuilds: false },
   // Optimización: no transpilar para older browsers (ES6+ para navegadores modernos)
+  // Elimina polyfills innecesarios como Array.prototype.at, flat, Object.fromEntries, etc.
   experimental: {
     optimizePackageImports: ['framer-motion', 'lucide-react'],
   },
+  // No transpilar para browsers antiguos - solo targets modernos
+  compiler: isProd ? {
+    removeConsole: false,
+  } : undefined,
   async redirects() {
     return [
       // Redirecciones de páginas 404

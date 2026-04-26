@@ -35,21 +35,12 @@ export default async function HomePage() {
   const proPrice = pricing?.pro?.precio_mensual_cop ?? 350000;
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-  
-  let dynamicReviews: any[] = [];
-  try {
-    const res = await fetch(`${API_URL}/api/reviews/public`, { 
-        next: { revalidate: 1800 } 
-    });
-    if (res.ok) {
-        const data = await res.json();
-        if (data.reviews && data.reviews.length > 0) {
-            dynamicReviews = data.reviews;
-        }
-    }
-  } catch (err) {
-    console.error("Error fetching reviews", err);
-  }
+
+  // Reviews: fetch asíncrono NO bloqueante
+  const reviewsData = await fetch(`${API_URL}/api/reviews/public`, {
+    next: { revalidate: 1800 }
+  }).then(res => res.ok ? res.json().catch(() => ({ reviews: [] })) : { reviews: [] }).catch(() => ({ reviews: [] }));
+  const dynamicReviews = reviewsData?.reviews ?? [];
 
   // Testimonios curados para la home premium como fallback si falla la bd o hay pocas
   const mockReviews = [
