@@ -209,7 +209,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
               <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
 
               {step === 'upload' && (
-                <div className={`space-y-6 ${isSmall ? '' : 'max-w-2xl'}`}>
+                <div className={`space-y-6 mx-auto ${isSmall ? '' : 'max-w-2xl'}`}>
                   {/* Back Button (to selection) */}
                   <div className="flex justify-start mb-2">
                     <button
@@ -224,10 +224,10 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                     </button>
                   </div>
 
-                  <SelfieThumb preview={selfiePreview} onReset={onReset} />
-                  
                   <SelfieUploader
                     onUpload={onSelfieUpload}
+                    onReset={onReset}
+                    currentPreview={selfiePreview}
                     primaryColor={primaryColor}
                     welcomeMessage={welcomeMessage}
                     textColor={textPrimary}
@@ -239,7 +239,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
               )}
 
               {step === 'select' && (
-                <div className={`space-y-6 ${isSmall ? '' : 'max-w-4xl'}`}>
+                <div className={`space-y-6 mx-auto ${isSmall ? '' : 'max-w-4xl'}`}>
                   <SelfieThumb preview={selfiePreview} onReset={onReset} />
                   
                   <div className={`rounded-2xl border ${isSmall ? 'p-3' : 'p-6 lg:p-8'}`} style={{ backgroundColor: 'rgba(0,0,0,0.1)', borderColor }}>
