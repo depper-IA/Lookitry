@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, RotateCcw } from 'lucide-react';
@@ -30,6 +30,48 @@ interface Product {
   price: number | null;
 }
 
+// Memoized product item to prevent re-renders on unrelated state changes
+const ProductItem = React.memo(({ prod, selectedProduct, onSelect }: {
+  prod: Product;
+  selectedProduct: Product | null;
+  onSelect: (p: Product) => void;
+}) => {
+  const isSelected = selectedProduct?.id === prod.id;
+  return (
+    <div
+      onClick={() => onSelect(prod)}
+      className={`group/item flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all sm:gap-3 sm:rounded-xl sm:p-3 ${isSelected
+        ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/5'
+        : 'border-white/10 bg-white/5 hover:border-white/20'
+        }`}
+      role="button"
+      tabIndex={0}
+      aria-label={`Seleccionar ${prod.name}`}
+    >
+      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a] sm:h-14 sm:w-14">
+        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className={`truncate text-[9px] font-bold sm:text-[11px] ${isSelected ? 'text-white' : 'text-white/60'}`}>
+          {prod.name}
+        </span>
+        <span className="text-[7px] capitalize text-white/30 sm:text-[8px] truncate">{prod.category}</span>
+        {prod.price && (
+          <span className="text-[7px] font-bold text-[#FF5C3A] sm:text-[9px]">
+            ${prod.price.toLocaleString('es-CO')}
+          </span>
+        )}
+      </div>
+      {isSelected && (
+        <div className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] sm:h-5 sm:w-5" aria-hidden="true">
+          <Check size={8} className="text-white sm:text-xs" />
+        </div>
+      )}
+    </div>
+  );
+});
+ProductItem.displayName = 'ProductItem';
+
 interface HomeTryonConfig {
   brand: { id: string; name: string; slug: string };
   products: Product[];
@@ -47,34 +89,10 @@ export default function LandingHero() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [hasUsedTrial, setHasUsedTrial] = useState(false);
+  const [hasUsedTrial, setHasUsedTrial] = useState<boolean | undefined>(undefined);
 
-  // Parallax solo para blob1 (más ligero)
-  const blob1Ref = useRef<HTMLDivElement>(null);
-
+  // Config loading deferred to let main thread breathe after initial render
   useEffect(() => {
-    let ticking = false;
-    let lastScrollY = 0;
-
-    const handleScroll = () => {
-      lastScrollY = window.scrollY;
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(() => {
-          if (blob1Ref.current) {
-            blob1Ref.current.style.transform = `translate3d(0, ${lastScrollY * 0.08}px, 0)`;
-          }
-          ticking = false;
-        });
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    // Defer config loading to let main thread breathe after initial render
     const loadConfig = async () => {
       try {
         console.log('[HomeTryon] Loading config...');
@@ -95,33 +113,35 @@ export default function LandingHero() {
       }
     };
 
-    // Defer trial check too - less critical than config
-    const checkTrial = async () => {
-      try {
-        const res = await fetch('/api/home/tryon/check');
-        const data = await res.json();
-        console.log('[HomeTryon] Trial status:', data);
-        setHasUsedTrial(data.hasTrialed);
-      } catch (err) {
-        console.error('[HomeTryon] Error checking trial:', err);
-      }
-    };
-
-    // Schedule both after initial render completes
+    // Schedule config loading after initial render completes
     const timer1 = setTimeout(loadConfig, 0);
-    const timer2 = setTimeout(checkTrial, 0);
 
     return () => {
       clearTimeout(timer1);
-      clearTimeout(timer2);
     };
   }, []);
 
-  const handleProductSelect = (product: Product) => {
-    setSelectedProduct(product);
-  };
+  // Fetch trial status only when needed (on user interaction)
+  const fetchTrialStatus = useCallback(async () => {
+    if (hasUsedTrial !== undefined) return; // Already checked
+    try {
+      const res = await fetch('/api/home/tryon/check');
+      const data = await res.json();
+      console.log('[HomeTryon] Trial status:', data);
+      setHasUsedTrial(data.hasTrialed);
+      return data.hasTrialed;
+    } catch (err) {
+      console.error('[HomeTryon] Error checking trial:', err);
+      setHasUsedTrial(false);
+      return false;
+    }
+  }, [hasUsedTrial]);
 
-  const handleSelfieChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProductSelect = useCallback((product: Product) => {
+    setSelectedProduct(product);
+  }, []);
+
+  const handleSelfieChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -133,9 +153,9 @@ export default function LandingHero() {
       setStep('selfie'); // Auto-avanzar al paso de previsualización
     };
     reader.readAsDataURL(file);
-  };
+  }, []);
 
-  const handleGenerate = async () => {
+  const handleGenerate = useCallback(async () => {
     if (!selfie || !selectedProduct) return;
 
     setIsGenerating(true);
@@ -174,49 +194,98 @@ export default function LandingHero() {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [selfie, selectedProduct]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setStep('select');
     // Keep selfie when going back to change product
     setResultImage(null);
     setError(null);
-  };
+  }, []);
 
   // Separate handler for changing product (preserves selfie)
-  const handleChangeProduct = () => {
+  const handleChangeProduct = useCallback(() => {
     setStep('select');
     setResultImage(null);
     setError(null);
-  };
+  }, []);
+
+  // Memoized product list to prevent recreating items on every render
+  const productItems = useMemo(() => config ? config.products.map((prod) => (
+    <ProductItem
+      key={prod.id}
+      prod={prod}
+      selectedProduct={selectedProduct}
+      onSelect={handleProductSelect}
+    />
+  )) : [], [config, selectedProduct, handleProductSelect]);
+
+  // Memoized CTA handler to avoid inline function recreation on each render
+  const handleCTA = useCallback(async () => {
+    // Priority 1: No selfie? → Go take selfie (even if trial exhausted)
+    if (!selfie) {
+      setStep('selfie');
+      return;
+    }
+    // Priority 2: Check trial status if not yet fetched
+    if (hasUsedTrial === undefined) {
+      const hasTrialed = await fetchTrialStatus();
+      if (hasTrialed) {
+        setShowUpgradeModal(true);
+        return;
+      }
+    } else if (hasUsedTrial) {
+      setShowUpgradeModal(true);
+      return;
+    }
+    // Priority 3: Has product + selfie? → Generate directly
+    if (selectedProduct) {
+      handleGenerate();
+    }
+  }, [selfie, hasUsedTrial, selectedProduct, fetchTrialStatus, handleGenerate]);
+
+  // Memoized CTA section to prevent recreation on every render and isolate paint
+  const ctaSection = useMemo(() => (
+    <div className="flex flex-col items-center gap-2" style={{ contain: 'layout style' }}>
+      <button
+        onClick={handleCTA}
+        disabled={!hasUsedTrial && !selectedProduct}
+        className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <Sparkles size={16} />
+        {selfie ? 'Generar Prueba' : 'Ver Probador IA'}
+      </button>
+      {!hasUsedTrial && (
+        <span className="flex items-center gap-1 rounded-full bg-[#ABABAB]/10 px-3 py-1 text-[9px] font-semibold text-[#FFFFFF]">
+          <Sparkles size={10} />
+          1 generación gratis
+        </span>
+      )}
+    </div>
+  ), [handleCTA, selfie, hasUsedTrial, selectedProduct]);
+
+  // Memoized generate button content to avoid conditional renders inside button
+  const generateButtonContent = useMemo(() => (
+    isGenerating ? (
+      <>
+        <Loader2 size={16} className="animate-spin" />
+        Generando...
+      </>
+    ) : (
+      <>
+        <Sparkles size={16} />
+        Ver Probador IA
+      </>
+    )
+  ), [isGenerating]);
 
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen items-start overflow-hidden bg-white px-4 pt-20 pb-16 dark:bg-black sm:px-6 sm:pt-24 sm:pb-24 md:px-12"
+      className="relative flex min-h-screen items-start overflow-hidden bg-white px-4 pt-20 pb-16 dark:bg-black sm:px-6 sm:pt-24 sm:pb-24 md:px-12 hero-gradient"
       aria-label="Seccion principal"
     >
-      <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        {/* Blob principal con parallax */}
-        <div
-          ref={blob1Ref}
-          className="absolute top-[-15%] right-[-10%] h-[100vw] w-[100vw] rounded-full bg-[#FF5C3A]/10 blur-[60px] animate-blob will-change-transform"
-          style={{ transform: 'translate3d(0, 0, 0)' }}
-        />
-        {/* Blob secundario estático */}
-        <div
-          className="absolute bottom-[-15%] left-[-15%] h-[80vw] w-[80vw] rounded-full bg-[#FF5C3A]/5 blur-[50px] animate-blob will-change-transform"
-          style={{ animationDelay: '2s' }}
-        />
-        {/* Tercer blob pequeño flotante */}
-        <div
-          className="absolute top-[20%] left-[-10%] h-[40vw] w-[40vw] rounded-full bg-white/5 blur-[40px] dark:bg-white/2 animate-float will-change-transform"
-        />
-        {/* Glow central */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[60vh] w-[60vw] bg-[#FF5C3A]/5 blur-[80px] opacity-20 will-change-transform"
-        />
-      </div>
+      {/* Static gradient background replaces expensive animated blobs - same visual effect, zero GPU overhead */}
 
       <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
         {/* LEFT: Text Content */}
@@ -323,71 +392,11 @@ export default function LandingHero() {
                   <div className="px-0.5 text-[7px] font-bold uppercase tracking-[0.15em] text-white/30 sm:mb-1 sm:px-1 sm:text-[8px] sm:tracking-[0.2em]">
                     Elige un Producto
                   </div>
-                  {config.products.map((prod) => (
-                    <div
-                      key={prod.id}
-                      onClick={() => handleProductSelect(prod)}
-                      className={`group/item flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all sm:gap-3 sm:rounded-xl sm:p-3 ${selectedProduct?.id === prod.id
-                        ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/5'
-                        : 'border-white/10 bg-white/5 hover:border-white/20'
-                        }`}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`Seleccionar ${prod.name}`}
-                    >
-                      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a] sm:h-14 sm:w-14">
-                        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" />
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-col">
-                        <span className={`truncate text-[9px] font-bold sm:text-[11px] ${selectedProduct?.id === prod.id ? 'text-white' : 'text-white/60'}`}>
-                          {prod.name}
-                        </span>
-                        <span className="text-[7px] capitalize text-white/30 sm:text-[8px] truncate">{prod.category}</span>
-                        {prod.price && (
-                          <span className="text-[7px] font-bold text-[#FF5C3A] sm:text-[9px]">
-                            ${prod.price.toLocaleString('es-CO')}
-                          </span>
-                        )}
-                      </div>
-                      {selectedProduct?.id === prod.id && (
-                        <div className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] sm:h-5 sm:w-5" aria-hidden="true">
-                          <Check size={8} className="text-white sm:text-xs" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  {productItems}
                 </div>
 
-                {/* CTA Button */}
-                <div className="flex flex-col items-center gap-2">
-                  <button
-                    onClick={() => {
-                      // Priority 1: No selfie? → Go take selfie (even if trial exhausted)
-                      if (!selfie) {
-                        setStep('selfie');
-                      }
-                      // Priority 2: Has trialed? → Show upgrade modal
-                      else if (hasUsedTrial) {
-                        setShowUpgradeModal(true);
-                      }
-                      // Priority 3: Has product + selfie? → Generate directly
-                      else if (selectedProduct) {
-                        handleGenerate();
-                      }
-                    }}
-                    disabled={!hasUsedTrial && !selectedProduct}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Sparkles size={16} />
-                    {selfie ? 'Generar Prueba' : 'Ver Probador IA'}
-                  </button>
-                  {!hasUsedTrial && (
-                    <span className="flex items-center gap-1 rounded-full bg-[#ABABAB]/10 px-3 py-1 text-[9px] font-semibold text-[#FFFFFF]">
-                      <Sparkles size={10} />
-                      1 generación gratis
-                    </span>
-                  )}
-                </div>
+                {/* CTA Button - using memoized section */}
+                {ctaSection}
               </div>
             )}
 
@@ -448,23 +457,13 @@ export default function LandingHero() {
                   </button>
                 </div>
 
-                {/* Generate Button */}
+                {/* Generate Button - using memoized content */}
                 <button
                   onClick={handleGenerate}
                   disabled={!selfie || isGenerating}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3.5 text-[11px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all hover:bg-[#ff7b5e] active:scale-95 disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3.5 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50"
                 >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Generando...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={16} />
-                      Ver Probador IA
-                    </>
-                  )}
+                  {generateButtonContent}
                 </button>
 
                 {error && (

@@ -8,7 +8,9 @@ const nextConfig = {
   // Optimización: no transpilar para older browsers (ES6+ para navegadores modernos)
   // Elimina polyfills innecesarios como Array.prototype.at, flat, Object.fromEntries, etc.
   experimental: {
-    optimizePackageImports: ['framer-motion', 'lucide-react'],
+    optimizePackageImports: ['framer-motion', 'lucide-react', 'gsap'],
+    // Inline critical CSS, load rest async - improves LCP/FCP significantly
+    optimizeCss: true,
   },
   // No transpilar para browsers antiguos - solo targets modernos
   compiler: isProd ? {

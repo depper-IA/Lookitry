@@ -77,10 +77,10 @@ export default function LandingStats() {
         {displayStats.map((stat, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.5, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.25, delay: i * 0.08 }}
             className="flex items-center gap-3 sm:gap-4 md:gap-5"
           >
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#FF5C3A]/5 dark:bg-white/5 flex items-center justify-center shrink-0">

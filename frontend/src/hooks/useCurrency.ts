@@ -26,29 +26,17 @@ const SESSION_GEO_KEY = 'geo_country_code';
  */
 async function detectCountry(): Promise<string> {
   try {
-    // Intentar freeipapi (sin límite, no requiere API key)
-    const res = await fetch('https://freeipapi.com/api/json/', {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-    });
-    
-    if (res.ok) {
-      const data = await res.json();
-      if (data?.country_code) {
-        return data.country_code;
-      }
-    }
-  } catch {
-    // Silently fail
-  }
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-  // Fallback: API alternativa ipapi
-  try {
     const res = await fetch('https://ipapi.co/json/', {
       method: 'GET',
       headers: { Accept: 'application/json' },
+      signal: controller.signal,
     });
-    
+
+    clearTimeout(timeoutId);
+
     if (res.ok) {
       const data = await res.json();
       if (data?.country_code) {

@@ -5,16 +5,15 @@ import Link from 'next/link';
 
 export function CookieConsent({ pathname }: { pathname: string }) {
   const [show, setShow] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const isEmbeddedRoute =
     pathname?.startsWith('/embed/') ||
     pathname?.startsWith('/pruebalo/');
 
   useEffect(() => {
-    if (isEmbeddedRoute) {
-      setShow(false);
-      return;
-    }
+    setMounted(true);
+    if (isEmbeddedRoute) return;
 
     const consent = localStorage.getItem('cookie_consent_status');
     if (!consent) {
@@ -22,10 +21,12 @@ export function CookieConsent({ pathname }: { pathname: string }) {
     }
   }, [isEmbeddedRoute]);
 
+  // Don't render anything until mounted (prevents SSR mismatch and LCP blocking)
+  if (!mounted) return null;
+
   const handleAccept = () => {
     localStorage.setItem('cookie_consent_status', 'accepted');
     setShow(false);
-    // Aquí se inyectan dinámicamente scripts de analíticas (ej. GA, Meta Pixel)
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('cookie_consent_accepted'));
     }
@@ -34,7 +35,6 @@ export function CookieConsent({ pathname }: { pathname: string }) {
   const handleReject = () => {
     localStorage.setItem('cookie_consent_status', 'rejected');
     setShow(false);
-    // Aquí se bloquea la propagación de cualquier tracking no-esencial
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('cookie_consent_rejected'));
     }
