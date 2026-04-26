@@ -44,9 +44,11 @@ function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'dark';
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+    // ONLY respect explicit user choice — dark is the ONLY default
     if (stored === 'light' || stored === 'dark') return stored;
-    if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
   } catch {}
+  // ALWAYS default to dark — site is designed for dark mode
+  // Light mode is only for accessibility, never automatic
   return 'dark';
 }
 

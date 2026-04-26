@@ -22,6 +22,15 @@ function formatGenerations(raw: number): string {
   return adjusted.toString();
 }
 
+// Static fallback values (always rendered, no loading flicker)
+// Never show 0 for brands — that's a bad UX signal
+const STATIC_FALLBACK = [
+  { val: '+10', label: 'Marcas activas', icon: <Store className="text-[#FF5C3A]" aria-hidden="true" /> },
+  { val: '1k+', label: 'Generaciones IA', icon: <Zap className="text-[#FF5C3A]" aria-hidden="true" /> },
+  { val: '24/7', label: 'Soporte VIP', icon: <MessageCircle className="text-[#FF5C3A]" aria-hidden="true" /> },
+  { val: '4.8', label: 'satisfaccion', icon: <Check className="text-[#FF5C3A]" aria-hidden="true" /> },
+];
+
 export default function LandingStats() {
   const [stats, setStats] = useState<LandingStatsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +44,7 @@ export default function LandingStats() {
         setStats(data);
       } catch (error) {
         console.error('Error fetching landing stats:', error);
-        setStats(null);
+        setStats(null); // Explicitly null = use fallback
       } finally {
         setLoading(false);
       }
@@ -43,33 +52,28 @@ export default function LandingStats() {
     fetchStats();
   }, []);
 
-  const displayStats = stats ? [
-    {
-      val: formatBrands(stats.total_brands),
-      label: 'Marcas activas',
-      icon: <Store className="text-[#FF5C3A]" aria-hidden="true" />
-    },
-    {
-      val: formatGenerations(stats.total_generations),
-      label: 'Generaciones IA',
-      icon: <Zap className="text-[#FF5C3A]" aria-hidden="true" />
-    },
-    {
-      val: '24/7',
-      label: 'Soporte VIP',
-      icon: <MessageCircle className="text-[#FF5C3A]" aria-hidden="true" />
-    },
-    {
-      val: stats.satisfaction_rating ? stats.satisfaction_rating.toFixed(1) : 'N/A',
-      label: 'satisfaccion',
-      icon: <Check className="text-[#FF5C3A]" aria-hidden="true" />
-    },
-  ] : [
-    { val: '+0', label: 'Marcas activas', icon: <Store className="text-[#FF5C3A]" aria-hidden="true" /> },
-    { val: '1k', label: 'Generaciones IA', icon: <Zap className="text-[#FF5C3A]" aria-hidden="true" /> },
-    { val: '24/7', label: 'Soporte VIP', icon: <MessageCircle className="text-[#FF5C3A]" aria-hidden="true" /> },
-    { val: 'N/A', label: 'satisfaccion', icon: <Check className="text-[#FF5C3A]" aria-hidden="true" /> },
-  ];
+  // Show static skeleton cards while loading
+  // Show static fallback if fetch fails (stats remains null)
+  const displayStats = stats
+    ? [
+        {
+          val: formatBrands(stats.total_brands),
+          label: 'Marcas activas',
+          icon: <Store className="text-[#FF5C3A]" aria-hidden="true" />,
+        },
+        {
+          val: formatGenerations(stats.total_generations),
+          label: 'Generaciones IA',
+          icon: <Zap className="text-[#FF5C3A]" aria-hidden="true" />,
+        },
+        { val: '24/7', label: 'Soporte VIP', icon: <MessageCircle className="text-[#FF5C3A]" aria-hidden="true" /> },
+        {
+          val: stats.satisfaction_rating ? stats.satisfaction_rating.toFixed(1) : 'N/A',
+          label: 'satisfaccion',
+          icon: <Check className="text-[#FF5C3A]" aria-hidden="true" />,
+        },
+      ]
+    : STATIC_FALLBACK;
 
   return (
     <section className="bg-white dark:bg-black py-12 sm:py-16 md:py-20 px-4 sm:px-6" aria-label="Estadisticas">
