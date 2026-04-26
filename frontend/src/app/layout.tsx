@@ -114,14 +114,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="es"
       className={`${inter.variable} ${outfit.variable} scroll-smooth antialiased`}
       suppressHydrationWarning
-      style={
-        {
-          '--font-jakarta': '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
-          '--font-dm-sans': '"Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
-          '--font-tech': '"Consolas", "SFMono-Regular", "Courier New", monospace',
-          '--font-playfair': '"Georgia", "Times New Roman", serif',
-        } as React.CSSProperties
-      }
+style={
+          {
+            '--font-jakarta': 'var(--font-outfit), "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+            '--font-dm-sans': 'var(--font-inter), "Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+            '--font-tech': '"Consolas", "SFMono-Regular", "Courier New", monospace',
+            '--font-playfair': '"Georgia", "Times New Roman", serif',
+          } as React.CSSProperties
+        }
     >
       <head>
         {/* fb:app_id requerido por Facebook/WhatsApp scraper */}
@@ -133,6 +133,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="twitter:site" content="@lookitry" />
         {/* DNS Prefetch y Preconnect para的性能优化 */}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://api.lookitry.com" />
         <link rel="dns-prefetch" href="https://vkdooutklowctuudjnkl.supabase.co" />
         

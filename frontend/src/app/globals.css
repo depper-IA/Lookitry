@@ -139,7 +139,8 @@
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 body {
-  font-family: var(--font-dm-sans), sans-serif;
+  font-family: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
+  font-display: swap; /* Prevent text rendering blocking */
   background-color: var(--bg-base);
   color: var(--text-primary);
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -151,10 +152,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ── Utilidades de fuentes ─────────────────────────────────────────────────── */
-.font-jakarta { font-family: var(--font-jakarta), sans-serif !important; }
-.font-dm-sans { font-family: var(--font-dm-sans), sans-serif !important; }
-.font-playfair { font-family: var(--font-playfair), serif !important; }
-.font-tech { font-family: var(--font-tech), monospace !important; }
+.font-jakarta { font-family: var(--font-jakarta), system-ui, -apple-system, sans-serif !important; font-display: swap; }
+.font-dm-sans { font-family: var(--font-dm-sans), system-ui, -apple-system, sans-serif !important; font-display: swap; }
+.font-playfair { font-family: var(--font-playfair), Georgia, serif !important; font-display: swap; }
+.font-tech { font-family: var(--font-tech), Consolas, monospace !important; font-display: swap; }
 
 /* ── Herencia Dinámica de Fuentes (Mini-landing) ─────────────────────────── */
 /* Fuerza a que los encabezados hereden la fuente del contenedor padre si tiene clase de fuente */
@@ -415,4 +416,10 @@ textarea:focus-visible {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ── CLS Prevention: Reserve space for async-loaded images ────────────────── */
+/* Apply to any container using next/image with fill */
+img[data-next-image] {
+  content-visibility: auto;
 }

@@ -49,7 +49,7 @@ const ProductItem = React.memo(({ prod, selectedProduct, onSelect }: {
       aria-label={`Seleccionar ${prod.name}`}
     >
       <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a] sm:h-14 sm:w-14">
-        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" />
+        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" placeholder="blur" blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <span className={`truncate text-[9px] font-bold sm:text-[11px] ${isSelected ? 'text-white' : 'text-white/60'}`}>
@@ -438,7 +438,7 @@ export default function LandingHero() {
                 {/* Right: Selected Product */}
                 <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#1c1c1c] p-3">
                   <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a]">
-                    <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" />
+                    <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" placeholder="blur" blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" />
                   </div>
                   <div className="flex min-w-0 flex-1">
                     <div>
