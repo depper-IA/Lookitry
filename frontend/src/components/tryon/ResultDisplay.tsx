@@ -569,7 +569,9 @@ export function ResultDisplay({
           {/* WhatsApp - solo en non-plugin view */}
           {!pluginView && whatsappContact && (
             <a
-              href={`https://wa.me/${whatsappContact.replace(/\D/g, '')}`}
+              href={`https://wa.me/${whatsappContact.replace(/\D/g, '')}?text=${encodeURIComponent(
+                `¡Hola! Acabo de usar el probador virtual de ${brandName || 'esta marca'} y me gustaría comprar "${productName}". ¿Me puedes ayudar?`
+              )}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-3 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest border-2 transition-all flex items-center justify-center gap-2 shadow-sm hover:opacity-80 active:scale-95"

@@ -215,6 +215,7 @@ export interface UpdateBrandConfigDto {
   customDomain?: string | null;
   onboardingDismissed?: boolean;
   widgetCoverImage?: string | null; // PRO: imagen de portada exclusiva del widget
+  whatsappContact?: string | null; // WhatsApp para CTA de compra en resultado
 }
 
 // Widget templates

@@ -66,6 +66,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     welcomeMessage: brand.welcomeMessage || '',
     shareMessage: brand.shareMessage || '',
     widgetCoverImage: brand.widgetCoverImage || '',
+    whatsappContact: (brand as any).whatsappContact || '',
   });
 
   useEffect(() => {
@@ -398,6 +399,22 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                 </p>
               </div>
             )}
+
+            {/* WhatsApp Contact - Available in all plans */}
+            <div className="mb-10">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">WhatsApp para comprar</label>
+              <input
+                type="tel"
+                name="whatsappContact"
+                value={formData.whatsappContact || ''}
+                onChange={handleChange}
+                className={inputClass}
+                placeholder="573105436281"
+              />
+              <p className="mt-2 text-[10px] text-[var(--text-muted)]">
+                Número de WhatsApp con código de país (sin + ni espacios). Ejemplo: &quot;573105436281&quot; — Aparece en el resultado para comprar directamente.
+              </p>
+            </div>
             
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-6 border-t border-[var(--border-color)]">
               {!isPro ? (
