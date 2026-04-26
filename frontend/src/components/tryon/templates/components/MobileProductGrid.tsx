@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import type { TryOnTemplateProps, Product } from '../types';
+import { SelfieUploader } from '../../SelfieUploader';
 
 interface MobileProductGridProps {
   products: Product[];
@@ -40,34 +41,17 @@ export function MobileProductGrid({
     <div className="space-y-3">
       {/* Selfie Preview Card */}
       {selfiePreview && (
-        <div 
-          className="relative p-3 rounded-xl shadow-md"
-          style={{ 
-            background: `linear-gradient(135deg, ${primarySubtle} 0%, ${mainCardBg} 100%)`,
-            border: `1px solid ${primaryColor}30`
-          }}
-        >
-          <div className="flex items-center gap-2.5">
-            <img 
-              src={selfiePreview} 
-              alt="Tu foto" 
-              className="w-11 h-11 rounded-lg object-cover shadow ring-2 ring-white/20" 
-            />
-            <div className="flex-1">
-              <p className="text-[10px] font-black uppercase italic" style={{ color: primaryColor }}>Foto lista</p>
-              <p className="text-[9px] font-medium mt-0.5" style={{ color: mainTextMuted }}>Selecciona un producto</p>
-            </div>
-            <button
-              onClick={onReset}
-              className="text-[8px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg"
-              style={{ 
-                color: mainTextMuted,
-                backgroundColor: 'rgba(0,0,0,0.05)'
-              }}
-            >
-              Cambiar
-            </button>
-          </div>
+        <div className="mb-4">
+          <SelfieUploader
+            onUpload={() => {}} // Not really used in this context but required by type
+            onReset={onReset}
+            currentPreview={selfiePreview}
+            primaryColor={primaryColor}
+            textColor={mainTextPrimary}
+            mutedColor={mainTextMuted}
+            cardBg={mainCardBg}
+            cardBorder={`${primaryColor}30`}
+          />
         </div>
       )}
 

@@ -4,7 +4,7 @@ import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
 import { TermsCheckbox } from '../TermsCheckbox';
 import type { TryOnTemplateProps } from './types';
-import { ErrorBanner, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner, SelfieThumb } from './shared';
+import { ErrorBanner, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner } from './shared';
 import { useState, useEffect, useRef } from 'react';
 
 // Helper para determinar si un color es claro u oscuro
@@ -107,7 +107,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
 
       {/* Main scrollable area */}
       <div className="flex-1 overflow-y-auto relative z-10 flex flex-col items-center justify-center py-8 md:py-12">
-        <div className={`w-full ${isSmall ? 'px-4' : 'px-8 md:px-12'} animate-in fade-in slide-in-from-bottom-4 duration-700`}
+        <div className={`w-full mx-auto ${isSmall ? 'px-4' : 'px-8 md:px-12'} animate-in fade-in slide-in-from-bottom-4 duration-700`}
           style={isSmall ? {} : { maxWidth: '1400px' }}
         >
           {/* Hero / Welcome */}
@@ -160,7 +160,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
           {/* Content wrapper - full width on desktop, card in center on mobile */}
           <div className={isSmall ? '' : 'flex items-start justify-center'}>
           {/* Flow card */}
-          <div className={`rounded-3xl border backdrop-blur-2xl shadow-2xl transition-all duration-500 w-full ${isSmall ? '' : 'max-w-5xl lg:max-w-6xl'}`} style={{ backgroundColor: cardBg, borderColor }}>
+          <div className={`rounded-3xl border backdrop-blur-2xl shadow-2xl transition-all duration-500 w-full mx-auto ${isSmall ? '' : 'max-w-5xl lg:max-w-6xl'}`} style={{ backgroundColor: cardBg, borderColor }}>
             {/* Step header with integrated controls */}
             <div className={`${isSmall ? 'p-4' : 'p-6 lg:p-8'} border-b`} style={{ borderBottomColor: borderColor }}>
               <div className="flex items-center justify-between gap-4">
@@ -240,7 +240,18 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
 
               {step === 'select' && (
                 <div className={`space-y-6 mx-auto ${isSmall ? '' : 'max-w-4xl'}`}>
-                  <SelfieThumb preview={selfiePreview} onReset={onReset} />
+                  {selfiePreview && (
+                    <SelfieUploader
+                      onUpload={onSelfieUpload}
+                      onReset={onReset}
+                      currentPreview={selfiePreview}
+                      primaryColor={primaryColor}
+                      textColor={textPrimary}
+                      mutedColor={textMuted}
+                      cardBg="transparent"
+                      cardBorder="transparent"
+                    />
+                  )}
                   
                   <div className={`rounded-2xl border ${isSmall ? 'p-3' : 'p-6 lg:p-8'}`} style={{ backgroundColor: 'rgba(0,0,0,0.1)', borderColor }}>
                     <p className="text-[10px] uppercase tracking-[0.2em] font-black mb-4 md:mb-6 italic" style={{ color: textSubtle }}>

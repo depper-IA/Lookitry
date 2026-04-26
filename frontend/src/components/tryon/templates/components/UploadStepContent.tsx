@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { SelfieUploader } from '../../SelfieUploader';
-import { SelfieThumb, GENERATION_CACHED_HINT, GENERATION_TIME_HINT } from '../shared';
+import { GENERATION_CACHED_HINT, GENERATION_TIME_HINT } from '../shared';
 import { TermsCheckbox } from '../../TermsCheckbox';
 import type { TryOnTemplateProps, Product } from '../types';
 
