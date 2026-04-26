@@ -8,8 +8,10 @@ import { Camera, Image as ImageIcon, Lightbulb, User, Eye, X, Loader2, ChevronRi
 
 interface SelfieUploaderProps {
   onUpload: (file: File, preview: string) => void;
+  onReset?: () => void;
+  currentPreview?: string | null;
   primaryColor?: string;
-  welcomeMessage?: string; // Mantener por compatibilidad de props, pero no usar para títulos duplicativos
+  welcomeMessage?: string;
   privacyNotice?: string;
   textColor?: string;
   mutedColor?: string;
@@ -25,6 +27,8 @@ const TIPS = [
 
 export function SelfieUploader({ 
   onUpload, 
+  onReset,
+  currentPreview,
   primaryColor = '#FF5C3A', 
   privacyNotice, 
   textColor = '#1a1a1a', 
@@ -177,9 +181,7 @@ export function SelfieUploader({
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
-
-        {/* Decisión principal: Cámara vs Galería */}
+                {/* Decisión principal: Cámara vs Galería O Preview */}
         <div className="space-y-3">
           <AnimatePresence mode="wait">
             {compressing ? (
@@ -198,6 +200,47 @@ export function SelfieUploader({
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] animate-pulse" style={{ color: textColor }}>
                   Optimizando imagen...
                 </p>
+              </motion.div>
+            ) : currentPreview ? (
+              <motion.div
+                key="preview"
+                className="relative group rounded-[2.5rem] overflow-hidden border-2 transition-all duration-500 hover:scale-[1.01]"
+                style={{ 
+                  borderColor: primaryColor,
+                  boxShadow: `0 20px 40px -12px ${primaryColor}30`
+                }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+              >
+                <img 
+                  src={currentPreview} 
+                  alt="Tu selfie" 
+                  className="w-full h-auto aspect-square object-cover"
+                />
+                
+                {/* Overlay con botón de cambiar */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <button
+                    onClick={onReset}
+                    className="px-6 py-3 rounded-full bg-white text-black font-black uppercase text-[10px] tracking-widest shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 active:scale-95"
+                  >
+                    Cambiar foto
+                  </button>
+                </div>
+
+                {/* Botón X flotante siempre visible */}
+                <button
+                  onClick={onReset}
+                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all hover:bg-black/70 active:scale-90"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                <div className="absolute bottom-4 left-4 right-4 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/90 italic">Foto lista para la prueba</p>
+                </div>
               </motion.div>
             ) : (
               <motion.div
