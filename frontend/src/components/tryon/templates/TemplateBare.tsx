@@ -312,6 +312,8 @@ export function TemplateBare(props: TryOnTemplateProps) {
 
                   <SelfieUploader
                     onUpload={onSelfieUpload}
+                    onReset={onReset}
+                    currentPreview={selfiePreview}
                     primaryColor={primaryColor}
                     welcomeMessage={welcomeMessage}
                     privacyNotice="Procesamiento local seguro"
@@ -332,33 +334,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
                         transition={{ duration: 0.25 }}
                         className="space-y-3 pt-1 pb-8"
                       >
-                        {/* Thumbnail de confirmación */}
-                        <div
-                          className="flex items-center gap-3 p-2.5 rounded-xl border"
-                          style={{ backgroundColor: cardBg, borderColor }}
-                        >
-                          <img
-                            src={selfiePreview}
-                            alt="Tu foto"
-                            className="h-10 w-10 rounded-lg object-cover flex-shrink-0"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p
-                              className="text-[10px] font-black uppercase italic"
-                              style={{ color: primaryColor }}
-                            >
-                              Foto lista ✓
-                            </p>
-                            <p
-                              className="text-[9px] font-medium uppercase tracking-widest truncate"
-                              style={{ color: textMuted }}
-                            >
-                              {alreadyGenerated
-                                ? 'Ya tienes un resultado guardado'
-                                : 'Lista para la prueba virtual'}
-                            </p>
-                          </div>
-                        </div>
+                        {/* El thumbnail ahora se muestra dentro de SelfieUploader */}
 
                         {/* Botón de generación */}
                         <button

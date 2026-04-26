@@ -61,9 +61,10 @@ export function UploadStepContent({
         </button>
       </div>
 
-      <SelfieThumb preview={selfiePreview} onReset={onReset} />
       <SelfieUploader 
         onUpload={onSelfieUpload} 
+        onReset={onReset}
+        currentPreview={selfiePreview}
         primaryColor={primaryColor} 
         welcomeMessage={welcomeMessage} 
         textColor={mainTextPrimary} 

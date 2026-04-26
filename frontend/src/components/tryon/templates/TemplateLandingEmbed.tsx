@@ -171,6 +171,8 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
                  <div className="relative">
                     <SelfieUploader 
                       onUpload={onSelfieUpload} 
+                      onReset={onReset}
+                      currentPreview={selfiePreview}
                       primaryColor={primaryColor} 
                       welcomeMessage={welcomeMessage} 
                       privacyNotice="Tu selfie se elimina al instante tras procesar" 

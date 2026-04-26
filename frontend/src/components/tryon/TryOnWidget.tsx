@@ -470,7 +470,7 @@ export function TryOnWidget({
   };
 
   return (
-    <div id="tryon-widget-container">
+    <div id="tryon-widget-container" className="w-full flex flex-col items-center">
       <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
       <LegalDisclaimerModal
         isOpen={showDisclaimerModal}
@@ -481,4 +481,3 @@ export function TryOnWidget({
     </div>
   );
 }
-
