@@ -72,6 +72,7 @@ export function ImageEditor({
   const [rotation, setRotation] = useState(0);
   const [aspectFormat, setAspectFormat] = useState<AspectFormat>('original');
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [imageAspect, setImageAspect] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const onCropComplete = useCallback((_croppedArea: Area, croppedPixels: Area) => {
@@ -207,11 +208,9 @@ export function ImageEditor({
 
   const currentAspect = FORMAT_OPTIONS.find(f => f.value === aspectFormat)?.aspect;
 
-  // For "original" mode: use a very large aspect ratio (999) to make the crop frame
-  // span almost the full width, allowing essentially free repositioning in X/Y.
-  // react-easy-crop doesn't support undefined aspect - defaults to 4/3.
-  // Using 999 gives a very wide/short frame that approximates "full image visible".
-  const effectiveAspect = currentAspect ?? 999;
+  // For "original" mode: use the image's natural aspect ratio.
+  // This ensures the crop box encompasses the entire image by default.
+  const effectiveAspect = currentAspect ?? imageAspect;
 
   // Determine crop shape - "original" uses rect but allows free movement
   const isOriginal = aspectFormat === 'original';
@@ -275,8 +274,11 @@ export function ImageEditor({
             onRotationChange={setRotation}
             onCropComplete={onCropComplete}
             onZoomChange={setZoom}
+            onMediaLoaded={(mediaSize) => {
+              setImageAspect(mediaSize.width / mediaSize.height);
+            }}
             cropShape="rect"
-            showGrid={true}
+            showGrid={!isOriginal}
             classes={{
               containerClassName: '!relative !w-full !h-full !bg-[#0a0a0a]',
               mediaClassName: '!bg-[#0a0a0a]',
