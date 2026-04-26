@@ -82,9 +82,7 @@ export function ProductGridEditorial({
   }
 
   // ── Responsive grid columns ──────────────────────────────────────────────────
-  const gridCols = isSmall
-    ? 'grid-cols-2 gap-2.5'
-    : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 xl:gap-6';
+  const gridCols = 'grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2.5 sm:gap-4 lg:gap-6 justify-center';
 
   return (
     <motion.div
