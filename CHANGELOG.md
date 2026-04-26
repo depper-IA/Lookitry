@@ -1,5 +1,30 @@
 # CHANGELOG — Lookitry
 
+## 26 de Abril 2026 — Fix Widget Banner Principal
+
+### Problema
+El widget del banner principal (LandingHero) solo tenía opción de "Tomar foto" con cámara. Faltaba la opción de "Subir foto" desde la galería.
+
+### Solución Implementada
+
+| Ubicación | Antes | Después |
+|-----------|-------|---------|
+| STEP select | 1 botón "Sube tu foto" (solo cámara) | 2 botones: "Tomar foto" (cámara frontal) + "Subir foto" (galería) |
+| STEP selfie | 1 botón "Cambiar" (solo cámara) | 2 botones: "Tomar otra" (cámara frontal) + "Cambiar" (galería) |
+
+### Detalles Técnicos
+
+| Feature | Implementación |
+|---------|---------------|
+| **Tomar foto** | `capture="user"` → abre cámara frontal |
+| **Subir foto** | `accept="image/*"` sin capture → abre selector de galería |
+| **Iconos** | Camera + Image (lucide-react, sin emojis) |
+
+**Archivo modificado:**
+- `frontend/src/components/landing/LandingHero.tsx`
+
+---
+
 ## 25 de Abril 2026 — Optimización Performance (PageSpeed)
 
 ### Diagnóstico PageSpeed

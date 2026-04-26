@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, RotateCcw } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, RotateCcw, Image } from 'lucide-react';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
@@ -372,16 +372,29 @@ export default function LandingHero() {
                     )}
                   </div>
 
-                  <label className="mt-3 cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 sm:text-[11px] min-h-11 flex items-center justify-center">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="user"
-                      onChange={handleSelfieChange}
-                      className="hidden"
-                    />
-                    Sube tu foto
-                  </label>
+                  <div className="mt-3 flex gap-2">
+                    <label className="cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
+                      <Camera size={14} strokeWidth={2} aria-hidden="true" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="user"
+                        onChange={handleSelfieChange}
+                        className="hidden"
+                      />
+                      Tomar foto
+                    </label>
+                    <label className="cursor-pointer rounded-lg bg-white/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white/70 transition-all hover:bg-white/20 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
+                      <Image size={14} strokeWidth={2} aria-hidden="true" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleSelfieChange}
+                        className="hidden"
+                      />
+                      Subir foto
+                    </label>
+                  </div>
                   <p className="text-[8px] font-bold capitalize tracking-widest text-white/40 sm:text-[10px]">
                     preferiblemente cuerpo completo
                   </p>
@@ -423,16 +436,29 @@ export default function LandingHero() {
                       <Camera size={32} className="text-white/20" />
                     </div>
                   )}
-                  <label className="cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 min-h-11 flex items-center justify-center">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="user"
-                      onChange={handleSelfieChange}
-                      className="hidden"
-                    />
-                    {selfiePreview ? 'Cambiar' : 'Sube tu foto'}
-                  </label>
+                  <div className="flex gap-2">
+                    <label className="cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 min-h-11 flex items-center justify-center gap-2">
+                      <Camera size={14} strokeWidth={2} aria-hidden="true" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="user"
+                        onChange={handleSelfieChange}
+                        className="hidden"
+                      />
+                      {selfiePreview ? 'Tomar otra' : 'Tomar foto'}
+                    </label>
+                    <label className="cursor-pointer rounded-lg bg-white/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white/70 transition-all hover:bg-white/20 min-h-11 flex items-center justify-center gap-2">
+                      <Image size={14} strokeWidth={2} aria-hidden="true" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleSelfieChange}
+                        className="hidden"
+                      />
+                      {selfiePreview ? 'Cambiar' : 'Subir foto'}
+                    </label>
+                  </div>
                 </div>
 
                 {/* Right: Selected Product */}
