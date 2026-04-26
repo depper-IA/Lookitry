@@ -207,6 +207,15 @@ export function ImageEditor({
 
   const currentAspect = FORMAT_OPTIONS.find(f => f.value === aspectFormat)?.aspect;
 
+  // For "original" mode: use a very large aspect ratio (999) to make the crop frame
+  // span almost the full width, allowing essentially free repositioning in X/Y.
+  // react-easy-crop doesn't support undefined aspect - defaults to 4/3.
+  // Using 999 gives a very wide/short frame that approximates "full image visible".
+  const effectiveAspect = currentAspect ?? 999;
+
+  // Determine crop shape - "original" uses rect but allows free movement
+  const isOriginal = aspectFormat === 'original';
+
   // ── Helper: ícono por formato ─────────────────────────────────────────────
   const getFormatIcon = (value: AspectFormat, active: boolean) => {
     const color = active ? 'white' : 'rgba(255,255,255,0.4)';
@@ -252,23 +261,28 @@ export function ImageEditor({
       </div>
 
       {/* ── Cropper Area ── */}
-      <div className="relative flex-1 overflow-hidden min-h-0">
-        <Cropper
-          image={src}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          // Para 'original': aspect undefined → usa dimensiones naturales (respeta EXIF)
-          aspect={currentAspect}
-          onCropChange={setCrop}
-          onRotationChange={setRotation}
-          onCropComplete={onCropComplete}
-          onZoomChange={setZoom}
-          classes={{
-            containerClassName: 'bg-[#0a0a0a]',
-            mediaClassName: 'bg-[#0a0a0a]',
-          }}
-        />
+      {/* Container needs min-height and proper sizing for vertical crop formats (4:3, 9:16) */}
+      <div className="relative flex-1 overflow-hidden min-h-0 flex items-center justify-center">
+        <div className="relative w-full h-full">
+          <Cropper
+            image={src}
+            crop={crop}
+            zoom={zoom}
+            rotation={rotation}
+            // Use effectiveAspect: 999 for "original" (very wide frame = full image visible)
+            aspect={effectiveAspect}
+            onCropChange={setCrop}
+            onRotationChange={setRotation}
+            onCropComplete={onCropComplete}
+            onZoomChange={setZoom}
+            cropShape="rect"
+            showGrid={true}
+            classes={{
+              containerClassName: '!relative !w-full !h-full !bg-[#0a0a0a]',
+              mediaClassName: '!bg-[#0a0a0a]',
+            }}
+          />
+        </div>
       </div>
 
       {/* ── Bottom Toolbar ── */}
