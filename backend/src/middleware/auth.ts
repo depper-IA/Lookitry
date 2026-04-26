@@ -103,10 +103,10 @@ export const authMiddleware = async (
 
 
     // Verificar que la marca existe
+    console.log('[DEBUG authMiddleware] brandId del token:', payload.brandId);
 
     const brand = await authService.getBrandById(payload.brandId);
-
-
+    console.log('[DEBUG authMiddleware] brand encontrado:', brand);
 
     if (!brand) {
 
