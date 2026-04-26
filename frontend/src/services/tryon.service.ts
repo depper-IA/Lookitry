@@ -104,6 +104,9 @@ class TryOnService {
     const formData = new FormData();
     formData.append('productId', data.productId);
     formData.append('selfie', data.selfieFile);
+    if (data.clientFingerprint) {
+      formData.append('clientFingerprint', data.clientFingerprint);
+    }
 
     try {
       const response = await api.post<GenerateTryOnResponse>(
@@ -116,6 +119,13 @@ class TryOnService {
       const json = err?.response?.data || {};
 
       if (err?.response?.status === 429) {
+        if (json.error === 'CLIENT_ATTEMPT_LIMIT_EXCEEDED') {
+          const limitErr = new Error(json.message || 'Límite de intentos excedido') as any;
+          limitErr.clientAttemptLimit = true;
+          limitErr.attemptsUsed = json.attemptsUsed;
+          limitErr.attemptsLimit = json.attemptsLimit;
+          throw limitErr;
+        }
         throw new Error(json.message || 'Límite de generaciones excedido');
       }
 

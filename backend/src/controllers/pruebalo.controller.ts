@@ -440,7 +440,7 @@ export class PruebaloController {
 
     const { brandSlug } = req.params;
 
-    const { productId } = req.body;
+    const { productId, clientFingerprint } = req.body;
 
     const imageFile = req.file; // Multer manejará el archivo
 
@@ -560,6 +560,12 @@ export class PruebaloController {
 
 
 
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+
+    const whitelisted = isWhitelistedSync(ip);
+
+
+
     const inputFingerprint = createHash('sha256')
 
       .update(imageFile.buffer)
@@ -602,11 +608,47 @@ export class PruebaloController {
 
 
 
-    // 4. Reservar un crédito real antes de generar (Bypass para IPs en whitelist)
+    // 4. Verificar límite de intentos del cliente (3 intentos máx por producto en 30 días)
 
-    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+    if (clientFingerprint && !whitelisted) {
 
-    const whitelisted = isWhitelistedSync(ip);
+      const { data: clientAttempts } = await supabaseAdmin.rpc('check_client_product_attempts', {
+
+        p_brand_id: brand.id,
+
+        p_product_id: product.id,
+
+        p_client_fingerprint: clientFingerprint,
+
+      });
+
+
+
+      if (clientAttempts !== null && clientAttempts >= 3) {
+
+        await generationConcurrencyService.releaseSlot(brand.id, slot.slotId).catch(() => {});
+
+        return res.status(429).json({
+
+          success: false,
+
+          error: 'CLIENT_ATTEMPT_LIMIT_EXCEEDED',
+
+          message: 'Ya usaste tus 3 intentos para este producto. Prueba otro o vuelve mañana.',
+
+          attemptsUsed: clientAttempts,
+
+          attemptsLimit: 3,
+
+        });
+
+      }
+
+    }
+
+
+
+    // 5. Reservar un crédito real antes de generar (Bypass para IPs en whitelist)
 
     let creditReservation: { source: 'monthly' | 'extra' } | null = null;
 
@@ -677,6 +719,8 @@ export class PruebaloController {
       selfie_url: uploadResult.url,
 
       input_fingerprint: inputFingerprint,
+
+      client_fingerprint: clientFingerprint || null,
 
       status: 'PENDING',
 

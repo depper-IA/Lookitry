@@ -9,6 +9,7 @@ export interface CreateGenerationDto {
   product_id: string;
   selfie_url: string;
   input_fingerprint?: string | null;
+  client_fingerprint?: string | null;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
 }
 
@@ -33,6 +34,7 @@ export class GenerationsService {
         product_id: data.product_id,
         selfie_url: data.selfie_url,
         input_fingerprint: data.input_fingerprint ?? null,
+        client_fingerprint: data.client_fingerprint ?? null,
         status: data.status,
         generated_at: new Date().toISOString()
       })
@@ -48,6 +50,7 @@ export class GenerationsService {
           brand_id: data.brand_id,
           product_id: data.product_id,
           selfie_url: data.selfie_url,
+          client_fingerprint: data.client_fingerprint ?? null,
           status: data.status,
           generated_at: new Date().toISOString()
         })
