@@ -78,7 +78,7 @@ export const getGenerations = async (req: any, res: Response) => {
     const productsMap: Record<string, any> = {};
     (productsResult.data || []).forEach((p: any) => { productsMap[p.id] = p; });
 
-    // Mapear status interno a status externo (PENDING→pending, SUCCESS→completed, FAILED→failed)
+    // Mapear status interno a status externo (PENDINGâpending, SUCCESSâcompleted, FAILEDâfailed)
     const mapStatus = (s: string) => {
       if (s === 'PENDING') return 'pending';
       if (s === 'SUCCESS') return 'completed';

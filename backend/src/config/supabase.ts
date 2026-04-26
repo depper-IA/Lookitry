@@ -25,7 +25,7 @@ export const supabase = createClient(
 const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!serviceKey) {
-  console.error('[Supabase] ERROR CRÍTICO: No se encontró SUPABASE_SERVICE_KEY ni SUPABASE_SERVICE_ROLE_KEY en el entorno.');
+  console.error('[Supabase] ERROR CRÑTICO: No se encontró SUPABASE_SERVICE_KEY ni SUPABASE_SERVICE_ROLE_KEY en el entorno.');
 }
 
 export const supabaseAdmin = createClient(

@@ -1,5 +1,5 @@
 /**
- * sanitizeError — Utilidad para sanitizar mensajes de error antes de enviarlos al cliente.
+ * sanitizeError â Utilidad para sanitizar mensajes de error antes de enviarlos al cliente.
  * En producción retorna mensajes genéricos para evitar fuga de información interna.
  * En desarrollo retorna el mensaje original para facilitar debugging.
  */

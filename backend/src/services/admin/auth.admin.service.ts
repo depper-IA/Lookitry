@@ -19,11 +19,11 @@ type AdminRecord = Admin & {
 };
 
 /**
- * Auth Admin Service — Autenticación y gestión de administradores.
+ * Auth Admin Service â Autenticación y gestión de administradores.
  * Extraído de AdminService para mejorar mantenibilidad.
  */
 export class AuthAdminService {
-  // ──────────────────────────────────────── Helpers privados ──
+  // ââââââââââââââââââââââââââââââââââââââââ Helpers privados ââ
 
   private isValidBcryptHash(value: string | null | undefined): boolean {
     if (!value) return false;
@@ -41,7 +41,7 @@ export class AuthAdminService {
     return { isValid: true };
   }
 
-  // ──────────────────────────────────────── Lookup ──
+  // ââââââââââââââââââââââââââââââââââââââââ Lookup ââ
 
   async getAdminByEmail(email: string): Promise<Admin | null> {
     const { data, error } = await supabaseAdmin
@@ -78,7 +78,7 @@ export class AuthAdminService {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
-  // ──────────────────────────────────────── CRUD de Admins ──
+  // ââââââââââââââââââââââââââââââââââââââââ CRUD de Admins ââ
 
   async listAdmins(): Promise<Omit<Admin, 'password'>[]> {
     const { data, error } = await supabaseAdmin
@@ -122,7 +122,7 @@ export class AuthAdminService {
     if (error) throw new Error('Error al eliminar admin: ' + error.message);
   }
 
-  // ──────────────────────────────────────── Gestión de Contraseñas ──
+  // ââââââââââââââââââââââââââââââââââââââââ Gestión de Contraseñas ââ
 
   async changeAdminPassword(adminId: string, newPassword: string): Promise<void> {
     if (newPassword.length < 8) throw new Error('La nueva contraseña debe tener al menos 8 caracteres');

@@ -15,7 +15,7 @@ export interface BrandWithStats {
 }
 
 /**
- * Brand Admin Service — Gestión de marcas desde el panel de administración.
+ * Brand Admin Service â Gestión de marcas desde el panel de administración.
  * Extraído de AdminService para mejorar mantenibilidad.
  */
 export class BrandAdminService {
@@ -161,7 +161,7 @@ export class BrandAdminService {
   }
 
   /**
-   * Archivar una marca (soft delete — suspende y registra en social_links)
+   * Archivar una marca (soft delete â suspende y registra en social_links)
    */
   async deleteBrand(brandId: string): Promise<void> {
     const { data: brand, error: fetchError } = await supabaseAdmin

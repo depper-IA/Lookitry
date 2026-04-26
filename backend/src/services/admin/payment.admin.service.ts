@@ -3,7 +3,7 @@ import { getReportingTrm, normalizePaymentRecordToCop } from '../../utils/paymen
 import { getPaymentDisplayBrand, inferBillingType, inferIncludesLanding } from '../../utils/paymentLedger';
 
 /**
- * Payment Admin Service — Gestión de pagos y activación de planes.
+ * Payment Admin Service â Gestión de pagos y activación de planes.
  * Extraído de AdminService para mejorar mantenibilidad.
  */
 export class PaymentAdminService {

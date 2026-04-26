@@ -147,27 +147,48 @@ export class PricingService {
     return finalTotal;
   }
 
+
   /**
+
    * Obtiene la TRM efectiva respetando configuración en pricing_config.meta.
-   * - Si trm_auto = false y hay trm_referencia válida → usa ese valor (manual).
-   * - En otro caso → usa TRM automática (servicio externo + caché).
+
+   * - Si trm_auto = false y hay trm_referencia válida â usa ese valor (manual).
+
+   * - En otro caso â usa TRM automática (servicio externo + caché).
+
    * - En desarrollo se puede pasar un override explícito para pruebas.
+
    */
+
   async getEffectiveTrm(overrideFromQuery?: number | null): Promise<{ trm: number; source: 'query' | 'meta_manual' | 'meta_auto' }> {
     // Permitir override solo en desarrollo para evitar manipulaciones en producción
+
     if (process.env.NODE_ENV === 'development' && overrideFromQuery && overrideFromQuery > 0) {
+
       console.log(`[PricingService] TRM override desde query (solo dev): ${overrideFromQuery}`);
+
       return { trm: overrideFromQuery, source: 'query' };
+
     }
 
+
+
     const configs = await this.getPricingConfig();
+
     const metaConfig = configs.find(c => c.id.toLowerCase() === 'meta')?.data || {};
 
+
+
     const trmAuto = metaConfig.trm_auto !== false; // por defecto true
+
     const trmRefRaw = metaConfig.trm_referencia;
+
     const trmReferencia = typeof trmRefRaw === 'number' ? trmRefRaw : Number(trmRefRaw);
 
+
+
     // Preferir valor manual cuando trm_auto = false y el valor es válido
+
     if (!trmAuto && trmReferencia && trmReferencia > 0) {
       console.log(`[PricingService] TRM manual desde pricing_config.meta: ${trmReferencia}`);
       return { trm: trmReferencia, source: 'meta_manual' };
@@ -183,4 +204,6 @@ export class PricingService {
   }
 }
 
+
 export const pricingService = new PricingService();
+
