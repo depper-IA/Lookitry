@@ -551,38 +551,8 @@ export function ResultDisplay({
           />
         </div>
 
-        {selfiePreview && (
-          <div className="grid grid-cols-2 gap-2 md:gap-3 mb-4">
-            <div className="relative">
-              <img 
-                src={selfiePreview} 
-                alt="Tu foto" 
-                className="w-full aspect-[3/4] object-cover rounded-xl md:rounded-2xl shadow-sm border" 
-                style={{ borderColor: cardBorder || '#f3f4f6' }}
-              />
-              <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-white text-[8px] md:text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest">Antes</div>
-            </div>
-            <div className="relative group cursor-pointer" onClick={() => setLightboxOpen(true)}>
-              <div 
-                className="rounded-xl md:rounded-2xl overflow-hidden shadow-sm border h-full"
-                style={{ borderColor: cardBorder || '#f3f4f6' }}
-              >
-                <ResultImage
-                  imageUrl={imageUrl}
-                  productName={productName}
-                  primaryColor={primaryColor}
-                  onOpen={() => setLightboxOpen(true)}
-                  aspectRatio="aspect-[3/4]"
-                  compact
-                  brandPlan={brandPlan}
-                  cardBg={cardBg}
-                  cardBorder={cardBorder}
-                />
-              </div>
-              <div className="absolute bottom-2 left-2 text-white text-[8px] md:text-[10px] px-2 py-0.5 rounded-full pointer-events-none uppercase font-black tracking-widest" style={{ backgroundColor: `${primaryColor}cc` }}>Después</div>
-            </div>
-          </div>
-        )}
+        {/* El usuario ha solicitado eliminar la vista de antes/después para simplificar */}
+
 
         <div className="flex flex-col gap-2 md:gap-3">
 
