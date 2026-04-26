@@ -72,9 +72,9 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
       {step === 'select' && (
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 overflow-y-auto overflow-x-hidden">
           <div className="max-w-md mx-auto w-full">
-            <ErrorBanner 
-              error={error} 
-              isService={errorIsService} 
+            <ErrorBanner
+              error={error}
+              isService={errorIsService}
               onDismiss={props.onDismissError}
               textColor={textPrimary}
               mutedColor={textMuted}
@@ -119,7 +119,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
                   <button
                     onClick={props.onProceedToUpload}
                     className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group"
-                    style={{ 
+                    style={{
                       backgroundColor: primaryColor,
                       boxShadow: `0 8px 32px ${primaryGlow}`
                     }}
@@ -140,9 +140,9 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
       {step !== 'generating' && step !== 'select' && (
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 overflow-y-auto overflow-x-hidden">
           <div className={`${centerUploadInEmbed ? 'w-full max-w-md' : (pluginView && step === 'result' ? 'mx-auto w-full max-w-5xl' : 'max-w-md mx-auto w-full')}`}>
-            <ErrorBanner 
-              error={error} 
-              isService={errorIsService} 
+            <ErrorBanner
+              error={error}
+              isService={errorIsService}
               onDismiss={props.onDismissError}
               textColor={textPrimary}
               mutedColor={textMuted}
@@ -152,27 +152,28 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
             <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
 
             {/* Paso Upload */}
-             {step === 'upload' && (
-               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                  {selectedProduct && !pluginView && (
-                    <motion.div 
+            {step === 'upload' && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {selectedProduct && !pluginView &&
+                  (
+                    <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="relative group overflow-hidden rounded-2xl border transition-all duration-300 mb-2"
-                      style={{ 
+                      style={{
                         backgroundColor: cardBg,
                         borderColor: borderColor
                       }}
                     >
                       <div className="p-3 flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-white/5 overflow-hidden border border-white/10 shrink-0">
-                          <img 
-                            src={selectedProduct.imageUrl} 
-                            alt={selectedProduct.name} 
-                            className="w-full h-full object-cover" 
+                          <img
+                            src={selectedProduct.imageUrl}
+                            alt={selectedProduct.name}
+                            className="w-full h-full object-cover"
                           />
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           <span className="text-[8px] font-black uppercase tracking-[0.15em] opacity-40">
                             Prenda para probar
@@ -196,56 +197,56 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
                       </div>
                     </motion.div>
                   )}
-                 
-                 <div className="relative">
-                    <SelfieUploader 
-                      onUpload={onSelfieUpload} 
-                      onReset={onReset}
-                      onSelfieReset={onSelfieReset}
-                      currentPreview={selfiePreview}
-                      selectedProduct={selectedProduct}
-                      primaryColor={primaryColor} 
-                      welcomeMessage={welcomeMessage} 
-                      privacyNotice="Tu selfie se elimina al instante tras procesar" 
-                      textColor={textPrimary} 
-                      mutedColor={textMuted}
-                      cardBg="transparent"
-                      cardBorder={borderColor}
-                    />
-                 </div>
 
-{selectedProduct && selfiePreview && (
-                     <div className="pt-4 py-8 animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-3">
-                       <button
-                         onClick={onGenerate}
-                         disabled={!termsAccepted}
-                         className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-40"
-                         style={{ 
-                           backgroundColor: primaryColor,
-                           boxShadow: `0 8px 32px ${primaryGlow}`
-                         }}
-                       >
-                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                         <span className="relative z-10">{generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}</span>
-                         <svg className="w-4 h-4 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                           <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                         </svg>
-                       </button>
+                <div className="relative">
+                  <SelfieUploader
+                    onUpload={onSelfieUpload}
+                    onReset={onReset}
+                    onSelfieReset={onSelfieReset}
+                    currentPreview={selfiePreview}
+                    selectedProduct={selectedProduct}
+                    primaryColor={primaryColor}
+                    welcomeMessage={welcomeMessage}
+                    privacyNotice="Tu selfie se elimina al instante tras procesar"
+                    textColor={textPrimary}
+                    mutedColor={textMuted}
+                    cardBg="transparent"
+                    cardBorder={borderColor}
+                  />
+                </div>
 
-                       {/* Terms checkbox - solo se muestra si NO está aceptado */}
-                       {!termsAccepted && (
-                         <TermsCheckbox
-                           onAccepted={onTermsAccepted}
-                           isAccepted={termsAccepted}
-                           primaryColor={primaryColor}
-                           textColor={textPrimary}
-                           mutedColor={textMuted}
-                         />
-                       )}
-                     </div>
-                  )}
-               </div>
-              )}
+                {selectedProduct && selfiePreview && (
+                  <div className="pt-4 py-8 animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-3">
+                    <button
+                      onClick={onGenerate}
+                      disabled={!termsAccepted}
+                      className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-40"
+                      style={{
+                        backgroundColor: primaryColor,
+                        boxShadow: `0 8px 32px ${primaryGlow}`
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                      <span className="relative z-10">{generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}</span>
+                      <svg className="w-4 h-4 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </button>
+
+                    {/* Terms checkbox - solo se muestra si NO está aceptado */}
+                    {!termsAccepted && (
+                      <TermsCheckbox
+                        onAccepted={onTermsAccepted}
+                        isAccepted={termsAccepted}
+                        primaryColor={primaryColor}
+                        textColor={textPrimary}
+                        mutedColor={textMuted}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {step === 'result' && resultImageUrl && (
               <div className="animate-in zoom-in-95 duration-500 pb-20">
