@@ -108,6 +108,7 @@ export default function LandingHero() {
   }, []);
 
   useEffect(() => {
+    // Defer config loading to let main thread breathe after initial render
     const loadConfig = async () => {
       try {
         console.log('[HomeTryon] Loading config...');
@@ -127,8 +128,8 @@ export default function LandingHero() {
         setError(err.message || 'Error al conectar con el servidor.');
       }
     };
-    loadConfig();
 
+    // Defer trial check too - less critical than config
     const checkTrial = async () => {
       try {
         const res = await fetch('/api/home/tryon/check');
@@ -139,7 +140,15 @@ export default function LandingHero() {
         console.error('[HomeTryon] Error checking trial:', err);
       }
     };
-    checkTrial();
+
+    // Schedule both after initial render completes
+    const timer1 = setTimeout(loadConfig, 0);
+    const timer2 = setTimeout(checkTrial, 0);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, []);
 
   const handleProductSelect = (product: Product) => {
