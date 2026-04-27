@@ -233,7 +233,6 @@ export function FriendlyProductSelector({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               whileTap={{ scale: 0.98 }}
-              aria-label={`Seleccionar ${p.name} para probarme virtualmente`}
             >
               {/* Image Container */}
               <div className="relative bg-gray-100">
