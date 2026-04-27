@@ -561,17 +561,28 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | `last_reset_monthly` | date | Último reset mensual |
 | `updated_at` | timestamptz | |
 
-### 5.29 `project_knowledge` (RAG — Segundo Cerebro)
+### 5.30 `admin_support_tickets`
 | Campo | Tipo | Notas |
 |-------|------|-------|
 | `id` | uuid PK | |
-| `file_path` | text UNIQUE | Ruta del archivo .md |
-| `content` | text | Contenido completo o chunks |
-| `embedding` | vector(768) | pgvector para similitud semántica |
-| `version` | text | Commit SHA o fecha |
-| `updated_at` | timestamptz | Auto-actualizado |
-| **Índices** | IVFFlat (embedding) | Búsqueda por similitud coseno |
-| **RPC** | `upsert_project_knowledge`, `search_project_knowledge` | Procedimientos de upsert/búsqueda |
+| `brand_id` | uuid FK → brands | |
+| `subject` | text | |
+| `description` | text | |
+| `status` | enum | OPEN, IN_PROGRESS, RESOLVED, CLOSED |
+| `priority` | enum | LOW, MEDIUM, HIGH, URGENT |
+| `category` | text | billing, technical, bug, feature_request, other |
+| `assigned_to` | uuid FK → admins | |
+| `created_at`, `updated_at` | timestamptz | |
+
+### 5.31 `widget_ip_whitelist`
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | uuid PK | |
+| `brand_id` | uuid FK → brands | Nullable (global whitelist) |
+| `ip_address` | text | |
+| `description` | text | |
+| `active` | boolean DEFAULT true | |
+| `created_at` | timestamptz | |
 
 ---
 
@@ -769,15 +780,17 @@ El sistema de blog automatizado está refactorizado en **3 workflows independien
 | `generation-concurrency.service` | Control de concurrencia por marca |
 | `enterprise.service` | Sync de productos enterprise |
 | `coupon.service` | Validación y redención de cupones |
-| `referral.service` | Conversión automática de referidos y acreditación de 500 créditos extra al referente |
-| `addonCredits.service` | Compra de paquetes de créditos extra (ADDON-{brandId}-PKG-{packageId}-{timestamp}) |
+| `referral.service` | Conversión automática de referidos |
+| `addonCredits.service` | Paquetes de créditos extra |
 | `review.service` | Gestión de reviews |
-| `brevo-campaign.service` | Wrapper Brevo SMTP + API tracking |
-| `email-campaign.service` | Lógica de campañas: batching, rate limit, scheduling |
-| `lead.service` | CRUD leads, stats, outreach logging |
-| `lead-search.service` | Gestión búsquedas guardadas |
-| `lead-generation.service` | Google Places con rate limiting |
-| `social-api-config.service` | Gestión credenciales Meta/TikTok |
+| `brevo-campaign.service` | Wrapper Brevo API |
+| `email-campaign.service` | Lógica de campañas marketing |
+| `lead.service` | CRM de prospectos |
+| `lead-search.service` | Búsquedas guardadas Google Places |
+| `lead-generation.service` | Cliente Google Places API |
+| `social-api-config.service`| Credenciales Meta/TikTok |
+| `ticket.service` | Gestión de tickets de soporte |
+| `widget-ip-whitelist.service`| Whitelist de IPs para seguridad |
 
 ### 7.6 Subsistema de Auditoría (`auditor/`)
 - Payments audit

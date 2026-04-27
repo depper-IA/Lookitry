@@ -1,52 +1,22 @@
 import paramiko
-from io import StringIO
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect('31.220.18.39', username='root', password='Travis18456916#')
 
-key_path = "scripts/id_rsa_lookitry"
-with open(key_path, 'r') as f:
-    key_content = f.read()
+# Check traefik logs
+stdin, stdout, stderr = client.exec_command('docker logs traefik --tail 30 2>&1')
+logs = stdout.read().decode('utf-8', errors='replace')
+print(f'Traefik logs (last 30):\n{logs}')
 
-key_file = StringIO(key_content)
-key = paramiko.RSAKey.from_private_key(key_file)
+# Check if there's an error page being served
+stdin2, stdout2, stderr2 = client.exec_command('curl -s http://lookitry.com/blog/prueba-lote-c-el-futuro-de-la-moda-con-ia-en-el-ecommerce 2>&1 | wc -c')
+r = stdout2.read().decode('utf-8', errors='replace')
+print(f'\ncurl from traefik network: {r}')
 
-ssh = paramiko.SSHClient()
-ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-ssh.connect(hostname="31.220.18.39", username="root", pkey=key, timeout=15)
+# Check the actual traefik config
+stdin3, stdout3, stderr3 = client.exec_command('cat /root/virtual-tryon/traefik.yml 2>&1')
+cfg = stdout3.read().decode('utf-8', errors='replace')
+print(f'\nTraefik config:\n{cfg[:2000]}')
 
-print("=== Checking Traefik routes ===")
-
-# Check traefik routers
-print("\n1. Checking traefik docker provider routers:")
-stdin, stdout, stderr = ssh.exec_command(
-    'curl -s http://localhost:8080/api/http/routers 2>/dev/null | python3 -c "import sys,json;[print(r[\'name\'],r[\'status\']) for r in json.load(sys.stdin)]"'
-)
-print(stdout.read().decode())
-
-# Check frontned directly via traefik internal
-print("\n2. Testing frontend through traefik:")
-stdin, stdout, stderr = ssh.exec_command(
-    'docker exec traefik wget -q -O- -H "Host: lookitry.com" http://localhost:80/ 2>&1 | head -20'
-)
-print(stdout.read().decode())
-
-# Check backend through traefik
-print("\n3. Testing backend through traefik:")
-stdin, stdout, stderr = ssh.exec_command(
-    'docker exec traefik wget -q -O- -H "Host: api.lookitry.com" http://localhost:80/health 2>&1'
-)
-print(stdout.read().decode())
-
-# Check n8n through traefik
-print("\n4. Testing n8n subdomain:")
-stdin, stdout, stderr = ssh.exec_command(
-    'docker exec traefik wget -q -O- -H "Host: n8n.wilkiedevs.com" http://localhost:80/ 2>&1 | head -5'
-)
-print(stdout.read().decode())
-
-# Check if traefik has the TLS challenge resolver
-print("\n5. Checking traefik certs resolver:")
-stdin, stdout, stderr = ssh.exec_command(
-    'curl -s http://localhost:8080/api/http/routers | python3 -c "import sys,json;print([r for r in json.load(sys.stdin) if \"tls\" in str(r)])"'
-)
-print(stdout.read().decode())
-
-ssh.close()
+client.close()
+print('\nDone')

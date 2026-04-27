@@ -1,5 +1,25 @@
 # CHANGELOG — Lookitry
 
+## 27 de Abril 2026 — Actualización de Repositorio y Arquitectura
+
+### Sincronización y Mantenimiento
+
+| Acción | Detalle |
+|--------|---------|
+| **Git Sync** | Pull de `origin/main` con stash/pop para preservar scripts locales |
+| **VPS Deploy** | Verificación de estado en VPS (HEAD sincronizado en `002735d`) |
+| **Documentación** | Creación de `.kiro/steering/LOOKITRY_ARCH.md` con módulos actualizados |
+| **Tech Stack** | Actualización de `TECH_STACK.md` con tablas de Tickets y Whitelist de IPs |
+
+### Módulos Auditados e Indexados
+- **CRM & Leads**: Gestión de prospectos con Google Places.
+- **Tickets de Soporte**: Sistema de gestión de incidencias para marcas.
+- **Email Marketing**: Campañas automatizadas vía Brevo.
+- **Seguridad**: Whitelist de IPs para control de acceso al widget.
+- **RAG**: Base de conocimiento del proyecto indexada para agentes.
+
+---
+
 ## 27 de Abril 2026 — Auditoría Mini-Landing Templates (Completa)
 
 ### Auditoría Completa de 3 Templates (Classic, Editorial, Moderno)
