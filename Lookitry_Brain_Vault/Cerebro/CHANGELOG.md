@@ -4,6 +4,25 @@
 
 ## 2026-04-27
 
+### fix(try-on): Prevent body shape alteration in generated images
+
+**Problema reportado:** La IA estaba alterando la forma del cuerpo del usuario (ej: cintura más delgada, cuerpo más curvado) — especialmente en personas con cuerpo más grande.
+
+**Solución:** Actualizadas las reglas de `prompt-rules.ts` para incluir `CRITICAL — DO NOT ALTER BODY SHAPE` en todas las categorías que afectan el cuerpo completo:
+
+| Categoría | Cambio |
+|-----------|--------|
+| VESTIDO | Añadido `body SHAPE, waist size, hip size, shoulder width, arm thickness, leg thickness, overall silhouette` |
+| DRESS | Mismo cambio |
+| CONJUNTO | Mismo cambio |
+| SET | Mismo cambio |
+| OUTFIT | Mismo cambio |
+
+**Regla aplicada:**
+> "ONLY change the clothing — do NOT slim, thicken, curve, waist-train, or reshape the body in any way"
+
+---
+
 ### feat(n8n): Workflow de Feedback Embedding RAG `j5EG0OcxMMSpzxVu`
 
 **Resumen:** Workflow de n8n para generar embeddings de feedback de usuarios y almacenarlos en Supabase pgvector para el motor RAG de mejora de prompts.
