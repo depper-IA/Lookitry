@@ -186,10 +186,14 @@ export interface LandingTheme {
   isDarkHero: boolean;
   isDarkProducts: boolean;
   isDarkFooter: boolean;
+  // Colores efectivos de la marca (para uso directo en vez de recalcular)
+  primary: string;
+  secondary: string;
 }
 
 export function getLandingTheme(brand: BrandData): LandingTheme {
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#FF5C3A';
+  const secondary = brand.social_links?._landing_secondary || brand.secondary_color || primary;
 
   // Fondos con fallbacks
   const heroBg = brand.cover_bg_color || '#f9f8f6';
@@ -250,6 +254,8 @@ export function getLandingTheme(brand: BrandData): LandingTheme {
     isDarkHero,
     isDarkProducts,
     isDarkFooter,
+    primary,
+    secondary,
   };
 }
 
