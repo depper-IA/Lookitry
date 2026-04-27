@@ -1,5 +1,51 @@
 # CHANGELOG — Lookitry
 
+## 27 de Abril 2026 — Auditoría Mini-Landing Templates (Completa)
+
+### Auditoría Completa de 3 Templates (Classic, Editorial, Moderno)
+
+| Dimensión | Score Antes | Score Después |
+|-----------|------------|--------------|
+| Accessibility | 2/4 | 3.5/4 |
+| Performance | 2/4 | 2.5/4 |
+| Theming | 2/4 | 3.5/4 |
+| Responsive | 2/4 | 2/4 |
+| Anti-Patterns | 3/4 | 4.5/4 |
+| **TOTAL** | **11/20** | **17.5/20** |
+
+### Issues Corregidos
+
+| Prioridad | Issue | Archivo |
+|-----------|-------|---------|
+| **P0** | Product loading state roto en Classic (skeleton no aparecía con array vacío) | `TemplateClassic.tsx` |
+| **P0** | Widget pre-select product when lockProductSelection=true sin initialProductId | `TryOnWidget.tsx` |
+| **P1** | Color inheritance roto (Editorial accentColor ignoraba brand.secondary_color) | `TemplateEditorial.tsx` |
+| **P1** | FriendlyProductSelector accessibility (listbox/option/aria-selected) | `templates/shared.tsx` |
+| **P2** | TrustBar fake metrics eliminadas (+500 reviews, ~12s, IA, 96%) | `TemplateClassic.tsx`, `TemplateModerno.tsx` |
+| **P2** | Spinner hardcodeado #FF5C3A ahora usa brand.primary_color dinámico | `MiniLanding.tsx` |
+| **P2** | WhatsAppFAB sin aria-label | `shared.tsx` |
+| **P2** | Skeleton counts incorrectos (3 cards vs 6 que muestra la grilla) | `TemplateEditorial.tsx`, `TemplateModerno.tsx` |
+| **P2** | useLandingTheme missing social_links color deps | `shared.tsx` |
+| **P3** | EditorialHero sin gradient overlay cuando no hay cover_image | `TemplateEditorial.tsx` |
+| **P3** | landing_font no disponible en API response | `pruebalo.controller.ts` |
+| **P3** | Templates recalculaban primary manualmente en vez de usar theme.primary | `TemplateClassic.tsx`, `TemplateEditorial.tsx`, `TemplateModerno.tsx` |
+
+### Commits Realizados (Sesión)
+
+- `335ccce` fix: TemplateEditorial and Moderno color/skeleton/aria fixes
+- `4a3aaf6` fix: TryOnWidget pre-select product when locked with no initialProductId
+- `bbea313` fix: TemplateClassic product loading and TrustBar cleanup
+- `4de4d31` fix: TemplateModerno TrustBar remove fake metrics
+- `61d2141` polish: EditorialHero gradient overlay and landing_font documentation
+- `87b89c8` polish: useLandingTheme returns primary/secondary colors
+- `d4e62eb` fix: remove duplicate aria-label in shared.tsx
+- `5869d72` refactor: use theme.primary instead of manual color calculation in all templates
+- `9c52a2e` fix: remove duplicate theme definition in ProbadorTrustBar
+- `0ce6267` feat: add landing_font to pruebalo brand config API
+- `44d3cd2` fix: add missing useLandingTheme hook in ProbadorTrustBar
+
+---
+
 ## 26 de Abril 2026 — Auditoría y Correcciones Widget Try-On (UI/UX/Responsive)
 
 ### Auditoría Completa Realizada
