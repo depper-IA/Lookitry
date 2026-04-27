@@ -740,7 +740,7 @@ export function ResultDisplay({
             <img src={imageUrl} alt={productName} className="max-w-full max-h-[90vh] object-contain rounded-2xl" />
             <button
               onClick={() => setLightboxOpen(false)}
-              className="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               aria-label="Cerrar pantalla completa"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

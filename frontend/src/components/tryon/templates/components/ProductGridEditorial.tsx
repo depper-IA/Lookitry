@@ -99,7 +99,7 @@ export function ProductGridEditorial({
           <motion.button
             key={p.id}
             onClick={() => onSelect(p)}
-            className="group relative w-full text-left rounded-2xl sm:rounded-3xl overflow-hidden focus:outline-none"
+            className="group relative w-full text-left rounded-2xl sm:rounded-3xl overflow-hidden focus-visible:ring-2 focus-visible:ring-[currentColor] focus-visible:ring-offset-2"
             variants={cardVariants}
             whileTap={{ scale: 0.96 }}
             style={{
