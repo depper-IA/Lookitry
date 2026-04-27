@@ -202,21 +202,24 @@ export function FriendlyProductSelector({
       transition={{ duration: 0.3 }}
     >
       {showHeader && (
-        <div className="mb-3 md:mb-4 text-center">
+        <div role="heading" aria-level={2} className="mb-3 md:mb-4 text-center">
           <p className="text-sm font-black uppercase italic tracking-tight" style={{ color: textMain }}>¿Qué quieres probarte?</p>
           <p className="text-[10px] font-medium uppercase tracking-widest mt-0.5" style={{ color: textMuted }}>Toca el producto que más te guste</p>
         </div>
       )}
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2 sm:gap-4 justify-center">
+      <div role="listbox" aria-label="Productos disponibles" className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2 sm:gap-4 justify-center">
         {products.map((p, index) => {
           const sel = selected?.id === p.id;
           const alreadyGenerated = generatedProducts.has(p.id);
           const cardBg = 'rgba(255,255,255,0.1)';
           const borderColor = 'rgba(255,255,255,0.15)';
-          
+
           return (
             <motion.button
               key={p.id}
+              role="option"
+              aria-selected={sel}
+              aria-label={`${p.name}${p.price != null ? `, precio $${p.price.toLocaleString('es-CO')}` : ''}${alreadyGenerated ? ', ya probado' : ''}`}
               onClick={() => onSelect(p)}
               className={`rounded-2xl overflow-hidden border-2 text-left transition-all duration-300 ${
                 sel ? 'scale-[1.03] shadow-xl' : 'hover:scale-[1.02] hover:shadow-lg'

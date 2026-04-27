@@ -155,6 +155,13 @@ export function TryOnWidget({
           // Si estamos inyectando un producto pre-seleccionado, pasamos automáticamente al paso de subida.
           setStep('upload');
         }
+
+        // Auto-select first product if lockProductSelection but no initialProductId
+        // This ensures the widget has something to show even when no product is pre-selected
+        if (isLocked && !initialProductId && !externalId && data.products?.length > 0) {
+          setSelectedProduct(data.products[0]);
+          setStep('upload'); // Jump to upload since product is pre-selected
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Error al cargar');
