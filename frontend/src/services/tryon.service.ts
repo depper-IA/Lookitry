@@ -70,16 +70,18 @@ class TryOnService {
 
   /**
    * Obtener estado de una generación por ID
-   * Endpoint público — no requiere auth (el generationId actúa como token)
+   * Endpoint público de polling — usa /api/pruebalo/:brandSlug/generation/:generationId
+   * No requiere auth (el generationId actúa como token)
    */
-  async getGenerationStatus(generationId: string): Promise<{
+  async getGenerationStatus(generationId: string, brandSlug: string): Promise<{
     status: 'PENDING' | 'SUCCESS' | 'FAILED';
     imageUrl?: string;
     error?: string;
     processingTime?: number;
   }> {
     try {
-      const response = await api.get<any>(`/generations/${generationId}`);
+      // IMPORTANTE: Usar ruta pública de widget, NO /generations/:id (esa requiere auth)
+      const response = await api.get<any>(`/pruebalo/${brandSlug}/generation/${generationId}`);
       return {
         status: response.data?.status ?? 'PENDING',
         imageUrl: response.data?.imageUrl ?? response.data?.result_image_url,
