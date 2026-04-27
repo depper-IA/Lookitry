@@ -118,7 +118,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
 
   return (
     <div
-      className="flex flex-col font-sans min-h-screen min-h-[100dvh]"
+      className="flex flex-col font-sans min-h-screen min-h-[100dvh] w-full"
       style={{ backgroundColor: secondaryColor }}
     >
       {/* Header — oculto en embed (la página del cliente ya tiene branding) */}

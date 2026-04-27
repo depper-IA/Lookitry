@@ -55,7 +55,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
 
   if (step === 'generating') {
     return (
-      <div className="flex flex-col min-h-screen min-h-[100dvh]" style={{ backgroundColor: solidBg }}>
+      <div className="flex flex-col min-h-screen min-h-[100dvh] w-full" style={{ backgroundColor: solidBg }}>
         <EditorialHeader config={config} onReset={onReset} primaryColor={primaryColor} bgLuminance={bgLuminance} textMuted={textMuted} secondaryColor={secondaryColor} />
         <div className="flex-1 flex items-center justify-center">
           <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
@@ -67,7 +67,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
   return (
     <div
       ref={containerRef}
-      className="flex flex-col font-sans min-h-screen min-h-[100dvh] overflow-y-auto overflow-x-hidden"
+      className="flex flex-col font-sans min-h-screen min-h-[100dvh] w-full overflow-y-auto overflow-x-hidden"
       style={{ backgroundColor: solidBg }}
     >
       <EditorialHeader

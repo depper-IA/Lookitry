@@ -80,7 +80,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
 
   if (step === 'generating') {
     return (
-      <div className="flex flex-col min-h-screen min-h-[100dvh] items-center justify-center p-4 md:p-8 relative overflow-hidden" style={{ backgroundColor: bgColor }}>
+      <div className="flex flex-col min-h-screen min-h-[100dvh] w-full items-center justify-center p-4 md:p-8 relative overflow-hidden" style={{ backgroundColor: bgColor }}>
         {config.brand.widgetCoverImage && (
           <div 
             className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-[0.06] mix-blend-luminosity"
@@ -116,10 +116,10 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
   ];
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className={`relative flex font-sans min-h-screen min-h-[100dvh] ${isSmall ? 'flex-col' : 'flex-row'}`} 
-      style={{ 
+      className={`relative flex font-sans min-h-screen min-h-[100dvh] w-full ${isSmall ? 'flex-col' : 'flex-row'}`}
+      style={{
         backgroundColor: bgColor,
         paddingLeft: isSmall ? 'max(16px, env(safe-area-inset-left))' : 0,
         paddingRight: isSmall ? 'max(16px, env(safe-area-inset-right))' : 0,

@@ -68,7 +68,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
   return (
     <div
       ref={containerRef}
-      className="font-sans min-h-screen min-h-[100dvh] relative overflow-hidden flex flex-col"
+      className="font-sans min-h-screen min-h-[100dvh] w-full relative overflow-hidden flex flex-col"
       style={{ backgroundColor: bgColor, color: textPrimary, paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {config.brand.widgetCoverImage && (
