@@ -2,6 +2,39 @@
 
 ---
 
+## 2026-04-27
+
+### feat(n8n): Workflow de Feedback Embedding RAG `j5EG0OcxMMSpzxVu`
+
+**Resumen:** Workflow de n8n para generar embeddings de feedback de usuarios y almacenarlos en Supabase pgvector para el motor RAG de mejora de prompts.
+
+#### Detalles
+
+| Componente | Descripción |
+|------------|-------------|
+| **Workflow ID** | `j5EG0OcxMMSpzxVu` |
+| **Webhook** | `/webhook/feedback-embedding` |
+| **Modelo** | OpenAI `text-embedding-3-small` (1536 dims) via OpenRouter |
+| **Trigger** | Async desde `feedback.service.ts` → `triggerEmbeddingAsync()` |
+
+#### Flujo
+
+1. `feedback.service.createFeedback()` inserta registro en `generation_feedback`
+2. `triggerEmbeddingAsync()` hace fire-and-forget POST a `/webhook/feedback-embedding`
+3. n8n prepara texto del error (tipo, categoría, descripción) — máximo 1000 chars
+4. OpenRouter genera embedding de 1536 dimensiones
+5. n8n actualiza `generation_feedback.embedding` con el vector
+6. `prompt-rag.service` usa el embedding para buscar feedbacks similares y enriquecer prompts futuros
+
+#### Archivos Modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `Lookitry_Brain_Vault/Cerebro/Docs/Guias/Integracion_n8n.md` | Actualizado con webhook #8 (Feedback Embedding RAG) |
+| `Lookitry_Brain_Vault/Cerebro/TECH_STACK.md` | Actualizada sección 6.3 RAG con workflow ID y dims 1536 |
+
+---
+
 ## 2026-04-26
 
 ### docs(brain-vault): Actualización completa de documentación del Cerebro
@@ -24,7 +57,6 @@
 - **Blog Automation**: 3 workflows n8n independientes (Topic Generator → Article Producer → Image Generator)
 - **Email Marketing**: Brevo SMTP con batching (50 emails/10 min), límite 300/día
 - **Sistema de Agentes v3.0**: Sammantha orquestadora, 10 agentes especializados, tracking automático
-- **Lookitry Social OS**: GCP Vertex AI + SonAuto AI + Buffer MCP, ~$0.20/post
 - **Seguridad**: Account lockout (5 intentos = 15 min), login audit, session TTL 7 días
 
 ---
@@ -201,8 +233,6 @@ Sammantha ahora spawnea agentes bajo demanda. Nunca hace trabajo de otros agente
 | "Docker no arranca" | Docker/Infra | Zephyr |
 | "Hay vulnerabilidades en el código" | Seguridad/Auditoría | Cipher |
 | "Quiero hacer pentesting" | Seguridad | Cipher |
-| "El trading automatizado falló" | Trading | Leo |
-| "Crear posts para Instagram" | UGC/Contenido | Rebecca |
 | "El CHANGELOG está desactualizado" | Documentación | Lina |
 | "Necesito documentar X" | Documentación | Lina |
 
@@ -321,8 +351,6 @@ Sammantha ahora spawnea agentes bajo demanda. Nunca hace trabajo de otros agente
 | Infra / VPS / Docker | Zephyr |
 | Documentación | Lina |
 | Seguridad / Pentesting | Cipher |
-| Trading | Leo |
-| UGC / Contenido | Rebecca |
 | Pagos / Auth / Webhooks | Kira |
 
 **Modelo:**
@@ -341,94 +369,9 @@ Sammantha ahora spawnea agentes bajo demanda. Nunca hace trabajo de otros agente
 
 ---
 
-## 2026-04-18 (Tarde)
-
-### Lookitry Social OS - Sistema Completo de Automatización
-
-**Descripción:**
-Sistema completo para automatizar contenido de Instagram + TikTok con música AI.
-
-**Stack tecnológico:**
-| Servicio | Función | Costo |
-|----------|---------|-------|
-| GCP Vertex AI (imagen-3.0) | Generación imágenes | $5 credits |
-| Pillow | Overlays, marca | $0 |
-| Canva Pro | Fallback edición | $0 (cliente tiene) |
-| SonAuto AI | Música TikTok | ~$0.02/canción |
-| Buffer MCP | Scheduling | $0 |
-
-**Archivos creados:**
-- `social-os/README.md` - Documentación principal
-- `social-os/DOCUMENTACION_COMPLETA.md` - Documentación técnica completa
-- `social-os/create_tiktok_content.py` - Script TikTok completo (slides + música)
-- `social-os/slideshows/generator.py` - Clase generadora de carousels
-- `social-os/slideshows/create_brand_carousel.py` - Crear carousel con marca
-- `social-os/slideshows/add_brand.py` - Añadir marca a imágenes
-- `social-os/slideshows/rebecca_carousel.py` - Script simple para Rebecca
-- `social-os/slideshows/templates_tiktok.json` - 5 templates TikTok
-- `social-os/music/music_generator.py` - Generador SonAuto
-- `social-os/music/output/test_song.ogg` - Canción de prueba (1.2MB)
-- `social-os/canva/canva_enhancer.py` - Integración Canva (fallback)
-- `social-os/canva/README.md` - Documentación Canva
-- `social-os/calendar/scheduler.py` - Gestor calendario
-- `social-os/calendar/content_calendar.json` - Posts planificados
-- `social-os/analytics/tracker.py` - Log de posts
-- `social-os/analytics/database.sql` - Schema Supabase
-- `social-os/hooks/hook_library.json` - 8 viral hooks
-
-**Modificaciones:**
-- `backend/scripts/gcp_image_generator.py` - Actualizado para JWT auth
-- `backend/.env` - Añadido SONAUTO_API_KEY
-- `Cerebro/Agentes/rebecca.md` - Actualizada con nuevos workflows
-
-**GCP Authentication:**
-- Método: JWT + OAuth2 token exchange
-- Service Account: `lookitry-67844@appspot.gserviceaccount.com`
-- Key file: `/home/travis/Lookitry/Lookitry/google/permiso-abril.json`
-- Modelo: `imagen-3.0-generate-001`
-
-**SonAuto Music:**
-- API Key: `sksonauto_wrlgeFuh0RI9Ajb7I8yMfg132qj_PBIFJn55_hWP74IrnJid`
-- Primera canción generada exitosamente
-- Tags válidos: electronic, dance, ambient, chill, pop, 2020s, etc.
-- ⚠️ Tags inválidos: upbeat, fashion, luxury, trending, viral
-
-**Brand Elements:**
-- Color primario: #FF5C3A (Naranja)
-- Color secundario: #111111 (Negro)
-- Logo: `/home/travis/Lookitry/Lookitry/Content/Graphics/lookitry_logo_real.png`
-
-**Costo por post:** ~$0.20 (1 imagen GCP + 1 canción SonAuto)
-
----
-
 ## 2026-04-18 (Mañana)
 
 ### Nuevas Funcionalidades
-
-#### Rebecca - Automatización de Redes Sociales con Buffer
-
-**Archivos creados:**
-- `Cerebro/Skills/social-automation-buffer.md` - Nueva skill para automatización
-
-**Archivos modificados:**
-- `Cerebro/Skills/Skills.md` - Indexada la nueva skill
-
-**Descripción:**
-- Rebecca ahora puede generar contenido para Twitter, Facebook, Instagram y LinkedIn
-- Contenido se envía a Buffer API para programación automática
-- Flujo: Sam solicita → Rebecca genera → Sam aprueba → Buffer programa
-
-**Plataformas soportadas:**
-- Twitter/X
-- Facebook Pages
-- Instagram (Business)
-- LinkedIn Pages
-
-**Tecnología:**
-- Buffer API para programación
-- MiniMax-M2.7 para generación de contenido
-- Telegram como interfaz de aprobación
 
 ---
 
@@ -439,9 +382,7 @@ Sistema completo para automatizar contenido de Instagram + TikTok con música AI
 **Cambios principales:**
 - 10 agentes con nombres nuevos
 - Modelo default: MiniMax-M2.7 (Groq/DeepSeek removidos)
-- Rebecca v3.0 con foco en MONEY
 - Melissa como colaboradora de Pixel
-- Leo como agente de trading
 - Regla 6: Notificación obligatoria de tareas
 
 **Archivos actualizados:**
