@@ -133,9 +133,43 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                   </div>
                 </div>
 
-                <div className="w-full">
+                <div className="w-full max-w-2xl mx-auto space-y-6">
+                  {/* Producto Seleccionado */}
+                  {selectedProduct && (
+                    <div className="w-full relative group overflow-hidden rounded-2xl border transition-all duration-300" style={{ backgroundColor: cardBg, borderColor: bgLuminance ? '#e5e5e5' : 'rgba(255,255,255,0.1)' }}>
+                      <div className="p-3 flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-xl bg-white/5 overflow-hidden border border-white/10 shrink-0 shadow-lg">
+                          <img
+                            src={selectedProduct.imageUrl}
+                            alt={selectedProduct.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 italic" style={{ color: textMuted }}>
+                            Prenda seleccionada
+                          </span>
+                          <h4 className="text-base font-bold truncate pr-8" style={{ color: textPrimary }}>
+                            {selectedProduct.name}
+                          </h4>
+                        </div>
+                        <button
+                          onClick={onProceedToUpload}
+                          className="absolute top-2 right-2 p-2 rounded-full bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-500 transition-all active:scale-90 shadow-xl border border-white/5"
+                          title="Cambiar prenda"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <SelfieUploader
                     onUpload={onSelfieUpload}
+                    onReset={onReset}
+                    currentPreview={selfiePreview}
                     primaryColor={primaryColor}
                     privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al instante"
                     textColor={textPrimary}
