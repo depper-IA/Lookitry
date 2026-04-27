@@ -131,7 +131,8 @@ export function StepBar({ step, primaryColor }: { step: Step; primaryColor: stri
                   done ? 'text-white' : active ? 'text-white shadow-md' : 'bg-gray-100 text-gray-400'
                 }`}
                 style={done || active ? { backgroundColor: primaryColor } : {}}
-                whileTap={{ scale: 0.95 }}
+whileTap={{ scale: 0.9 }}
+              transition={{ duration: 0.1 }}
               >
                 {done ? (
                   <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -229,7 +230,7 @@ export function FriendlyProductSelector({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               whileTap={{ scale: 0.98 }}
-              aria-label={`Seleccionar ${p.name}`}
+              aria-label={`Seleccionar ${p.name} para probarme virtualmente`}
             >
               {/* Image Container */}
               <div className="relative bg-gray-100">

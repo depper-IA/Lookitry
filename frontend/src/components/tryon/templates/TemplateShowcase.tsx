@@ -189,7 +189,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
                 />
                 {/* Overlay Premium para contraste asegurado */}
                 <div className="absolute inset-0 bg-black/40" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg)] via-black/20 to-black/60" />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 40%, transparent 70%)' }} />
 
                 <div className="relative z-10 flex flex-col items-center justify-center text-center w-full max-w-4xl mx-auto">
                   {config.brand.logo ? (

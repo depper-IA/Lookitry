@@ -423,3 +423,8 @@ textarea:focus-visible {
 img[data-next-image] {
   content-visibility: auto;
 }
+
+/* ── Touch feedback for interactive elements ─────────────────────────────── */
+.active\:scale-95:active {
+  transform: scale(0.95);
+}
