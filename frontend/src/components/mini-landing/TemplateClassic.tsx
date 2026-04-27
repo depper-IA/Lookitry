@@ -726,8 +726,9 @@ function ClassicFooter({ brand, primaryColor, secondaryColor, footerUrl }: { bra
 // ── Main Template Export ────────────────────────────────────────────────────────
 
 export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPreview = false }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string; isPreview?: boolean }) {
-  const primary = brand.social_links?._landing_primary || brand.primary_color || '#FF5C3A';
-  const secondary = brand.social_links?._landing_secondary || primary;
+  const theme = useLandingTheme(brand);
+  const primary = theme.primary;
+  const secondary = theme.secondary;
   const [selectedId, setSelectedId] = useState<string | null>(products?.[0]?.id || null);
 
   const handleProductClick = (id: string) => {
