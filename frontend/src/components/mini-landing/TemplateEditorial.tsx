@@ -252,8 +252,8 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
     }
   }, [products]);
 
-  const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
-  const secondary = brand.social_links?._landing_secondary || primary;
+  const primary = theme.primary;
+  const secondary = theme.secondary;
 
   const socialLinks = brand.social_links || {};
   const entries = getVisibleSocialEntries(socialLinks);
