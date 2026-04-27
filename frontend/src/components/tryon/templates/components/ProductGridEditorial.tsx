@@ -122,7 +122,6 @@ export function ProductGridEditorial({
                   alt={p.name}
                   className="w-full h-full object-cover"
                   animate={{ scale: sel ? 1.04 : 1 }}
-                  whileHover={{ scale: 1.07 }}
                   transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
                 />
 

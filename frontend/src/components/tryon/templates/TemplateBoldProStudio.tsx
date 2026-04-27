@@ -7,7 +7,8 @@ import { SelfieUploader } from '../SelfieUploader';
 import { TermsCheckbox } from '../TermsCheckbox';
 import type { TryOnTemplateProps } from './types';
 import { ErrorBanner, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner } from './shared';
-import { useState, useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useDeviceSize } from './hooks/useDeviceSize';
 
 // Helper para determinar si un color es claro u oscuro
 function isLightBg(hex: string): boolean {
@@ -50,24 +51,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
   } = props;
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isSmall, setIsSmall] = useState(false);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    if (props.forcedLayout) {
-      setIsSmall(props.forcedLayout === 'mobile');
-      return;
-    }
-
-    const obs = new ResizeObserver((entries) => {
-      const { width } = entries[0].contentRect;
-      setIsSmall(width < 768);
-    });
-
-    obs.observe(containerRef.current);
-    return () => obs.disconnect();
-  }, [props.forcedLayout]);
+  const isSmall = useDeviceSize(props.forcedLayout);
 
   // Colores adaptativos según el fondo
   const bgLuminance = isLightBg(secondaryColor || '#050505');
@@ -85,7 +69,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
     <div
       ref={containerRef}
       className="font-sans min-h-screen min-h-[100dvh] relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: bgColor, color: textPrimary }}
+      style={{ backgroundColor: bgColor, color: textPrimary, paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {config.brand.widgetCoverImage && (
         <div className="absolute top-0 left-0 right-0 h-[45vh] md:h-[55vh] pointer-events-none z-0">
@@ -101,9 +85,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
       )}
       {/* Ambient background - responsive sizes */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-20 -left-20 md:-top-40 md:-left-40 w-64 h-64 md:w-[520px] md:h-[520px] rounded-full blur-3xl transition-all duration-1000" style={{ background: `${primaryColor}25` }} />
-        <div className="absolute -bottom-20 -right-20 md:-bottom-40 md:-right-40 w-64 h-64 md:w-[520px] md:h-[520px] rounded-full blur-3xl transition-all duration-1000" style={{ background: `${primaryColor}18` }} />
-        {!bgLuminance && <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_55%)]" />}
+        {!bgLuminance && <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_40%)]" />}
       </div>
 
 
@@ -117,10 +99,10 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
             {/* Logo Container with Glow */}
             <div className={`relative group ${isSmall ? 'mb-6' : 'mb-10'} animate-in zoom-in duration-700`}>
               <div
-                className="absolute inset-0 blur-3xl opacity-30 group-hover:opacity-50 transition-opacity duration-700 scale-150"
+                className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-700"
                 style={{ background: primaryColor }}
               />
-              <div className={`relative z-10 p-5 md:p-6 rounded-[2.5rem] bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-transform duration-700 group-hover:scale-105`}>
+              <div className={`relative z-10 p-5 md:p-6 rounded-3xl bg-white/5 border border-white/10 shadow-xl transition-transform duration-700 group-hover:scale-102`}>
                 {config.brand.logo ? (
                   <img
                     src={config.brand.logo}
@@ -162,7 +144,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
           {/* Content wrapper - full width on desktop, card in center on mobile */}
           <div className={isSmall ? '' : 'flex items-center justify-center'}>
             {/* Flow card */}
-            <div className={`rounded-3xl border backdrop-blur-2xl shadow-2xl transition-all duration-500 w-full mx-auto ${isSmall ? '' : 'max-w-5xl lg:max-w-6xl'}`} style={{ backgroundColor: cardBg, borderColor }}>
+            <div className={`rounded-3xl border bg-white/5 shadow-xl transition-all duration-500 w-full mx-auto ${isSmall ? '' : 'max-w-5xl lg:max-w-6xl'}`} style={{ backgroundColor: cardBg, borderColor }}>
               {/* Step header with integrated controls */}
               <div className={`${isSmall ? 'p-4' : 'p-6 lg:p-8'} border-b`} style={{ borderBottomColor: borderColor }}>
                 <div className="flex items-center justify-between gap-4">
@@ -442,7 +424,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                       <button
                         onClick={onProceedToUpload}
                         disabled={!selectedProduct}
-                        className="w-full py-5 md:py-6 lg:py-7 rounded-2xl font-black uppercase tracking-[0.2em] text-sm md:text-base shadow-2xl active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-3 relative overflow-hidden group"
+                        className="w-full py-4 md:py-5 lg:py-6 rounded-xl font-black uppercase tracking-[0.2em] text-sm md:text-base shadow-xl active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-3 relative overflow-hidden group"
                         style={{ backgroundColor: primaryColor, color: '#ffffff', boxShadow: `0 15px 45px ${primaryColor}60` }}
                       >
                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -455,7 +437,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                       <button
                         onClick={onGenerate}
                         disabled={!selfiePreview || !selectedProduct}
-                        className="w-full py-5 md:py-6 lg:py-7 rounded-2xl font-black uppercase tracking-[0.2em] text-sm md:text-base shadow-2xl active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-3"
+                        className="w-full py-4 md:py-5 lg:py-6 rounded-xl font-black uppercase tracking-[0.2em] text-sm md:text-base shadow-xl active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-3"
                         style={{ backgroundColor: primaryColor, color: '#ffffff', boxShadow: `0 15px 35px ${primaryColor}60` }}
                       >
                         <span>{selectedProduct && generatedProducts.has(selectedProduct.id) ? 'Recuperar Look' : buttonText}</span>
