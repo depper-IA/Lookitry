@@ -140,7 +140,7 @@ function EditorialInfo({ brand, secondaryColor }: { brand: BrandData; secondaryC
   } catch(e) {}
 
   const theme = useContrastTheme('#ffffff');
-  const accentColor = secondaryColor || '#FF5C3A';
+  const accentColor = secondaryColor || brand.secondary_color || '#FF5C3A';
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full">
@@ -276,7 +276,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
             <div ref={productsRef} className={`grid grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
               {isLoading ? (
                 <>
-                  {[0,1,2].map(i => <ProductSkeleton key={i} primaryColor={primary} />)}
+                  {[0,1,2,3,4,5].map(i => <ProductSkeleton key={i} primaryColor={primary} />)}
                 </>
               ) : (
                 products && Array.isArray(products) && products.map(p => (
