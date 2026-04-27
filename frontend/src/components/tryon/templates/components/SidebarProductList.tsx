@@ -47,7 +47,7 @@ export function SidebarProductList({
           <button
             key={p.id}
             onClick={() => onProductSelect(p)}
-            className={`w-full flex items-center gap-3 p-3 rounded-2xl text-left cursor-pointer transition-all duration-300 group ${
+            className={`w-full flex items-center gap-3 p-3 rounded-2xl text-left cursor-pointer transition-all duration-300 group active:scale-95 ${
               isSelected ? 'shadow-xl ring-2' : 'hover:shadow-md'
             }`}
             style={{
