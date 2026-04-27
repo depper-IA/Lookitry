@@ -259,7 +259,8 @@ export function TryOnWidget({
 
       let status;
       try {
-        status = await tryonService.getGenerationStatus(generationId);
+        // IMPORTANTE: pasar brandSlug para usar la ruta pública de polling
+        status = await tryonService.getGenerationStatus(generationId, brandSlug);
       } catch {
         // Error de red — continuar polleando silenciosamente
         continue;
@@ -274,7 +275,7 @@ export function TryOnWidget({
       // PENDING — seguir esperando
     }
     throw new Error('Timeout esperando resultado. Por favor intenta de nuevo.');
-  }, []);
+  }, [brandSlug]);
 
   const handleGenerate = async (fileOverride?: File, productOverride?: Product, force = false) => {
     const activeFile = fileOverride || selfieFile;
