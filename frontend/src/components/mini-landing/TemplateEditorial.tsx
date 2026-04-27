@@ -72,7 +72,19 @@ function EditorialHero({ brand }: { brand: BrandData }) {
   const mutedColor = getSmartMutedColor(coverBaseColor);
   
   return (
-    <section className="relative w-full h-[35vh] md:h-[50vh] flex items-center justify-center overflow-hidden" style={{ backgroundColor: coverBaseColor }}>
+    <section className="relative w-full h-[35vh] md:h-[50vh] flex items-center justify-center overflow-hidden"
+      style={{
+        backgroundColor: coverBaseColor,
+        // Si no hay imagen, agregar gradient decorativo para dar profundidad
+        ...(!brand.cover_image_url && {
+          background: `
+            radial-gradient(ellipse at 30% 0%, ${coverBaseColor}ee 0%, transparent 50%),
+            radial-gradient(ellipse at 70% 100%, ${coverBaseColor}44 0%, transparent 50%),
+            ${coverBaseColor}
+          `
+        })
+      }}
+    >
       {brand.cover_image_url && (
         <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover scale-105" style={{ opacity: imageOpacity }} />
       )}
@@ -260,7 +272,8 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
   };
 
   return (
-    <div className={`min-h-screen flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden ${isPreview ? 'p-0 h-auto' : ''}`} style={{ backgroundColor: theme.cardBg, '--primary': primary, '--secondary': secondary, '--secondary-10': secondary + "1a", '--secondary-20': secondary + "33", '--secondary-05': secondary + "0d" } as React.CSSProperties}>
+    <div className={`min-h-screen flex flex-col // TODO: landing_font from brand config - pending API support
+        ${brand.landing_font || 'font-jakarta'} overflow-x-hidden ${isPreview ? 'p-0 h-auto' : ''}`} style={{ backgroundColor: theme.cardBg, '--primary': primary, '--secondary': secondary, '--secondary-10': secondary + "1a", '--secondary-20': secondary + "33", '--secondary-05': secondary + "0d" } as React.CSSProperties}>
       <EditorialHeader brand={brand} entries={entries} socialIcons={socialIcons} />
       <EditorialHero brand={brand} />
       
