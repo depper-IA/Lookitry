@@ -100,7 +100,13 @@ interface ImagePrompt {
 }
 
 interface CtaContext {
-  type: 'trial' | 'features' | 'pricing' | 'lead_magnet';
+  type?: 'trial' | 'features' | 'pricing' | 'lead_magnet';
+  title?: string;
+  subtitle?: string;
+  primary_cta_url?: string;
+  primary_cta_text?: string;
+  secondary_cta_url?: string;
+  secondary_cta_text?: string;
 }
 
 interface CtaTemplate {
@@ -319,15 +325,27 @@ function generateArticleHTML(
         else if (imgPos === 3) imgUrl = images.imagen_body3_url;
         else if (imgPos === 4) imgUrl = images.imagen_body4_url;
         
-        // Remove from available images so we don't reuse it
-        const index = imgUrl ? availableImages.indexOf(imgUrl) : -1;
-        if (index > -1) availableImages.splice(index, 1);
+        // Only use if not already assigned elsewhere in the article
+        if (imgUrl && sectionsHtml.includes(imgUrl)) {
+          imgUrl = null; // already used, will fall through to next available
+        } else if (imgUrl) {
+          // Remove from available images so we don't reuse it
+          const index = imgUrl ? availableImages.indexOf(imgUrl) : -1;
+          if (index > -1) availableImages.splice(index, 1);
+        }
       } 
       
-      // Fallback: If no valid explicit position or the image mapped wasn't found, 
-      // but we still have unused images in the pool, use the next available one.
-      if (!imgUrl && availableImages.length > 0) {
-        imgUrl = availableImages.shift() || null;
+      // Fallback: If no valid explicit position OR the mapped image wasn't found,
+      // check if any available image has already been assigned to this section
+      // and avoid reuse by checking if imgUrl is already used
+      if (!imgUrl) {
+        // Try to assign next available image, but skip if already used in this section
+        const nextAvailable = availableImages.find(url => !sectionsHtml.includes(url));
+        if (nextAvailable) {
+          imgUrl = nextAvailable;
+          const index = availableImages.indexOf(imgUrl);
+          if (index > -1) availableImages.splice(index, 1);
+        }
       }
 
       if (imgUrl) {
@@ -371,69 +389,82 @@ function generateArticleHTML(
               <p style="color: #999999; margin: 0; font-size: 0.95rem; line-height: 1.6; max-width: 85%;">Permite que tus clientes se prueben virtualmente las prendas antes de comprar. <strong style="color: #ccc;">Hasta 35% más conversión</strong> y <strong style="color: #ccc;">devoluciones reducidas</strong> en tiendas que ya usan Lookitry.</p>
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
-              <a href="/planes" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #FF5C3A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255,92,58,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255,92,58,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(255,92,58,0.3)'">Ver planes <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-              <a href="/planes" style="display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; color: #999; padding: 0.75rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.25)'; this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='#999'">Ver planes</a>
+              <a href="/planes" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #FF5C3A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255,92,58,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255,92,58,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(255,92,58,0.3)'">Comenzar ahora <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+              <a href="/planes#basic" style="display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; color: #999; padding: 0.75rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.25)'; this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='#999'">Ver plan básico</a>
             </div>
           </div>
         </div>`;
       }
 
-      // CTA Intermedio #2 - After Section #6 (antes del último tercio)
+// CTA Intermedio #2 - After Section #6 (antes del último tercio)
       if (i === 5) {
         sectionsHtml += `
-        <div style="border-top: 1px dashed #333; border-bottom: 1px dashed #333; padding: 1.5rem 0; margin: 2rem 0;">
+<div style="border-top: 1px dashed #333; border-bottom: 1px dashed #333; padding: 1.5rem 0; margin: 2rem 0;">
           <p style="margin: 0; font-size: 1.1rem; line-height: 1.6; text-align: center;">
-            <strong style="color: #FF5C3A;">Â¡No te quedes atrás en innovación!</strong> El futuro del retail online ya está aquí. Las marcas que implementaron <a href="/register" style="color: #fff; font-weight: bold; text-decoration: underline; text-decoration-color: #FF5C3A; text-underline-offset: 3px;">Lookitry.com</a> han visto cómo aumentan sus tickets promedio creando experiencias inolvidables. <a href="/planes" style="color: #FF5C3A; font-weight: 600; text-decoration: none;">Crear cuenta de demostración ahora â</a>
+            <strong style="color: #FF5C3A;">¡No te quedes atrás en innovación!</strong> El futuro del retail online ya está aquí. Las marcas que implementaron Lookitry han visto cómo aumentan sus tickets promedio creando experiencias inolvidables. <a href="/planes" style="color: #FF5C3A; font-weight: 600; text-decoration: none;">Comenzar ahora →</a>
           </p>
         </div>`;
       }
     }
   }
 
-  //FAQ Accordion
+  // ============================================================
+  // FAQ Section - Render after sections, before final CTA
+  // ============================================================
   let faqHtml = '';
   if (faqs && faqs.length > 0) {
-    faqHtml = '<div class="blog-faqs" data-blog-faq="accordion">';
+    faqHtml = '<div class="blog-faqs" data-blog-faq="accordion" style="margin: 3rem 0; border-top: 1px solid #333; padding-top: 2rem;">';
+    faqHtml += '<h2 style="color: #fff; font-size: 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">';
+    faqHtml += '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF5C3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+    faqHtml += 'Preguntas Frecuentes</h2>';
+    faqHtml += '<div style="display: flex; flex-direction: column; gap: 0.75rem;">';
     for (const faq of faqs) {
-      faqHtml += `<details>
-        <summary>${faq.question}</summary>
-        <div class="faq-answer">${faq.answer}</div>
+      faqHtml += `<details style="background: #1a1a1a; border: 1px solid #333; border-radius: 12px; overflow: hidden; transition: all 0.2s;">
+        <summary style="padding: 1.25rem 1.5rem; cursor: pointer; font-weight: 600; color: #fff; display: flex; justify-content: space-between; align-items: center; list-style: none;">
+          ${faq.question}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5C3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s; flex-shrink: 0;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </summary>
+        <div style="padding: 0 1.5rem 1.25rem 1.5rem; color: #999; line-height: 1.7; border-top: 1px solid #333; padding-top: 1rem; margin-top: 0.5rem;">
+          ${faq.answer}
+        </div>
       </details>`;
     }
-    faqHtml += '</div>';
+    faqHtml += '</div></div>';
   }
 
-  //CTA Final dinámico según cta_context.type
-  let ctaHtml = '';
-  if (cta_context && cta_context.type) {
-    const ctaTemplate = ctaTemplates[cta_context.type] || ctaTemplates.trial;
-    ctaHtml = `<div class="blog-cta" data-blog-cta="${cta_context.type}">
-      <h3>${ctaTemplate.title}</h3>
-      <a href="${ctaTemplate.button_url}" class="blog-cta-button">${ctaTemplate.button_text}</a>
-    </div>`;
-  }
-
-  //Meta tags
-  const tagsHtml = tags && tags.length > 0 ? (tags as string[]).map((t: string) => `<span class="blog-tag">${t}</span>`).join('') : '';
-  const readingTime = reading_time_minutes ? `<span class="blog-reading-time">${reading_time_minutes} min de lectura</span>` : '';
-
-  //Armar HTML completo
-  // NOTA: El hero image NO se incluye aquí - el frontend lo maneja con featured_image
-  // para evitar duplicación. El header solo tiene metadatos.
-  const articleHtml = `<article class="blog-article">
-  <header class="blog-header-only-meta">
-    <h1 class="blog-title-only">${title || ''}</h1>
-    ${excerpt ? `<p class="blog-excerpt">${excerpt}</p>` : ''}
-    <div class="blog-meta">${tagsHtml}${readingTime}</div>
-  </header>
-
-  <div class="blog-layout">
-    ${tocHtml}
-    <div class="blog-content">
-      ${sectionsHtml}
-      ${faqHtml}
-      ${ctaHtml}
+  // ============================================================
+  // Final CTA Block - Contextual based on cta_context
+  // ============================================================
+  const ctaBlock = `
+  <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); border: 1px solid rgba(255,92,58,0.3); border-radius: 20px; padding: 3rem; margin: 3rem 0; text-align: center; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(255,92,58,0.05), transparent 50%); pointer-events: none;"></div>
+    <div style="position: relative; z-index: 1;">
+      <h3 style="color: #fff; font-size: 1.8rem; margin-bottom: 1rem; font-weight: 800;">${cta_context?.title || '¿Quieres reducir devoluciones en tu tienda?'}</h3>
+      <p style="color: #999; font-size: 1.05rem; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;">${cta_context?.subtitle || 'Permite que tus clientes se prueben virtualmente las prendas antes de comprar. Hasta 35% más conversión.'}</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; align-items: center;">
+        <a href="${cta_context?.primary_cta_url || '/trial-checkout'}" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #FF5C3A; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 700; font-size: 1rem; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 20px rgba(255,92,58,0.4);">
+          ${cta_context?.primary_cta_text || 'Comenzar prueba gratis'}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="${cta_context?.secondary_cta_url || '/planes'}" style="display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; color: #999; padding: 1rem 1.5rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem; text-decoration: none; border: 1px solid #333; transition: all 0.2s;">
+          ${cta_context?.secondary_cta_text || 'Ver precios'}
+        </a>
+      </div>
     </div>
+  </div>`;
+
+  const articleHtml = `
+<article class="blog-article">
+  ${heroImageHtml}
+  <div class="blog-content">
+    ${tocHtml}
+    <div class="blog-header">
+      <h1>${title}</h1>
+      ${excerpt ? `<p style="color: #999; font-size: 1.1rem; line-height: 1.6; margin: 1rem 0 1.5rem 0;">${excerpt}</p>` : ''}
+    </div>
+    ${sectionsHtml}
+    ${faqHtml}
+    ${ctaBlock}
   </div>
 </article>`;
 
@@ -458,16 +489,17 @@ async function getCtaTemplates(): Promise<Record<string, CtaTemplate>> {
 
   //Defaults
   return {
-    trial: { title: 'Â¿Listo para probar Lookitry?', button_text: 'Comenzar trial', button_url: '/trial' },
-    features: { title: 'Â¿Quieres más conversiones?', button_text: 'Ver demo', button_url: '/demo' },
+    trial: { title: 'Â¿Listo para probar Lookitry?', button_text: 'Comenzar ahora', button_url: '/planes' },
+    features: { title: 'Â¿Quieres más conversiones?', button_text: 'Ver planes', button_url: '/planes' },
     pricing: { title: 'Elige tu plan', button_text: 'Ver precios', button_url: '/planes' },
-    lead_magnet: { title: 'Descarga la guía', button_text: 'Descargar', button_url: '/guia-descarga' },
+    lead_magnet: { title: 'Descarga la guía', button_text: 'Descargar', button_url: '/planes' },
   };
 }
 
 /**
  * Auto-ensambla y publica el artículo cuando todas las imágenes están listas.
  * Se llama automáticamente después de cada upload de imagen.
+ * Usa upsert para ser idempotente - si el artículo ya existe, lo actualiza.
  */
 async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean; message: string; slug?: string }> {
   try {
@@ -500,46 +532,35 @@ async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean;
       return { success: false, message: 'Hero image aún no está lista' };
     }
 
-    // Body images son opcionales - publicamos con las que haya disponibles
-    // (generateArticleHTML tiene fallback si no hay body images)
-
-    // 4. Si ya existe blog para este topic, verificar si tiene body images
+    // 4. Si ya existe blog para este topic, actualizarlo en lugar de recrear
     const { data: existingBlog } = await supabaseAdmin
       .from('blogs')
-      .select('slug, content')
+      .select('id, slug')
       .eq('topic_id', topicId)
       .maybeSingle();
-
-    if (existingBlog) {
-      // Verificar si el HTML ya tiene body images
-      const currentContent = existingBlog.content || '';
-      const hasBodyInHtml = currentContent.includes('blog-image') || 
-        (images.imagen_body1_url && currentContent.includes(images.imagen_body1_url)) ||
-        (images.imagen_body2_url && currentContent.includes(images.imagen_body2_url)) ||
-        (images.imagen_body3_url && currentContent.includes(images.imagen_body3_url)) ||
-        (images.imagen_body4_url && currentContent.includes(images.imagen_body4_url));
-      
-      if (hasBodyInHtml) {
-        return { success: true, message: 'Ya publicado con body images' };
-      }
-      
-      // Si no tiene body images, eliminar para recrear
-      console.log(`[Blog AutoAssemble] Artículo existe sin body images. Eliminando para recrear.`);
-      await supabaseAdmin.from('blogs').delete().eq('topic_id', topicId);
-    }
 
     // 5. Obtener CTA templates
     const ctaTemplates = await getCtaTemplates();
 
-    // 6. Generar HTML con las imágenes disponibles (usa pool para body images)
+    // 6. Obtener posts recientes para interlinking (SEO)
+    const { data: recentPostsData } = await supabaseAdmin
+      .from('blogs')
+      .select('title, slug')
+      .eq('status', 'published')
+      .neq('topic_id', topicId)
+      .order('created_at', { ascending: false })
+      .limit(3);
+    const recentPosts = (recentPostsData as InterlinkingPost[]) || [];
+
+    // 7. Generar HTML con las imágenes disponibles (usa pool para body images)
     const finalHtml = generateArticleHTML(
       draft as BlogDraftArticle,
       images as BlogTopicImages,
       ctaTemplates,
-      []
+      recentPosts
     );
 
-    // 7. Obtener categoría
+    // 8. Obtener categoría
     let categoryId = null;
     const targetSlug = (draft as BlogDraftArticle).category_slug || 'ia';
     const { data: cat } = await supabaseAdmin
@@ -549,11 +570,10 @@ async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean;
       .maybeSingle();
     if (cat) categoryId = cat.id;
 
-    // 8. Crear slug único
-    const articleSlug = await buildUniqueBlogSlug((draft as BlogDraftArticle).title || `article-${topicId}`);
+    // 9. UPSERT: usar topic_id como clave única para evitar duplicados
+    const articleSlug = existingBlog?.slug || await buildUniqueBlogSlug((draft as BlogDraftArticle).title || `article-${topicId}`);
 
-    // 9. Insertar artículo
-    const insertData = {
+    const upsertData = {
       title: (draft as BlogDraftArticle).title,
       content: finalHtml,
       excerpt: (draft as BlogDraftArticle).excerpt,
@@ -565,12 +585,13 @@ async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean;
       status: 'published',
       slug: articleSlug,
       topic_id: topicId,
-      published_at: new Date().toISOString(),
+      published_at: existingBlog ? (existingBlog as any).published_at || new Date().toISOString() : new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     const { data: publishedPost, error: publishError } = await supabaseAdmin
       .from('blogs')
-      .insert(insertData)
+      .upsert(upsertData, { onConflict: 'topic_id' })
       .select()
       .maybeSingle();
 
@@ -585,9 +606,9 @@ async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean;
       .update({ status: 'published', updated_at: new Date().toISOString() })
       .eq('id', topicId);
 
-    console.log(`[Blog AutoAssemble] Artículo publicado para topic ${topicId}: ${articleSlug}`);
+    console.log(`[Blog AutoAssemble] Artículo ${existingBlog ? 'actualizado' : 'publicado'} para topic ${topicId}: ${articleSlug}`);
 
-    return { success: true, message: 'Publicado exitosamente', slug: articleSlug };
+    return { success: true, message: existingBlog ? 'Artículo actualizado' : 'Publicado exitosamente', slug: articleSlug };
   } catch (error: any) {
     console.error(`[Blog AutoAssemble] Error:`, error);
     return { success: false, message: sanitizeError(error, 'Error en auto-assemble') };
