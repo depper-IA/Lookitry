@@ -104,10 +104,11 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
   }, [isBlocked]);
 
   if (loading) {
+    const brandColor = data?.brand?.primary_color || '#FF5C3A';
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 border-4 border-[#FF5C3A] border-t-transparent rounded-full animate-spin" />
-        <p className="text-[#FF5C3A] font-bold tracking-widest uppercase text-xs animate-pulse">Cargando experiencia...</p>
+        <div className="w-12 h-12 border-4 rounded-full animate-spin" style={{ borderColor: brandColor, borderTopColor: 'transparent' }} />
+        <p className="font-bold tracking-widest uppercase text-xs animate-pulse" style={{ color: brandColor }}>Cargando experiencia...</p>
       </div>
     );
   }

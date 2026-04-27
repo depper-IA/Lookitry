@@ -82,27 +82,31 @@ function TruckIcon({ className }: { className?: string }) {
 // ── TrustBar Component ────────────────────────────────────────────────────────
 
 function ClassicTrustBar({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
-  const rating = brand.rating ?? 4.9;
+  const rating = brand.rating ?? 0;
   const reviews = brand.total_reviews ?? 0;
+  const hasRating = rating > 0;
+  const hasReviews = reviews > 0;
+
+  // Solo mostrar stats que vengas de DB (no fake data)
   const items = [
-    { value: rating.toFixed(1), label: 'Rating', icon: 'star' },
-    { value: reviews > 0 ? `+${reviews}` : '+500', label: 'Reviews', icon: 'users' },
-    { value: '~12s', label: 'Procesamiento', icon: 'zap' },
-    { value: '100%', label: 'IA', icon: 'ai' },
+    ...(hasRating ? [{ value: rating.toFixed(1), label: 'Rating', icon: 'star' as const }] : []),
+    ...(hasReviews ? [{ value: `+${reviews}`, label: 'Reviews', icon: 'users' as const }] : []),
   ];
+
+  // Si no hay datos reales, no mostrar TrustBar
+  if (items.length === 0) return null;
 
   return (
     <div className="flex border-b overflow-x-auto no-scrollbar" style={{ backgroundColor: '#ffffff', borderColor: '#f3f4f6' }}>
       {items.map((item, i) => (
-        <div 
-          key={i} 
+        <div
+          key={i}
           className="flex-1 min-w-[100px] flex flex-col items-center justify-center py-5 px-4 text-center border-r last:border-r-0"
           style={{ borderColor: '#f3f4f6' }}
         >
           <div className="flex items-center gap-1.5 mb-1">
             <span className="text-base md:text-xl font-black" style={{ color: '#111111' }}>{item.value}</span>
             {item.icon === 'star' && <StarIcon className="w-4 h-4 text-yellow-400" filled />}
-            {item.icon === 'zap' && <SparklesIcon className="w-4 h-4" style={{ color: primaryColor }} />}
           </div>
           <span className="text-[10px] md:text-xs font-bold uppercase tracking-wide" style={{ color: '#6b7280' }}>{item.label}</span>
         </div>
@@ -367,12 +371,20 @@ function ClassicProducts({ products, brand, primaryColor, secondaryColor, ctaTex
   const theme = useLandingTheme(brand);
 
   useEffect(() => {
+    // products es undefined durante la carga inicial
+    // products.length === 0 puede ser array vacío real o datos no cargados aún
     if (products && products.length > 0) {
       setIsLoading(false);
     }
   }, [products]);
 
-  if (!products.length) return null;
+  // Si no hay productos cargados (undefined o array vacío), no renderizar nada
+  // Esto evita both: el skeleton que nunca aparece y el estado vacío sin datos
+  if (!products || products.length === 0) {
+    // Opcional: podrías retornar un estado vacío con mensaje aquí
+    // Pero por ahora retornamos null para no mostrar nada hasta que carguen
+    return null;
+  }
 
   return (
     <section ref={sectionRef} id="productos" className={`py-20 px-6 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ backgroundColor: theme.productsBg }}>
@@ -386,7 +398,7 @@ function ClassicProducts({ products, brand, primaryColor, secondaryColor, ctaTex
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {isLoading ? (
             <>
-              {[0,1,2].map(i => <ProductSkeleton key={i} primaryColor={primaryColor} />)}
+              {[0,1,2,3,4,5].map(i => <ProductSkeleton key={i} primaryColor={primaryColor} />)}
             </>
           ) : (
             products.map(p => {
