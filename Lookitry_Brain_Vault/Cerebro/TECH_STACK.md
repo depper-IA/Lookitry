@@ -600,7 +600,8 @@ Motor de reglas de prompt por categoría de producto con 15+ categorías:
 - Cada categoría tiene reglas de `replacement` (reemplazar prenda) o `keep` (mantener prenda existente).
 
 ### 6.3 RAG (Retrieval-Augmented Generation)
-- **Feedback de usuarios** se almacena con embeddings pgvector (768-dim) en tabla `generation_feedback`.
+- **Feedback de usuarios** se almacena con embeddings pgvector (1536-dim) en tabla `generation_feedback`.
+- **Workflow**: `j5EG0OcxMMSpzxVu` → `/webhook/feedback-embedding` (n8n → OpenRouter → Supabase)
 - **Project Knowledge (Segundo Cerebro)**: Documentación core indexada en `project_knowledge` con embeddings pgvector (768-dim).
 - **Archivos indexados**: PRD.md, DESIGN.md, TECH_STACK.md, REGLAS_IMPORTANTES.md, CHANGELOG.md (recientes).
 - **Flujo de indexación**: n8n detecta cambios en commits → genera embeddings → upsert a Supabase.
@@ -835,14 +836,7 @@ El sistema de blog automatizado está refactorizado en **3 workflows independien
   - `Cerebro/Estado/active_agents.json` - Estado en tiempo real
   - `Cerebro/Protocolos/AGENT_STATUS_DASHBOARD.md` - Dashboard
   - `Cerebro/Protocolos/DELEGATION_PROTOCOL.md` - Protocolo de delegación
-- **Agentes:** Sammantha (orquestadora), Pixel (frontend), Kira (quality), Nadia (DB/IA), Marlo (growth), Zephyr (infra), Lina (docs), Cipher (security), Rebecca (UGC), Leo (trading)
-
-### 7.11 Lookitry Social OS
-- **GCP Vertex AI:** `imagen-3.0-generate-001` para generación de imágenes
-- **Autenticación:** JWT + OAuth2 token exchange
-- **SonAuto AI:** Música para TikTok (~$0.02/canción)
-- **Buffer MCP:** Programación de posts en redes sociales
-- **Costo por post:** ~$0.20 (1 imagen GCP + 1 canción SonAuto)
+- **Agentes:** Sammantha (orquestadora), Pixel (frontend), Kira (quality), Nadia (DB/IA), Marlo (growth), Zephyr (infra), Lina (docs), Cipher (security)
 
 ---
 

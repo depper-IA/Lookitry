@@ -43,9 +43,13 @@ n8n actua como el motor de orquestacion de flujos de IA y tareas asincronas. El 
 - **URL**: `/webhook/project-knowledge-rag`
 - **Funcion**: Sincroniza documentacion del proyecto para embeddings RAG
 
-### 8. Feedback Embedding
-- **Trigger**: Asincrono via n8n
-- **Funcion**: Genera embeddings de feedback para el motor RAG
+### 8. Feedback Embedding RAG
+- **Workflow ID**: `j5EG0OcxMMSpzxVu`
+- **Webhook**: `/webhook/feedback-embedding`
+- **Trigger**: Disparado por `feedback.service.ts` → `triggerEmbeddingAsync()` de forma asíncrona
+- **Funcion**: Genera embedding del feedback y lo guarda en `generation_feedback.embedding`
+- **Modelo**: OpenAI `text-embedding-3-small` (1536 dims) via OpenRouter
+- **Flujo**: `feedback_id` → prepara texto → embedding → upsert a Supabase pgvector
 
 ### 9. NotebookLM Drive Sync
 - **URL**: `/webhook/notebooklm-sync`
