@@ -2,6 +2,8 @@ import { Response } from 'express';
 
 import { BrandsService, UpdateBrandDto } from '../services/brands.service';
 
+import { AuthService } from '../services/auth.service';
+
 import { AuthRequest } from '../middleware/auth';
 
 import { notificationPreferencesService } from '../services/notificationPreferences.service';
@@ -25,6 +27,7 @@ import { buildLegalDataExport, createLegalRequest, getBrandSocialLinks, getLegal
 
 
 const brandsService = new BrandsService();
+const authService = new AuthService();
 
 
 
@@ -48,7 +51,7 @@ export class BrandsController {
 
 
 
-      const brand = await brandsService.getBrandById(req.brand.id);
+      const brand = await authService.getBrandById(req.brand.id);
       console.log('[DEBUG getMe] req.brand.id:', req.brand.id);
       console.log('[DEBUG getMe] brand encontrado:', brand);
 
