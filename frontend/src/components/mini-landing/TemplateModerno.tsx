@@ -52,7 +52,7 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
             <BrandLogo
               src={brand.logo_light || brand.logo}
               alt={brand.name}
-              className="h-6 md:h-8 w-auto object-contain"
+              className="h-10 md:h-12 w-auto max-w-[140px] object-contain shrink-0"
             />
           )}
         </div>
@@ -67,7 +67,7 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
           {entries.map(([platform, url]) => (
             <a key={platform} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Síguenos en ${platform}`}
               className="w-7 h-7 rounded-lg border flex items-center justify-center transition-all hover:scale-110 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2"
-              style={{ borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>
+              style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#ffffff' }}>
               {socialIcons[platform.toLowerCase()] ?? null}
             </a>
           ))}

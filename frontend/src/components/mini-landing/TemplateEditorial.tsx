@@ -118,11 +118,11 @@ function EditorialProductCard({ product, selected, primaryColor, onClick }: { pr
       </div>
       <div className="px-1 md:px-2 space-y-0.5 md:space-y-1">
         <div className="flex justify-between items-start gap-2">
-          <h3 className="text-[10px] md:text-sm font-black text-gray-900 uppercase tracking-tight truncate flex-1">{product.name}</h3>
-          {product.price != null && <p className="text-[10px] md:text-sm font-black text-[var(--secondary)]">${product.price.toLocaleString('es-CO')}</p>}
+          <h3 className="text-xs md:text-sm font-bold text-gray-900 uppercase tracking-tight truncate flex-1">{product.name}</h3>
+          {product.price != null && <p className="text-xs md:text-sm font-bold text-[var(--secondary)]">${product.price.toLocaleString('es-CO')}</p>}
         </div>
-        <p className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest">{product.category}</p>
-        {product.short_description && <p className="text-[8px] md:text-[9px] text-gray-500 line-clamp-1 mt-1">{product.short_description}</p>}
+        <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-widest">{product.category}</p>
+        {product.short_description && <p className="text-[10px] md:text-xs text-gray-600 line-clamp-1 mt-1">{product.short_description}</p>}
         {product.attributes && Object.keys(product.attributes).length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
             {Object.entries(product.attributes).slice(0, 2).map(([key, value]) => {
@@ -225,9 +225,7 @@ function EditorialAbout({ brand, primaryColor }: { brand: BrandData; primaryColo
   return (
     <section className="py-6 md:py-16">
       <div className="p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden shadow-2xl" style={{ backgroundColor: bgColor }}>
-        <div className="absolute top-0 right-0 p-12 opacity-10">
-          <SparklesIcon className="w-32 h-32 md:w-48 md:h-48" />
-        </div>
+        
         <div className="relative z-10 space-y-4 md:space-y-6 text-center md:text-left">
           <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.5em]" style={{ color: theme.muted }}>Nuestra Historia</span>
           <p className="text-base md:text-3xl leading-tight font-black italic uppercase tracking-tighter max-w-4xl" style={{ color: theme.text }}>
@@ -258,11 +256,11 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
   const socialLinks = brand.social_links || {};
   const entries = getVisibleSocialEntries(socialLinks);
   const socialIcons: Record<string, React.ReactNode> = {
-    instagram: <InstagramIcon className="w-3.5 h-3.5" />,
-    facebook:  <FacebookIcon  className="w-3.5 h-3.5" />,
-    tiktok:    <TikTokIcon    className="w-3.5 h-3.5" />,
-    youtube:   <YouTubeIcon   className="w-3.5 h-3.5" />,
-    x:         <XIcon         className="w-3.5 h-3.5" />,
+    instagram: <InstagramIcon className="w-5 h-5" />,
+    facebook:  <FacebookIcon  className="w-5 h-5" />,
+    tiktok:    <TikTokIcon    className="w-5 h-5" />,
+    youtube:   <YouTubeIcon   className="w-5 h-5" />,
+    x:         <XIcon         className="w-5 h-5" />,
   };
 
   const handleProductClick = (id: string) => {
@@ -333,7 +331,11 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
           {/* Logo / Nombre en Footer */}
           <div className="flex flex-col items-center gap-4">
             {brand.logo ? (
-              <img src={brand.logo_light || brand.logo} alt={brand.name} className="h-12 w-auto object-contain opacity-90 mb-2 grayscale brightness-200" />
+              <BrandLogo 
+              src={brand.logo_light || brand.logo} 
+              alt={brand.name} 
+              className="h-12 w-auto max-w-[120px] object-contain opacity-90 mb-2" 
+            />
             ) : (
               <div className="h-12 w-12 rounded-2xl flex items-center justify-center text-white font-black text-xl mb-2" style={{ backgroundColor: primary }}>
                 {brand.name?.slice(0, 2).toUpperCase()}
