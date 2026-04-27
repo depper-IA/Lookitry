@@ -132,23 +132,7 @@ VESTIDO: {
 
       'CRITICAL — DO NOT ALTER BODY SHAPE: Keep the person\'s face, hair, skin tone, body SHAPE, waist size, hip size, shoulder width, arm thickness, leg thickness, overall silhouette, pose, and background IDENTICAL to the original photo. ONLY change the clothing — do NOT slim, thicken, curve, waist-train, or reshape the body in any way.',
 
-  },
-
-  DRESS: {
-
-    replacement:
-
-      'The product is a DRESS that covers the entire body from shoulders to knees or ankles. A dress is a ONE-PIECE garment â it replaces EVERYTHING the person is wearing.',
-
-    replace:
-
-      'CRITICAL â FULL OUTFIT REMOVAL REQUIRED: (1) Remove the jacket, blazer, cardigan, or any outer layer. (2) Remove the top, shirt, blouse, or t-shirt underneath. (3) Remove the pants, jeans, leggings, or skirt. (4) Remove the shoes and footwear. The dress is the ONLY garment visible on the body. Do NOT leave any original clothing item visible under or over the dress.',
-
-    keep:
-
-      'KEEP the person\'s face, hair, skin tone, body proportions, pose, and background IDENTICAL to the original photo. Do NOT change anything about the person except their clothing.',
-
-  },
+},
 
 
 
