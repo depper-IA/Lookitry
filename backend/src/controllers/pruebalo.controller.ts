@@ -300,6 +300,8 @@ export class PruebaloController {
 
         slogan: (brand as any).slogan ?? null,
 
+        landing_font: (brand as any).landing_font ?? null,
+
         // Configuración del modal (Desde settings globales o marca)
 
         modal_title: (brand as any).modal_title || (paymentSettings as any).landing_modal_title || 'Vista previa agotada',
