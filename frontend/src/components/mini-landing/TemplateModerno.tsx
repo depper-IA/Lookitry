@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
-import { 
-  BrandData, 
-  ProductData, 
-  WhatsAppFAB, 
-  BrandLogo, 
-  ProductImage, 
-  ProductBadge, 
-  CoverImage, 
+import {
+  BrandData,
+  ProductData,
+  WhatsAppFAB,
+  BrandLogo,
+  ProductImage,
+  ProductBadge,
+  CoverImage,
   ProductSkeleton,
   getCoverPresentation,
   getVisibleSocialEntries,
@@ -19,10 +19,10 @@ import {
   getSmartBorderColor,
   useContrastTheme,
   useLandingTheme,
-  YouTubeIcon, 
-  XIcon, 
-  InstagramIcon, 
-  FacebookIcon, 
+  YouTubeIcon,
+  XIcon,
+  InstagramIcon,
+  FacebookIcon,
   TikTokIcon,
   SparklesIcon
 } from './shared';
@@ -33,17 +33,17 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
   const entries = getVisibleSocialEntries(brand.social_links || {});
   const socialIcons: Record<string, React.ReactNode> = {
     instagram: <InstagramIcon className="w-3.5 h-3.5" />,
-    facebook:  <FacebookIcon  className="w-3.5 h-3.5" />,
-    tiktok:    <TikTokIcon    className="w-3.5 h-3.5" />,
-    youtube:   <YouTubeIcon   className="w-3.5 h-3.5" />,
-    x:         <XIcon         className="w-3.5 h-3.5" />,
+    facebook: <FacebookIcon className="w-3.5 h-3.5" />,
+    tiktok: <TikTokIcon className="w-3.5 h-3.5" />,
+    youtube: <YouTubeIcon className="w-3.5 h-3.5" />,
+    x: <XIcon className="w-3.5 h-3.5" />,
   };
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
   const secondary = brand.social_links?._landing_secondary || primary;
   return (
-    <nav className="sticky top-0 z-50 h-16 md:h-20 flex items-center justify-between px-4 md:px-8 gap-4 shadow-xl" 
-      style={{ 
-        backgroundColor: brand.header_color || '#000000', 
+    <nav className="sticky top-0 z-50 h-16 md:h-20 flex items-center justify-between px-4 md:px-8 gap-4 shadow-xl"
+      style={{
+        backgroundColor: brand.header_color || '#000000',
         borderBottom: '1px solid rgba(255,255,255,0.05)'
       }}>
       <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -108,7 +108,6 @@ function ProbadorHero({ brand, onScrollDown, isPreview = false }: { brand: Brand
 }
 
 function ProbadorTrustBar({ brand }: { brand: BrandData }) {
-  const theme = useLandingTheme(brand);
   const rating = brand.rating ?? 0;
   const reviews = brand.total_reviews ?? 0;
   const hasRating = rating > 0;
@@ -158,43 +157,43 @@ function ProbadorProducts({ products, primaryColor, secondaryColor, ctaText, onP
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {isLoading ? (
             <>
-              {[0,1,2,3,4,5].map(i => <ProductSkeleton key={i} primaryColor={primaryColor} />)}
+              {[0, 1, 2, 3, 4, 5].map(i => <ProductSkeleton key={i} primaryColor={primaryColor} />)}
             </>
           ) : (
             products.map(p => (
               <button key={p.id} onClick={() => onProductClick(p.id)} aria-label={`Seleccionar ${p.name}`}
                 className="text-left group relative rounded-3xl overflow-hidden border transition-all duration-300 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2"
-              style={{ backgroundColor: '#ffffff', borderColor: selectedId === p.id ? primaryColor : '#e5e7eb', borderWidth: selectedId === p.id ? 2 : 1 }}>
-              <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: theme.surface }}>
-                <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
-                {p.badge && <div className="absolute top-3 left-3 scale-90 origin-top-left"><ProductBadge badge={p.badge} /></div>}
-                <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${selectedId === p.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                   <div className="px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
+                style={{ backgroundColor: '#ffffff', borderColor: selectedId === p.id ? primaryColor : '#e5e7eb', borderWidth: selectedId === p.id ? 2 : 1 }}>
+                <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: theme.surface }}>
+                  <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                  {p.badge && <div className="absolute top-3 left-3 scale-90 origin-top-left"><ProductBadge badge={p.badge} /></div>}
+                  <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${selectedId === p.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                    <div className="px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
                       {selectedId === p.id ? 'Seleccionado' : (ctaText || 'Probar')}
                     </div>
-                 </div>
-              </div>
-              <div className="p-5">
-                <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: theme.muted }}>{p.category}</p>
-                <h3 className="text-sm font-black uppercase tracking-tight line-clamp-1 transition-colors" style={{ color: theme.text }}>{p.name}</h3>
-                {p.short_description && <p className="text-[10px] mt-1 line-clamp-2 leading-relaxed" style={{ color: theme.muted }}>{p.short_description}</p>}
-                {p.attributes && Object.keys(p.attributes).length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {Object.entries(p.attributes).slice(0, 2).map(([key, value]) => {
-                      if (!value || (Array.isArray(value) && value.length === 0)) return null;
-                      const displayValue = Array.isArray(value) ? value.slice(0, 2).join(', ') : String(value);
-                      return (
-                        <span key={key} className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
-                          {displayValue}
-                        </span>
-                      );
-                    })}
                   </div>
-                )}
-                {p.price != null && <p className="text-base font-black mt-2" style={{ color: theme.text }}>${p.price.toLocaleString('es-CO')}</p>}
-              </div>
-            </button>
-          )))}
+                </div>
+                <div className="p-5">
+                  <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: theme.muted }}>{p.category}</p>
+                  <h3 className="text-sm font-black uppercase tracking-tight line-clamp-1 transition-colors" style={{ color: theme.text }}>{p.name}</h3>
+                  {p.short_description && <p className="text-[10px] mt-1 line-clamp-2 leading-relaxed" style={{ color: theme.muted }}>{p.short_description}</p>}
+                  {p.attributes && Object.keys(p.attributes).length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {Object.entries(p.attributes).slice(0, 2).map(([key, value]) => {
+                        if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                        const displayValue = Array.isArray(value) ? value.slice(0, 2).join(', ') : String(value);
+                        return (
+                          <span key={key} className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
+                            {displayValue}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {p.price != null && <p className="text-base font-black mt-2" style={{ color: theme.text }}>${p.price.toLocaleString('es-CO')}</p>}
+                </div>
+              </button>
+            )))}
         </div>
       </div>
     </section>
@@ -251,9 +250,9 @@ function ProbadorInfo({ brand, secondaryColor }: { brand: BrandData; secondaryCo
 }
 
 export function TemplateModerno({ brandSlug, brand, products, footerUrl, isPreview = false }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string; isPreview?: boolean }) {
-  const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
-  const secondary = brand.social_links?._landing_secondary || primary;
   const theme = useLandingTheme(brand);
+  const primary = theme.primary;
+  const secondary = theme.secondary;
   const [selectedId, setSelectedId] = useState<string | null>(products && products.length > 0 ? products[0].id : null);
 
   const scrollToTryOn = () => {
@@ -273,7 +272,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl, isPrevi
       <ProbadorHero brand={brand} onScrollDown={() => document.getElementById('probador-products')?.scrollIntoView({ behavior: 'smooth' })} isPreview={isPreview} />
       <ProbadorTrustBar brand={brand} />
       <ProbadorProducts products={products} primaryColor={primary} secondaryColor={secondary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} selectedId={selectedId} />
-      
+
       <section id="probador-tryon" className="py-16 px-4 md:px-6" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10 space-y-3">
