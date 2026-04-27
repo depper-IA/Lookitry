@@ -146,7 +146,7 @@ function ClassicHeader({ brand, primaryColor, secondaryColor, onScrollDown }: { 
       <div className="max-w-6xl mx-auto h-full px-4 md:px-8 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           {brand.logo ? (
-            <BrandLogo src={logoSrc} alt={brand.name} className="h-8 md:h-10 w-auto object-contain shrink-0" />
+            <BrandLogo src={logoSrc} alt={brand.name} className="h-10 md:h-12 w-auto max-w-[140px] object-contain shrink-0" />
           ) : (
             brand.show_brand_name !== false ? (
               <span className="font-black text-lg md:text-xl uppercase tracking-tighter truncate" style={{ color: headerIsDark ? '#ffffff' : primaryColor }}>
@@ -249,7 +249,9 @@ function ClassicHero({ brand, primaryColor, secondaryColor, onScrollDown, isPrev
   const bgColor = brand.cover_bg_color || '#f9f8f6';
   const isBgDark = isDarkColor(bgColor);
   const textColor = isBgDark ? '#ffffff' : '#111111';
-  const mutedColor = getSmartMutedColor(bgColor);
+  const mutedColor = bgColor && isDarkColor(bgColor) 
+    ? 'rgba(255,255,255,0.85)' // más opaco para fondos oscuros
+    : '#6b7280'; // gray-500 para fondos claros
 
   return (
     <section 
@@ -292,13 +294,26 @@ function ClassicHero({ brand, primaryColor, secondaryColor, onScrollDown, isPrev
           
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-500">
             <button onClick={onScrollDown} className="w-full sm:w-auto px-10 py-4 rounded-xl text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:brightness-110 active:scale-95 transition-all" style={{ backgroundColor: primaryColor }}>Ver Productos</button>
-            <div className="flex -space-x-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-md" />
-              ))}
-              <div className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold shadow-md" style={{ backgroundColor: isBgDark ? 'rgba(255,255,255,0.15)' : '#f0edea', color: mutedColor }}>
-                +500
-              </div>
+            <div className="flex items-center gap-1.5">
+              {brand.total_reviews ? (
+                <>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-rose-500 shadow-lg">
+                    <StarIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-sm font-black" style={{ color: textColor }}>
+                    +{(brand.total_reviews as number).toLocaleString()}
+                  </span>
+                </>
+              ) : (
+                <div className="flex -space-x-3">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-md" />
+                  ))}
+                  <div className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold shadow-md" style={{ backgroundColor: isBgDark ? 'rgba(255,255,255,0.15)' : '#f0edea', color: mutedColor }}>
+                    +500
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -584,9 +599,6 @@ function ClassicAbout({ brand, primaryColor }: { brand: BrandData; primaryColor:
   return (
     <section className="py-12 md:py-20 px-6">
       <div className="max-w-4xl mx-auto p-8 md:p-16 rounded-[2.5rem] md:rounded-[3.5rem] relative overflow-hidden shadow-2xl" style={{ backgroundColor: bgColor }}>
-        <div className="absolute top-0 right-0 p-8 md:p-12 opacity-10">
-          <SparklesIcon className="w-24 h-24 md:w-32 md:h-32" />
-        </div>
         <div className="relative z-10 space-y-6 text-center md:text-left">
           <span className="text-xs font-bold uppercase tracking-[0.5em]" style={{ color: theme.muted }}>Nuestra Historia</span>
           <p className="text-xl md:text-3xl leading-tight font-black italic uppercase tracking-tighter max-w-3xl" style={{ color: theme.text }}>
