@@ -737,7 +737,8 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPrevi
 
   return (
     <div 
-      className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500 ${isPreview ? 'p-0 h-auto' : ''}`} 
+      className={`min-h-screen bg-white flex flex-col // TODO: landing_font from brand config - pending API support
+      ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500 ${isPreview ? 'p-0 h-auto' : ''}`} 
       style={{ 
         '--primary': primary, 
         '--secondary': secondary, 
