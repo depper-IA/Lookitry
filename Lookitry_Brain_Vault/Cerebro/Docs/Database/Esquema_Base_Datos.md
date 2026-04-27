@@ -446,3 +446,44 @@ Log de alertas de uso.
 - `brand_id`: uuid (FK -> brands)
 - `threshold`: int (80 o 100)
 - `created_at`: timestamptz
+
+---
+
+## Email Marketing (Brevo)
+
+### email_campaigns
+Gestión de campañas de email.
+- `id`: uuid (PK)
+- `name`: text
+- `subject`: text
+- `html_template`: text
+- `status`: enum (DRAFT, SCHEDULED, PROCESSING, COMPLETED, FAILED)
+- `filter_type`: text (all_brands, plan_specific, usage_threshold)
+- `filter_config`: jsonb
+- `scheduled_at`: timestamptz
+- `sent_count`: integer DEFAULT 0
+- `opened_count`: integer DEFAULT 0
+- `clicked_count`: integer DEFAULT 0
+- `failed_count`: integer DEFAULT 0
+- `created_by`: uuid (FK -> admins)
+- `created_at`, `updated_at`: timestamptz
+
+### email_campaign_recipients
+Receptores de campañas.
+- `id`: uuid (PK)
+- `campaign_id`: uuid (FK -> email_campaigns)
+- `brand_id`: uuid (FK -> brands)
+- `email`: text
+- `status`: enum (PENDING, SENT, OPENED, CLICKED, FAILED, UNSUBSCRIBED)
+- `sent_at`: timestamptz
+- `opened_at`: timestamptz
+- `clicked_at`: timestamptz
+- `created_at`: timestamptz
+
+---
+
+## Campos de Seguridad (brands)
+
+Campos adicionales para account lockout implementados en Abril 2026:
+- `failed_login_attempts`: integer DEFAULT 0 (Contador de intentos fallidos)
+- `locked_until`: timestamptz (Timestamp hasta el cual la cuenta está bloqueada)

@@ -60,11 +60,11 @@
 ## 3. Funcionalidades Principales
 
 ### 3.1 Para Marcas (Usuarios)
-- Registro/Login (JWT propio, Turnstile, Google OAuth).
+- Registro/Login (JWT propio, Turnstile, Google OAuth, account lockout).
 - Dashboard: Stats, CRUD productos, Historial, Subscription, Analytics, Usage.
-- Widget (Try-On) con IA.
-- Pagos: Wompi (COP), PayPal (USD), cupones de descuento.
-- Editor de mini-landing (4 templates: Classic, Editorial, Moderno, Bare).
+- Widget (Try-On) con IA y deduplicación por fingerprint.
+- Pagos: Wompi (COP), PayPal (USD), cupones de descuento, add-on credits.
+- Editor de mini-landing (5 templates: Classic, Editorial, Moderno, Bare, ModernSidebar).
 - Programa de referidos (código único, reward de 500 créditos extra para el referente).
 - Gestión de perfil y configuración de notificaciones (email, WhatsApp, alertas de uso).
 - Historial de pagos y solicitudes de cambio de plan.
@@ -81,13 +81,13 @@
 
 ### 3.3 Para Administradores
 - Panel Admin: Gestión global de marcas, pagos, precios y promociones.
-- Blog Nativo (CRUD completo, categorías, settings, generación vía n8n).
+- Blog Nativo (CRUD completo, categorías, settings, generación automática vía n8n).
 - Dashboard de Revenue (estadísticas de ingresos, historial de pagos).
 - Unit Economics (métricas de rentabilidad).
 - Risk Dashboard (detección de fraude, abuso).
 - Mission Control (dashboard central de métricas).
-- Audit Log (registro de acciones administrativas).
-- Security Dashboard (monitoreo de seguridad).
+- Audit Log (registro de acciones administrativas + login audit).
+- Security Dashboard (monitoreo de seguridad, account lockout, rate limiting).
 - Gestión de cupones (crear, editar, eliminar).
 - Gestión de campañas de trial.
 - Moderación de reviews/feedback.
@@ -97,12 +97,43 @@
 - Monitoreo de créditos OpenRouter y Replicate.
 - Reprocesamiento de pagos Wompi fallidos.
 - Suspensión/restauración de mini-landings.
+- Email Campaigns (Brevo SMTP + API tracking, batching, scheduling).
 
 ### 3.4 Plugin WooCommerce
 - Plugin WordPress para integración directa.
 - Sync de productos WooCommerce → Lookitry.
 - Telemetría de errores y latencia.
 - Activación/remoción de productos desde admin.
+
+### 3.5 Sistema de Blog Automation (Arquitectura 3-Workflow)
+- **Topic Generator** (workflow: `ryoA7wq7WhXYUckC`): Google Noticias RSS → AI Trend Hunter → Deduplicación → `blog_topics`
+- **Article Producer** (workflow: `VMAu93Zx4k5qgzdm`): Obtiene topic pending → Investiga con Jina → Redacta con Gemini → Guarda draft → Dispara Image Generator
+- **Image Generator** (workflow: `l4Mb3wMfHUnsbEXH`): Genera 4 imágenes con Replicate (FLUX Schnell) → Sube a MinIO → Actualiza `blog_topic_images` → Ensambla y publica
+
+### 3.6 Sistema de Email Marketing (Brevo)
+- **Tablas**: `email_campaigns`, `email_campaign_recipients`
+- **Servicios**: `brevo-campaign.service.ts` (SMTP + API tracking), `email-campaign.service.ts` (batching, rate limiting 50 emails/10 min, scheduling)
+- **Admin UI**: `/admin/email-campaigns` para crear, previsualizar, programar y monitorear
+- **Límite**: 300 emails/día (free tier Brevo)
+
+### 3.7 Sistema de Lead Generation & CRM
+- **Fuente**: Google Places API (500 requests/día, 28k/mes)
+- **Scope geográfico**: Colombia (Cali visitas, Medellín/Bogotá marketing), USA (ciudades hispanas), España (Madrid/Barcelona)
+- **Filtro**: Solo negocios con presencia online (website o redes sociales verificadas)
+- **Lead Statuses**: NEW, CONTACTED, QUALIFIED, INTERESTED, CONVERTED, LOST
+
+### 3.8 Lookitry Social OS
+- Automatización de contenido Instagram + TikTok con música AI
+- **Stack**: GCP Vertex AI (imagen-3.0), Pillow (overlays), Canva Pro (fallback), SonAuto AI (música), Buffer MCP (scheduling)
+- **Costo por post**: ~$0.20 (1 imagen GCP + 1 canción SonAuto)
+
+### 3.9 Sistema de Agentes IA (v3.0)
+- **Orquestadora**: Sammantha (nunca ejecuta código de otros agentes, solo delega)
+- **Pool de 10 agentes**: Pixel, Kira, Nadia, Marlo, Zephyr, Lina, Cipher, Rebecca, Leo
+- **Modelo default**: MiniMax-M2.7 (Groq/DeepSeek removidos)
+- **Tracking automático**: `active_agents.json` actualizado en cada spawn/completación
+- **Dashboard**: Mission Control (`/mission-control/agents`) con polling de 30s
+- **Colaboraciones**: Rebecca+Leo (ingresos), Pixel+Melissa (frontend), Kira+Cipher (seguridad), Nadia+Marlo (datos)
 
 ---
 
@@ -200,6 +231,7 @@
 ---
 
 ## 5. Reglas de Negocio Clave
+- **Account Lockout**: 5 intentos fallidos de login = 15 min de bloqueo (campo `locked_until`)
 - **Mini-landing**: Requiere plan activo. Se suspende si expira. Período de gracia de 90 días (`landing_suspended_at`).
 - **Upgrade**: Siempre con prorrateo. Preview disponible antes de pagar.
 - **Límites**: Aplican inmediatamente al cambio de plan.
@@ -207,13 +239,17 @@
 - **Cupones**: Pueden cubrir 100% del costo (free upgrade directo). Aplicables a planes específicos.
 - **Referidos**: Solo el referente recibe `500` créditos extra. La recompensa se aplica una sola vez y solo tras el primer pago mensual elegible del referido.
 - **Enterprise**: Sync externo vía CSV/API. Productos se actualizan automáticamente.
-- **Add-ons**: Créditos extra comprables. Se descuentan del `extra_credits_balance`.
+- **Add-ons**: Créditos extra comprables. Se desestán del `extra_credits_balance`.
 - **Notificaciones**: Preferencias por marca (email, WhatsApp, recordatorios 7/3 días, alertas de uso).
 - **WooCommerce**: Plugin para sync de productos. Telemetría de errores incluida.
-- **Blog**: Generado por n8n. Admin puede CRUD completo.
+- **Blog Automation**: 3 workflows n8n independientes (Topic Generator → Article Producer → Image Generator)
+- **Email Marketing**: Batching a 50 emails/10 min, límite 300 emails/día (Brevo free tier)
 - **Feedback RAG**: Errores de generación se embedden para mejorar IA con el tiempo.
 - **Admin permissions**: Sistema granular por rol (brands, subscriptions, revenue, etc.).
 - **Pagos PayPal**: Soporta sandbox y producción con credenciales separadas.
+- **Session TTL**: 7 días para sesiones de marca.
+- **Login Audit**: Logging de todos los intentos de login (successful/failed).
+- **Social OS**: GCP Vertex AI para imágenes, SonAuto AI para música TikTok.
 
 ---
 

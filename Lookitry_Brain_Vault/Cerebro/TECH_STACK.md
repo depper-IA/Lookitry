@@ -826,6 +826,24 @@ El sistema de blog automatizado está refactorizado en **3 workflows independien
   - TikTok Marketing API: Aplicar en https://developers.tiktok.com
   - Ambas pueden tomar semanas en aprobación
 
+### 7.10 Sistema de Agentes IA (v3.0)
+- **Arquitectura:** Pool de agentes bajo demanda controlados por Sammantha
+- **Modelo default:** MiniMax-M2.7 (Groq/DeepSeek removidos)
+- **Tracking:** `active_agents.json` actualizado en cada spawn/completación
+- **Dashboard:** `/mission-control/agents` con polling de 30s
+- **Archivos de tracking:**
+  - `Cerebro/Estado/active_agents.json` - Estado en tiempo real
+  - `Cerebro/Protocolos/AGENT_STATUS_DASHBOARD.md` - Dashboard
+  - `Cerebro/Protocolos/DELEGATION_PROTOCOL.md` - Protocolo de delegación
+- **Agentes:** Sammantha (orquestadora), Pixel (frontend), Kira (quality), Nadia (DB/IA), Marlo (growth), Zephyr (infra), Lina (docs), Cipher (security), Rebecca (UGC), Leo (trading)
+
+### 7.11 Lookitry Social OS
+- **GCP Vertex AI:** `imagen-3.0-generate-001` para generación de imágenes
+- **Autenticación:** JWT + OAuth2 token exchange
+- **SonAuto AI:** Música para TikTok (~$0.02/canción)
+- **Buffer MCP:** Programación de posts en redes sociales
+- **Costo por post:** ~$0.20 (1 imagen GCP + 1 canción SonAuto)
+
 ---
 
 ## 8. Estructura del Proyecto
@@ -929,9 +947,19 @@ LOOKITRY/
 | Área | Cambio | Estado |
 |------|--------|--------|
 | Docker Compose | Secretos en variables de entorno | ✅ Implementado |
+| Account Lockout | 5 intentos fallidos = 15 min bloqueo (`locked_until`) | ✅ Implementado |
+| Login Audit | Logging de intentos de login (success/failed) | ✅ Implementado |
+| Session TTL | Reducido a 7 días | ✅ Implementado |
+| Admin Rate Limit | Rate limit más estricto para admin | ✅ Implementado |
 | JWT Logout | Blacklist en Redis | ⚠️ Pendiente |
 | CSRF Protection | Tokens en formularios | ⚠️ Pendiente |
 | HSTS Frontend | Header Strict-Transport-Security | ⚠️ Pendiente |
+
+### Campos de Seguridad en `brands`
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `failed_login_attempts` | integer DEFAULT 0 | Contador de intentos fallidos |
+| `locked_until` | timestamptz | Timestamp hasta el cual la cuenta está bloqueada |
 
 ---
 

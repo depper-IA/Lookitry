@@ -474,3 +474,24 @@ Los agentes ya NO necesitan notificar por Telegram cuando completan tareas. Esta
 ### MCPs Configurados
 - **n8n**: https://n8n.wilkiedevs.com (API key en config)
 - **VPS SSH**: Usar sshpass para automatización
+
+---
+
+## 14. Seguridad Reforzada (Implementada Abril 2026)
+
+### Account Lockout
+- **Regla**: 5 intentos fallidos de login = 15 min de bloqueo
+- **Campos en brands**: `failed_login_attempts` (contador) y `locked_until` (timestamp)
+- **Verificación en login**: Se verifica `locked_until` antes de procesar contraseña
+
+### Login Audit
+- **Logging**: Todos los intentos de login (successful/failed) se loguean
+- **Admin visible**: Tabla de auditoría en `/admin/login-audit`
+
+### Session Security
+- **TTL**: Sesiones reducidas a 7 días
+- **Admin Rate Limit**: Rate limit más estricto para endpoints admin
+
+### Cookie Security
+- **COOKIE_DOMAIN**: Configurado en producción para cookies HTTP-only
+- **Flag**: `COOKIE_DOMAIN` en `.env` del backend
