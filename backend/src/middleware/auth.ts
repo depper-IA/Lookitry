@@ -68,16 +68,13 @@ export const authMiddleware = async (
 
 
 
-    if (!token) {
-
+if (!token) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(401).json({
-
         error: 'UNAUTHORIZED',
-
         message: 'Token de autenticación requerido',
-
       });
-
     }
 
 
@@ -88,38 +85,30 @@ export const authMiddleware = async (
 
 
 
-    if (!payload.brandId) {
-
+if (!payload.brandId) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(401).json({
-
         error: 'UNAUTHORIZED',
-
         message: 'Token inválido',
-
       });
-
     }
 
 
-
-    // Verificar que la marca existe
+// Verificar que la marca existe
     console.log('[DEBUG authMiddleware] brandId del token:', payload.brandId);
 
     const brand = await authService.getBrandById(payload.brandId);
     console.log('[DEBUG authMiddleware] brand encontrado:', brand);
 
     if (!brand) {
-
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(401).json({
-
         error: 'UNAUTHORIZED',
-
         message: 'Marca no encontrada',
-
       });
-
     }
-
 
 
     // Agregar información de la marca al request
@@ -140,16 +129,13 @@ export const authMiddleware = async (
 
     next();
 
-  } catch (error: any) {
-
+} catch (error: any) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     return res.status(401).json({
-
       error: 'UNAUTHORIZED',
-
       message: error.message || 'Token inválido',
-
     });
-
   }
 
 };

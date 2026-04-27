@@ -56,15 +56,12 @@ export class BrandsController {
       console.log('[DEBUG getMe] brand encontrado:', brand);
 
       if (!brand) {
-
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
         return res.status(404).json({
-
           error: 'NOT_FOUND',
-
           message: 'Marca no encontrada',
-
         });
-
       }
 
 
