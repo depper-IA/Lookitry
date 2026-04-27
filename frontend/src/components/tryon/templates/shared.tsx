@@ -30,6 +30,11 @@ const BADGE_STYLES: Record<string, { bg: string; text: string; dot: string }> = 
   oferta: { bg: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', text: 'white', dot: '#FCA5A5' },
 };
 
+export function getBadgeColor(badge: string | undefined): string {
+  if (!badge) return BADGE_STYLES.nuevo.bg;
+  return BADGE_STYLES[badge.toLowerCase()]?.bg ?? BADGE_STYLES.nuevo.bg;
+}
+
 export function ProductBadge({ type }: { type: string }) {
   const style = BADGE_STYLES[type.toLowerCase()] || BADGE_STYLES.nuevo;
   return (

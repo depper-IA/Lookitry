@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import type { TryOnTemplateProps, Product } from '../types';
+import { getBadgeColor } from '../shared';
 import { SelfieUploader } from '../../SelfieUploader';
 
 interface MobileProductGridProps {
@@ -171,7 +172,7 @@ export function MobileProductGrid({
                     )}
                     {p.badge && (
                       <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest text-white"
-                        style={{ background: p.badge === 'nuevo' ? '#10B981' : p.badge === 'top' ? '#F59E0B' : '#EF4444' }}>
+                        style={{ background: getBadgeColor(p.badge) }}>
                         {p.badge}
                       </span>
                     )}
