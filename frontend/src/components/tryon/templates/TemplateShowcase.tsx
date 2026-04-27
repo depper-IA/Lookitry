@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GenerationLoader } from '../GenerationLoader';
 import { ResultDisplay } from '../ResultDisplay';
@@ -12,6 +12,7 @@ import { EditorialHeader } from './components/EditorialHeader';
 import { SelfiePreviewEditorial } from './components/SelfiePreviewEditorial';
 import { ProductGridEditorial } from './components/ProductGridEditorial';
 import { BottomCTAEditorial } from './components/BottomCTAEditorial';
+import { useDeviceSize } from './hooks/useDeviceSize';
 
 // ── Template Showcase: Editorial Fashion Vitrine ──────────────────────────────
 export function TemplateShowcase(props: TryOnTemplateProps) {
@@ -43,24 +44,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
   } = props;
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isSmall, setIsSmall] = useState(false);
-
-  useEffect(() => {
-    if (props.forcedLayout) {
-      setIsSmall(props.forcedLayout === 'mobile');
-      return;
-    }
-
-    if (!containerRef.current) return;
-
-    const obs = new ResizeObserver((entries) => {
-      const { width } = entries[0].contentRect;
-      setIsSmall(width < 768);
-    });
-
-    obs.observe(containerRef.current);
-    return () => obs.disconnect();
-  }, [props.forcedLayout]);
+  const isSmall = useDeviceSize(props.forcedLayout);
 
   const bgLuminance = isLightBg(secondaryColor || '#ffffff');
   const textPrimary = bgLuminance ? '#1a1a1a' : '#ffffff';

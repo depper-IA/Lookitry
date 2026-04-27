@@ -229,7 +229,7 @@ export function SelfieUploader({
                 <img 
                   src={currentPreview} 
                   alt="Tu selfie" 
-                  className="w-full h-auto max-h-[65vh] object-contain mx-auto block"
+                  className="w-full h-auto max-h-[50vh] sm:max-h-[60vh] object-contain mx-auto block"
                 />
 
 

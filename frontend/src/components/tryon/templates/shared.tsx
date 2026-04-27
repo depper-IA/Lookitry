@@ -90,10 +90,10 @@ function AttrPills({ attributes }: { attributes: Record<string, any>; primaryCol
 }
 
 // Price display
-function PriceTag({ price, textColor }: { price: number | undefined | null; textColor: string }) {
+function PriceTag({ price, textColor, primaryColor = '#FF5C3A' }: { price: number | undefined | null; textColor: string; primaryColor?: string }) {
   if (price == null) return null;
   return (
-    <p className="text-base font-black tracking-tight" style={{ color: '#FF5C3A' }}>
+    <p className="text-base font-black tracking-tight" style={{ color: primaryColor }}>
       ${price.toLocaleString('es-CO')}
     </p>
   );

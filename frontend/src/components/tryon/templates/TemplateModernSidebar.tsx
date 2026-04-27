@@ -14,6 +14,7 @@ import { DesktopTopBar } from './components/DesktopTopBar';
 import { UploadStepContent } from './components/UploadStepContent';
 import { MobileProductGrid } from './components/MobileProductGrid';
 import { SelectedProductCard, DesktopEmptyState } from './components/SelectedProductCard';
+import { useDeviceSize } from './hooks/useDeviceSize';
 
 // ── Neo-Luxury Modern Sidebar ────────────────────────────────────────────────
 
@@ -47,23 +48,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
   } = props;
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isSmall, setIsSmall] = useState(false);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    
-    if (props.forcedLayout) {
-      setIsSmall(props.forcedLayout === 'mobile');
-    }
-    
-    const obs = new ResizeObserver((entries) => {
-      const { width } = entries[0].contentRect;
-      setIsSmall(width < 768);
-    });
-
-    obs.observe(containerRef.current);
-    return () => obs.disconnect();
-  }, [props.forcedLayout]);
+  const isSmall = useDeviceSize(props.forcedLayout);
 
   const isLightBg = (hex: string): boolean => {
     const clean = hex.replace('#', '');
@@ -76,7 +61,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
 
   const bgLuminance = isLightBg(secondaryColor || '#ffffff');
   const mainTextPrimary = bgLuminance ? '#050505' : '#ffffff';
-  const mainTextMuted = bgLuminance ? '#444444' : '#ffffffcc';
+  const mainTextMuted = bgLuminance ? '#666666' : '#ffffffcc';
   const mainBorderColor = bgLuminance ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
   const mainCardBg = bgLuminance ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)';
 
