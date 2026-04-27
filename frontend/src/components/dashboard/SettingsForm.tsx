@@ -66,7 +66,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     welcomeMessage: brand.welcomeMessage || '',
     shareMessage: brand.shareMessage || '',
     widgetCoverImage: brand.widgetCoverImage || '',
-    whatsappContact: (brand as any).whatsappContact || '',
+    whatsappContact: brand.whatsappContact || '',
   });
 
   useEffect(() => {

@@ -65,6 +65,7 @@ export interface Brand {
   // Widget playlist (featured products)
   widgetProductIds?: string[];
   widgetCoverImage?: string | null;
+  whatsappContact?: string | null;
 }
 
 export type ReviewStatus = 'pending' | 'approved' | 'rejected';

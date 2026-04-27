@@ -92,6 +92,10 @@ import {
   addTicketMessage,
 } from '../controllers/admin/tickets.admin.controller';
 import {
+  getGenerationFeedback,
+  resolveFeedbackAdmin,
+} from '../controllers/admin/feedback.admin.controller';
+import {
   getWidgetIpWhitelist,
   addWidgetIpWhitelist,
   updateWidgetIpWhitelist,
@@ -171,6 +175,7 @@ router.get('/feedback/count-unresolved', requirePermission('brands'), getUnresol
 router.get('/feedback/stats', requirePermission('brands'), getFeedbackStats);
 router.get('/feedback', requirePermission('brands'), getFeedbacks);
 router.patch('/feedback/:id/resolve', requirePermission('brands'), resolveFeedback);
+router.post('/feedback/:id/resolve', requirePermission('brands'), resolveFeedbackAdmin);
 router.delete('/feedback/:id', requirePermission('brands'), deleteFeedback);
 
 // Monitor de créditos e IA
@@ -267,6 +272,7 @@ router.delete('/social-api-configs/:platform', requirePermission('settings'), de
 router.get('/generations/stats', requirePermission('brands'), getGenerationsStats);
 router.get('/generations', requirePermission('brands'), getGenerations);
 router.get('/generations/:id', requirePermission('brands'), getGenerationById);
+router.get('/generations/:id/feedback', requirePermission('brands'), getGenerationFeedback);
 router.patch('/generations/:id/retry', requirePermission('brands'), retryGeneration);
 router.get('/brands/:brandId/generations', requirePermission('brands'), getBrandGenerations);
 

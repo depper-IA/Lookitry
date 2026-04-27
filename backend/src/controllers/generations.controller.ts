@@ -76,6 +76,12 @@ export class GenerationsController {
 
         processingTime: g.processing_time ?? null,
 
+        has_feedback: g.has_feedback ?? false,
+
+        feedback_types: g.feedback_types ?? [],
+
+        feedback_count: g.feedback_count ?? 0,
+
       }));
 
 
