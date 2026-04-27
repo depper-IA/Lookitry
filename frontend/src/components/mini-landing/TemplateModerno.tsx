@@ -108,6 +108,7 @@ function ProbadorHero({ brand, onScrollDown, isPreview = false }: { brand: Brand
 }
 
 function ProbadorTrustBar({ brand }: { brand: BrandData }) {
+  const theme = useContrastTheme('#f9fafb');
   const rating = brand.rating ?? 0;
   const reviews = brand.total_reviews ?? 0;
   const hasRating = rating > 0;
@@ -119,7 +120,6 @@ function ProbadorTrustBar({ brand }: { brand: BrandData }) {
   ];
 
   if (items.length === 0) return null;
-  const theme = useContrastTheme('#f9fafb');
 
   return (
     <div className="flex border-b overflow-x-auto no-scrollbar" style={{ backgroundColor: theme.bg, borderColor: theme.border }}>
