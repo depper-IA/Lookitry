@@ -147,10 +147,12 @@ CREATE TABLE blog_draft_articles (
 -- Almacena URLs de imágenes generadas para artículos
 CREATE TABLE blog_topic_images (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  topic_id uuid REFERENCES blog_topics(id) ON DELETE CASCADE,
+  topic_id uuid REFERENCES blog_topics(id) ON DELETE CASCADE UNIQUE,
   imagen_hero_url text,
   imagen_body1_url text,
   imagen_body2_url text,
+  imagen_body3_url text,
+  imagen_body4_url text,
   status text DEFAULT 'pending' CHECK (status = ANY (ARRAY['pending', 'generating', 'completed', 'failed'])),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
