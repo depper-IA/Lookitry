@@ -124,35 +124,45 @@ export class GenerationsService {
 
 
 
-  async getGenerationsByBrand(brandId: string, limit = 50, status?: string): Promise<Generation[]> {
+  async getGenerationsByBrand(brandId: string, limit = 50, status?: string): Promise<(Generation & { has_feedback: boolean; feedback_types: string[]; feedback_count: number })[]> {
     let query = supabaseAdmin
-
       .from('generations')
-
-      .select('*')
-
+      .select(`
+        *,
+        generation_feedback (
+          id,
+          error_type
+        )
+      `)
       .eq('brand_id', brandId);
 
-
-
     if (status) {
-
       query = query.eq('status', status);
-
     }
 
-
-
     const { data, error } = await query
-
       .order('generated_at', { ascending: false })
-
       .limit(limit);
 
-
-
     if (error) throw new Error('Error al obtener generaciones: ' + error.message);
-    return (data || []) as Generation[];
+
+    // Process feedback data to compute aggregated fields
+    const result = (data || []).map((g: any) => {
+      const feedbackList = g.generation_feedback || [];
+      const uniqueErrorTypes = [...new Set(feedbackList
+        .map((f: any) => f.error_type)
+        .filter((t: string | null) => t !== null)
+      )];
+
+      return {
+        ...g,
+        has_feedback: feedbackList.length > 0,
+        feedback_types: uniqueErrorTypes,
+        feedback_count: feedbackList.length,
+      };
+    });
+
+    return result;
   }
 
   async getSuccessfulGenerationByFingerprint(

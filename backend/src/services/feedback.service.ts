@@ -387,55 +387,39 @@ export class FeedbackService {
    */
 
   async getFeedbacks(filters: {
-
     error_type?: GenerationErrorType;
-
     brand_id?: string;
-
     resolved?: boolean;
-
     limit?: number;
-
+    generation_id?: string;
   } = {}): Promise<(FeedbackRecord & { result_image_url?: string | null })[]> {
-
     let query = supabaseAdmin
-
       .from('generation_feedback')
-
       .select('*, generations(result_image_url)')
-
       .order('created_at', { ascending: false })
-
       .limit(filters.limit ?? 100);
 
-
-
     if (filters.error_type) query = query.eq('error_type', filters.error_type);
-
     if (filters.brand_id) query = query.eq('brand_id', filters.brand_id);
-
     if (filters.resolved !== undefined) query = query.eq('resolved', filters.resolved);
-
-
+    if (filters.generation_id) query = query.eq('generation_id', filters.generation_id);
 
     const { data, error } = await query;
-
     if (error) throw new Error('Error al obtener feedbacks: ' + error.message);
 
-
-
     // Aplanar el join: generations es un objeto o null
-
     return (data || []).map((row: any) => ({
-
       ...row,
-
       result_image_url: row.generations?.result_image_url ?? null,
-
       generations: undefined,
-
     }));
+  }
 
+  /**
+   * Obtiene feedbacks para una generación específica.
+   */
+  async getFeedbacksByGenerationId(generationId: string): Promise<(FeedbackRecord & { result_image_url?: string | null })[]> {
+    return this.getFeedbacks({ generation_id: generationId });
   }
 
 

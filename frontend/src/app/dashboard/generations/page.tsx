@@ -21,7 +21,9 @@ import {
   Filter,
   AlertTriangle,
   Loader2,
-  ChevronRight
+  ChevronRight,
+  Flag,
+  CheckCircle
 } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
@@ -36,7 +38,25 @@ interface Generation {
   error_message?: string | null;
   generatedAt: string;
   processingTime: number | null;
+  has_feedback?: boolean;
+  feedback_types?: string[];
+  feedback_count?: number;
 }
+
+// Error types for feedback reporting
+const ERROR_TYPES = [
+  { value: 'wrong_clothing_removed', label: 'Ropa eliminada' },
+  { value: 'wrong_clothing_kept',    label: 'Ropa conservada' },
+  { value: 'body_distortion',        label: 'Distorsión' },
+  { value: 'color_wrong',            label: 'Color incorrecto' },
+  { value: 'product_not_applied',    label: 'Producto no aplicado' },
+  { value: 'background_changed',     label: 'Fondo alterado' },
+  { value: 'other',                  label: 'Otro' },
+] as const;
+
+type ErrorTypeValue = typeof ERROR_TYPES[number]['value'];
+
+const OTHER_VALUE = 'other';
 
 export type ViewMode = 'grid' | 'thumbnails' | 'list';
 
@@ -93,12 +113,159 @@ function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: str
   );
 }
 
+// ── Feedback Modal ─────────────────────────────────────────────────────────────
+function FeedbackModal({
+  generation,
+  brandSlug,
+  onClose,
+  onSuccess
+}: {
+  generation: Generation;
+  brandSlug: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [feedbackType, setFeedbackType] = useState<ErrorTypeValue | null>(null);
+  const [feedbackDesc, setFeedbackDesc] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!feedbackType) return;
+    if (feedbackType === OTHER_VALUE && !feedbackDesc.trim()) return;
+
+    setSending(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const res = await fetch(`${API_URL}/api/pruebalo/${brandSlug}/generation/${generation.id}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          error_type: feedbackType,
+          description: feedbackType === OTHER_VALUE ? feedbackDesc.trim() : undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Error al enviar reporte');
+      }
+
+      setSent(true);
+      setTimeout(() => {
+        onSuccess();
+        onClose();
+      }, 2000);
+    } catch (err: any) {
+      alert('Error al enviar reporte: ' + (err.message || 'Error desconocido'));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)]"
+        onClick={e => e.stopPropagation()}
+      >
+        {!sent ? (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-xl text-[var(--text-primary)]">¿Algo no salió bien?</h3>
+              <button onClick={onClose} className="w-8 h-8 rounded-xl hover:bg-[var(--bg-hover)] flex items-center justify-center transition-colors">
+                <X size={18} className="text-[var(--text-muted)]" />
+              </button>
+            </div>
+            <p className="text-sm text-[var(--text-secondary)] mb-5">Cuéntanos qué falló para que nuestra IA aprenda a hacerlo mejor.</p>
+
+            {generation.error_message && (
+              <div className="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+                <p className="text-xs font-medium text-rose-400 uppercase tracking-wider mb-1">Error original</p>
+                <p className="text-sm text-[var(--text-secondary)]">{generation.error_message}</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {ERROR_TYPES.map(et => (
+                <button
+                  key={et.value}
+                  onClick={() => setFeedbackType(et.value)}
+                  className={`p-3 rounded-2xl border text-sm font-medium transition-all text-left ${
+                    feedbackType === et.value
+                      ? 'ring-2 ring-[#FF5C3A] shadow-sm'
+                      : ''
+                  }`}
+                  style={
+                    feedbackType === et.value
+                      ? { backgroundColor: 'rgba(255,92,58,0.1)', borderColor: '#FF5C3A', color: 'var(--text-primary)' }
+                      : { backgroundColor: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }
+                  }
+                >
+                  {et.label}
+                </button>
+              ))}
+              <button
+                onClick={() => setFeedbackType(OTHER_VALUE)}
+                className={`col-span-2 p-3 rounded-2xl border text-sm font-medium transition-all text-left ${
+                  feedbackType === OTHER_VALUE ? 'ring-2 ring-[#FF5C3A] shadow-sm' : ''
+                }`}
+                style={
+                  feedbackType === OTHER_VALUE
+                    ? { backgroundColor: 'rgba(255,92,58,0.1)', borderColor: '#FF5C3A', color: 'var(--text-primary)' }
+                    : { backgroundColor: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }
+                }
+              >
+                Otro
+              </button>
+            </div>
+
+            {feedbackType === OTHER_VALUE && (
+              <textarea
+                value={feedbackDesc}
+                onChange={e => setFeedbackDesc(e.target.value)}
+                placeholder="Dinos qué viste mal..."
+                className="w-full p-4 rounded-2xl mb-4 h-28 text-sm outline-none transition-all border bg-[var(--bg-hover)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+              />
+            )}
+
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleSubmit}
+                disabled={sending || (!feedbackType) || (feedbackType === OTHER_VALUE && !feedbackDesc.trim())}
+                className="w-full py-4 text-white rounded-2xl font-bold shadow-lg disabled:opacity-50 active:scale-95 transition-all bg-[#FF5C3A]"
+              >
+                {sending ? 'Enviando...' : 'Enviar reporte'}
+              </button>
+              <button onClick={onClose} className="w-full py-3 text-sm font-medium transition-colors text-[var(--text-muted)]">
+                Cancelar
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="py-8 text-center animate-in fade-in zoom-in duration-300">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 bg-emerald-500/10 border-emerald-500">
+              <CheckCircle size={40} className="text-emerald-500" />
+            </div>
+            <h3 className="font-bold text-xl mb-2 text-[var(--text-primary)]">¡Reporte enviado!</h3>
+            <p className="text-sm text-[var(--text-secondary)] px-4">Gracias por ayurdarnos. Analizaremos tu caso de inmediato.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Tarjeta de Generación ─────────────────────────────────────────────────────
 function GenerationCard({
-  gen, selected, selecting, viewMode, onOpen, onToggle, onDelete, brandPlan
+  gen, selected, selecting, viewMode, onOpen, onToggle, onDelete, onReportError, brandPlan, hasFeedback
 }: {
   gen: Generation; selected: boolean; selecting: boolean; viewMode: ViewMode;
-  onOpen: () => void; onToggle: () => void; onDelete: () => void; brandPlan?: string;
+  onOpen: () => void; onToggle: () => void; onDelete: () => void; onReportError: () => void;
+  brandPlan?: string; hasFeedback?: boolean;
 }) {
   const date = new Date(gen.generatedAt);
   const dateStr = date.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
@@ -136,6 +303,11 @@ function GenerationCard({
           <div className="flex items-center gap-2 mt-1.5">
             {isPending && <span className="text-[8px] font-black uppercase text-[#FF5C3A] bg-[#FF5C3A]/10 px-2 py-0.5 rounded-full border border-[#FF5C3A]/20">Sincronizando...</span>}
             {isFailed && <span className="text-[8px] font-black uppercase text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">Interrupción</span>}
+            {isFailed && hasFeedback && (
+              <span className="text-[8px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                <CheckCircle size={8} /> Reporte enviado
+              </span>
+            )}
             <div className="flex items-center gap-1.5 text-[var(--text-muted)] opacity-60">
               <Clock size={10} />
               <p className="text-[9px] font-bold uppercase tracking-[0.1em]">{dateStr} · {timeStr}</p>
@@ -149,6 +321,11 @@ function GenerationCard({
             </div>
           ) : (
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+              {isFailed && (
+                <button onClick={(e) => { e.stopPropagation(); onReportError(); }} className="w-10 h-10 rounded-xl flex items-center justify-center bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-all" title="Reportar error">
+                  <Flag size={14} />
+                </button>
+              )}
               {!isFailed && !isPending && (
                 <button onClick={(e) => { e.stopPropagation(); onOpen(); }} className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/10 transition-all">
                   <Maximize2 size={16} />
@@ -180,9 +357,17 @@ function GenerationCard({
             <p className="text-[9px] font-black uppercase tracking-[0.4em] text-[#FF5C3A] animate-pulse">Procesando Imagen</p>
           </div>
         ) : isFailed ? (
-          <div className="flex flex-col items-center gap-4 p-10 text-center bg-rose-500/5 w-full h-full justify-center">
+          <div className="flex flex-col items-center gap-4 p-10 text-center bg-rose-500/5 w-full h-full justify-center relative">
             <AlertTriangle className="w-10 h-10 text-rose-500/40" />
             <p className="text-[10px] font-black uppercase tracking-widest text-rose-500/60 leading-tight">Generación de IA<br />Interrumpida</p>
+            {gen.error_message && (
+              <p className="text-[8px] text-rose-400/50 mt-1 px-4 max-w-[200px] truncate">{gen.error_message}</p>
+            )}
+            {hasFeedback && (
+              <span className="absolute top-3 right-3 text-[7px] font-black uppercase text-emerald-500 bg-emerald-500/20 px-2 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                <CheckCircle size={8} /> Reporte
+              </span>
+            )}
           </div>
         ) : (
           <>
@@ -240,6 +425,8 @@ export default function GenerationsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; id?: string; bulk?: boolean }>({ isOpen: false });
+  const [statusFilter, setStatusFilter] = useState<'SUCCESS' | 'PENDING' | 'FAILED'>('SUCCESS');
+  const [reportingError, setReportingError] = useState<Generation | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('generations-view-mode') as ViewMode | null;
@@ -249,15 +436,16 @@ export default function GenerationsPage() {
 
   useEffect(() => {
     const filtered = generations.filter(gen =>
-      gen.productName.toLowerCase().includes(searchTerm.toLowerCase())
+      gen.productName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      gen.status === statusFilter
     );
     setFilteredGenerations(filtered);
-  }, [searchTerm, generations]);
+  }, [searchTerm, generations, statusFilter]);
 
   const loadGenerations = async () => {
     try {
       setLoading(true);
-      const res = await api.get<{ generations: Generation[]; total: number }>('/generations');
+      const res = await api.get<{ generations: Generation[]; total: number }>(`/generations?status=${statusFilter}`);
       setGenerations(res.data.generations);
     } catch (err: any) {
       setError(err.message || 'Error al cargar el historial');
@@ -265,6 +453,12 @@ export default function GenerationsPage() {
       setLoading(false);
     }
   };
+
+  // Reload when status filter changes
+  useEffect(() => {
+    loadGenerations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
 
   const toggleSelect = (id: string) => {
     setSelected(prev => {
@@ -377,6 +571,30 @@ export default function GenerationsPage() {
             />
           </div>
 
+          {/* Status Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Status:</span>
+            <div className="flex bg-[var(--bg-card)] rounded-xl p-1 border border-[var(--border-color)] shadow-lg">
+              {(['SUCCESS', 'PENDING', 'FAILED'] as const).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
+                    statusFilter === status
+                      ? status === 'SUCCESS'
+                        ? 'bg-emerald-500 text-white shadow-sm'
+                        : status === 'PENDING'
+                        ? 'bg-[#FF5C3A] text-white shadow-sm'
+                        : 'bg-rose-500 text-white shadow-sm'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
+                  }`}
+                >
+                  {status === 'SUCCESS' ? 'Exitosas' : status === 'PENDING' ? 'Pendientes' : 'Fallidas'}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <AnimatePresence>
             {selecting && selected.size > 0 && (
               <motion.div
@@ -435,7 +653,9 @@ export default function GenerationsPage() {
                 onOpen={() => setLightbox(gen)}
                 onToggle={() => toggleSelect(gen.id)}
                 onDelete={() => handleDeleteOne(gen.id)}
+                onReportError={() => setReportingError(gen)}
                 brandPlan={brand?.plan}
+                hasFeedback={gen.has_feedback}
               />
             ))}
           </AnimatePresence>
@@ -461,6 +681,23 @@ export default function GenerationsPage() {
         confirmLabel={deleting ? 'Eliminando...' : 'Eliminar permanentemente'}
         isLoading={deleting}
       />
+
+      {/* Feedback Modal for FAILED generations */}
+      <AnimatePresence>
+        {reportingError && brand?.slug && (
+          <FeedbackModal
+            generation={reportingError}
+            brandSlug={brand.slug}
+            onClose={() => setReportingError(null)}
+            onSuccess={() => {
+              // Mark as having feedback locally and reload
+              setGenerations(prev => prev.map(g =>
+                g.id === reportingError.id ? { ...g, has_feedback: true } : g
+              ));
+            }}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
