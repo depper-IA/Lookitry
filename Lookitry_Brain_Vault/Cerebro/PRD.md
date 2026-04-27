@@ -122,18 +122,13 @@
 - **Filtro**: Solo negocios con presencia online (website o redes sociales verificadas)
 - **Lead Statuses**: NEW, CONTACTED, QUALIFIED, INTERESTED, CONVERTED, LOST
 
-### 3.8 Lookitry Social OS
-- Automatización de contenido Instagram + TikTok con música AI
-- **Stack**: GCP Vertex AI (imagen-3.0), Pillow (overlays), Canva Pro (fallback), SonAuto AI (música), Buffer MCP (scheduling)
-- **Costo por post**: ~$0.20 (1 imagen GCP + 1 canción SonAuto)
-
-### 3.9 Sistema de Agentes IA (v3.0)
+### 3.8 Sistema de Agentes IA (v3.0)
 - **Orquestadora**: Sammantha (nunca ejecuta código de otros agentes, solo delega)
-- **Pool de 10 agentes**: Pixel, Kira, Nadia, Marlo, Zephyr, Lina, Cipher, Rebecca, Leo
+- **Pool de 8 agentes**: Pixel, Kira, Nadia, Marlo, Zephyr, Lina, Cipher
 - **Modelo default**: MiniMax-M2.7 (Groq/DeepSeek removidos)
 - **Tracking automático**: `active_agents.json` actualizado en cada spawn/completación
 - **Dashboard**: Mission Control (`/mission-control/agents`) con polling de 30s
-- **Colaboraciones**: Rebecca+Leo (ingresos), Pixel+Melissa (frontend), Kira+Cipher (seguridad), Nadia+Marlo (datos)
+- **Colaboraciones**: Pixel+Melissa (frontend), Kira+Cipher (seguridad), Nadia+Marlo (datos)
 
 ---
 
@@ -249,7 +244,6 @@
 - **Pagos PayPal**: Soporta sandbox y producción con credenciales separadas.
 - **Session TTL**: 7 días para sesiones de marca.
 - **Login Audit**: Logging de todos los intentos de login (successful/failed).
-- **Social OS**: GCP Vertex AI para imágenes, SonAuto AI para música TikTok.
 
 ---
 

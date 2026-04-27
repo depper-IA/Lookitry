@@ -205,5 +205,4 @@ cat ~/.agents/skills/[skill-name]/README.md
 |--------|-----|----------------|
 | **Kira** | DevGuardian | Code review, lint, testing |
 | **Zephyr** | ArchitectAI | Deploy, Docker, CI/CD |
-| **Rebecca** | UGC Creator | Assets visuales, contenido |
 | **Melissa** | Junior FE | Code review, pair programming |
