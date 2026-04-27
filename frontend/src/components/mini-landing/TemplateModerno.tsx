@@ -112,7 +112,7 @@ function ProbadorTrustBar({ brand }: { brand: BrandData }) {
   const reviews = brand.total_reviews ?? 0;
   const items = [
     { value: rating.toFixed(1), label: 'rating' },
-    { value: reviews > 0 ? `+${reviews}` : '96%', label: 'pruebas' },
+    ...(reviews > 0 ? [{ value: `+${reviews}`, label: 'pruebas' }] : []),
     { value: '~12s', label: 'tiempo' },
     { value: 'IA', label: 'tech' },
   ];
@@ -154,7 +154,7 @@ function ProbadorProducts({ products, primaryColor, secondaryColor, ctaText, onP
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {isLoading ? (
             <>
-              {[0,1,2,3].map(i => <ProductSkeleton key={i} primaryColor={primaryColor} />)}
+              {[0,1,2,3,4,5].map(i => <ProductSkeleton key={i} primaryColor={primaryColor} />)}
             </>
           ) : (
             products.map(p => (
