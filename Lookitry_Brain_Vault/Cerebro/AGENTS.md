@@ -62,15 +62,10 @@ Sammantha NO ejecuta código de frontend, backend, DB, etc. Sammantha:
 | "Necesito documentar X" | Documentación | Lina |
 | "Hay vulnerabilidades en el código" | Seguridad/Auditoría | Cipher |
 | "Quiero hacer pentesting" | Seguridad | Cipher |
-| "El trading automatizado falló" | Trading | Leo |
-| "Quiero revisar portafolio" | Trading | Leo |
-| "Crear posts para Instagram" | UGC/Contenido | Rebecca |
-| "Generar contenido para TikTok" | UGC/Contenido | Rebecca |
-| "Responder leads de Fiverr" | UGC/Cliente | Rebecca |
 
 ---
 
-## EQUIPO COMPLETO (10 AGENTES)
+## EQUIPO COMPLETO (8 AGENTES)
 
 | Nombre | Workspace | Rol | Especialidad | Permisos |
 |--------|-----------|-----|--------------|----------|
@@ -82,8 +77,6 @@ Sammantha NO ejecuta código de frontend, backend, DB, etc. Sammantha:
 | **Zephyr** | architectai | Arquitecto de Infra | DevOps, Docker, VPS | read, edit, write |
 | **Lina** | docs-writer | Documentadora | Docs, CHANGELOG | read, edit, write |
 | **Cipher** | security-auditor | Hacker Ético | Pentesting, vulnerabilidades | read, edit, write |
-| **Rebecca** | rebecca | UGC Creator | Contenido, redes, Fiverr | read, edit, write, bash |
-| **Leo** | leo | Agente de Trading | Trading automatizado | read, edit, write, bash |
 
 ---
 
@@ -131,16 +124,6 @@ zephyr:
 marlo:
   rol: "Piloto de Crecimiento"
   responsabilidad: "CRM, marketing, leads, analytics, email campaigns"
-  
-rebecca:
-  rol: "UGC Creator + Embajadora"
-  responsabilidad: "Contenido, redes sociales, Fiverr, leads, patrocinio"
-  enfoque: "MONEY - Generar ingresos para Lookitry"
-  
-leo:
-  rol: "Agente de Trading"
-  responsabilidad: "Trading automatizado (NO persona real)"
-  colaboracion: "Trabaja con Rebecca para generar ingresos"
 ```
 
 ### Agentes de Soporte
@@ -181,11 +164,6 @@ Sammantha detecta el tipo de problema y delega sin que Sam tenga que especificar
 sammantha:
   bot: "@SamDevsBot"
   account_id: "default"
-  activo: true
-
-rebecca:
-  bot: "@Rebecca_lookitrybot"
-  account_id: "rebecca"
   activo: true
 ```
 

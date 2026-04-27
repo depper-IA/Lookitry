@@ -272,12 +272,6 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 - `ConfirmDialog.tsx` — Diálogo de confirmación
 - `AdminNotifications.tsx` — Panel de notificaciones admin
 
-### 8.11 Social OS (Lookitry Social OS)
-- `SocialContentGenerator.tsx` — Generador de contenido
-- `CarouselCreator.tsx` — Creador de carousels Instagram
-- `MusicGenerator.tsx` — Generador de música TikTok
-- `BufferScheduler.tsx` — Programador de posts via Buffer
-
 ---
 
 ## 9. Templates de Widget

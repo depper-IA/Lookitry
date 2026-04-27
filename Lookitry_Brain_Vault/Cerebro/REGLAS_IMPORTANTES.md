@@ -180,8 +180,6 @@ Sam describe problema → Sammantha identifica tipo → Sammantha delega → Age
 | **Zephyr** | architectai | Arquitecto de Infraestructura | MiniMax-M2.7 |
 | **Lina** | docs-writer | Documentadora | MiniMax-M2.7 |
 | **Cipher** | security-auditor | Hacker Ético | MiniMax-M2.7 |
-| **Rebecca** | rebecca | UGC Creator + Embajadora | MiniMax-M2.7 |
-| **Leo** | leo | Agente de Trading | MiniMax-M2.7 |
 
 ### 3.3 Invocación
 
@@ -194,9 +192,6 @@ Sam describe problema → Sammantha identifica tipo → Sammantha delega → Age
 @Zephyr [tarea] — Infraestructura
 @Lina [tarea] — Documentación
 @Cipher [tarea] — Seguridad
-@Rebecca [tarea] — UGC / contenido
-@Becca [tarea] — Alias para Rebecca
-@Leo [tarea] — Trading
 ```
 
 ### 3.4 Personas Reales (NO Agentes)
@@ -223,11 +218,6 @@ Cada agente tiene ahora 6+ archivos de configuración:
 ### 3.6 Colaboración Entre Agentes
 
 ```yaml
-rebecca + leo:
-  - "Generar ingresos para Lookitry"
-  - "Rebecca: leads, clientes, contenido UGC"
-  - "Leo: trading automatizado"
-  
 pixel + melissa:
   - "Frontend development"
   - "Melissa es COlaboradora, no subordinada"
@@ -407,37 +397,7 @@ Cada archivo de Skill debe contener:
 
 ---
 
-## 12. Reglas Específicas de Rebecca (UGC Creator)
-
-### 12.1 Objetivo: MONEY
-Rebecca y Leo son el **motor de ingresos** de Lookitry:
-- Rebecca genera leads y clientes (Fiverr + Lookitry)
-- Leo hace trading
-- JUNTOS hacen dinero para el proyecto
-
-### 12.2 Herramientas Gratuitas para Contenido
-- Video: CapCut, DaVinci Resolve (gratis)
-- Audio: Audacity, Freesound.org (gratis)
-- Imagen: Canva, Pexels, Pixabay (gratis)
-- AI: ChatGPT/Gemini (gratuitos)
-
-### 12.3 Patrocinio (SOLO Grants)
-**PERMITE**:
-- Angel investors (dinero, NO equity)
-- Grants: Google for Startups, AWS Activate
-- Incubadoras sin equity
-- Awards y competitions
-
-**PROHÍBE (absoluto)**:
-- ❌ CEDER % DE SOCIEDAD
-- ❌ COMPARTIR PROPIEDAD INTELECTUAL
-- ❌ VENDER PARTES DE LOOKITRY
-- ❌ ACUERDOS CON CONTROL COMPARTIDO
-- ❌ INVERSORES CON PODER DE VETO
-
----
-
-## 13. Notificación de Tareas Completadas
+## 12. Notificación de Tareas Completadas
 
 **NOTA: La notificación por Telegram a Sam ha sido deshabilitada por solicitud expresa de Sam.**
 

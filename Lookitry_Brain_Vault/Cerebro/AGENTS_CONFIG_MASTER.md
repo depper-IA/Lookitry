@@ -35,8 +35,6 @@
 | **Zephyr** | architectai | Arquitecto de Infra | MiniMax-M2.7 |
 | **Lina** | docs-writer | Documentadora | MiniMax-M2.7 |
 | **Cipher** | security-auditor | Hacker Ético | MiniMax-M2.7 |
-| **Rebecca** | rebecca | UGC Creator + Embajadora | MiniMax-M2.7 |
-| **Leo** | leo | Agente de Trading | MiniMax-M2.7 |
 
 ---
 
@@ -85,7 +83,7 @@
 
 ## ESTADO DE CONFIGURACIÓN DE AGENTES
 
-### Agentes Completamente Configurados (8/10)
+### Agentes Completamente Configurados (8/8)
 
 | Agente | Status | Archivos |
 |--------|--------|----------|
@@ -94,30 +92,19 @@
 | **Kira** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
 | **Nadia** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
 | **Marlo** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
-| **Rebecca** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md, PROJECT.md, FIVERR_KNOWLEDGE.md |
 | **Lina** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
 | **Cipher** | ✅ Completo | AGENTS.md, SOUL.md, USER.md, HEARTBEAT.md, TOOLS.md, MEMORY.md |
+| **Zephyr** | ⚠️ Parcial | Agentes/architectai.md (1 archivo) |
 
 ### Agentes Pendientes de Documentación Completa
 
 | Agente | Status | Archivos Existentes |
 |--------|--------|---------------------|
 | **Zephyr** | ⚠️ Parcial | Agentes/architectai.md (1 archivo) |
-| **Leo** | ⚠️ Parcial | Agentes/leo.md + Agentes/leo_PROJECT.md |
 
 ---
 
 ## NOTAS IMPORTANTES
-
-### Leo
-- Es un AGENTE de trading, NO una persona real
-- Trabaja en conjunto con Rebecca para generar ingresos
-- Configuración en: `Lookitry_Brain_Vault/Cerebro/Agentes/leo.md`
-
-### Rebecca
-- Foco principal: **MONEY** - Generar ingresos para Lookitry
-- Capacidades: Fiverr, contenido UGC, patrocinio (solo grants)
-- NO puede ceder % de sociedad ni equity
 
 ### Mission Control (ELIMINADO)
 - El sistema Mission Control fue eliminado del código
