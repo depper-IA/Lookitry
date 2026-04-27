@@ -3,6 +3,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getProxiedImageUrl } from '@/utils/imageProxy';
 import { isLightBg } from './templates/shared';
+import { Toast, ToastType } from '@/components/ui/Toast';
+
+// ── Helper para detectar In-App Browsers (Instagram, Facebook, TikTok) ──────────
+const isIAB = () => {
+  if (typeof window === 'undefined') return false;
+  const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+  return /Instagram|FBAN|FBAV|TikTok/i.test(ua);
+};
+
+
 
 // ── Focus Trap Hook ─────────────────────────────────────────────────────────────
 function useFocusTrap(isActive: boolean) {
@@ -241,6 +251,18 @@ export function ResultDisplay({
   const [sharing, setSharing]             = useState(false);
   const [shareError, setShareError]       = useState<string | null>(null);
 
+  // Feedback visual (Toast)
+  const [toast, setToast] = useState<{ show: boolean; message: string; type: ToastType }>({
+    show: false,
+    message: '',
+    type: 'info'
+  });
+
+  const showToast = (message: string, type: ToastType = 'info') => {
+    setToast({ show: true, message, type });
+  };
+
+
   // Feedback state
   const [feedbackOpen, setFeedbackOpen]       = useState(false);
   const [feedbackType, setFeedbackType]       = useState<ErrorTypeValue | ''>('');
@@ -253,10 +275,22 @@ export function ResultDisplay({
   const lightboxTrapRef = useFocusTrap(lightboxOpen);
 
   const handleDownload = async () => {
+    const downloadUrl = getProxiedImageUrl(imageUrl, brandPlan, true);
+    
+    // Si detectamos Instagram/Facebook/TikTok, evitamos el truco del blob/URL.createObjectURL
+    // ya que suele fallar estrepitosamente o bloquear la navegación.
+    if (isIAB()) {
+      showToast('Mantén presionada la imagen para guardarla en tu galería.', 'info');
+      // Intentamos abrir la URL de descarga directa como fallback
+      window.open(downloadUrl, '_blank');
+      return;
+    }
+
+
     setDownloading(true);
     try {
-      const downloadUrl = getProxiedImageUrl(imageUrl, brandPlan, true);
       const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error('Network response was not ok');
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -268,10 +302,12 @@ export function ResultDisplay({
       URL.revokeObjectURL(url);
     } catch (e) {
       console.error('Download error:', e);
+      showToast('No se pudo iniciar la descarga. Intenta abrir en otro navegador.', 'error');
     } finally {
       setDownloading(false);
     }
   };
+
 
   // Mensaje de compartir: usar custom del backend (PRO/ENTERPRISE) o generar dinámicamente
   // Custom message puede usar {producto} y {marca} como variables
@@ -295,38 +331,42 @@ export function ResultDisplay({
     setShareError(null);
     setSharing(true);
     const shareText = getShareText(productName, brandName, brandPlan);
+    const inApp = isIAB();
+
     try {
       const shareTargetUrl = pluginView ? imageUrl : getProxiedImageUrl(imageUrl, brandPlan);
 
-      if (pluginView && !navigator.share) {
-        const popup = window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
-        if (popup) {
-          setShareError('Imagen abierta en una nueva pestaña para compartirla.');
-          return;
-        }
-      }
-
       if (navigator.share) {
         try {
-          if (pluginView) {
-            await navigator.share({
-              title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
-              text: shareText,
-              url: shareTargetUrl,
-            });
-          } else {
-            const res = await fetch(shareTargetUrl);
-            const blob = await res.blob();
-            const file = new File([blob], 'prueba-virtual.jpg', { type: blob.type || 'image/jpeg' });
+          const shareData: ShareData = {
+            title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
+            text: shareText,
+            url: shareTargetUrl,
+          };
 
-            await navigator.share({
-              title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
-              text: shareText,
-              files: [file],
-            });
+          // Compartir archivos en Instagram/IAB suele fallar o bloquearse.
+          // Priorizamos compartir solo Texto + URL en esos entornos.
+          const canShareFiles = !inApp && !pluginView && 
+                                navigator.canShare && 
+                                navigator.canShare({ files: [new File([], 'test.jpg', { type: 'image/jpeg' })] });
+
+          if (canShareFiles) {
+            try {
+              const res = await fetch(shareTargetUrl);
+              const blob = await res.blob();
+              const file = new File([blob], 'prueba-virtual.jpg', { type: blob.type || 'image/jpeg' });
+              if (navigator.canShare({ files: [file] })) {
+                shareData.files = [file];
+              }
+            } catch (fileErr) {
+              console.warn('Error al preparar archivo para compartir:', fileErr);
+            }
           }
+
+          await navigator.share(shareData);
           return;
         } catch (_nativeShareError) {
+          // Si falla con archivos o URL completa, intentamos lo más simple
           try {
             await navigator.share({
               title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
@@ -338,30 +378,30 @@ export function ResultDisplay({
         }
       }
 
-      if (pluginView) {
+      if (inApp || pluginView) {
         const popup = window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
         if (popup) {
-          setShareError('Imagen abierta en una nueva pestaña para compartirla.');
+          showToast('Imagen abierta para compartir.', 'info');
           return;
         }
       }
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        // Copiar texto + URL para que el usuario pueda pegar en WhatsApp u otra red
         const clipboardText = `${shareText}\n\n${shareTargetUrl}`;
         await navigator.clipboard.writeText(clipboardText);
-        setShareError('Mensaje copiado. Pégalo en WhatsApp u otra red social.');
+        showToast('Mensaje copiado. Pégalo en WhatsApp o Instagram.', 'success');
         return;
       }
 
       window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
     } catch (error) {
       console.error('Error al compartir:', error);
-      setShareError('No se pudo compartir en este dispositivo.');
+      showToast('No se pudo compartir en este dispositivo.', 'error');
     } finally {
       setSharing(false);
     }
   };
+
 
   const handleFeedbackSubmit = async () => {
     if (!feedbackType || !generationId || !brandSlug) return;
@@ -750,6 +790,14 @@ export function ResultDisplay({
           </div>
         </div>
       )}
+
+      <Toast 
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast(prev => ({ ...prev, show: false }))}
+      />
     </>
   );
 }
+
