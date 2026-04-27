@@ -220,15 +220,7 @@ router.get('/me/woocommerce-metrics', (req, res) => brandsController.getWooComme
 
 
 
-// PATCH /api/brands/me - Actualizar configuración de la marca
-
-// Permitimos actualización para TRIAL para que puedan configurar su landing
-
-router.patch('/me', (req, res) => brandsController.updateMe(req, res));
-
-
-
-// GET /api/brands/me/payments - Historial de pagos de la marca autenticada
+// PATCH /api/brands/me/payments - Historial de pagos de la marca autenticada
 
 router.get('/me/payments', async (req: any, res) => {
 

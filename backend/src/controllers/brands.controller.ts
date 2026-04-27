@@ -52,8 +52,6 @@ export class BrandsController {
 
 
       const brand = await authService.getBrandById(req.brand.id);
-      console.log('[DEBUG getMe] req.brand.id:', req.brand.id);
-      console.log('[DEBUG getMe] brand encontrado:', brand);
 
       if (!brand) {
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
@@ -531,9 +529,9 @@ export class BrandsController {
       return res.status(200).json(brandWithoutPassword);
 
     } catch (error: any) {
-
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
       console.error('Error en updateMe:', error);
-
 
 
       if (error.message.includes('hexadecimal') || error.message.includes('slug') || error.message.includes('uso')) {
