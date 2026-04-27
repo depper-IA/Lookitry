@@ -61,7 +61,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
   const isMinilandingOrPlugin = true; // Por definición, este widget es para landing/plugin
 
   return (
-    <div className="flex flex-col font-sans transition-all duration-700 min-h-[500px]">
+    <div className="flex flex-col font-sans transition-all duration-700 min-h-screen min-h-[100dvh] w-full">
       {step === 'generating' && (
         <div className="flex-1 flex items-center justify-center p-6">
           <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
