@@ -112,24 +112,21 @@ export interface UpdateBrandDto {
 
 export class BrandsService {
 
-  async getBrandById(brandId: string): Promise<Brand | null> {
+async getBrandById(brandId: string): Promise<Brand | null> {
+    if (!brandId) return null;
 
     const { data, error } = await supabaseAdmin
-
       .from('brands')
-
       .select('*')
-
       .eq('id', brandId)
+      .maybeSingle();
 
-      .single();
-
-
-
-    if (error || !data) return null;
+    if (error) {
+      console.error('[brandsService.getBrandById] Error:', error);
+      return null;
+    }
 
     return data as Brand;
-
   }
 
 

@@ -1298,33 +1298,22 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
 
 
-  async getBrandById(brandId: string): Promise<Brand | null> {
+async getBrandById(brandId: string): Promise<Brand | null> {
+    if (!brandId) return null;
 
     const { data, error } = await supabaseAdmin
-
       .from('brands')
-
       .select('*')
-
       .eq('id', brandId)
+      .maybeSingle();
 
-      .single();
-
-
-
-    if (error || !data) {
-
+    if (error) {
+      console.error('[authService.getBrandById] Error:', error);
       return null;
-
     }
 
-
-
-    return data as Brand;
-
+return data as Brand;
   }
-
-
 
   async getBrandByApiKey(apiKey: string): Promise<Brand | null> {
 
