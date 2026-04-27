@@ -108,15 +108,17 @@ function ProbadorHero({ brand, onScrollDown, isPreview = false }: { brand: Brand
 }
 
 function ProbadorTrustBar({ brand }: { brand: BrandData }) {
-  const rating = brand.rating ?? 4.9;
+  const rating = brand.rating ?? 0;
   const reviews = brand.total_reviews ?? 0;
+  const hasRating = rating > 0;
+  const hasReviews = reviews > 0;
+
   const items = [
-    { value: rating.toFixed(1), label: 'rating' },
-    ...(reviews > 0 ? [{ value: `+${reviews}`, label: 'pruebas' }] : []),
-    { value: '~12s', label: 'tiempo' },
-    { value: 'IA', label: 'tech' },
+    ...(hasRating ? [{ value: rating.toFixed(1), label: 'rating' }] : []),
+    ...(hasReviews ? [{ value: `+${reviews}`, label: 'pruebas' }] : []),
   ];
-  const theme = useContrastTheme('#ffffff');
+
+  if (items.length === 0) return null;
 
   return (
     <div className="flex border-b overflow-x-auto no-scrollbar" style={{ backgroundColor: theme.bg, borderColor: theme.border }}>
