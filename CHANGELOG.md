@@ -1,5 +1,42 @@
 # CHANGELOG — Lookitry
 
+## 26 de Abril 2026 — Auditoría y Correcciones Widget Try-On (UI/UX/Responsive)
+
+### Auditoría Completa Realizada
+
+| Dimensión | Score Antes | Score Después |
+|-----------|------------|--------------|
+| Accessibility | 2/4 | ~3/4 |
+| Performance | 2/4 | ~3/4 |
+| Responsive | 2/4 | ~3/4 |
+| Theming | 1/4 | ~3/4 |
+| Anti-Patterns | 1/4 | ~3/4 |
+| **TOTAL** | **8/20** | **~14/20** |
+
+### Issues Corregidos (P0-P3)
+
+| Prioridad | Issue | Archivo |
+|-----------|-------|---------|
+| **P0** | PriceTag hardcoded `#FF5C3A` ahora acepta `primaryColor` | `shared.tsx` |
+| **P0** | AI aesthetic eliminada de TemplateBoldProStudio (blur-3xl, glassmorphism, ambient orbs) | `TemplateBoldProStudio.tsx` |
+| **P1** | Creado hook compartido `useDeviceSize.ts` para eliminar ResizeObserver duplicado | Nuevo archivo |
+| **P1** | Removido `whileHover` de grids de productos (performance) | `ProductGridEditorial.tsx`, `MobileProductGrid.tsx` |
+| **P1** | Fix contraste modo claro (textMuted) | `TemplateModernSidebar.tsx` |
+| **P1** | Fix `max-h-[65vh]` overflow en SelfieUploader mobile | `SelfieUploader.tsx` |
+| **P1** | Fix safe area insets en TemplateBoldProStudio (iOS) | `TemplateBoldProStudio.tsx` |
+| **P1** | Reducido tamaño de botones en mobile (py-5 → py-4) | `TemplateBoldProStudio.tsx` |
+| **P2** | Agregado `focus-visible:ring` para navegación por teclado | `ResultDisplay.tsx`, `ProductGridEditorial.tsx` |
+| **P3** | Centralizado `getBadgeColor()` para badges | `shared.tsx`, `MobileProductGrid.tsx` |
+
+### Nuevos Archivos
+- `frontend/src/components/tryon/templates/hooks/useDeviceSize.ts` — Hook compartido para device detection
+
+### Commits
+- `f71c6e6` — fix: P0-P1 Widget Try-On corrections
+- `7d6d65c` — fix(tryon): add focus-visible rings for keyboard nav and centralize badge colors
+
+---
+
 ## 26 de Abril 2026 — Fix Widget Banner Principal
 
 ### Problema
