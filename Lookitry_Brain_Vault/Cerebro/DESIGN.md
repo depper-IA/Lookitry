@@ -257,6 +257,26 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 - `TemplateMinimalTopBar` — Top bar minimal
 - `TemplateModernSidebar` — Sidebar moderno
 - `TemplateBoldProStudio` — Bold Pro Studio
+- `TemplateLandingEmbed` — Para embebidos en landing pages
+- `TemplateShowcase` — Showcase de producto con gallery
+
+### 8.10 Admin y Mission Control
+- `MissionControl.tsx` — Dashboard central de métricas
+- `AgentDetailModal.tsx` — Modal de detalle de agente
+- `AdminAuditLog.tsx` — Log de auditoría de acciones admin
+- `SecurityDashboard.tsx` — Dashboard de seguridad
+- `LoginAuditTable.tsx` — Tabla de auditoría de login
+- `EmailCampaignManager.tsx` — Gestor de campañas de email
+- `LeadPipelineTable.tsx` — Pipeline de leads con estados
+- `EnterpriseCalculator.tsx` — Calculadora de plan enterprise
+- `ConfirmDialog.tsx` — Diálogo de confirmación
+- `AdminNotifications.tsx` — Panel de notificaciones admin
+
+### 8.11 Social OS (Lookitry Social OS)
+- `SocialContentGenerator.tsx` — Generador de contenido
+- `CarouselCreator.tsx` — Creador de carousels Instagram
+- `MusicGenerator.tsx` — Generador de música TikTok
+- `BufferScheduler.tsx` — Programador de posts via Buffer
 
 ---
 
@@ -268,6 +288,8 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 | `TemplateMinimalTopBar` | Top bar minimal |
 | `TemplateModernSidebar` | Sidebar moderno |
 | `TemplateBoldProStudio` | Bold Pro Studio |
+| `TemplateLandingEmbed` | Para embebidos en landing pages |
+| `TemplateShowcase` | Showcase de producto con gallery |
 
 ---
 
@@ -305,7 +327,43 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 | `completed` | Completada |
 | `failed` | Fallida |
 
-### 10.5 Páginas de Error y Estado
+### 10.5 Estados de Leads
+| Estado | Descripción |
+|--------|-------------|
+| `NEW` | Lead nuevo |
+| `CONTACTED` | Contactado |
+| `QUALIFIED` | Calificado |
+| `INTERESTED` | Interesado |
+| `CONVERTED` | Convertido a cliente |
+| `LOST` | Perdido |
+
+### 10.6 Estados de Blog
+| Estado | Descripción |
+|--------|-------------|
+| `draft` | Borrador |
+| `pending` | Pendiente de procesamiento |
+| `processing` | Procesando (n8n) |
+| `published` | Publicado |
+| `failed` | Fallido |
+
+### 10.7 Estados de Outreach
+| Estado | Descripción |
+|--------|-------------|
+| `PENDING` | Pendiente |
+| `SENT` | Enviado |
+| `DELIVERED` | Entregado |
+| `OPENED` | Abierto |
+| `REPLIED` | Respondido |
+| `FAILED` | Fallido |
+
+### 10.8 Estados de Agentes
+| Estado | Descripción |
+|--------|-------------|
+| `online` | Disponible |
+| `busy` | Ocupado (trabajando) |
+| `offline` | Desconectado |
+
+### 10.9 Páginas de Error y Estado
 | Página | Archivo | Estándar de Diseño |
 |--------|---------|---------------------|
 | **404 Not Found** | `not-found.tsx` | Branding central, soporte Light/Dark, `pt-40` para Navbar. |
@@ -337,4 +395,4 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 
 Este documento define el sistema de diseño de Lookitry. Cualquier nuevo componente o página debe seguir estas reglas.
 
-**Última actualización:** Abril 2026
+**Última actualización:** Abril 2026 - v2.0 (añadidos Social OS, Mission Control, estados de leads/outreach/agentes)

@@ -2,6 +2,33 @@
 
 ---
 
+## 2026-04-26
+
+### docs(brain-vault): Actualización completa de documentación del Cerebro
+
+**Resumen:** Se actualizaron los documentos principales del Cerebro para reflejar la arquitectura actual del sistema.
+
+#### Archivos Actualizados
+
+| Archivo | Cambios Principales |
+|---------|---------------------|
+| **PRD.md** | Añadido sistema de Blog Automation (3 workflows), Email Marketing (Brevo), Social OS, Sistema de Agentes v3.0, Account Lockout, estados de leads/outreach |
+| **DESIGN.md** | Nuevos componentes (Mission Control, AgentDetailModal, LoginAuditTable, EmailCampaignManager), 6 templates de widget, estados de agentes/outreach/blog |
+| **TECH_STACK.md** | Sistema de Agentes v3.0, Lookitry Social OS, Account Lockout, Seguridad reforzada con campos `failed_login_attempts` y `locked_until` |
+| **REGLAS_IMPORTANTES.md** | Nueva sección 14 (Account Lockout, Login Audit, Session Security, Cookie Security) |
+| **Esquema_Base_Datos.md** | Añadidas tablas `email_campaigns`, `email_campaign_recipients`, campos de seguridad en brands |
+| **Integracion_n8n.md** | Actualizados webhooks de blog (Topic Generator, Article Producer, Image Generator), añadido problema de n8n Task Runner |
+
+#### Nueva Arquitectura Documentada
+
+- **Blog Automation**: 3 workflows n8n independientes (Topic Generator → Article Producer → Image Generator)
+- **Email Marketing**: Brevo SMTP con batching (50 emails/10 min), límite 300/día
+- **Sistema de Agentes v3.0**: Sammantha orquestadora, 10 agentes especializados, tracking automático
+- **Lookitry Social OS**: GCP Vertex AI + SonAuto AI + Buffer MCP, ~$0.20/post
+- **Seguridad**: Account lockout (5 intentos = 15 min), login audit, session TTL 7 días
+
+---
+
 ## 2026-04-22
 
 ### refactor(brain-vault): Auditoría de integridad + limpieza de archivos obsoletos
