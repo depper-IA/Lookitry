@@ -34,6 +34,14 @@
 ### Commits
 - `f71c6e6` — fix: P0-P1 Widget Try-On corrections
 - `7d6d65c` — fix(tryon): add focus-visible rings for keyboard nav and centralize badge colors
+- `48752ef` — fix(widget): correct syntax errors and improve accessibility in try-on templates
+
+### Issues Pendientes Resueltos
+- Fix `--bg` variable no definida en gradient TemplateShowcase
+- StepBar `whileTap` simplificado (0.95 → 0.9)
+- FriendlyProductSelector aria-label mejorado
+- SidebarProductList feedback táctil con CSS
+- globals.css: regla `.active\:scale-95:active` añadida
 
 ---
 
