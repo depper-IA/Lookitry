@@ -1,54 +1,64 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+// Bandera estilizada con código ISO
+function FlagBadge({ code }: { code: string }) {
+  return (
+    <span className="inline-flex items-center justify-center w-6 h-4 rounded-sm text-[10px] font-bold uppercase border border-white/20"
+      style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
+    >
+      {code}
+    </span>
+  );
+}
+
 interface Country {
   code: string;
   name: string;
   prefix: string;
-  flag: string;
 }
 
 const COUNTRIES: Country[] = [
   // América del Norte
-  { code: 'US', name: 'Estados Unidos', prefix: '+1', flag: '🇺🇸' },
-  { code: 'CA', name: 'Canadá', prefix: '+1', flag: '🇨🇦' },
+  { code: 'US', name: 'Estados Unidos', prefix: '+1' },
+  { code: 'CA', name: 'Canadá', prefix: '+1' },
   // América Central
-  { code: 'MX', name: 'México', prefix: '+52', flag: '🇲🇽' },
-  { code: 'BZ', name: 'Belice', prefix: '+501', flag: '🇧🇿' },
-  { code: 'CR', name: 'Costa Rica', prefix: '+506', flag: '🇨🇷' },
-  { code: 'SV', name: 'El Salvador', prefix: '+503', flag: '🇸🇻' },
-  { code: 'GT', name: 'Guatemala', prefix: '+502', flag: '🇬🇹' },
-  { code: 'HN', name: 'Honduras', prefix: '+504', flag: '🇭🇳' },
-  { code: 'NI', name: 'Nicaragua', prefix: '+505', flag: '🇳🇮' },
-  { code: 'PA', name: 'Panamá', prefix: '+507', flag: '🇵🇦' },
+  { code: 'MX', name: 'México', prefix: '+52' },
+  { code: 'BZ', name: 'Belice', prefix: '+501' },
+  { code: 'CR', name: 'Costa Rica', prefix: '+506' },
+  { code: 'SV', name: 'El Salvador', prefix: '+503' },
+  { code: 'GT', name: 'Guatemala', prefix: '+502' },
+  { code: 'HN', name: 'Honduras', prefix: '+504' },
+  { code: 'NI', name: 'Nicaragua', prefix: '+505' },
+  { code: 'PA', name: 'Panamá', prefix: '+507' },
   // Caribe
-  { code: 'AG', name: 'Antigua y Barbuda', prefix: '+1', flag: '🇦🇬' },
-  { code: 'BS', name: 'Bahamas', prefix: '+1', flag: '🇧🇸' },
-  { code: 'BB', name: 'Barbados', prefix: '+1', flag: '🇧🇧' },
-  { code: 'CU', name: 'Cuba', prefix: '+53', flag: '🇨🇺' },
-  { code: 'DM', name: 'Dominica', prefix: '+1', flag: '🇩🇲' },
-  { code: 'DO', name: 'República Dominicana', prefix: '+1', flag: '🇩🇴' },
-  { code: 'GD', name: 'Granada', prefix: '+1', flag: '🇬🇩' },
-  { code: 'HT', name: 'Haití', prefix: '+509', flag: '🇭🇹' },
-  { code: 'JM', name: 'Jamaica', prefix: '+1', flag: '🇯🇲' },
-  { code: 'KN', name: 'San Cristóbal y Nieves', prefix: '+1', flag: '🇰🇳' },
-  { code: 'VC', name: 'San Vicente y las Granadinas', prefix: '+1', flag: '🇻🇨' },
-  { code: 'LC', name: 'Santa Lucía', prefix: '+1', flag: '🇱🇨' },
-  { code: 'TT', name: 'Trinidad y Tobago', prefix: '+1', flag: '🇹🇹' },
+  { code: 'AG', name: 'Antigua y Barbuda', prefix: '+1' },
+  { code: 'BS', name: 'Bahamas', prefix: '+1' },
+  { code: 'BB', name: 'Barbados', prefix: '+1' },
+  { code: 'CU', name: 'Cuba', prefix: '+53' },
+  { code: 'DM', name: 'Dominica', prefix: '+1' },
+  { code: 'DO', name: 'República Dominicana', prefix: '+1' },
+  { code: 'GD', name: 'Granada', prefix: '+1' },
+  { code: 'HT', name: 'Haití', prefix: '+509' },
+  { code: 'JM', name: 'Jamaica', prefix: '+1' },
+  { code: 'KN', name: 'San Cristóbal y Nieves', prefix: '+1' },
+  { code: 'VC', name: 'San Vicente y las Granadinas', prefix: '+1' },
+  { code: 'LC', name: 'Santa Lucía', prefix: '+1' },
+  { code: 'TT', name: 'Trinidad y Tobago', prefix: '+1' },
   // América del Sur
-  { code: 'AR', name: 'Argentina', prefix: '+54', flag: '🇦🇷' },
-  { code: 'BO', name: 'Bolivia', prefix: '+591', flag: '🇧🇴' },
-  { code: 'BR', name: 'Brasil', prefix: '+55', flag: '🇧🇷' },
-  { code: 'CL', name: 'Chile', prefix: '+56', flag: '🇨🇱' },
-  { code: 'CO', name: 'Colombia', prefix: '+57', flag: '🇨🇴' },
-  { code: 'EC', name: 'Ecuador', prefix: '+593', flag: '🇪🇨' },
-  { code: 'GY', name: 'Guyana', prefix: '+592', flag: '🇬🇾' },
-  { code: 'PY', name: 'Paraguay', prefix: '+595', flag: '🇵🇾' },
-  { code: 'PE', name: 'Perú', prefix: '+51', flag: '🇵🇪' },
-  { code: 'SR', name: 'Surinam', prefix: '+597', flag: '🇸🇷' },
-  { code: 'UY', name: 'Uruguay', prefix: '+598', flag: '🇺🇾' },
-  { code: 'VE', name: 'Venezuela', prefix: '+58', flag: '🇻🇪' },
+  { code: 'AR', name: 'Argentina', prefix: '+54' },
+  { code: 'BO', name: 'Bolivia', prefix: '+591' },
+  { code: 'BR', name: 'Brasil', prefix: '+55' },
+  { code: 'CL', name: 'Chile', prefix: '+56' },
+  { code: 'CO', name: 'Colombia', prefix: '+57' },
+  { code: 'EC', name: 'Ecuador', prefix: '+593' },
+  { code: 'GY', name: 'Guyana', prefix: '+592' },
+  { code: 'PY', name: 'Paraguay', prefix: '+595' },
+  { code: 'PE', name: 'Perú', prefix: '+51' },
+  { code: 'SR', name: 'Surinam', prefix: '+597' },
+  { code: 'UY', name: 'Uruguay', prefix: '+598' },
+  { code: 'VE', name: 'Venezuela', prefix: '+58' },
   // España
-  { code: 'ES', name: 'España', prefix: '+34', flag: '🇪🇸' },
+  { code: 'ES', name: 'España', prefix: '+34' },
 ];
 
 interface PhoneInputProps {
@@ -166,7 +176,7 @@ export function PhoneInput({
             aria-haspopup="listbox"
             aria-expanded={isOpen}
           >
-            <span className="text-base">{selectedCountry.flag}</span>
+            <FlagBadge code={selectedCountry.code} />
             <span className="flex-1 text-left">{selectedCountry.prefix}</span>
             <svg
               className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -232,7 +242,7 @@ export function PhoneInput({
                       role="option"
                       aria-selected={country.prefix === selectedPrefix}
                     >
-                      <span className="text-base">{country.flag}</span>
+                      <FlagBadge code={country.code} />
                       <span className="flex-1 text-left">{country.name}</span>
                       <span style={{ color: 'var(--text-muted)' }}>{country.prefix}</span>
                     </button>
