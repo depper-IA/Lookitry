@@ -386,65 +386,70 @@ export default function LandingFooter() {
         </div>
       </div>
 
-      <div className="mb-16 hidden grid-cols-1 gap-10 sm:mb-20 sm:grid sm:grid-cols-2 sm:gap-14 md:mb-24 md:gap-16 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:gap-20">
-        <div>
-          <Link href="/" className="group mb-6 inline-flex items-center gap-2.5 sm:mb-8 sm:gap-3 md:mb-10">
-            <div className="relative h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10">
-              <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
-              <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
-            </div>
-            <span className="font-jakarta text-2xl font-bold tracking-tighter text-black dark:text-white sm:text-3xl">
-              Look<span className="text-[#FF5C3A]">itry</span>
-            </span>
-          </Link>
-          <p className="mb-6 max-w-xs text-sm font-light leading-relaxed text-black/70 dark:text-white/70 sm:mb-8 sm:text-base">
-            Empoderamos al retail con Inteligencia Artificial. La primera solución de visualización personalizada líder en Colombia y Latinoamérica.
-          </p>
-          <div className="mb-6 sm:mb-8 md:mb-10">
-            <Link
-              href="/sobre-nosotros"
-              className="border-b border-[#FF5C3A]/30 pb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#FF5C3A] transition-colors hover:text-[#FF5C3A]/80 sm:text-[11px] sm:tracking-[0.2em]"
-            >
-              Conoce nuestra historia
+      {/* Desktop Layout */}
+      <div className="mb-16 hidden lg:block">
+        <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-20">
+          {/* Brand Column */}
+          <div>
+            <Link href="/" className="group mb-6 inline-flex items-center gap-2.5">
+              <div className="relative h-10 w-10">
+                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
+                <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
+              </div>
+              <span className="font-jakarta text-3xl font-bold tracking-tighter text-black dark:text-white">
+                Look<span className="text-[#FF5C3A]">itry</span>
+              </span>
             </Link>
-          </div>
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            {[
-              { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
-              { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
-              { Icon: MessageCircle, href: socialLinks.whatsapp, label: 'WhatsApp' },
-            ].map((item, idx) => (
+            <p className="mb-6 max-w-xs text-base font-light leading-relaxed text-black/70 dark:text-white/70">
+              Empoderamos al retail con Inteligencia Artificial. La primera solución de visualización personalizada líder en Colombia y Latinoamérica.
+            </p>
+            <div className="mb-10">
               <Link
-                key={idx}
-                href={item.href}
+                href="/sobre-nosotros"
+                className="border-b border-[#FF5C3A]/30 pb-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#FF5C3A] transition-colors hover:text-[#FF5C3A]/80"
+              >
+                Conoce nuestra historia
+              </Link>
+            </div>
+            <div className="flex items-center gap-3">
+              {[
+                { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
+                { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
+                { Icon: MessageCircle, href: socialLinks.whatsapp, label: 'WhatsApp' },
+              ].map((item, idx) => (
+                <Link
+                  key={idx}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-btn group flex h-11 w-11 items-center justify-center rounded-xl border border-black/5 bg-black/5 text-black/60 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
+                  aria-label={item.label}
+                >
+                  <item.Icon size={18} aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110" />
+                </Link>
+              ))}
+              <Link
+                href={socialLinks.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
-                aria-label={item.label}
+                className="social-btn group flex h-11 w-11 items-center justify-center rounded-xl border border-black/5 bg-black/5 text-black/60 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
+                aria-label="TikTok"
+                suppressHydrationWarning
               >
-                <item.Icon size={18} aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110" />
+                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true" suppressHydrationWarning>
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
+                </svg>
               </Link>
-            ))}
-            <Link
-              href={socialLinks.tiktok}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
-              aria-label="TikTok"
-              suppressHydrationWarning
-            >
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" aria-hidden="true" suppressHydrationWarning>
-                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
-              </svg>
-            </Link>
+            </div>
           </div>
 
+          {/* Link Columns */}
           {footerSections.map((section) => (
             <div key={section.title}>
-              <h5 className="mb-6 font-jakarta text-[9px] font-bold uppercase tracking-[0.25em] text-black dark:text-white sm:mb-8 sm:text-[10px] sm:tracking-[0.3em] md:mb-10">
+              <h5 className="mb-10 font-jakarta text-[10px] font-bold uppercase tracking-[0.3em] text-black dark:text-white">
                 {section.title}
               </h5>
-              <ul className="flex flex-col gap-3 sm:gap-4 md:gap-5">
+              <ul className="flex flex-col gap-5">
                 {section.links.map((item) => (
                   <li key={item.name}>
                     <Link
