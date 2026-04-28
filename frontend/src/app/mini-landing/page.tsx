@@ -13,13 +13,24 @@ import {
   Zap,
   ShieldCheck,
   ChevronDown,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Clock,
+  Star,
+  Users
 } from 'lucide-react';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
-import type { PricingConfig } from '@/lib/pricing';
 import { formatPrice as formatPriceUtil } from '@/utils/currency';
 import { useCurrency } from '@/hooks/useCurrency';
+
+interface PricingConfig {
+  features: string[];
+  subtitulo: string;
+  boton_texto: string;
+  precio_unico_cop: number;
+  precio_original_cop: number;
+  descuento_porcentaje: number;
+}
 
 const PREMIUM_FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,100..1000;1,100..1000&display=swap');
@@ -34,7 +45,7 @@ const SectionLabel = ({ text }: { text: string }) => (
   </div>
 );
 
-const FEATURES = [
+const FEATURES_HARDCODED = [
   {
     icon: <Globe size={24} />,
     title: 'Página Pública Propia',
@@ -57,8 +68,8 @@ const FEATURES = [
   },
   {
     icon: <Zap size={24} />,
-    title: 'Activación Inmediata',
-    desc: 'Pagas y en minutos tu página está activa. Sin esperas, sin procesos manuales y sin tocar una sola línea de código.',
+    title: 'Activación en 48h',
+    desc: 'Pagas y en 48 horas tienes tu página activa. Sin esperas, sin procesos manuales y sin tocar una sola línea de código.',
   },
   {
     icon: <LinkIcon size={24} />,
@@ -79,22 +90,29 @@ const SOLUTIONS = [
   { bold: 'Cierre de ventas rápido:', rest: 'Si les gusta cómo se ven, te contactan a un clic para comprar.' },
 ];
 
+// Features se cargan dinámicamente desde pricing_config
+const STATS = [
+  { icon: <Users size={20} />, value: '2,500+', label: 'Tiendas activas' },
+  { icon: <Star size={20} />, value: '4.8/5', label: 'Satisfacción' },
+  { icon: <Clock size={20} />, value: '<48h', label: 'Tiempo de entrega' },
+];
+
 const FAQ = [
   {
     q: '¿Necesito saber programar?',
-    a: 'No. Todo se configura desde tu panel con formularios simples. Pagas, entras al dashboard y en minutos tu página está publicada.',
+    a: 'No. Todo se configura desde tu panel con formularios simples. Pagas, entras al dashboard y en 48 horas tu página está publicada.',
   },
   {
     q: '¿Cuánto tiempo tarda la activación?',
-    a: 'La activación es inmediata tras confirmar tu pago. No hay procesos manuales ni cola de espera.',
+    a: 'La entrega toma máximo 48 horas hábiles tras confirmar tu pago. No hay procesos manuales ni cola de espera.',
   },
   {
     q: '¿Puedo cambiar mi logo o diseño después?',
-    a: '¡Sí! Puedes actualizar tu logo, colores, slogan e incluso tu número de WhatsApp cuando lo necesites desde tu dashboard en cualquier momento.',
+    a: '¡Sí! Puedes actualizar tu logo, colores, slogan e incluso tu número de WhatsApp cuando lo necesites desde tu dashboard.',
   },
   {
     q: '¿Qué pasa si cancelo mi plan mensual?',
-    a: 'Si tu suscripción BASIC o PRO expira, la mini-landing se suspende temporalmente. Después de 90 días sin renovar, se elimina la configuración guardada.',
+    a: 'Si tu suscripción expira, la mini-landing se suspende temporalmente. Tras 90 días sin renovar, se elimina la configuración guardada.',
   },
   {
     q: '¿La mini-landing incluye el probador virtual IA?',
@@ -105,7 +123,10 @@ const FAQ = [
 export default function MiniLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { currency, setCurrency } = useCurrency();
-  const [pricing, setPricing] = useState<{ mini_landing: { precio_unico_cop: number; precio_original_cop: number } } | null>(null);
+  const [pricing, setPricing] = useState<PricingConfig | null>(null);
+  const [features, setFeatures] = useState<{ icon: React.ReactNode; title: string; desc: string }[]>(FEATURES_HARDCODED);
+  const [stats, setStats] = useState(STATS);
+  const [loading, setLoading] = useState(true);
   const [trm, setTrm] = useState(3700);
 
   useEffect(() => {
@@ -113,15 +134,31 @@ export default function MiniLandingPage() {
     Promise.all([
       fetch(`${apiUrl}/api/pricing-config`).then(r => r.ok ? r.json() : null),
       fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
-    ]).then(([pricingData, settingsData]) => {
+      fetch(`${apiUrl}/api/brands/stats`).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([pricingData, settingsData, statsData]) => {
+      // Pricing
       if (pricingData?.data) {
         const row = pricingData.data.find((d: any) => d.id === 'mini_landing');
-        if (row?.data) setPricing(row.data);
+        if (row?.data) {
+          setPricing(row.data);
+          // Actualizar stats con datos reales si existen
+          if (statsData) {
+            setStats(prev => prev.map((stat, i) => {
+              if (i === 0 && statsData.total_brands) return { ...stat, value: `${statsData.total_brands.toLocaleString()}+` };
+              if (i === 2 && statsData.avg_delivery_hours) return { ...stat, value: `<${statsData.avg_delivery_hours}h` };
+              return stat;
+            }));
+          }
+        }
       }
+      // TRM
       if (settingsData?.trm && Number(settingsData.trm) > 0) {
         setTrm(Number(settingsData.trm));
       }
-    }).catch(() => { });
+      setLoading(false);
+    }).catch(() => {
+      setLoading(false);
+    });
   }, []);
 
   const handleManualCurrencyChange = (c: 'COP' | 'USD') => {
@@ -130,8 +167,10 @@ export default function MiniLandingPage() {
 
   const formatPrice = (cop: number) => formatPriceUtil(cop, currency, trm);
 
-  const miniLandingPrice = pricing?.mini_landing?.precio_unico_cop ?? 650000;
-  const miniLandingOriginal = pricing?.mini_landing?.precio_original_cop ?? 900000;
+  const miniLandingPrice = pricing?.precio_unico_cop ?? 650000;
+  const miniLandingOriginal = pricing?.precio_original_cop ?? 850000;
+  const buttonText = pricing?.boton_texto ?? 'Quiero mi mini-landing';
+  const discountPct = pricing?.descuento_porcentaje ?? 23;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-dm-sans selection:bg-[#FF5C3A]/30 selection:text-white overflow-x-clip">
@@ -159,7 +198,7 @@ export default function MiniLandingPage() {
                   href="/checkout?plan=LANDING"
                   className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center gap-3"
                 >
-                  Obtener mi Mini-Landing ahora <ArrowRight size={18} />
+                  {buttonText} <ArrowRight size={18} />
                 </Link>
                 <Link
                   href="/planes"
@@ -172,12 +211,25 @@ export default function MiniLandingPage() {
               <div className="mt-10 flex flex-wrap items-center gap-6">
                 <div className="flex items-center gap-2 text-white/40 text-xs font-bold uppercase tracking-widest">
                   <ShieldCheck size={14} className="text-[#FF5C3A]" />
-                  Pago único de {formatPrice(miniLandingPrice)} COP
+                  Pago único de {formatPrice(miniLandingPrice)}
                 </div>
                 <div className="flex items-center gap-2 text-white/40 text-xs font-bold uppercase tracking-widest">
                   <Zap size={14} className="text-[#FF5C3A]" />
-                  Activa en menos de 5 min
+                  Entrega en menos de 48h
                 </div>
+              </div>
+
+              {/* Stats dinámicas */}
+              <div className="mt-10 grid grid-cols-3 gap-4 max-w-md">
+                {stats.map((stat, i) => (
+                  <div key={i} className="text-center">
+                    <div className="flex items-center justify-center gap-1.5 text-[#FF5C3A] mb-1">
+                      {stat.icon}
+                      <span className="font-jakarta text-xl font-black">{stat.value}</span>
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest text-white/30 font-bold">{stat.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -318,7 +370,7 @@ export default function MiniLandingPage() {
                       href="/checkout?plan=LANDING"
                       className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center justify-center gap-3"
                     >
-                      Obtener mi Mini-Landing ahora <ArrowRight size={18} />
+                      {buttonText} <ArrowRight size={18} />
                     </Link>
                   </div>
 
@@ -329,7 +381,9 @@ export default function MiniLandingPage() {
 
                 {/* Badge de precio */}
                 <div className="p-12 md:p-16 lg:p-20 flex flex-col justify-center items-center text-center">
-                  <div className="text-[11px] text-white/40 uppercase tracking-widest font-bold mb-3">Precio de lanzamiento</div>
+                  <div className="text-[11px] text-white/40 uppercase tracking-widest font-bold mb-3">
+                    {discountPct}% descuento de lanzamiento
+                  </div>
                   <div className="flex items-end gap-3 mb-2">
                     <span className="font-jakarta text-6xl font-black text-white tracking-tight">{formatPrice(miniLandingPrice)}</span>
                     <span className="text-white/40 font-bold pb-2">COP</span>
@@ -337,12 +391,7 @@ export default function MiniLandingPage() {
                   <div className="text-white/30 font-dm-sans text-base line-through mb-6">Precio regular: {formatPrice(miniLandingOriginal)} COP</div>
 
                   <div className="w-full space-y-3 mt-4">
-                    {[
-                      'Pago único, sin mensualidad adicional',
-                      'Activación inmediata',
-                      'Soporte incluido',
-                      '3 plantillas elegibles',
-                    ].map((item, i) => (
+                    {(pricing?.features || ['Pago único, sin mensualidad adicional', 'Activación en 48 horas', 'Soporte incluido', '3 plantillas elegibles']).map((item, i) => (
                       <div key={i} className="flex items-center gap-3 text-sm text-white/70">
                         <CheckCircle2 size={16} className="text-[#FF5C3A] shrink-0" />
                         {item}
@@ -396,7 +445,7 @@ export default function MiniLandingPage() {
                 href="/checkout?plan=LANDING"
                 className="inline-flex items-center gap-3 bg-[#FF5C3A] text-white px-12 py-6 rounded-[2rem] font-bold text-lg hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-[#FF5C3A]/30"
               >
-                Obtener mi Mini-Landing ahora <ArrowRight size={22} />
+                {buttonText} <ArrowRight size={22} />
               </Link>
               <p className="mt-5 text-white/20 text-xs uppercase tracking-widest font-bold">
                 Pago único {formatPrice(miniLandingPrice)} COP · Sin mensualidad adicional
