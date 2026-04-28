@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { CookieConsent } from '@/components/ui/CookieConsent';
+import { CookieConsentModal } from '@/components/ui/CookieConsentModal';
 import { MobileBottomNav } from '@/components/ui/MobileBottomNav';
 
 export function RouteChrome() {
@@ -25,7 +25,7 @@ export function RouteChrome() {
   return (
     <>
       <MobileBottomNav pathname={pathname} />
-      <CookieConsent pathname={pathname} />
+      <CookieConsentModal />
     </>
   );
 }
