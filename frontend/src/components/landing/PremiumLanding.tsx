@@ -13,20 +13,43 @@ import { LandingSkeleton } from './LandingSkeleton';
 // CODE SPLITTING - Lazy loading de componentes below-the-fold
 // ============================================================================
 
-// Componentes above-the-fold: carga inmediata
+// Skeleton reutilizable para secciones above-the-fold
+const HeroSkeleton = () => <LandingSkeleton variant="hero" />;
+const NavSkeleton = () => <LandingSkeleton variant="stats" />;
+
+// Nav: carga inmediata para que siempre esté lista
 const LandingNav = dynamic(() => import('./LandingNav'), { ssr: true });
-const LandingHero = dynamic(() => import('./LandingHero'), { ssr: true });
-const LandingStats = dynamic(() => import('./LandingStats'), { ssr: true });
-const LandingSteps = dynamic(() => import('./LandingSteps'), { ssr: true });
-const LandingMiniLanding = dynamic(() => import('./LandingMiniLanding'), { ssr: true });
-const LandingPlugin = dynamic(() => import('./LandingPlugin'), { ssr: true });
+
+// Hero: skeleton mientras carga - es lo primero que ve el usuario
+const LandingHero = dynamic(() => import('./LandingHero'), {
+  ssr: false,
+  loading: () => <HeroSkeleton />
+});
+
+// Stats: skeleton mientras carga
+const LandingStats = dynamic(() => import('./LandingStats'), {
+  ssr: false,
+  loading: () => <LandingSkeleton variant="stats" />
+});
+
+// Steps: skeleton mientras carga
+const LandingSteps = dynamic(() => import('./LandingSteps'), {
+  ssr: false,
+  loading: () => <LandingSkeleton variant="steps" />
+});
+
+// MiniLanding: skeleton mientras carga
+const LandingMiniLanding = dynamic(() => import('./LandingMiniLanding'), { ssr: false });
+const LandingPlugin = dynamic(() => import('./LandingPlugin'), { ssr: false });
+
+// PromoBanner: carga inmediata
 const PromoBanner = dynamic(() => import('./PromoBanner').then(m => ({ default: m.PromoBanner })), { ssr: true });
 
-// Componentes below-the-fold: carga perezosa (solo cuando entran en viewport)
-// ssr:false = no render server-side = carga más rápida, menos blocking
+// Below-the-fold: skeleton de cards genérico
+const BelowTheFoldSkeleton = () => <LandingSkeleton />;
 const LandingPricing = dynamic(() => import('./LandingPricing'), {
   ssr: false,
-  loading: () => <BelowTheFoldSkeleton />
+  loading: () => <LandingSkeleton variant="pricing" />
 });
 const LandingPayments = dynamic(() => import('./LandingPayments'), { ssr: false });
 const ReviewsSlider = dynamic(
@@ -41,11 +64,6 @@ const ActiveCouponsBanner = dynamic(() => import('./ActiveCouponsBanner'), { ssr
 const PromoModal = dynamic(
   () => import('./PromoModal').then(m => ({ default: m.PromoModal })),
   { ssr: false }
-);
-
-// Skeleton placeholder para componentes en carga (BelowTheFold skeleton)
-const BelowTheFoldSkeleton = () => (
-  <LandingSkeleton />
 );
 
 interface PremiumLandingProps {
