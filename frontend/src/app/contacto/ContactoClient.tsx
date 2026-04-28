@@ -294,9 +294,9 @@ function WhatsAppCTA({ whatsappUrl, whatsappDisplay }: { whatsappUrl: string; wh
 }
 
 // Contact Channel Cards
-function ContactChannelCards() {
+function ContactChannelCards({ email }: { email: string }) {
   const channels = [
-    { icon: Mail, label: 'Email', title: 'Correo corporativo', value: 'info@lookitry.com', hint: 'Respuesta típica: menos de 24h hábiles' },
+    { icon: Mail, label: 'Email', title: 'Correo corporativo', value: email, hint: 'Respuesta típica: menos de 24h hábiles' },
     { icon: MessageCircle, label: 'WhatsApp', title: 'Soporte rápido', value: '+57 310 543 6281', hint: 'Ideal para onboarding e integración' },
     { icon: Calendar, label: 'Llamada', title: 'Agendar reunión', value: 'Schedule a call', hint: 'Demo personalizada de 30 min' },
   ];
@@ -402,6 +402,7 @@ type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error';
 export default function ContactoClient() {
   const [whatsappUrl, setWhatsappUrl] = useState(DEFAULT_WHATSAPP_URL);
   const [whatsappDisplay, setWhatsappDisplay] = useState(DEFAULT_WHATSAPP_DISPLAY);
+  const [contactEmail, setContactEmail] = useState('info@lookitry.com');
 
   useEffect(() => {
     fetchPublicPaymentSettings().then(settings => {
@@ -414,6 +415,9 @@ export default function ContactoClient() {
         if (formatted.length >= 10) {
           setWhatsappDisplay(`+57 ${formatted.slice(2, 4)} ${formatted.slice(4, 7)} ${formatted.slice(7)}`);
         }
+      }
+      if (settings?.manualEmail) {
+        setContactEmail(settings.manualEmail);
       }
     });
   }, []);
@@ -656,7 +660,7 @@ if (touched.has(name) && errors[name]) {
       {/* Right Column - WhatsApp CTA + Info Cards (40%) */}
       <div className="lg:col-span-2 space-y-6">
         <WhatsAppCTA whatsappUrl={whatsappUrl} whatsappDisplay={whatsappDisplay} />
-        <ContactChannelCards />
+        <ContactChannelCards email={contactEmail} />
       </div>
     </div>
   );

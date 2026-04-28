@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
 import ContactoClient from './ContactoClient';
+import HeroStatsClient from './HeroStatsClient';
 
 const BASE_URL = 'https://lookitry.com';
 
@@ -29,21 +30,8 @@ export default function ContactoPage() {
               Equipo comercial y técnico para activación, integración y optimización del probador virtual.
             </p>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto mb-8">
-              <div className="text-center">
-                <p className="font-jakarta text-2xl md:text-3xl font-bold text-white">500+</p>
-                <p className="text-xs text-white/50 mt-1">Marcas activas</p>
-              </div>
-              <div className="text-center">
-                <p className="font-jakarta text-2xl md:text-3xl font-bold text-white">10K+</p>
-                <p className="text-xs text-white/50 mt-1">Generaciones</p>
-              </div>
-              <div className="text-center">
-                <p className="font-jakarta text-2xl md:text-3xl font-bold text-white">24h</p>
-                <p className="text-xs text-white/50 mt-1">Respuesta máxima</p>
-              </div>
-            </div>
+            {/* Stats Row - Dynamic */}
+            <HeroStatsClient />
 
             {/* Trust Bar */}
             <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 py-4 border-t border-b border-[#1a1a1a]">
