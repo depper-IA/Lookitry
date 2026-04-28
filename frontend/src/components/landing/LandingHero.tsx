@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, RotateCcw, ImageIcon } from 'lucide-react';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
+import { PostDemoModal } from '@/components/landing/PostDemoModal';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div
@@ -89,6 +90,7 @@ export default function LandingHero() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showPostDemoModal, setShowPostDemoModal] = useState(false);
   const [hasUsedTrial, setHasUsedTrial] = useState<boolean | undefined>(undefined);
 
   // Config loading deferred to let main thread breathe after initial render
@@ -119,6 +121,23 @@ export default function LandingHero() {
     return () => {
       clearTimeout(timer1);
     };
+  }, []);
+
+  // Post-demo modal trigger: show 2s after result is ready
+  useEffect(() => {
+    if (step === 'result' && resultImage) {
+      const captured = localStorage.getItem('lead_captured');
+      if (!captured) {
+        const timer = setTimeout(() => setShowPostDemoModal(true), 2000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [step, resultImage]);
+
+  // Handle lead captured callback
+  const handleLeadCaptured = useCallback(() => {
+    localStorage.setItem('lead_captured', 'true');
+    setShowPostDemoModal(false);
   }, []);
 
   // Fetch trial status only when needed (on user interaction)
@@ -554,6 +573,12 @@ export default function LandingHero() {
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
+      />
+
+      <PostDemoModal
+        isOpen={showPostDemoModal}
+        onClose={() => setShowPostDemoModal(false)}
+        onLeadCaptured={handleLeadCaptured}
       />
     </section>
   );

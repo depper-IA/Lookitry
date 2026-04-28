@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
 import { ContactCards } from '@/components/landing/ContactCards';
+import ContactoClient from './ContactoClient';
 
 const BASE_URL = 'https://lookitry.com';
 
@@ -29,7 +30,12 @@ export default function ContactoPage() {
         </section>
 
         <section className="px-6 md:px-8 py-12 md:py-16">
-          <ContactCards />
+          <div className="max-w-3xl mx-auto mb-12">
+            <ContactoClient />
+          </div>
+          <div className="max-w-5xl mx-auto mt-16">
+            <ContactCards />
+          </div>
         </section>
       </main>
       <LandingFooter />
