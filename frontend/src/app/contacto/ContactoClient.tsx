@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Loader2, CheckCircle2, AlertCircle, Send, MessageCircle } from 'lucide-react';
+import { fetchPublicPaymentSettings, toWhatsAppUrl } from '@/services/public-config.service';
 
 // Types
 interface FormState {
@@ -312,9 +313,19 @@ const BUSINESS_TYPE_OPTIONS = [
 ];
 
 // WhatsApp fallback URL
-const WHATSAPP_URL = 'https://wa.me/573105436281';
+const DEFAULT_WHATSAPP_URL = 'https://wa.me/573105436281';
 
 export default function ContactoClient() {
+  const [whatsappUrl, setWhatsappUrl] = useState(DEFAULT_WHATSAPP_URL);
+
+  useEffect(() => {
+    fetchPublicPaymentSettings().then(settings => {
+      if (settings?.manualWhatsapp) {
+        setWhatsappUrl(toWhatsAppUrl(settings.manualWhatsapp));
+      }
+    });
+  }, []);
+
   const [formData, setFormData] = useState<FormState>({
     nombre: '',
     email: '',
@@ -443,7 +454,7 @@ export default function ContactoClient() {
             Te contactaremos en menos de 24 horas hábiles. También puedes escribirnos directamente por WhatsApp.
           </p>
           <a
-            href={WHATSAPP_URL}
+            href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 rounded-xl bg-[#25D366] px-6 py-3 text-sm font-bold text-white transition-all hover:scale-[1.02] hover:bg-[#20bd5a]"
@@ -579,7 +590,7 @@ export default function ContactoClient() {
 
           {/* WhatsApp fallback */}
           <a
-            href={WHATSAPP_URL}
+            href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-4 text-sm font-medium text-white/70 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white sm:flex-none"
