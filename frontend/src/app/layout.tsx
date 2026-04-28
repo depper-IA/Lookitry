@@ -105,6 +105,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Analytics } from '@/components/analytics/Analytics';
 import { RouteChrome } from '@/components/layout/RouteChrome';
 import { Toaster } from 'sonner';
+import { CookieConsentModal } from '@/components/ui/CookieConsentModal';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
@@ -182,6 +183,7 @@ style={
               },
             }}
           />
+          <CookieConsentModal />
         </ThemeProvider>
       </body>
     </html>
