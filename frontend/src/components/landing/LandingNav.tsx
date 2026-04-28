@@ -530,17 +530,38 @@ export default function LandingNav({
                 </div>
               </motion.div>
 
-              {/* Products Section */}
+              {/* Main Navigation Links */}
               <motion.div
                 custom={1}
                 variants={mobileCardVariants}
-                className="flex w-full flex-col items-center gap-2.5"
+                className="flex w-full flex-col gap-2"
               >
-                <p className="mb-0.5 text-[9px] font-black uppercase tracking-[0.25em] text-[#FF5C3A]/80">Productos Pro</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[#FF5C3A]/80">Navegación</p>
+                {menuLinks.map((link) => (
+                  <motion.div key={link.href} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="mobile-nav-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-black/12 hover:bg-black/[0.05] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
+                    >
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a] dark:text-white">{link.label}</span>
+                      <ArrowRight size={14} className="text-[#FF5C3A] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* Products Section */}
+              <motion.div
+                custom={2}
+                variants={mobileCardVariants}
+                className="flex w-full flex-col gap-2"
+              >
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[#FF5C3A]/80">Productos Pro</p>
                 {productLinks.map((prod, index) => (
                   <motion.div
                     key={prod.title}
-                    custom={index + 2}
+                    custom={index + 3}
                     variants={mobileCardVariants}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -548,7 +569,7 @@ export default function LandingNav({
                     <Link
                       href={prod.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-product-link group flex w-full items-center gap-3.5 rounded-2xl border border-black/8 bg-black/[0.03] p-3.5 text-left transition-all duration-200 hover:border-black/12 hover:bg-black/[0.05] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
+                      className="mobile-product-link group flex items-center gap-3.5 rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-black/12 hover:bg-black/[0.05] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
                     >
                       <motion.div
                         className="mobile-product-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FF5C3A]/10 transition-transform duration-300 group-hover:scale-110"
@@ -565,18 +586,39 @@ export default function LandingNav({
                 ))}
               </motion.div>
 
+              {/* Company Links */}
+              <motion.div
+                custom={6}
+                variants={mobileCardVariants}
+                className="flex w-full flex-col gap-2"
+              >
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[#FF5C3A]/80">Empresa</p>
+                {companyLinks.map((link) => (
+                  <motion.div key={link.href} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="mobile-company-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-black/12 hover:bg-black/[0.05] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
+                    >
+                      <span className="text-[11px] font-medium text-[#0a0a0a] dark:text-white">{link.title}</span>
+                      <ArrowRight size={14} className="text-[#FF5C3A] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+
               {/* Action Buttons */}
               <motion.div
-                custom={5}
+                custom={9}
                 variants={mobileCardVariants}
-                className="grid w-full grid-cols-2 gap-3"
+                className="flex w-full flex-col gap-2"
               >
                 {session ? (
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Link
                       href="/dashboard"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-panel-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                      className="mobile-panel-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                     >
                       Mi Panel
                     </Link>
@@ -586,7 +628,7 @@ export default function LandingNav({
                     <Link
                       href="/login"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-login-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                      className="mobile-login-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                     >
                       Ingresar
                     </Link>
@@ -599,7 +641,7 @@ export default function LandingNav({
                       fetchTrialDataIfNeeded();
                       setMobileMenuOpen(false);
                     }}
-                    className="mobile-trial-btn flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all duration-300 hover:shadow-2xl hover:shadow-[#FF5C3A]/30"
+                    className="mobile-trial-btn flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all duration-300 hover:shadow-2xl hover:shadow-[#FF5C3A]/30"
                   >
                     Trial {formatPrice(trialPriceCOP, currency, trm)}
                   </Link>
@@ -608,14 +650,14 @@ export default function LandingNav({
 
               {/* Divider */}
               <motion.div
-                custom={6}
+                custom={10}
                 variants={mobileCardVariants}
                 className="h-[1px] w-full bg-gradient-to-r from-transparent via-black/10 to-transparent dark:via-white/8"
               />
 
               {/* Footer Links */}
               <motion.div
-                custom={7}
+                custom={11}
                 variants={mobileCardVariants}
                 className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pb-1 text-[10px] font-medium text-black/25 dark:text-white/20"
               >
