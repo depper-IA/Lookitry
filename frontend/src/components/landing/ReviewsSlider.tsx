@@ -68,27 +68,38 @@ const cardVariants = {
 export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: ReviewsSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  // Only show loading skeleton if reviews is explicitly undefined (not yet fetched)
+  const isLoading = reviews === undefined;
+
+  // Use reviews directly - avoid useMemo to prevent render issues
+  const reviewsLength = reviews?.length ?? 0;
+
+  // Interval ref must be declared before useEffect
   const intervalRef = useRef<number | null>(null);
-  const slides = useMemo(() => reviews, [reviews]);
 
   useEffect(() => {
-    if (reviews !== undefined) {
-      setIsLoading(false);
+    if (reviewsLength <= 1) return;
+
+    const runInterval = () => {
+      setActiveIndex((current) => (current + 1) % reviewsLength);
+    };
+
+    // Clear any existing interval before creating a new one
+    if (intervalRef.current) {
+      window.clearInterval(intervalRef.current);
     }
-  }, [reviews]);
 
-  useEffect(() => {
-    if (slides.length <= 1 || paused) return;
-
-    intervalRef.current = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % slides.length);
-    }, 4000);
+    if (!paused) {
+      intervalRef.current = window.setInterval(runInterval, 4000);
+    }
 
     return () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        window.clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
-  }, [slides.length, paused]);
+  }, [reviewsLength, paused]);
 
   if (isLoading) {
     return (
@@ -108,14 +119,14 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
     );
   }
 
-  if (!slides.length) return null;
+  if (!reviews.length) return null;
 
   const goTo = (index: number) => {
     if (index < 0) {
-      setActiveIndex(slides.length - 1);
+      setActiveIndex(reviews.length - 1);
       return;
     }
-    setActiveIndex(index % slides.length);
+    setActiveIndex(index % reviews.length);
   };
 
   return (
@@ -170,8 +181,8 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
               animate={{ x: `calc(-${activeIndex * 100}%)` }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             >
-              {slides.map((_, slideIndex) => (
-                <div key={`slide-${slides[slideIndex].id}`} className="min-w-full px-2 sm:px-0">
+              {reviews.map((_, slideIndex) => (
+                <div key={`slide-${reviews[slideIndex].id}`} className="min-w-full px-2 sm:px-0">
                   <motion.div
                     initial="hidden"
                     whileInView="visible"
@@ -180,7 +191,7 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
                     className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-3"
                   >
                     {[0, 1, 2].map((offset) => {
-                      const review = slides[(slideIndex + offset) % slides.length];
+                      const review = reviews[(slideIndex + offset) % reviews.length];
                       return (
                         <motion.article
                           key={`${review.id}-${offset}`}
@@ -279,7 +290,7 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
 
           {/* Dots navigation */}
           <div className="mt-6 sm:mt-8 flex items-center justify-center gap-1.5 sm:gap-2">
-            {slides.map((review, index) => (
+            {reviews.map((review, index) => (
               <motion.button
                 key={`dot-${review.id}`}
                 type="button"

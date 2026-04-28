@@ -16,7 +16,8 @@ export function Analytics() {
     if (GA_ID) return;
     const fetchGaId = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment-settings/public`);
+        // Usa el proxy de Next.js (/api/...) para evitar CORS con el backend
+        const res = await fetch('/api/payment-settings/public');
         if (res.ok) {
           const data = await res.json();
           if (data.gaMeasurementId) setGaId(data.gaMeasurementId);

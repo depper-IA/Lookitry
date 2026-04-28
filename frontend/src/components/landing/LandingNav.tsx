@@ -63,7 +63,8 @@ export default function LandingNav({
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
     Promise.all([
       fetch(`${apiUrl}/api/trial/status`).then(r => r.ok ? r.json() : null),
-      fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null)
+      // Usa el proxy de Next.js para payment-settings — evita CORS con el backend
+      fetch('/api/payment-settings/public').then(r => r.ok ? r.json() : null)
     ])
       .then(([trialData, paySettings]) => {
         if (trialData?.priceCOP && Number(trialData.priceCOP) > 0) {

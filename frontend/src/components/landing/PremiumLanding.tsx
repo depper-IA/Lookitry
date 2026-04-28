@@ -76,17 +76,15 @@ export default function PremiumLanding({
   const [trmState, setTrmState] = useState(trm);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    if (apiUrl) {
-      fetch(`${apiUrl}/api/payment-settings/public`)
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (data?.trm && Number(data.trm) > 0) {
-            setTrmState(Number(data.trm));
-          }
-        })
-        .catch(() => {});
-    }
+    // Usa el proxy de Next.js para evitar CORS con el backend
+    fetch('/api/payment-settings/public')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.trm && Number(data.trm) > 0) {
+          setTrmState(Number(data.trm));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleNavCurrencyChange = (c: 'COP' | 'USD') => {

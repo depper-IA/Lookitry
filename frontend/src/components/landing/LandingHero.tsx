@@ -75,7 +75,7 @@ const ProductItem = React.memo(({ prod, selectedProduct, onSelect }: {
       aria-label={`Seleccionar ${prod.name}`}
     >
       <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a] sm:h-14 sm:w-14">
-        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" placeholder="blur" blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" />
+        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <span className={`truncate text-[9px] font-bold sm:text-[11px] ${isSelected ? 'text-white' : 'text-white/60'}`}>
@@ -127,11 +127,9 @@ export default function LandingHero() {
   useEffect(() => {
     const loadConfig = async () => {
       try {
-        console.log('[HomeTryon] Loading config...');
         const res = await fetch('/api/home/tryon/config');
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        console.log('[HomeTryon] Config loaded:', data);
         if (!data || !data.products) {
           throw new Error('No se pudieron cargar los productos de prueba.');
         }
@@ -140,7 +138,7 @@ export default function LandingHero() {
           setSelectedProduct(data.products[0]);
         }
       } catch (err: any) {
-        console.error('[HomeTryon] Error loading config:', err);
+        console.warn('[HomeTryon] Error loading config:', err.message);
         setError(err.message || 'Error al conectar con el servidor.');
       }
     };
@@ -176,11 +174,10 @@ export default function LandingHero() {
     try {
       const res = await fetch('/api/home/tryon/check');
       const data = await res.json();
-      console.log('[HomeTryon] Trial status:', data);
       setHasUsedTrial(data.hasTrialed);
       return data.hasTrialed;
     } catch (err) {
-      console.error('[HomeTryon] Error checking trial:', err);
+      console.warn('[HomeTryon] Error checking trial:', err);
       setHasUsedTrial(false);
       return false;
     }
@@ -237,7 +234,7 @@ export default function LandingHero() {
       setResultImage(data.resultImageUrl);
       setStep('result');
     } catch (err: any) {
-      console.error('Generation error:', err);
+      console.warn('[HomeTryon] Generation error:', err.message);
       setError(err.message || 'Error en el servicio');
       setStep('selfie');
     } finally {
@@ -563,7 +560,7 @@ export default function LandingHero() {
                 {/* Right: Selected Product */}
                 <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#1c1c1c] p-3 transition-all duration-300 hover:border-white/20">
                   <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a]">
-                    <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" placeholder="blur" blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" />
+                    <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" />
                   </div>
                   <div className="flex min-w-0 flex-1">
                     <div>

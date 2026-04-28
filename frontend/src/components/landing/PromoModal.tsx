@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 
 interface PromoModalConfig {
@@ -43,28 +43,64 @@ function IconTag() {
 
 function useCountdown(targetTimestamp: number | null) {
   const getRemaining = useCallback(() => {
-    if (!targetTimestamp) return null;
-    const diff = targetTimestamp - Date.now();
+    const ts = targetTimestamp;
+    if (!ts) return null;
+    const diff = ts - Date.now();
     if (diff <= 0) return null;
-    
+
     const d = Math.floor(diff / 86400000);
     const h = Math.floor((diff % 86400000) / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
     return { d, h, m, s };
-  }, [targetTimestamp]);
+  }, []); // No deps - reads targetTimestamp from closure via ref
 
   const [remaining, setRemaining] = useState(getRemaining);
 
+  const intervalRef = useRef<number | null>(null);
+  const targetTimestampRef = useRef<number | null>(null);
+
+  // Keep ref in sync with state
+  targetTimestampRef.current = targetTimestamp;
+
   useEffect(() => {
     if (!targetTimestamp) return;
-    const id = setInterval(() => {
+
+    // Clear any existing interval before creating a new one
+    if (intervalRef.current) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    const getRemaining = () => {
+      const ts = targetTimestampRef.current;
+      if (!ts) return null;
+      const diff = ts - Date.now();
+      if (diff <= 0) return null;
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      return { d, h, m, s };
+    };
+
+    const id = window.setInterval(() => {
       const r = getRemaining();
       setRemaining(r);
-      if (!r) clearInterval(id);
+      if (!r) {
+        window.clearInterval(id);
+        intervalRef.current = null;
+      }
     }, 1000);
-    return () => clearInterval(id);
-  }, [targetTimestamp, getRemaining]);
+    intervalRef.current = id;
+
+    return () => {
+      if (intervalRef.current) {
+        window.clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []); // Empty deps - uses ref, not state
 
   return remaining;
 }
