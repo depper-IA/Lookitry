@@ -76,7 +76,7 @@ export default function LandingFooter() {
           tiktok: tiktokUrl || '#',
         });
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -139,7 +139,7 @@ export default function LandingFooter() {
             </p>
           </div>
 
-          <div className="mb-5 flex items-center justify-center gap-2.5">
+<div className="mb-5 flex items-center justify-center gap-2.5">
             {[
               { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
               { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
@@ -150,7 +150,7 @@ export default function LandingFooter() {
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 transition-all duration-300 hover:border-[#FF5C3A] hover:bg-[#FF5C3A] hover:text-white dark:border-white/5 dark:bg-white/5 dark:text-white/40"
+                className="social-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 sm:h-10 sm:w-10 dark:border-white/5 dark:bg-white/5 dark:text-white/40"
                 aria-label={item.label}
               >
                 <item.Icon size={16} aria-hidden="true" />
@@ -160,7 +160,7 @@ export default function LandingFooter() {
               href={socialLinks.tiktok}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 transition-all duration-300 hover:border-[#FF5C3A] hover:bg-[#FF5C3A] hover:text-white dark:border-white/5 dark:bg-white/5 dark:text-white/40"
+              className="social-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 dark:border-white/5 dark:bg-white/5 dark:text-white/40"
               aria-label="TikTok"
               suppressHydrationWarning
             >
@@ -181,9 +181,8 @@ export default function LandingFooter() {
                   {section.title}
                   <ChevronDown
                     size={14}
-                    className={`text-black/25 transition-all group-hover:text-[#FF5C3A] dark:text-white/25 ${
-                      openSections[section.title] ? 'rotate-180' : ''
-                    }`}
+                    className={`text-black/25 transition-all group-hover:text-[#FF5C3A] dark:text-white/25 ${openSections[section.title] ? 'rotate-180' : ''
+                      }`}
                   />
                 </button>
                 {openSections[section.title] && (
@@ -233,7 +232,7 @@ export default function LandingFooter() {
             <p className="mb-6 max-w-xs text-sm font-light leading-relaxed text-black/70 dark:text-white/70 sm:mb-8 sm:text-base">
               Empoderamos al retail con Inteligencia Artificial. La primera solución de visualización personalizada líder en Colombia y Latinoamérica.
             </p>
-            <div className="mb-6 sm:mb-8 md:mb-10">
+<div className="mb-6 sm:mb-8 md:mb-10">
               <Link
                 href="/sobre-nosotros"
                 className="border-b border-[#FF5C3A]/30 pb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#FF5C3A] transition-colors hover:text-[#FF5C3A]/80 sm:text-[11px] sm:tracking-[0.2em]"
@@ -252,17 +251,47 @@ export default function LandingFooter() {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 transition-all duration-300 hover:border-[#FF5C3A] hover:bg-[#FF5C3A] hover:text-white sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
+                  className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
                   aria-label={item.label}
                 >
-                  <item.Icon size={18} aria-hidden="true" />
+                  <item.Icon size={18} aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110" />
                 </Link>
               ))}
               <Link
                 href={socialLinks.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 transition-all duration-300 hover:border-[#FF5C3A] hover:bg-[#FF5C3A] hover:text-white sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
+                className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
+                aria-label="TikTok"
+                suppressHydrationWarning
+              >
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" aria-hidden="true" suppressHydrationWarning>
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
+                </svg>
+              </Link>
+            </div>
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              {[
+                { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
+                { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
+                { Icon: MessageCircle, href: socialLinks.whatsapp, label: 'WhatsApp' },
+              ].map((item, idx) => (
+                <Link
+                key={idx}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
+                aria-label={item.label}
+              >
+                <item.Icon size={18} aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110" />
+              </Link>
+              ))}
+              <Link
+                href={socialLinks.tiktok}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
                 aria-label="TikTok"
                 suppressHydrationWarning
               >
@@ -281,8 +310,12 @@ export default function LandingFooter() {
               <ul className="flex flex-col gap-3 sm:gap-4 md:gap-5">
                 {section.links.map((item) => (
                   <li key={item.name}>
-                    <Link href={item.href} className="text-sm text-black/65 transition-colors hover:text-[#FF5C3A] dark:text-white/60">
+                    <Link
+                      href={item.href}
+                      className="group relative text-sm text-black/65 transition-colors hover:text-[#FF5C3A] dark:text-white/60 dark:hover:text-[#FF5C3A]"
+                    >
                       {item.name}
+                      <span className="absolute -bottom-0.5 left-0 h-[1px] w-0 bg-[#FF5C3A] transition-all duration-300 group-hover:w-full" />
                     </Link>
                   </li>
                 ))}
@@ -296,7 +329,7 @@ export default function LandingFooter() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 md:px-12 md:py-10">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             {/* Copyright */}
-            <div className="font-dm-sans text-xs font-medium text-white/80 sm:text-sm flex items-center flex-wrap justify-center sm:justify-start">
+            <div className="font-dm-sans text-xs font-medium text-black/80 sm:text-sm flex items-center flex-wrap justify-center sm:justify-start">
               <span>© {currentYear} Lookitry · Hecho con</span>
               <DynamicLoveAnimation />
               <span>por</span>
@@ -304,13 +337,13 @@ export default function LandingFooter() {
                 Wilkie Devs
               </Link>
             </div>
-            
+
             {/* Trust badges */}
             <div className="flex items-center gap-6 sm:gap-8">
               <div className="flex items-center gap-2 font-dm-sans text-xs font-medium text-white/80 sm:text-sm">
                 <ShieldCheck size={16} aria-hidden="true" /> Pagos seguros
               </div>
-              
+
               {/* Theme toggle */}
               <button
                 onClick={toggle}
