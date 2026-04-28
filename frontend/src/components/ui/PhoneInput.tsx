@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// Bandera estilizada con código ISO
+// Flag estilizada con código ISO - más visible
 function FlagBadge({ code }: { code: string }) {
   return (
-    <span className="inline-flex items-center justify-center w-6 h-4 rounded-sm text-[10px] font-bold uppercase border border-white/20"
+    <span
+      className="inline-flex items-center justify-center min-w-[2rem] h-5 rounded-sm text-xs font-bold uppercase px-1.5 border border-white/20 flex-shrink-0"
       style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
     >
       {code}
@@ -160,9 +161,9 @@ export function PhoneInput({
           {label}
         </label>
       )}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
         {/* Custom Country Selector */}
-        <div ref={dropdownRef} className="relative min-w-[140px]">
+        <div ref={dropdownRef} className="relative w-full sm:w-[140px] flex-shrink-0">
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
@@ -177,9 +178,9 @@ export function PhoneInput({
             aria-expanded={isOpen}
           >
             <FlagBadge code={selectedCountry.code} />
-            <span className="flex-1 text-left">{selectedCountry.prefix}</span>
+            <span className="flex-1 text-left truncate">{selectedCountry.prefix}</span>
             <svg
-              className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''} flex-shrink-0`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -188,17 +189,19 @@ export function PhoneInput({
             </svg>
           </button>
 
-          {/* Dropdown */}
+          {/* Dropdown - Responsive with max-height and scroll */}
           {isOpen && (
             <div
-              className="absolute z-50 mt-1 w-full rounded-xl border shadow-lg overflow-hidden"
+              className="absolute z-[100] mt-1 left-0 right-0 sm:min-w-[200px] rounded-xl border shadow-xl overflow-hidden"
               style={{
                 backgroundColor: 'var(--bg-card)',
                 borderColor: 'var(--border-color)',
+                maxHeight: '80vh',
+                overflowY: 'auto',
               }}
             >
               {/* Search Input */}
-              <div className="p-2 border-b" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="p-2 border-b sticky top-0 z-10" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-card)' }}>
                 <input
                   ref={searchInputRef}
                   type="text"
@@ -216,7 +219,7 @@ export function PhoneInput({
 
               {/* Country List */}
               <div
-                className="max-h-64 overflow-y-auto"
+                className="max-h-[60vh] overflow-y-auto"
                 role="listbox"
                 aria-label="Seleccionar país"
               >
