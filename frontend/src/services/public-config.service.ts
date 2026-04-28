@@ -83,6 +83,49 @@ export async function fetchPublicPlanPrices(): Promise<PublicPlanPrices> {
 let cachedPaymentSettings: PublicPaymentSettings | null = null;
 let paymentSettingsPromise: Promise<PublicPaymentSettings | null> | null = null;
 
+export interface PublicStats {
+  brandsCount: number;
+  generationsCount: number;
+  responseTimeHours: number;
+  lastUpdated: string;
+}
+
+const STATS_FALLBACK: PublicStats = {
+  brandsCount: 500,
+  generationsCount: 10000,
+  responseTimeHours: 24,
+  lastUpdated: '',
+};
+
+let cachedStats: PublicStats | null = null;
+let statsPromise: Promise<PublicStats> | null = null;
+
+export async function fetchPublicStats(): Promise<PublicStats> {
+  if (cachedStats) return cachedStats;
+  if (statsPromise) return statsPromise;
+
+  statsPromise = (async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+      const response = await fetch(`${apiUrl}/api/landing-stats`);
+      if (!response.ok) return STATS_FALLBACK;
+      const data = await response.json();
+      return {
+        brandsCount: data.total_brands ?? 500,
+        generationsCount: data.total_generations ?? 10000,
+        responseTimeHours: 24,
+        lastUpdated: data.lastUpdated ?? '',
+      };
+    } catch {
+      return STATS_FALLBACK;
+    } finally {
+      statsPromise = null;
+    }
+  })();
+
+  return statsPromise;
+}
+
 export async function fetchPublicPaymentSettings(): Promise<PublicPaymentSettings | null> {
   if (cachedPaymentSettings) return cachedPaymentSettings;
   if (paymentSettingsPromise) return paymentSettingsPromise;

@@ -34,8 +34,6 @@ import reviewsPublicRoutes from './routes/reviewsPublic.routes';
 
 import leadsPublicRoutes from './routes/leadsPublic.routes';
 
-import statsPublicRoutes from './routes/statsPublic.routes';
-
 import apiRouter from './routes/index';
 
 import queueRoutes from './routes/queue.routes';
@@ -157,8 +155,6 @@ app.post('/api/enterprise/sync-product', publicCors, syncProductWebhook);
 app.use('/api/reviews/public', publicCors, reviewsPublicRoutes);
 
 app.use('/api/leads/public', publicCors, leadsPublicRoutes);
-
-app.use('/api/stats/public', publicCors, statsPublicRoutes);
 
 app.use('/api/queue', queueRoutes);
 
