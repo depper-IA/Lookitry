@@ -335,7 +335,7 @@ export default function MiniLandingPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {FEATURES.map((feat, idx) => (
+              {features.map((feat, idx) => (
                 <div key={idx} className="group p-8 rounded-[2.5rem] bg-[#141414] border border-white/5 hover:border-[#FF5C3A]/30 hover:bg-[#1a1a1a] transition-all duration-500 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF5C3A]/5 blur-[50px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-[#FF5C3A]/15 transition-all" />
                   <div className="w-14 h-14 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mb-6 group-hover:scale-110 group-hover:bg-[#FF5C3A] group-hover:text-white transition-all duration-500 relative z-10">
