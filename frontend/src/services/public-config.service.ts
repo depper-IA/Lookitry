@@ -89,9 +89,11 @@ export async function fetchPublicPaymentSettings(): Promise<PublicPaymentSetting
 
   paymentSettingsPromise = (async () => {
     try {
-      // Usamos el cliente api centralizado que maneja la normalización de /api
-      const response = await api.get<any>('/payment-settings/public');
-      const data = response.data;
+      // Usa el proxy de Next.js (/api/payment-settings/public) para evitar CORS
+      // cuando se llama desde el browser — el proxy reenvía al backend server-side.
+      const res = await fetch('/api/payment-settings/public');
+      if (!res.ok) return DEFAULT_PUBLIC_PAYMENT_SETTINGS;
+      const data = await res.json();
       
       cachedPaymentSettings = {
         ...DEFAULT_PUBLIC_PAYMENT_SETTINGS,
@@ -107,6 +109,7 @@ export async function fetchPublicPaymentSettings(): Promise<PublicPaymentSetting
 
   return paymentSettingsPromise;
 }
+
 
 export function toWhatsAppUrl(rawPhone?: string | null): string | null {
   if (!rawPhone) return null;

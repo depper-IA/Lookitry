@@ -136,21 +136,26 @@ export function useCurrency() {
  * No hace detección ni listeners — solo lee de localStorage
  */
 export function useCurrencyStatic(): Currency {
-  const [currency, setCurrency] = useState<Currency>(() => {
-    if (typeof window === 'undefined') return 'COP';
-    return (localStorage.getItem(CURRENCY_STORAGE_KEY) as Currency) || 'COP';
-  });
+  const [currency, setCurrency] = useState<Currency>('COP');
 
   useEffect(() => {
+    // Only read from localStorage on client after hydration
+    const saved = localStorage.getItem(CURRENCY_STORAGE_KEY) as Currency;
+    if (saved === 'COP' || saved === 'USD') {
+      setCurrency(saved);
+    }
+
     const handleCurrencyChange = () => {
-      const saved = localStorage.getItem(CURRENCY_STORAGE_KEY) as Currency;
-      if (saved === 'COP' || saved === 'USD') {
-        setCurrency(saved);
+      const updated = localStorage.getItem(CURRENCY_STORAGE_KEY) as Currency;
+      if (updated === 'COP' || updated === 'USD') {
+        setCurrency(updated);
       }
     };
 
     window.addEventListener('currencyChange', handleCurrencyChange);
-    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
+    return () => {
+      window.removeEventListener('currencyChange', handleCurrencyChange);
+    };
   }, []);
 
   return currency;

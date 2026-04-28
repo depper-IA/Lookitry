@@ -12,6 +12,41 @@ interface FooterSection {
   links: { name: string; href: string }[];
 }
 
+// Declarado FUERA del componente para evitar re-creación en cada render
+// (si estuviera dentro, causaría un loop infinito en el useEffect que lo usa como dep)
+const FOOTER_SECTIONS: FooterSection[] = [
+  {
+    title: 'Ecosistema',
+    links: [
+      { name: 'Probador Virtual', href: '/probador-virtual' },
+      { name: 'Mini-Landing Pro', href: '/mini-landing' },
+      { name: 'Plugin WooCommerce', href: '/plugin-woocommerce' },
+      { name: 'API Developer', href: '/api-developer' },
+      { name: 'Planes Mensuales', href: '/planes' },
+    ],
+  },
+  {
+    title: 'Recursos',
+    links: [
+      { name: 'Centro de Ayuda', href: '/ayuda' },
+      { name: 'Blog Tecnico', href: '/blog' },
+      { name: 'Sobre Nosotros', href: '/sobre-nosotros' },
+      { name: 'Casos de Uso', href: '/casos-de-exito' },
+      { name: 'Estado del sistema', href: '/estado' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { name: 'Términos de Servicio', href: '/terminos' },
+      { name: 'Políticas de Privacidad', href: '/politicas-privacidad' },
+      { name: 'Política de Uso', href: '/politica-de-uso' },
+      { name: 'Cookies', href: '/cookies' },
+      { name: 'Aviso Legal', href: '/aviso-legal' },
+    ],
+  },
+];
+
 const EASING = {
   outQuart: [0.25, 1, 0.5, 1] as const,
   outQuint: [0.22, 1, 0.36, 1] as const,
@@ -36,38 +71,7 @@ export default function LandingFooter() {
   const [mobileAccordionHeight, setMobileAccordionHeight] = useState<Record<string, number>>({});
   const accordionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const footerSections: FooterSection[] = [
-    {
-      title: 'Ecosistema',
-      links: [
-        { name: 'Probador Virtual', href: '/probador-virtual' },
-        { name: 'Mini-Landing Pro', href: '/mini-landing' },
-        { name: 'Plugin WooCommerce', href: '/plugin-woocommerce' },
-        { name: 'API Developer', href: '/api-developer' },
-        { name: 'Planes Mensuales', href: '/planes' },
-      ],
-    },
-    {
-      title: 'Recursos',
-      links: [
-        { name: 'Centro de Ayuda', href: '/ayuda' },
-        { name: 'Blog Tecnico', href: '/blog' },
-        { name: 'Sobre Nosotros', href: '/sobre-nosotros' },
-        { name: 'Casos de Uso', href: '/casos-de-exito' },
-        { name: 'Estado del sistema', href: '/estado' },
-      ],
-    },
-    {
-      title: 'Legal',
-      links: [
-        { name: 'Términos de Servicio', href: '/terminos' },
-        { name: 'Políticas de Privacidad', href: '/politicas-privacidad' },
-        { name: 'Política de Uso', href: '/politica-de-uso' },
-        { name: 'Cookies', href: '/cookies' },
-        { name: 'Aviso Legal', href: '/aviso-legal' },
-      ],
-    },
-  ];
+
 
   useEffect(() => {
     fetchPublicPaymentSettings()
@@ -137,13 +141,13 @@ export default function LandingFooter() {
   // Measure accordion content heights
   useEffect(() => {
     const heights: Record<string, number> = {};
-    footerSections.forEach((section) => {
+    FOOTER_SECTIONS.forEach((section) => {
       if (accordionRefs.current[section.title]) {
         heights[section.title] = accordionRefs.current[section.title]!.scrollHeight;
       }
     });
     setMobileAccordionHeight(heights);
-  }, [footerSections]);
+  }, []); // FOOTER_SECTIONS es constante de módulo, no cambia nunca
 
   const toggle = () => {
     const next = !isDark;
@@ -247,12 +251,13 @@ export default function LandingFooter() {
               transitionDelay: '0.2s',
             }}
           >
-            {footerSections.map((section, sectionIdx) => (
+            {FOOTER_SECTIONS.map((section, sectionIdx) => (
               <div
                 key={section.title}
                 style={{
-                  animation: footerVisible ? `slideDown 0.4s cubic-bezier(${EASING.outQuint.join(',')}) forwards` : 'none',
-                  animationDelay: `${0.25 + sectionIdx * 0.08}s`,
+                  animation: footerVisible
+                    ? `slideDown 0.4s cubic-bezier(${EASING.outQuint.join(',')}) ${0.25 + sectionIdx * 0.08}s forwards`
+                    : 'none',
                   opacity: 0,
                 }}
               >
@@ -283,8 +288,9 @@ export default function LandingFooter() {
                         <li
                           key={item.name}
                           style={{
-                            animation: openSections[section.title] ? `fadeSlideIn 0.3s cubic-bezier(${EASING.outQuart.join(',')}) forwards` : 'none',
-                            animationDelay: `${linkIdx * 0.05}s`,
+                            animation: openSections[section.title]
+                              ? `fadeSlideIn 0.3s cubic-bezier(${EASING.outQuart.join(',')}) ${linkIdx * 0.05}s forwards`
+                              : 'none',
                             opacity: 0,
                           }}
                         >
@@ -394,7 +400,7 @@ export default function LandingFooter() {
             </div>
 
             {/* Link Columns */}
-            {footerSections.map((section, sectionIdx) => (
+            {FOOTER_SECTIONS.map((section, sectionIdx) => (
               <div
                 key={section.title}
                 style={{
@@ -481,7 +487,7 @@ export default function LandingFooter() {
               <button
                 onClick={toggle}
                 aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                className="group flex items-center gap-2 rounded-full border border-black/20 px-4 py-2 text-xs font-medium text-black/90 transition-all duration-300 hover:border-[#FF5C3A]/40 hover:bg-[#FF5C3A]/10 hover:text-[#FF5C3A] sm:text-sm"
+                className="group flex items-center gap-2 rounded-full border border-black/20 px-4 py-2 text-xs font-medium text-black/90 transition-all duration-300 hover:border-[#ffffff]/40 hover:bg-[#ffffff]/10 hover:text-[#ffffff] sm:text-sm"
               >
                 {mounted ? (
                   isDark ? (
@@ -516,7 +522,7 @@ export default function LandingFooter() {
       </div>
 
       {/* Keyframe Animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes slideDown {
           from {
             opacity: 0;

@@ -1,5 +1,79 @@
 # CHANGELOG — Lookitry
 
+## 28 de Abril 2026 — Fix Interval/Timer Accumulation (Console Errors Multiplicándose)
+
+### Problema Reportado
+Errores en consola que se multiplicaban sin detenerse progresivamente.
+
+### Causas Identificadas
+1. **ReviewsSlider** — `setInterval` no se limpiaba correctamente antes de crear nuevo interval cuando `paused` cambiaba
+2. **PromoModal countdown** — `useCallback(getRemaining)` con dependencia `targetTimestamp` causaba re-creación del callback y re-setup del interval antes del cleanup
+3. **usePublicSession** — visibility change handler no nullificaba el timeout ref después de limpiar, causando múltiples timeouts en cola
+4. **useCurrencyStatic** — event listener cleanup sin block scope podría causar edge cases
+
+### Fixes Implementados
+
+| Componente | Cambio |
+|------------|--------|
+| `ReviewsSlider.tsx` | Interval se limpia ANTES de crear nuevo; nullifica ref después de clear |
+| `PromoModal.tsx` | `useCountdown` usa `useRef` + empty deps para evitar recrear interval; interval cleanup robusto |
+| `usePublicSession.ts` | Debounce aumentado a 500ms; timeout ref nullificado después de cleanup; visibilidad handler mejora |
+| `useCurrency.ts` | Cleanup del event listener con block scope explícito |
+
+### Archivos Modificados
+- `frontend/src/components/landing/ReviewsSlider.tsx`
+- `frontend/src/components/landing/PromoModal.tsx`
+- `frontend/src/hooks/usePublicSession.ts`
+- `frontend/src/hooks/useCurrency.ts`
+
+---
+
+## 28 de Abril 2026 — Fix Errores Consola Mobile (Hydration + Logs)
+
+### Problema Reportado
+Al cargar la página principal en móvil aparecían muchos errores en la consola.
+
+### Causas Identificadas
+1. **Hydration Mismatch** — `localStorage`/`sessionStorage` se leían directamente sin `useEffect`, causando desincronización SSR/client
+2. **console.log de debug** visibles en producción
+3. **console.error** de network saturando la consola
+4. **blurDataURL** causando problemas en navegadores móviles lentos
+
+### Fixes Implementados
+
+| Componente | Cambio |
+|------------|--------|
+| `LandingHero.tsx` | Eliminados 3 `console.log` de debug (líneas 130, 134, 179) |
+| `LandingHero.tsx` | Cambiados 3 `console.error` → `console.warn` (líneas 143, 183, 240) |
+| `LandingHero.tsx` | Eliminados 2 `blurDataURL` placeholder que fallaban en móvil |
+| `ReviewsSlider.tsx` | Simplificado control de `isLoading` (no más `setIsLoading` en useEffect) |
+| `useCurrency.ts` | Corregido `useCurrencyStatic` para evitar hydration mismatch |
+
+### Archivos Modificados
+- `frontend/src/components/landing/LandingHero.tsx`
+- `frontend/src/components/landing/ReviewsSlider.tsx` — FIX CRÍTICO: `slides` no estaba definido, ahora usa `reviews` directamente
+- `frontend/src/hooks/useCurrency.ts`
+
+---
+
+## 28 de Abril 2026 — Fix ReviewsSlider (slides not defined)
+
+### Error Crítico Corregido
+`ReferenceError: slides is not defined` en ReviewsSlider.tsx línea 84
+
+**Causa:** Mi edit anterior eliminó `useMemo` que creaba `slides` pero no actualizó las referencias a `slides` en todo el componente.
+
+**Solución:**
+- Eliminé `useMemo` que creaba `slides` 
+- Reemplacé todas las referencias `slides` → `reviews` directamente
+- Moví `intervalRef` al inicio del componente (antes del useEffect)
+- Eliminé línea duplicada de `intervalRef` que había dejado erradamente
+
+### Archivos Modificados
+- `frontend/src/components/landing/ReviewsSlider.tsx`
+
+---
+
 ## 28 de Abril 2026 — LandingPlugin Animaciones Mejoradas
 
 ### Animaciones de entrada mejoradas

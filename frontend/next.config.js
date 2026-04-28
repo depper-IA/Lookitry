@@ -41,7 +41,7 @@ const nextConfig = {
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline' ${isProd ? '' : "'unsafe-eval'"} https://challenges.cloudflare.com https://checkout.wompi.co https://accounts.google.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com",
-      "img-src 'self' data: blob: https://*.supabase.co https://*.minio.wilkiedevs.com https://wilkiedevs.com https://*.wilkiedevs.com https://*.lookitry.com https://images.unsplash.com https://*.unsplash.com https://*.cloudflare.com https://*.woocommerce.com https://*.shopify.com https://*.myshopify.com",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.minio.wilkiedevs.com https://wilkiedevs.com https://*.wilkiedevs.com https://*.lookitry.com https://images.unsplash.com https://*.unsplash.com https://*.cloudflare.com https://*.woocommerce.com https://*.shopify.com https://*.myshopify.com https://www.googletagmanager.com",
       `connect-src 'self' ${isProd ? '' : 'http://localhost:3001 http://100.85.125.102:3001'} https://*.lookitry.com https://*.supabase.co https://*.wilkiedevs.com https://minio.wilkiedevs.com https://checkout.wompi.co https://accounts.google.com https://www.googleapis.com https://www.google.com https://challenges.cloudflare.com https://www.google-analytics.com https://analytics.google.com https://freeipapi.com https://ipapi.co`,
       "font-src 'self' https://fonts.gstatic.com",
       "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://accounts.google.com https://www.google.com",

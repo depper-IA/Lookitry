@@ -206,11 +206,10 @@ function PricingCard({
 }
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
-  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 sm:mb-8 font-medium text-[10px] uppercase tracking-[.2em] border shadow-sm ${
-    light
+  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 sm:mb-8 font-medium text-[10px] uppercase tracking-[.2em] border shadow-sm ${light
       ? 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60'
       : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
-  }`}>
+    }`}>
     <span className={`w-1.5 h-1.5 rounded-full ${light ? 'bg-black/30 dark:bg-white/40' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
     {text}
   </div>
@@ -338,7 +337,7 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
         >
           <p className="text-[11px] sm:text-sm text-black/40 dark:text-white/40 mb-4">
             ¿No sabes qué plan elegir?{' '}
-            <Link href="/planes#comparacion" className="text-[#FF5C3A] hover:underline font-medium">
+            <Link href="/planes" className="text-[#FF5C3A] hover:underline font-medium">
               Compara todos los features →
             </Link>
           </p>

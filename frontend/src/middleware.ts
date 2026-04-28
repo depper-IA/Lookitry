@@ -67,18 +67,31 @@ export async function middleware(request: NextRequest) {
   const isMaintenancePage = pathname === '/mantenimiento';
   const isAdminPath = pathname.startsWith('/admin') || !!adminToken;
 
-  if (!isMaintenancePage && !isAdminPath) {
+  // Solo verificar mantenimiento en producción — en desarrollo el backend puede no estar
+  // corriendo y el fetch bloquea CADA request del middleware esperando el timeout TCP (~20-30s)
+  const isProdEnv = process.env.NODE_ENV === 'production';
+
+  if (isProdEnv && !isMaintenancePage && !isAdminPath) {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      if (!apiUrl) return NextResponse.next();
-      const res = await fetch(`${apiUrl}/api/payment-settings/public`, {
-        next: { revalidate: 300 } // Cachear por 5 minutos
-      } as any);
-      
-      if (res.ok) {
-        const settings = await res.json();
-        if (settings.maintenanceMode) {
-          return NextResponse.redirect(new URL('/mantenimiento', request.url));
+      if (apiUrl) {
+        // Timeout de 3s para no bloquear la navegación si el backend tarda
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        try {
+          const res = await fetch(`${apiUrl}/api/payment-settings/public`, {
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const settings = await res.json();
+            if (settings.maintenanceMode) {
+              return NextResponse.redirect(new URL('/mantenimiento', request.url));
+            }
+          }
+        } catch {
+          clearTimeout(timeoutId);
+          // Timeout o error de red: continuar sin bloquear
         }
       }
     } catch (error) {
@@ -193,7 +206,7 @@ export async function middleware(request: NextRequest) {
       "default-src 'self'",
       `script-src ${scriptSrc}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https://*.supabase.co https://*.minio.wilkiedevs.com https://wilkiedevs.com https://*.wilkiedevs.com https://*.lookitry.com https://images.unsplash.com https://*.unsplash.com https://*.cloudflare.com https://*.woocommerce.com https://*.shopify.com https://*.myshopify.com",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.minio.wilkiedevs.com https://wilkiedevs.com https://*.wilkiedevs.com https://*.lookitry.com https://images.unsplash.com https://*.unsplash.com https://*.cloudflare.com https://*.woocommerce.com https://*.shopify.com https://*.myshopify.com https://www.googletagmanager.com",
       `connect-src 'self' http://localhost:3001 http://100.85.125.102:3001 https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co https://accounts.google.com https://www.googleapis.com https://www.google.com https://challenges.cloudflare.com https://minio.wilkiedevs.com https://freeipapi.com https://freeipapi.com/api/json/ https://ipapi.com https://ipapi.com/api/json/ https://ipapi.co https://ipapi.co/api/json/`,
       "font-src 'self' https://fonts.gstatic.com",
       "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://accounts.google.com https://www.google.com https://*.wordpress.com https://*.wixsite.com https://*.shopify.com",
