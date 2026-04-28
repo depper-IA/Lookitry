@@ -1,13 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
+import { motion, useInView } from 'framer-motion';
 import type { PricingConfig, PlanPriceOverride } from '@/lib/pricing';
 import { precioConDescuento } from '@/lib/pricing';
 import { formatPrice as formatPriceUtil } from '@/utils/currency';
 import { useCurrency } from '@/hooks/useCurrency';
+
+const EASING: [number, number, number, number] = [0.25, 0.1, 0.25, 1];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASING } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASING } }
+};
 
 const PREMIUM_FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,100..1000;1,100..1000&display=swap');
@@ -75,6 +93,17 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
   const [trm, setTrm] = useState(pricing.meta?.trm_referencia ?? 3700);
   const [trialPriceCOP, setTrialPriceCOP] = useState(20000);
 
+  // Refs for scroll animations
+  const heroRef = useRef<HTMLDivElement>(null);
+  const pricingRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+
+  const heroInView = useInView(heroRef, { once: true, amount: 0.3 });
+  const pricingInView = useInView(pricingRef, { once: true, amount: 0.1 });
+  const tableInView = useInView(tableRef, { once: true, amount: 0.2 });
+  const ctaInView = useInView(ctaRef, { once: true, amount: 0.3 });
+
   // Extract plan configs from pricing prop
   const { basic, pro, enterprise, descuentos_duracion } = pricing;
 
@@ -137,24 +166,30 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
 
       <main className="pt-20 pb-20">
         {/* Hero Section */}
-        <section className="theme-bg-base pt-6 pb-12 px-6 md:px-8 text-center">
+        <motion.section
+          ref={heroRef}
+          initial="hidden"
+          animate={heroInView ? 'visible' : 'hidden'}
+          variants={staggerContainer}
+          className="theme-bg-base pt-6 pb-12 px-6 md:px-8 text-center"
+        >
           <div className="max-w-2xl mx-auto">
             {/* Urgency Badge */}
-            <div className="inline-flex items-center gap-2 bg-[#FF5C3A]/10 border border-[#FF5C3A]/30 text-[#FF5C3A] text-[11px] font-bold tracking-widest uppercase px-4 py-2 rounded-full mb-6">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-[#FF5C3A]/10 border border-[#FF5C3A]/30 text-[#FF5C3A] text-[11px] font-bold tracking-widest uppercase px-4 py-2 rounded-full mb-6">
               <span className="w-2 h-2 bg-[#FF5C3A] rounded-full animate-pulse" />
               Precios exclusivos por tiempo limitado
-            </div>
+            </motion.div>
             
-            <h1 className="font-jakarta font-extrabold text-4xl md:text-6xl lg:text-7xl theme-text tracking-tight leading-[1.05] mb-6">
+            <motion.h1 variants={fadeUp} className="font-jakarta font-extrabold text-4xl md:text-6xl lg:text-7xl theme-text tracking-tight leading-[1.05] mb-6">
               Elige tu plan y<br />
               <span className="text-[#FF5C3A]">empieza hoy.</span>
-            </h1>
-            <p className="theme-text-muted text-lg md:text-xl max-w-lg mx-auto font-dm-sans leading-relaxed">
+            </motion.h1>
+            <motion.p variants={fadeUp} className="theme-text-muted text-lg md:text-xl max-w-lg mx-auto font-dm-sans leading-relaxed">
               Sin contratos. Cancela cuando quieras. Paga por adelantado y ahorra hasta un{' '}
               <span className="text-[#FF5C3A] font-bold">{descuentos_duracion.meses_12}%</span>.
-            </p>
+            </motion.p>
           </div>
-        </section>
+        </motion.section>
 
         {/* Social Proof */}
         <section className="px-6 md:px-8 pb-6">
@@ -211,12 +246,22 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
         </section>
 
         {/* Pricing Cards */}
-        <section className="py-8 px-6 md:px-8">
+        <motion.section
+          ref={pricingRef}
+          initial="hidden"
+          animate={pricingInView ? 'visible' : 'hidden'}
+          variants={staggerContainer}
+          className="py-8 px-6 md:px-8"
+        >
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 xl:gap-8 items-stretch">
               
               {/* BASIC CARD */}
-              <div className="theme-bg-card theme-border border rounded-[2rem] p-8 md:p-10 flex flex-col min-h-[580px] hover:border-[#FF5C3A] transition-all duration-500">
+              <motion.div
+                variants={cardVariants}
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                className="theme-bg-card theme-border border rounded-[2rem] p-8 md:p-10 flex flex-col min-h-[580px] hover:border-[#FF5C3A] transition-all duration-500"
+              >
                 <div className="font-jakarta font-bold text-2xl theme-text mb-2">Básico</div>
                 <p className="text-[14px] theme-text-muted mb-6">{basic.subtitulo}</p>
 
@@ -274,10 +319,14 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </motion.div>
 
               {/* PRO CARD - HIGHLIGHTED */}
-              <div className="theme-bg-card border-2 border-[#FF5C3A] rounded-[2rem] p-8 md:p-10 relative shadow-2xl shadow-[#FF5C3A]/10 flex flex-col min-h-[580px] transition-all duration-500">
+              <motion.div
+                variants={cardVariants}
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                className="theme-bg-card border-2 border-[#FF5C3A] rounded-[2rem] p-8 md:p-10 relative shadow-2xl shadow-[#FF5C3A]/10 flex flex-col min-h-[580px] transition-all duration-500"
+              >
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#FF5C3A] theme-text text-[11px] font-black tracking-widest uppercase px-6 py-2 rounded-full shadow-lg">
                   Más popular
                 </div>
@@ -330,10 +379,14 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </motion.div>
 
               {/* ENTERPRISE CARD */}
-              <div className="theme-bg-card theme-border border rounded-[2rem] p-8 md:p-10 flex flex-col min-h-[580px] hover:border-[#FF5C3A] transition-all duration-500">
+              <motion.div
+                variants={cardVariants}
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                className="theme-bg-card theme-border border rounded-[2rem] p-8 md:p-10 flex flex-col min-h-[580px] hover:border-[#FF5C3A] transition-all duration-500"
+              >
                 <div className="font-jakarta font-bold text-2xl theme-text mb-2">Enterprise</div>
                 <p className="text-[14px] theme-text-muted mb-6">Para grandes operaciones</p>
 
@@ -389,17 +442,23 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                     <span className="text-[#FF5C3A] font-semibold">Acceso a API</span>
                   </li>
                 </ul>
-              </div>
+              </motion.div>
             </div>
 
             <p className="text-center text-[13px] theme-text-muted/80 mt-10 font-medium">
               Pagos seguros con Wompi · Mastercard, Visa, PSE, Nequi
             </p>
           </div>
-        </section>
+        </motion.section>
 
 {/* Comparativa Table */}
-        <section className="py-16 px-4 md:px-6 theme-bg-base">
+        <motion.section
+          ref={tableRef}
+          initial="hidden"
+          animate={tableInView ? 'visible' : 'hidden'}
+          variants={staggerContainer}
+          className="py-16 px-4 md:px-6 theme-bg-base"
+        >
           <div className="max-w-4xl mx-auto">
             <h2 className="font-jakarta font-bold text-2xl md:text-3xl theme-text text-center mb-8">
               Comparativa completa
@@ -470,22 +529,28 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               </table>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Final CTA */}
-        <section className="py-24 md:py-32 px-6 md:px-8 theme-bg-base text-center relative overflow-hidden">
+        <motion.section
+          ref={ctaRef}
+          initial="hidden"
+          animate={ctaInView ? 'visible' : 'hidden'}
+          variants={staggerContainer}
+          className="py-24 md:py-32 px-6 md:px-8 theme-bg-base text-center relative overflow-hidden"
+        >
           <div
             className="absolute pointer-events-none"
             style={{ width: '800px', height: '400px', background: 'radial-gradient(ellipse, rgba(255,92,58,0.1) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}
           />
           <div className="relative z-10 max-w-4xl mx-auto">
-            <h2 className="font-jakarta font-black text-4xl md:text-6xl lg:text-7xl theme-text tracking-tighter mb-6 leading-[1]">
+            <motion.h2 variants={fadeUp} className="font-jakarta font-black text-4xl md:text-6xl lg:text-7xl theme-text tracking-tighter mb-6 leading-[1]">
               ¿Listo para <span className="text-[#FF5C3A]">vender más</span>?<br />Empieza ahora.
-            </h2>
-            <p className="theme-text-muted text-lg md:text-xl mb-12 max-w-xl mx-auto font-dm-sans">
+            </motion.h2>
+            <motion.p variants={fadeUp} className="theme-text-muted text-lg md:text-xl mb-12 max-w-xl mx-auto font-dm-sans">
               Únete a las tiendas que ya están transformando su negocio con IA.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href={`/checkout?plan=PRO&months=${selectedMonths}`}
                 className="inline-flex items-center justify-center gap-3 bg-[#FF5C3A] hover:bg-[#e84d2c] theme-text px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20"
@@ -498,12 +563,12 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               >
                 Empezar con Básico
               </a>
-            </div>
-            <p className="theme-text-muted/80 text-sm mt-8">
+            </motion.div>
+            <motion.p variants={fadeUp} className="theme-text-muted/80 text-sm mt-8">
               Trial de 7 días por {formatPrice(trialPriceCOP)} · Cancela cuando quieras
-            </p>
+            </motion.p>
           </div>
-        </section>
+        </motion.section>
       </main>
 
       <LandingFooter />
