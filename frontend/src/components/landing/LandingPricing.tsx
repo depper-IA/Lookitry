@@ -14,7 +14,7 @@ interface LandingPricingProps {
   trm: number;
 }
 
-const EASING_OUT = [0.22, 1, 0.36, 1] as const;
+const EASING_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 interface PricingCardProps {
   name: string;
@@ -64,7 +64,7 @@ function PricingCard({
       transition={{
         delay,
         duration: 0.8,
-        ease: EASING_OUT as unknown as number[],
+        ease: EASING_OUT,
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
