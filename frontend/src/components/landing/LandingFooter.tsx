@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Instagram, Facebook, MessageCircle, ShieldCheck, Sun, Moon, ChevronDown } from 'lucide-react';
@@ -11,6 +11,12 @@ interface FooterSection {
   title: string;
   links: { name: string; href: string }[];
 }
+
+const EASING = {
+  outQuart: [0.25, 1, 0.5, 1] as const,
+  outQuint: [0.22, 1, 0.36, 1] as const,
+  outExpo: [0.16, 1, 0.3, 1] as const,
+};
 
 export default function LandingFooter() {
   const currentYear = new Date().getFullYear();
@@ -24,6 +30,11 @@ export default function LandingFooter() {
     whatsapp: '#',
     tiktok: '#',
   });
+
+  // Animation states
+  const [footerVisible, setFooterVisible] = useState(false);
+  const [mobileAccordionHeight, setMobileAccordionHeight] = useState<Record<string, number>>({});
+  const accordionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const footerSections: FooterSection[] = [
     {
@@ -105,6 +116,35 @@ export default function LandingFooter() {
     };
   }, []);
 
+  // Intersection Observer for footer entrance animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setFooterVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const footer = document.querySelector('footer');
+    if (footer) observer.observe(footer);
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Measure accordion content heights
+  useEffect(() => {
+    const heights: Record<string, number> = {};
+    footerSections.forEach((section) => {
+      if (accordionRefs.current[section.title]) {
+        heights[section.title] = accordionRefs.current[section.title]!.scrollHeight;
+      }
+    });
+    setMobileAccordionHeight(heights);
+  }, [footerSections]);
+
   const toggle = () => {
     const next = !isDark;
     setIsDark(next);
@@ -121,13 +161,30 @@ export default function LandingFooter() {
   };
 
   return (
-    <footer className="theme-bg-base theme-text relative z-10 overflow-x-hidden pt-12 sm:pt-20 md:pt-24 lg:pt-28 pb-20 md:pb-0" role="contentinfo">
+    <footer
+      className="theme-bg-base theme-text relative z-10 overflow-x-hidden pt-12 sm:pt-20 md:pt-24 lg:pt-28 pb-20 md:pb-0"
+      role="contentinfo"
+      style={{
+        opacity: footerVisible ? 1 : 0,
+        transform: footerVisible ? 'translateY(0)' : 'translateY(30px)',
+        transition: `opacity 0.6s cubic-bezier(${EASING.outQuart.join(',')}), transform 0.6s cubic-bezier(${EASING.outQuart.join(',')})`,
+      }}
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-12">
-<div className="mb-0 md:hidden">
-          {/* Mobile Accordion */}
-          <div className="mb-5 flex flex-col items-center text-center">
+        {/* Mobile Accordion */}
+        <div className="mb-0 md:hidden">
+          {/* Logo & Tagline */}
+          <div
+            className="mb-5 flex flex-col items-center text-center"
+            style={{
+              opacity: footerVisible ? 1 : 0,
+              transform: footerVisible ? 'translateY(0)' : 'translateY(20px)',
+              transition: `opacity 0.5s cubic-bezier(${EASING.outQuart.join(',')}), transform 0.5s cubic-bezier(${EASING.outQuart.join(',')})`,
+              transitionDelay: '0.1s',
+            }}
+          >
             <Link href="/" className="group mb-3 inline-flex items-center gap-2.5">
-              <div className="relative h-7 w-7">
+              <div className="relative h-7 w-7 transition-transform duration-300 group-hover:scale-110">
                 <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
                 <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
               </div>
@@ -140,7 +197,16 @@ export default function LandingFooter() {
             </p>
           </div>
 
-          <div className="mb-5 flex items-center justify-center gap-2.5">
+          {/* Social Buttons */}
+          <div
+            className="mb-5 flex items-center justify-center gap-2.5"
+            style={{
+              opacity: footerVisible ? 1 : 0,
+              transform: footerVisible ? 'translateY(0)' : 'translateY(20px)',
+              transition: `opacity 0.5s cubic-bezier(${EASING.outQuart.join(',')}), transform 0.5s cubic-bezier(${EASING.outQuart.join(',')})`,
+              transitionDelay: '0.15s',
+            }}
+          >
             {[
               { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
               { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
@@ -151,7 +217,7 @@ export default function LandingFooter() {
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="social-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 sm:h-10 sm:w-10 dark:border-white/5 dark:bg-white/5 dark:text-white/40"
+                className="social-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 transition-all duration-300 hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/10 hover:text-[#FF5C3A] hover:scale-110 sm:h-10 sm:w-10 dark:border-white/5 dark:bg-white/5 dark:text-white/40 dark:hover:border-[#FF5C3A]/30 dark:hover:bg-[#FF5C3A]/10 dark:hover:text-[#FF5C3A]"
                 aria-label={item.label}
               >
                 <item.Icon size={16} aria-hidden="true" />
@@ -161,39 +227,70 @@ export default function LandingFooter() {
               href={socialLinks.tiktok}
               target="_blank"
               rel="noopener noreferrer"
-              className="social-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 dark:border-white/5 dark:bg-white/5 dark:text-white/40"
+              className="social-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 transition-all duration-300 hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/10 hover:text-[#FF5C3A] hover:scale-110 dark:border-white/5 dark:bg-white/5 dark:text-white/40 dark:hover:border-[#FF5C3A]/30 dark:hover:bg-[#FF5C3A]/10 dark:hover:text-[#FF5C3A]"
               aria-label="TikTok"
               suppressHydrationWarning
             >
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" aria-hidden="true" suppressHydrationWarning>
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current transition-transform duration-300 hover:scale-110" aria-hidden="true" suppressHydrationWarning>
                 <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
               </svg>
             </Link>
           </div>
 
-          <div className="border-t border-black/5 dark:border-white/5">
-            {footerSections.map((section) => (
-              <div key={section.title}>
+          {/* Accordion Sections */}
+          <div
+            className="border-t border-black/5 dark:border-white/5"
+            style={{
+              opacity: footerVisible ? 1 : 0,
+              transform: footerVisible ? 'translateY(0)' : 'translateY(20px)',
+              transition: `opacity 0.5s cubic-bezier(${EASING.outQuart.join(',')}), transform 0.5s cubic-bezier(${EASING.outQuart.join(',')})`,
+              transitionDelay: '0.2s',
+            }}
+          >
+            {footerSections.map((section, sectionIdx) => (
+              <div
+                key={section.title}
+                style={{
+                  animation: footerVisible ? `slideDown 0.4s cubic-bezier(${EASING.outQuint.join(',')}) forwards` : 'none',
+                  animationDelay: `${0.25 + sectionIdx * 0.08}s`,
+                  opacity: 0,
+                }}
+              >
                 <button
                   onClick={() => toggleSection(section.title)}
-                  className="group flex w-full items-center justify-between py-3 text-[10px] font-bold uppercase tracking-wider text-black/60 transition-colors hover:text-[#FF5C3A] dark:text-white/60"
+                  className="group flex w-full items-center justify-between py-3 text-[10px] font-bold uppercase tracking-wider text-black/60 transition-colors duration-300 hover:text-[#FF5C3A] dark:text-white/60 dark:hover:text-[#FF5C3A]"
                   aria-expanded={openSections[section.title]}
                 >
                   {section.title}
                   <ChevronDown
                     size={14}
-                    className={`text-black/25 transition-all group-hover:text-[#FF5C3A] dark:text-white/25 ${openSections[section.title] ? 'rotate-180' : ''
-                      }`}
+                    className={`text-black/25 transition-all duration-300 group-hover:text-[#FF5C3A] dark:text-white/25 dark:group-hover:text-[#FF5C3A] ${openSections[section.title] ? 'rotate-180' : ''}`}
                   />
                 </button>
-                {openSections[section.title] && (
-                  <div className="-mt-0.5 pb-3">
+                <div
+                  className="overflow-hidden transition-all duration-300 ease-out"
+                  style={{
+                    height: openSections[section.title] ? `${mobileAccordionHeight[section.title] || 200}px` : '0px',
+                    opacity: openSections[section.title] ? 1 : 0,
+                  }}
+                >
+                  <div
+                    ref={(el) => { accordionRefs.current[section.title] = el; }}
+                    className="-mt-0.5 pb-3"
+                  >
                     <ul className="flex flex-col gap-0.5">
-                      {section.links.map((item) => (
-                        <li key={item.name}>
+                      {section.links.map((item, linkIdx) => (
+                        <li
+                          key={item.name}
+                          style={{
+                            animation: openSections[section.title] ? `fadeSlideIn 0.3s cubic-bezier(${EASING.outQuart.join(',')}) forwards` : 'none',
+                            animationDelay: `${linkIdx * 0.05}s`,
+                            opacity: 0,
+                          }}
+                        >
                           <Link
                             href={item.href}
-                            className="block py-2 text-center text-xs text-black/45 transition-colors hover:text-[#FF5C3A] dark:text-white/35"
+                            className="block py-2 text-center text-xs text-black/45 transition-colors duration-300 hover:text-[#FF5C3A] dark:text-white/35 dark:hover:text-[#FF5C3A]"
                           >
                             {item.name}
                           </Link>
@@ -201,30 +298,50 @@ export default function LandingFooter() {
                       ))}
                     </ul>
                   </div>
-                )}
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[10px] font-medium text-black/35 dark:text-white/25">
-            <Link href="/contacto" className="transition-colors hover:text-[#FF5C3A]">
-              Contacto
-            </Link>
-            <Link href="/sobre-nosotros" className="transition-colors hover:text-[#FF5C3A]">
-              Nosotros
-            </Link>
-            <Link href="/estado" className="transition-colors hover:text-[#FF5C3A]">
-              Estado
-            </Link>
+          {/* Quick Links */}
+          <div
+            className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[10px] font-medium text-black/35 dark:text-white/25"
+            style={{
+              opacity: footerVisible ? 1 : 0,
+              transition: `opacity 0.5s cubic-bezier(${EASING.outQuart.join(',')})`,
+              transitionDelay: '0.4s',
+            }}
+          >
+            {[
+              { href: '/contacto', label: 'Contacto' },
+              { href: '/sobre-nosotros', label: 'Nosotros' },
+              { href: '/estado', label: 'Estado' },
+            ].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="relative transition-colors duration-300 hover:text-[#FF5C3A] after:absolute after:-bottom-0.5 after:left-0 after:h-[1px] after:w-0 after:bg-[#FF5C3A] after:transition-all after:duration-300 hover:after:w-full"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
 
         {/* Desktop Grid */}
         <div className="mb-16 hidden md:block lg:mb-20">
           <div className="grid grid-cols-2 gap-10 lg:grid lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:gap-20">
-            <div>
+            {/* Brand Column */}
+            <div
+              style={{
+                opacity: footerVisible ? 1 : 0,
+                transform: footerVisible ? 'translateY(0)' : 'translateY(30px)',
+                transition: `opacity 0.6s cubic-bezier(${EASING.outQuart.join(',')}), transform 0.6s cubic-bezier(${EASING.outQuart.join(',')})`,
+                transitionDelay: '0.1s',
+              }}
+            >
               <Link href="/" className="group mb-6 inline-flex items-center gap-2.5 sm:mb-8 sm:gap-3 md:mb-10">
-                <div className="relative h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10">
+                <div className="relative h-8 w-8 transition-transform duration-300 group-hover:scale-110 sm:h-9 sm:w-9 md:h-10 md:w-10">
                   <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
                   <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
                 </div>
@@ -232,15 +349,16 @@ export default function LandingFooter() {
                   Look<span className="text-[#FF5C3A]">itry</span>
                 </span>
               </Link>
-              <p className="mb-6 max-w-xs text-sm font-light leading-relaxed text-black/70 dark:text-white/70 sm:mb-8 sm:text-base">
+              <p className="mb-6 max-w-xs text-sm font-light leading-relaxed text-black/70 transition-colors duration-300 dark:text-white/70 sm:mb-8 sm:text-base">
                 Empoderamos al retail con Inteligencia Artificial. La primera solución de visualización personalizada líder en Colombia y Latinoamérica.
               </p>
               <div className="mb-6 sm:mb-8 md:mb-10">
                 <Link
                   href="/sobre-nosotros"
-                  className="border-b border-[#FF5C3A]/30 pb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#FF5C3A] transition-colors hover:text-[#FF5C3A]/80 sm:text-[11px] sm:tracking-[0.2em]"
+                  className="group relative border-b border-[#FF5C3A]/30 pb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#FF5C3A] transition-colors duration-300 hover:text-[#FF5C3A]/80 sm:text-[11px] sm:tracking-[0.2em]"
                 >
-                  Conoce nuestra historia
+                  <span className="relative z-10">Conoce nuestra historia</span>
+                  <span className="absolute bottom-0 left-0 h-full w-0 bg-[#FF5C3A]/10 transition-all duration-300 group-hover:w-full" />
                 </Link>
               </div>
               <div className="flex items-center gap-2.5 sm:gap-3">
@@ -254,7 +372,7 @@ export default function LandingFooter() {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
+                    className="social-btn group relative flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 transition-all duration-300 hover:border-[#FF5C3A]/40 hover:bg-[#FF5C3A]/10 hover:text-[#FF5C3A] hover:scale-110 hover:shadow-[0_0_20px_rgba(255,92,58,0.15)] sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60 dark:hover:border-[#FF5C3A]/40 dark:hover:bg-[#FF5C3A]/10 dark:hover:text-[#FF5C3A] dark:hover:shadow-[0_0_20px_rgba(255,92,58,0.15)]"
                     aria-label={item.label}
                   >
                     <item.Icon size={18} aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110" />
@@ -264,28 +382,45 @@ export default function LandingFooter() {
                   href={socialLinks.tiktok}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
+                  className="social-btn group relative flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 transition-all duration-300 hover:border-[#FF5C3A]/40 hover:bg-[#FF5C3A]/10 hover:text-[#FF5C3A] hover:scale-110 hover:shadow-[0_0_20px_rgba(255,92,58,0.15)] sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60 dark:hover:border-[#FF5C3A]/40 dark:hover:bg-[#FF5C3A]/10 dark:hover:text-[#FF5C3A] dark:hover:shadow-[0_0_20px_rgba(255,92,58,0.15)]"
                   aria-label="TikTok"
                   suppressHydrationWarning
                 >
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" aria-hidden="true" suppressHydrationWarning>
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current transition-transform duration-300 group-hover:scale-110 sm:h-4 sm:w-4" aria-hidden="true" suppressHydrationWarning>
                     <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
                   </svg>
                 </Link>
               </div>
             </div>
 
-            {footerSections.map((section) => (
-              <div key={section.title}>
-                <h5 className="mb-6 font-jakarta text-[9px] font-bold uppercase tracking-[0.25em] text-black dark:text-white sm:mb-8 sm:text-[10px] sm:tracking-[0.3em] md:mb-10">
+            {/* Link Columns */}
+            {footerSections.map((section, sectionIdx) => (
+              <div
+                key={section.title}
+                style={{
+                  opacity: footerVisible ? 1 : 0,
+                  transform: footerVisible ? 'translateY(0)' : 'translateY(30px)',
+                  transition: `opacity 0.6s cubic-bezier(${EASING.outQuart.join(',')}), transform 0.6s cubic-bezier(${EASING.outQuart.join(',')})`,
+                  transitionDelay: `${0.2 + sectionIdx * 0.1}s`,
+                }}
+              >
+                <h5 className="mb-6 font-jakarta text-[9px] font-bold uppercase tracking-[0.25em] text-black transition-colors duration-300 hover:text-[#FF5C3A] dark:text-white sm:mb-8 sm:text-[10px] sm:tracking-[0.3em] md:mb-10">
                   {section.title}
                 </h5>
                 <ul className="flex flex-col gap-3 sm:gap-4 md:gap-5">
-                  {section.links.map((item) => (
-                    <li key={item.name}>
+                  {section.links.map((item, linkIdx) => (
+                    <li
+                      key={item.name}
+                      style={{
+                        opacity: footerVisible ? 1 : 0,
+                        transform: footerVisible ? 'translateY(0)' : 'translateY(15px)',
+                        transition: `opacity 0.4s cubic-bezier(${EASING.outQuart.join(',')}), transform 0.4s cubic-bezier(${EASING.outQuart.join(',')})`,
+                        transitionDelay: `${0.35 + sectionIdx * 0.08 + linkIdx * 0.05}s`,
+                      }}
+                    >
                       <Link
                         href={item.href}
-                        className="group relative text-sm text-black/65 transition-colors hover:text-[#FF5C3A] dark:text-white/60 dark:hover:text-[#FF5C3A]"
+                        className="group relative text-sm text-black/65 transition-colors duration-300 hover:text-[#FF5C3A] dark:text-white/60 dark:hover:text-[#FF5C3A]"
                       >
                         {item.name}
                         <span className="absolute -bottom-0.5 left-0 h-[1px] w-0 bg-[#FF5C3A] transition-all duration-300 group-hover:w-full" />
@@ -299,7 +434,15 @@ export default function LandingFooter() {
         </div>
       </div>
 
-      <div className="mt-5 w-full bg-[#FF5C3A] md:mt-0">
+      {/* Bottom Bar */}
+      <div
+        className="mt-5 w-full bg-[#FF5C3A] md:mt-0"
+        style={{
+          opacity: footerVisible ? 1 : 0,
+          transition: `opacity 0.5s cubic-bezier(${EASING.outQuart.join(',')})`,
+          transitionDelay: '0.5s',
+        }}
+      >
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 md:px-12 md:py-10">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             {/* Copyright */}
@@ -307,36 +450,63 @@ export default function LandingFooter() {
               <span>© {currentYear} Lookitry · Hecho con</span>
               <DynamicLoveAnimation />
               <span>por</span>
-              <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="font-semibold transition-colors hover:text-white ml-1.5">
+              <Link
+                href="https://wilkiedevs.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold transition-colors duration-300 hover:text-white ml-1.5"
+              >
                 Wilkie Devs
               </Link>
             </div>
 
-            {/* Trust badges */}
+            {/* Trust badges & Theme toggle */}
             <div className="flex items-center gap-6 sm:gap-8">
-              <div className="flex items-center gap-2 font-dm-sans text-xs font-medium text-black/80 sm:text-sm">
-                <ShieldCheck size={16} aria-hidden="true" /> Pagos seguros
+              {/* Trust badge */}
+              <div
+                className="flex items-center gap-2 font-dm-sans text-xs font-medium text-black/80 transition-all duration-300 hover:text-black sm:text-sm"
+              >
+                <ShieldCheck
+                  size={16}
+                  aria-hidden="true"
+                  className="transition-transform duration-300 hover:scale-110"
+                />
+                <span className="relative">
+                  Pagos seguros
+                  <span className="absolute -bottom-0.5 left-0 h-[1px] w-0 bg-current transition-all duration-300 group-hover:w-full" />
+                </span>
               </div>
 
               {/* Theme toggle */}
               <button
                 onClick={toggle}
                 aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                className="flex items-center gap-2 rounded-full border border-black/20 px-4 py-2 text-xs font-medium text-black/90 transition-all hover:border-black/40 hover:bg-black/10 hover:text-black sm:text-sm"
+                className="group flex items-center gap-2 rounded-full border border-black/20 px-4 py-2 text-xs font-medium text-black/90 transition-all duration-300 hover:border-[#FF5C3A]/40 hover:bg-[#FF5C3A]/10 hover:text-[#FF5C3A] sm:text-sm"
               >
                 {mounted ? (
                   isDark ? (
                     <>
-                      <Sun size={14} aria-hidden="true" /> Modo claro
+                      <Sun
+                        size={14}
+                        aria-hidden="true"
+                        className="transition-transform duration-300 group-hover:rotate-45"
+                      />
+                      <span className="relative z-10">Modo claro</span>
                     </>
                   ) : (
                     <>
-                      <Moon size={14} aria-hidden="true" /> Modo oscuro
+                      <Moon
+                        size={14}
+                        aria-hidden="true"
+                        className="transition-transform duration-300 group-hover:rotate-12"
+                      />
+                      <span className="relative z-10">Modo oscuro</span>
                     </>
                   )
                 ) : (
                   <>
-                    <Moon size={14} aria-hidden="true" /> Modo oscuro
+                    <Moon size={14} aria-hidden="true" />
+                    <span className="relative z-10">Modo oscuro</span>
                   </>
                 )}
               </button>
@@ -344,6 +514,39 @@ export default function LandingFooter() {
           </div>
         </div>
       </div>
+
+      {/* Keyframe Animations */}
+      <style jsx>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeSlideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-5px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
     </footer>
   );
 }
