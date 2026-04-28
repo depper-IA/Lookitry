@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const words = [
-  { text: '❤️', color: '#161616ff', isEmoji: true },
+  { text: '🖤', color: '#161616ff', isEmoji: true },
   { text: 'AMOR', color: '#161616ff', isEmoji: false },
   { text: 'PASION', color: '#161616ff', isEmoji: false },
   { text: 'AI', color: '#161616ff', isEmoji: false },
