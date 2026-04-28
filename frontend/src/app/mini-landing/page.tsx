@@ -173,6 +173,14 @@ export default function MiniLandingPage() {
   const faqInView = useInView(faqRef, { once: true, amount: 0.1 });
 
   useEffect(() => {
+    const handleCurrencyChange = () => {
+      const saved = localStorage.getItem('currency') as 'COP' | 'USD' | null;
+      if (saved === 'COP' || saved === 'USD') {
+        setCurrency(saved);
+      }
+    };
+    window.addEventListener('currencyChange', handleCurrencyChange);
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
     Promise.all([
       fetch(`${apiUrl}/api/pricing-config`).then(r => r.ok ? r.json() : null),
@@ -197,7 +205,9 @@ export default function MiniLandingPage() {
     }).catch(() => {
       setLoading(false);
     });
-  }, []);
+
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
+  }, [setCurrency]);
 
   const handleManualCurrencyChange = (c: 'COP' | 'USD') => {
     setCurrency(c);
@@ -522,7 +532,6 @@ export default function MiniLandingPage() {
                     >
                       {loading ? '---' : formatPrice(miniLandingPrice)}
                     </motion.span>
-                    <span className="text-white/40 font-bold pb-2">COP</span>
                   </div>
                   <motion.div
                     className="text-white/30 font-dm-sans text-base line-through mb-6"
@@ -626,7 +635,7 @@ export default function MiniLandingPage() {
                 transition={{ delay: 0.5, duration: 0.5 }}
                 className="mt-5 text-white/20 text-xs uppercase tracking-widest font-bold"
               >
-                Pago único {loading ? '---' : formatPrice(miniLandingPrice)} COP · Sin mensualidad adicional
+                Pago único {loading ? '---' : formatPrice(miniLandingPrice)} · Sin mensualidad adicional
               </motion.p>
             </motion.div>
           </motion.div>
