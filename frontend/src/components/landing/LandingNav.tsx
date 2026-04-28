@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronDown, Layout, Zap, Terminal, User, LogOut, ArrowRight } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { usePromoBanner } from '@/contexts/PromoBannerContext';
@@ -11,7 +12,56 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { formatPrice } from '@/utils/currency';
 import { Sun, Moon } from 'lucide-react';
 
-const EASING_OUT = [0.22, 1, 0.36, 1] as [number, number, number, number];
+const EASING_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+// Mobile menu animation variants
+const mobileMenuVariants = {
+  hidden: {
+    opacity: 0,
+    x: '100%',
+    transition: { duration: 0.3, ease: EASING_OUT }
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.4, ease: EASING_OUT }
+  },
+  exit: {
+    opacity: 0,
+    x: '100%',
+    transition: { duration: 0.25, ease: EASING_OUT }
+  }
+};
+
+const mobileCardVariants = {
+  hidden: {
+    opacity: 0,
+    y: 30,
+    scale: 0.95,
+    transition: { duration: 0.3, ease: EASING_OUT }
+  },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      delay: i * 0.08,
+      duration: 0.4,
+      ease: EASING_OUT
+    }
+  })
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0.2
+    }
+  }
+};
 
 // Precio por defecto del trial (20000 COP) — se actualiza dinámicamente si hay campaña activa
 const DEFAULT_TRIAL_PRICE_COP = 20000;
@@ -38,7 +88,6 @@ export default function LandingNav({
   const [trialPriceCOP, setTrialPriceCOP] = useState(DEFAULT_TRIAL_PRICE_COP);
   const [trm, setTrm] = useState(3900);
 
-  // Lazy fetch de trial price y TRM — solo cuando el usuario interactúa con moneda o trial
   const [trialDataFetched, setTrialDataFetched] = useState(false);
 
   useEffect(() => {
@@ -63,8 +112,7 @@ export default function LandingNav({
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
     Promise.all([
       fetch(`${apiUrl}/api/trial/status`).then(r => r.ok ? r.json() : null),
-      // Usa el proxy de Next.js para payment-settings — evita CORS con el backend
-      fetch('/api/payment-settings/public').then(r => r.ok ? r.json() : null)
+      fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null)
     ])
       .then(([trialData, paySettings]) => {
         if (trialData?.priceCOP && Number(trialData.priceCOP) > 0) {
@@ -150,7 +198,6 @@ export default function LandingNav({
     }
   ];
 
-  // Empresa - Links simples
   const companyLinks = [
     { title: 'Blog', href: '/blog' },
     { title: 'Sobre Nosotros', href: '/sobre-nosotros' },
@@ -174,7 +221,7 @@ export default function LandingNav({
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-2 md:gap-5">
             <Link href="/" className="nav-logo flex shrink-0 items-center gap-2.5 group" aria-label="Lookitry - Inicio">
-              <div className="relative h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110 sm:h-8 sm:w-8">
+              <div className="relative h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110">
                 <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
                 <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
               </div>
@@ -402,130 +449,198 @@ export default function LandingNav({
               aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
               aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+              {mobileMenuOpen ? (
+                <motion.div
+                  initial={{ rotate: 0 }}
+                  animate={{ rotate: 90 }}
+                  transition={{ duration: 0.3, ease: EASING_OUT }}
+                >
+                  <X size={22} aria-hidden="true" />
+                </motion.div>
+              ) : (
+                <Menu size={22} aria-hidden="true" />
+              )}
             </button>
           </div>
         </div>
       </nav>
 
-      {mobileMenuOpen && (
-        <div
-          className="fixed z-[55] flex items-center justify-center overflow-y-auto bg-white px-4 backdrop-blur-xl animate-in fade-in slide-in-from-right duration-300 dark:bg-[rgba(10,10,10,0.98)] sm:px-10"
-          style={{ top: 0, left: 0, right: 0, bottom: 0, paddingTop: '6rem', paddingBottom: '6rem' }}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menu de navegacion"
-        >
-          <div className="mx-auto my-auto flex w-full max-w-sm flex-col items-center gap-6 rounded-[2rem] border border-black/10 bg-white px-5 py-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.12)] dark:border-white/8 dark:bg-white/[0.03] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-            <div className="flex w-full items-center justify-center gap-8 px-4">
-              <div className="flex flex-col items-center gap-3">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-black/25 dark:text-white/25">Moneda</span>
-                <div
-                  className="flex items-center gap-2.5 rounded-full border border-black/10 bg-black/5 px-3 py-1.5 dark:border-white/10 dark:bg-white/5"
-                  role="group"
-                  aria-label="Selector de moneda"
-                >
-                  <button
-                    onClick={() => onCurrencyChange('COP')}
-                    aria-pressed={currency === 'COP'}
-                    className={`mobile-currency-btn cursor-pointer text-xs font-bold uppercase transition-all duration-200 ${currency === 'COP' ? 'text-[#FF5C3A] scale-110' : 'text-black/35 hover:text-black/60 dark:text-white/35 dark:hover:text-white'
-                      }`}
-                  >
-                    COP
-                  </button>
-                  <div className="h-2.5 w-[1px] bg-black/10 dark:bg-white/10" aria-hidden="true" />
-                  <button
-                    onClick={() => onCurrencyChange('USD')}
-                    aria-pressed={currency === 'USD'}
-                    className={`mobile-currency-btn cursor-pointer text-xs font-bold uppercase transition-all duration-200 ${currency === 'USD' ? 'text-[#FF5C3A] scale-110' : 'text-black/35 hover:text-black/60 dark:text-white/35 dark:hover:text-white'
-                      }`}
-                  >
-                    USD
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-center gap-3">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-black/25 dark:text-white/25">Tema</span>
-                <button
-                  onClick={toggleTheme}
-                  className="mobile-theme-btn flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/5 text-[#FF5C3A] transition-all duration-300 hover:scale-110 active:scale-95 dark:border-white/10 dark:bg-white/5"
-                  aria-label={isDark ? 'Modo claro' : 'Modo oscuro'}
-                >
-                  {isDark ? <Sun size={18} /> : <Moon size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex w-full flex-col items-center gap-2.5">
-              <p className="mb-0.5 text-[9px] font-black uppercase tracking-[0.25em] text-[#FF5C3A]/80">Productos Pro</p>
-              {productLinks.map((prod) => (
-                <Link
-                  key={prod.title}
-                  href={prod.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="mobile-product-link group flex w-full items-center gap-3.5 rounded-2xl border border-black/8 bg-black/[0.03] p-3.5 text-left transition-all duration-200 hover:border-black/12 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
-                >
-                  <div className="mobile-product-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FF5C3A]/10 transition-transform duration-300 group-hover:scale-110">
-                    <ArrowRight size={16} className="text-[#FF5C3A]" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[11px] font-black uppercase tracking-wider text-[#0a0a0a] dark:text-white">{prod.title}</p>
-                    <p className="text-[10px] font-medium text-black/35 dark:text-white/35">{prod.desc}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            <div className="grid w-full grid-cols-2 gap-3">
-              {session ? (
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="mobile-panel-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                >
-                  Mi Panel
-                </Link>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="mobile-login-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                >
-                  Ingresar
-                </Link>
-              )}
-              <Link
-                href="/trial-checkout"
-                onClick={() => {
-                  fetchTrialDataIfNeeded();
-                  setMobileMenuOpen(false);
-                }}
-                className="mobile-trial-btn flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#FF5C3A]/30 active:scale-[0.98]"
+      {/* Mobile Menu with AnimatePresence */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            variants={mobileMenuVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed z-[55] flex items-center justify-center overflow-y-auto bg-white px-4 backdrop-blur-xl dark:bg-[rgba(10,10,10,0.98)] sm:px-10"
+            style={{ top: 0, left: 0, right: 0, bottom: 0, paddingTop: '6rem', paddingBottom: '6rem' }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu de navegacion"
+          >
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="mx-auto my-auto flex w-full max-w-sm flex-col items-center gap-5 rounded-[2rem] border border-black/10 bg-white px-5 py-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.12)] dark:border-white/8 dark:bg-white/[0.03] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
+            >
+              {/* Currency & Theme Row */}
+              <motion.div
+                custom={0}
+                variants={mobileCardVariants}
+                className="flex w-full items-center justify-center gap-8 px-4"
               >
-                Trial {formatPrice(trialPriceCOP, currency, trm)}
-              </Link>
-            </div>
+                <div className="flex flex-col items-center gap-3">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-black/25 dark:text-white/25">Moneda</span>
+                  <div
+                    className="flex items-center gap-2.5 rounded-full border border-black/10 bg-black/5 px-3 py-1.5 dark:border-white/10 dark:bg-white/5"
+                    role="group"
+                    aria-label="Selector de moneda"
+                  >
+                    <button
+                      onClick={() => onCurrencyChange('COP')}
+                      aria-pressed={currency === 'COP'}
+                      className={`mobile-currency-btn cursor-pointer text-xs font-bold uppercase transition-all duration-200 ${currency === 'COP' ? 'text-[#FF5C3A] scale-110' : 'text-black/35 hover:text-black/60 dark:text-white/35 dark:hover:text-white'
+                        }`}
+                    >
+                      COP
+                    </button>
+                    <div className="h-2.5 w-[1px] bg-black/10 dark:bg-white/10" aria-hidden="true" />
+                    <button
+                      onClick={() => onCurrencyChange('USD')}
+                      aria-pressed={currency === 'USD'}
+                      className={`mobile-currency-btn cursor-pointer text-xs font-bold uppercase transition-all duration-200 ${currency === 'USD' ? 'text-[#FF5C3A] scale-110' : 'text-black/35 hover:text-black/60 dark:text-white/35 dark:hover:text-white'
+                        }`}
+                    >
+                      USD
+                    </button>
+                  </div>
+                </div>
 
-            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-black/10 to-transparent dark:via-white/8" />
+                <div className="flex flex-col items-center gap-3">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-black/25 dark:text-white/25">Tema</span>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={toggleTheme}
+                    className="mobile-theme-btn flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/5 text-[#FF5C3A] transition-all duration-300 hover:scale-110 hover:border-[#FF5C3A] dark:border-white/10 dark:bg-white/5"
+                    aria-label={isDark ? 'Modo claro' : 'Modo oscuro'}
+                  >
+                    {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                  </motion.button>
+                </div>
+              </motion.div>
 
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pb-1 text-[10px] font-medium text-black/25 dark:text-white/20">
-              <Link href="/terminos" onClick={() => setMobileMenuOpen(false)} className="mobile-footer-link transition-colors duration-200 hover:text-black/45 dark:hover:text-white/40">
-                Terminos
-              </Link>
-              <Link href="/politicas-privacidad" onClick={() => setMobileMenuOpen(false)} className="mobile-footer-link transition-colors duration-200 hover:text-black/45 dark:hover:text-white/40">
-                Privacidad
-              </Link>
-              <Link href="/cookies" onClick={() => setMobileMenuOpen(false)} className="mobile-footer-link transition-colors duration-200 hover:text-black/45 dark:hover:text-white/40">
-                Cookies
-              </Link>
-              <Link href="/contacto" onClick={() => setMobileMenuOpen(false)} className="mobile-footer-link transition-colors duration-200 hover:text-black/45 dark:hover:text-white/40">
-                Contacto
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
+              {/* Products Section */}
+              <motion.div
+                custom={1}
+                variants={mobileCardVariants}
+                className="flex w-full flex-col items-center gap-2.5"
+              >
+                <p className="mb-0.5 text-[9px] font-black uppercase tracking-[0.25em] text-[#FF5C3A]/80">Productos Pro</p>
+                {productLinks.map((prod, index) => (
+                  <motion.div
+                    key={prod.title}
+                    custom={index + 2}
+                    variants={mobileCardVariants}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Link
+                      href={prod.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="mobile-product-link group flex w-full items-center gap-3.5 rounded-2xl border border-black/8 bg-black/[0.03] p-3.5 text-left transition-all duration-200 hover:border-black/12 hover:bg-black/[0.05] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
+                    >
+                      <motion.div
+                        className="mobile-product-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FF5C3A]/10 transition-transform duration-300 group-hover:scale-110"
+                        whileHover={{ rotate: 90, backgroundColor: 'rgba(255, 92, 58, 0.2)' }}
+                      >
+                        <ArrowRight size={16} className="text-[#FF5C3A]" />
+                      </motion.div>
+                      <div className="text-left">
+                        <p className="text-[11px] font-black uppercase tracking-wider text-[#0a0a0a] dark:text-white">{prod.title}</p>
+                        <p className="text-[10px] font-medium text-black/35 dark:text-white/35">{prod.desc}</p>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* Action Buttons */}
+              <motion.div
+                custom={5}
+                variants={mobileCardVariants}
+                className="grid w-full grid-cols-2 gap-3"
+              >
+                {session ? (
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="mobile-panel-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                    >
+                      Mi Panel
+                    </Link>
+                  </motion.div>
+                ) : (
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="mobile-login-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                    >
+                      Ingresar
+                    </Link>
+                  </motion.div>
+                )}
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Link
+                    href="/trial-checkout"
+                    onClick={() => {
+                      fetchTrialDataIfNeeded();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="mobile-trial-btn flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all duration-300 hover:shadow-2xl hover:shadow-[#FF5C3A]/30"
+                  >
+                    Trial {formatPrice(trialPriceCOP, currency, trm)}
+                  </Link>
+                </motion.div>
+              </motion.div>
+
+              {/* Divider */}
+              <motion.div
+                custom={6}
+                variants={mobileCardVariants}
+                className="h-[1px] w-full bg-gradient-to-r from-transparent via-black/10 to-transparent dark:via-white/8"
+              />
+
+              {/* Footer Links */}
+              <motion.div
+                custom={7}
+                variants={mobileCardVariants}
+                className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pb-1 text-[10px] font-medium text-black/25 dark:text-white/20"
+              >
+                {[
+                  { href: '/terminos', label: 'Terminos' },
+                  { href: '/politicas-privacidad', label: 'Privacidad' },
+                  { href: '/cookies', label: 'Cookies' },
+                  { href: '/contacto', label: 'Contacto' }
+                ].map((link) => (
+                  <motion.div key={link.href} whileHover={{ scale: 1.1 }}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="mobile-footer-link transition-colors duration-200 hover:text-[#FF5C3A]"
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
