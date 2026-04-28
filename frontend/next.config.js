@@ -18,8 +18,6 @@ const nextConfig = {
   } : undefined,
   async redirects() {
     return [
-      // Redirecciones de páginas 404
-      { source: '/probador-virtual', destination: '/', permanent: false },
       // Las rutas de producto se eliminaron porque bloqueaban el acceso a las páginas reales
     ];
   },
