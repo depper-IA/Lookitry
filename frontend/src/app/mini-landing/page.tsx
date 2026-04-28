@@ -121,7 +121,7 @@ export default function MiniLandingPage() {
       if (settingsData?.trm && Number(settingsData.trm) > 0) {
         setTrm(Number(settingsData.trm));
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const handleManualCurrencyChange = (c: 'COP' | 'USD') => {
@@ -162,7 +162,7 @@ export default function MiniLandingPage() {
                   Obtener mi Mini-Landing ahora <ArrowRight size={18} />
                 </Link>
                 <Link
-                  href="/checkout?plan=LANDING"
+                  href="/planes"
                   className="bg-[#1a1a1a] border border-white/10 text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:border-[#FF5C3A]/30 flex items-center gap-3"
                 >
                   Ver planes base

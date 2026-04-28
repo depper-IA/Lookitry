@@ -205,96 +205,93 @@ export default function LandingNav({
               {megaMenuOpen && (
                 <div
                   onMouseLeave={() => setMegaMenuOpen(false)}
-                  className="absolute left-1/2 top-full mt-4 -translate-x-1/2 w-[90vw] max-w-2xl rounded-2xl border border-black/10 bg-white p-5 shadow-2xl dark:border-white/10 dark:bg-[#111] animate-in fade-in slide-in-from-top-2 duration-200"
+                  className="absolute left-1/2 top-full mt-4 -translate-x-1/2 w-[90vw] max-w-[680px] rounded-2xl border border-black/10 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-[#111] animate-in fade-in slide-in-from-top-2 duration-200"
                   role="menu"
                   style={{ left: '50%' }}
                 >
-                  <div className="grid grid-cols-12 gap-5">
-                    {/* Columna 1: Productos */}
-                    <div className="col-span-7 space-y-0">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999] mb-4 pb-2 border-b border-black/5 dark:border-white/5">Productos</p>
-                      {productLinks.map((prod, index) => (
-                        <Link
-                          key={prod.title}
-                          href={prod.href}
-                          onClick={() => setMegaMenuOpen(false)}
-                          className="group relative flex items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 border border-transparent hover:border-[#FF5C3A]/20 hover:bg-[#FF5C3A]/5 focus-visible:outline-2 focus-visible:outline-[#FF5C3A] focus-visible:outline-offset-2"
-                          role="menuitem"
-                        >
-                          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all duration-200 ${
-                            index === 0 ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]' :
-                            index === 1 ? 'bg-blue-500/10 text-blue-500' :
-                            'bg-emerald-500/10 text-emerald-500'
-                          }`}>
-                            {index === 0 ? <Layout size={18} /> :
-                             index === 1 ? <Zap size={18} /> :
-                             <Terminal size={18} />}
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-[12px] font-bold text-[#0a0a0a] dark:text-white group-hover:text-[#FF5C3A] transition-colors duration-150 flex items-center gap-1.5">
-                              {prod.title}
-                              <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-150 text-[#FF5C3A]" />
-                            </h3>
-                            <p className="text-[10px] font-medium text-[#999]">{prod.desc}</p>
-                          </div>
-                        </Link>
-                      ))}
-                      
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999]/60 mt-5 mb-4 pb-2 border-b border-black/5 dark:border-white/5">Empresa</p>
-                      {companyLinks.map((link) => (
-                        <Link
-                          key={link.title}
-                          href={link.href}
-                          onClick={() => setMegaMenuOpen(false)}
-                          className="group relative flex items-center rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-[#FF5C3A] focus-visible:outline-offset-2"
-                          role="menuitem"
-                        >
-                          <span className="text-[11px] font-medium text-[#999] group-hover:text-[#0a0a0a] dark:group-hover:text-white transition-colors duration-150">
-                            {link.title}
-                          </span>
-                          <ArrowRight size={12} className="ml-auto opacity-0 group-hover:opacity-50 group-hover:translate-x-0.5 transition-all duration-150 text-[#999]" />
-                        </Link>
-                      ))}
-                    </div>
-
-                    {/* Columna 2: Copy ARRIBA + Imagen GRANDE + CTA DEBAJO */}
-                    <div className="col-span-5 flex flex-col">
-                      {/* Copy FUERA de la imagen - ARRIBA */}
-                      <div className="mb-4 text-left">
-                        <h3 className="font-jakarta text-base font-bold text-[#0a0a0a] dark:text-white mb-2 leading-tight">
-                          Transforma tu tienda con IA
-                        </h3>
-                        <p className="text-[11px] text-[#999] leading-relaxed">
-                          Permite que tus clientes prueben tu ropa virtualmente y aumenten sus conversiones hasta un 40%
-                        </p>
+                  <div className="flex gap-8">
+                    {/* LEFT: Links column — max ~300px */}
+                    <div className="w-[300px] shrink-0 space-y-5">
+                      {/* Productos */}
+                      <div>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999] mb-3 pb-2 border-b border-black/5 dark:border-white/5">Productos</p>
+                        <div className="space-y-0.5">
+                          {productLinks.map((prod, index) => (
+                            <Link
+                              key={prod.title}
+                              href={prod.href}
+                              onClick={() => setMegaMenuOpen(false)}
+                              className="group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-all duration-150 hover:bg-black/5 dark:hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-[#FF5C3A] focus-visible:outline-offset-1"
+                              role="menuitem"
+                            >
+                              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-all duration-150 ${
+                                index === 0 ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]' :
+                                index === 1 ? 'bg-blue-500/10 text-blue-500' :
+                                'bg-emerald-500/10 text-emerald-500'
+                              }`}>
+                                {index === 0 ? <Layout size={15} /> :
+                                 index === 1 ? <Zap size={15} /> :
+                                 <Terminal size={15} />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-[11px] font-semibold text-[#0a0a0a] dark:text-white group-hover:text-[#FF5C3A] transition-colors duration-150 flex items-center gap-1.5">
+                                  {prod.title}
+                                  <ArrowRight size={10} className="opacity-0 group-hover:opacity-100 transition-all duration-150 text-[#FF5C3A] translate-x-[-2px] group-hover:translate-x-0" />
+                                </h3>
+                                <p className="text-[9px] font-medium text-[#999] truncate">{prod.desc}</p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
                       </div>
 
-                      {/* Imagen GRANDE sin overlay de texto */}
-                      <div className="relative w-full rounded-2xl overflow-hidden aspect-[3/4] group cursor-pointer flex-1">
+                      {/* Empresa */}
+                      <div>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999]/60 mb-3 pb-2 border-b border-black/5 dark:border-white/5">Empresa</p>
+                        <div className="flex gap-4 px-2.5 py-1">
+                          {companyLinks.map((link) => (
+                            <Link
+                              key={link.title}
+                              href={link.href}
+                              onClick={() => setMegaMenuOpen(false)}
+                              className="text-[10px] font-medium text-[#999] hover:text-[#0a0a0a] dark:hover:text-white transition-colors duration-150"
+                              role="menuitem"
+                            >
+                              {link.title}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* RIGHT: Image + CTA — ~260px */}
+                    <div className="w-[260px] shrink-0 flex flex-col">
+                      {/* Horizontal image */}
+                      <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden group">
                         <Link href="/trial-checkout" onClick={() => setMegaMenuOpen(false)} className="block absolute inset-0 z-10" aria-label="Pruébalo gratis" />
                         <Image
                           src="/hero/promo_landing.png"
                           alt="Lookitry - Transforma tu tienda con IA"
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          sizes="(max-width: 768px) 100vw, 40vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                          sizes="260px"
                         />
-                        {/* Subtle bottom gradient for polish */}
-                        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                       </div>
 
-                      {/* CTA DEBAJO de la imagen */}
-                      <div className="mt-4 text-left">
+                      {/* CTA — small, subtle, below image */}
+                      <div className="mt-3 flex items-center justify-between">
+                        <div>
+                          <p className="text-[10px] font-semibold text-[#0a0a0a] dark:text-white leading-tight">Transforma tu tienda</p>
+                          <p className="text-[9px] text-[#999]">Sin tarjeta requerida</p>
+                        </div>
                         <Link
                           href="/trial-checkout"
                           onClick={() => setMegaMenuOpen(false)}
-                          className="inline-flex items-center justify-center rounded-full bg-[#FF5C3A] px-6 py-3 text-[11px] font-semibold text-white transition-all hover:opacity-90 hover:scale-105 active:scale-95 shadow-lg shadow-[#FF5C3A]/30"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[#FF5C3A] px-4 py-2 text-[10px] font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
                         >
                           Pruébalo gratis
+                          <ArrowRight size={11} />
                         </Link>
-                        <p className="mt-2 text-[9px] text-[#999]">
-                          Sin tarjeta de credito requerida
-                        </p>
                       </div>
                     </div>
                   </div>
