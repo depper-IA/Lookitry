@@ -37,7 +37,7 @@ export default function LandingNav({
 
   // Lazy fetch de trial price y TRM — solo cuando el usuario interactúa con moneda o trial
   const [trialDataFetched, setTrialDataFetched] = useState(false);
-  
+
   const fetchTrialDataIfNeeded = () => {
     if (trialDataFetched) return;
     setTrialDataFetched(true);
@@ -54,7 +54,7 @@ export default function LandingNav({
           setTrm(Number(paySettings.trm));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   };
 
   useEffect(() => {
@@ -109,8 +109,7 @@ export default function LandingNav({
 
   const menuLinks = [
     { label: 'Casos de Uso', href: '/casos-de-exito' },
-    { label: 'Planes', href: '/planes' },
-    { label: 'Blog', href: '/blog' }
+    { label: 'Planes', href: '/planes' }
   ];
 
   const productLinks = [
@@ -167,9 +166,8 @@ export default function LandingNav({
               <button
                 onClick={() => onCurrencyChange('COP')}
                 aria-pressed={currency === 'COP'}
-                className={`cursor-pointer text-[9px] font-bold uppercase transition-colors sm:text-[8px] ${
-                  currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/45 hover:text-[#0a0a0a] dark:text-white/50 dark:hover:text-white'
-                }`}
+                className={`cursor-pointer text-[9px] font-bold uppercase transition-colors sm:text-[8px] ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/45 hover:text-[#0a0a0a] dark:text-white/50 dark:hover:text-white'
+                  }`}
               >
                 COP
               </button>
@@ -177,9 +175,8 @@ export default function LandingNav({
               <button
                 onClick={() => onCurrencyChange('USD')}
                 aria-pressed={currency === 'USD'}
-                className={`cursor-pointer text-[9px] font-bold uppercase transition-colors sm:text-[8px] ${
-                  currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/45 hover:text-[#0a0a0a] dark:text-white/50 dark:hover:text-white'
-                }`}
+                className={`cursor-pointer text-[9px] font-bold uppercase transition-colors sm:text-[8px] ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/45 hover:text-[#0a0a0a] dark:text-white/50 dark:hover:text-white'
+                  }`}
               >
                 USD
               </button>
@@ -194,9 +191,8 @@ export default function LandingNav({
                 onClick={() => setMegaMenuOpen(!megaMenuOpen)}
                 aria-expanded={megaMenuOpen}
                 aria-haspopup="true"
-                className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
-                  megaMenuOpen ? 'text-[#FF5C3A]' : 'text-black/60 hover:text-[#0a0a0a] dark:text-white/60 dark:hover:text-white'
-                }`}
+                className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${megaMenuOpen ? 'text-[#FF5C3A]' : 'text-black/60 hover:text-[#0a0a0a] dark:text-white/60 dark:hover:text-white'
+                  }`}
               >
                 Productos Pro
                 <ChevronDown size={12} className={`transition-transform duration-300 ${megaMenuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
@@ -224,14 +220,13 @@ export default function LandingNav({
                               className="group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-all duration-150 hover:bg-black/5 dark:hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-[#FF5C3A] focus-visible:outline-offset-1"
                               role="menuitem"
                             >
-                              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-all duration-150 ${
-                                index === 0 ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]' :
-                                index === 1 ? 'bg-blue-500/10 text-blue-500' :
-                                'bg-emerald-500/10 text-emerald-500'
-                              }`}>
+                              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-all duration-150 ${index === 0 ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]' :
+                                  index === 1 ? 'bg-blue-500/10 text-blue-500' :
+                                    'bg-emerald-500/10 text-emerald-500'
+                                }`}>
                                 {index === 0 ? <Layout size={15} /> :
-                                 index === 1 ? <Zap size={15} /> :
-                                 <Terminal size={15} />}
+                                  index === 1 ? <Zap size={15} /> :
+                                    <Terminal size={15} />}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h3 className="text-[11px] font-semibold text-[#0a0a0a] dark:text-white group-hover:text-[#FF5C3A] transition-colors duration-150 flex items-center gap-1.5">
@@ -408,9 +403,8 @@ export default function LandingNav({
                   <button
                     onClick={() => onCurrencyChange('COP')}
                     aria-pressed={currency === 'COP'}
-                    className={`cursor-pointer text-xs font-bold uppercase transition-colors ${
-                      currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/35 dark:text-white/35'
-                    }`}
+                    className={`cursor-pointer text-xs font-bold uppercase transition-colors ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/35 dark:text-white/35'
+                      }`}
                   >
                     COP
                   </button>
@@ -418,9 +412,8 @@ export default function LandingNav({
                   <button
                     onClick={() => onCurrencyChange('USD')}
                     aria-pressed={currency === 'USD'}
-                    className={`cursor-pointer text-xs font-bold uppercase transition-colors ${
-                      currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/35 dark:text-white/35'
-                    }`}
+                    className={`cursor-pointer text-xs font-bold uppercase transition-colors ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/35 dark:text-white/35'
+                      }`}
                   >
                     USD
                   </button>
