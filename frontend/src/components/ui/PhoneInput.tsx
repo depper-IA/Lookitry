@@ -1,65 +1,63 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// Flag estilizada con código ISO - más visible
-function FlagBadge({ code }: { code: string }) {
+// FlagBadge con emoji de bandera
+function FlagBadge({ flag }: { flag: string }) {
   return (
-    <span
-      className="inline-flex items-center justify-center min-w-[2rem] h-5 rounded-sm text-xs font-bold uppercase px-1.5 border border-white/20 flex-shrink-0"
-      style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
-    >
-      {code}
+    <span className="text-base leading-none flex-shrink-0" role="img" aria-label="flag">
+      {flag}
     </span>
   );
 }
 
 interface Country {
   code: string;
+  flag: string;
   name: string;
   prefix: string;
 }
 
 const COUNTRIES: Country[] = [
   // América del Norte
-  { code: 'US', name: 'Estados Unidos', prefix: '+1' },
-  { code: 'CA', name: 'Canadá', prefix: '+1' },
+  { code: 'US', flag: '🇺🇸', name: 'Estados Unidos', prefix: '+1' },
+  { code: 'CA', flag: '🇨🇦', name: 'Canadá', prefix: '+1' },
   // América Central
-  { code: 'MX', name: 'México', prefix: '+52' },
-  { code: 'BZ', name: 'Belice', prefix: '+501' },
-  { code: 'CR', name: 'Costa Rica', prefix: '+506' },
-  { code: 'SV', name: 'El Salvador', prefix: '+503' },
-  { code: 'GT', name: 'Guatemala', prefix: '+502' },
-  { code: 'HN', name: 'Honduras', prefix: '+504' },
-  { code: 'NI', name: 'Nicaragua', prefix: '+505' },
-  { code: 'PA', name: 'Panamá', prefix: '+507' },
+  { code: 'MX', flag: '🇲🇽', name: 'México', prefix: '+52' },
+  { code: 'BZ', flag: '🇧🇿', name: 'Belice', prefix: '+501' },
+  { code: 'CR', flag: '🇨🇷', name: 'Costa Rica', prefix: '+506' },
+  { code: 'SV', flag: '🇸🇻', name: 'El Salvador', prefix: '+503' },
+  { code: 'GT', flag: '🇬🇹', name: 'Guatemala', prefix: '+502' },
+  { code: 'HN', flag: '🇭🇳', name: 'Honduras', prefix: '+504' },
+  { code: 'NI', flag: '🇳🇮', name: 'Nicaragua', prefix: '+505' },
+  { code: 'PA', flag: '🇵🇦', name: 'Panamá', prefix: '+507' },
   // Caribe
-  { code: 'AG', name: 'Antigua y Barbuda', prefix: '+1' },
-  { code: 'BS', name: 'Bahamas', prefix: '+1' },
-  { code: 'BB', name: 'Barbados', prefix: '+1' },
-  { code: 'CU', name: 'Cuba', prefix: '+53' },
-  { code: 'DM', name: 'Dominica', prefix: '+1' },
-  { code: 'DO', name: 'República Dominicana', prefix: '+1' },
-  { code: 'GD', name: 'Granada', prefix: '+1' },
-  { code: 'HT', name: 'Haití', prefix: '+509' },
-  { code: 'JM', name: 'Jamaica', prefix: '+1' },
-  { code: 'KN', name: 'San Cristóbal y Nieves', prefix: '+1' },
-  { code: 'VC', name: 'San Vicente y las Granadinas', prefix: '+1' },
-  { code: 'LC', name: 'Santa Lucía', prefix: '+1' },
-  { code: 'TT', name: 'Trinidad y Tobago', prefix: '+1' },
+  { code: 'AG', flag: '🇦🇬', name: 'Antigua y Barbuda', prefix: '+1' },
+  { code: 'BS', flag: '🇧🇸', name: 'Bahamas', prefix: '+1' },
+  { code: 'BB', flag: '🇧🇧', name: 'Barbados', prefix: '+1' },
+  { code: 'CU', flag: '🇨🇺', name: 'Cuba', prefix: '+53' },
+  { code: 'DM', flag: '🇩🇲', name: 'Dominica', prefix: '+1' },
+  { code: 'DO', flag: '🇩🇴', name: 'República Dominicana', prefix: '+1' },
+  { code: 'GD', flag: '🇬🇩', name: 'Granada', prefix: '+1' },
+  { code: 'HT', flag: '🇭🇹', name: 'Haití', prefix: '+509' },
+  { code: 'JM', flag: '🇯🇲', name: 'Jamaica', prefix: '+1' },
+  { code: 'KN', flag: '🇰🇳', name: 'San Cristóbal y Nieves', prefix: '+1' },
+  { code: 'VC', flag: '🇻🇨', name: 'San Vicente y las Granadinas', prefix: '+1' },
+  { code: 'LC', flag: '🇱🇨', name: 'Santa Lucía', prefix: '+1' },
+  { code: 'TT', flag: '🇹🇹', name: 'Trinidad y Tobago', prefix: '+1' },
   // América del Sur
-  { code: 'AR', name: 'Argentina', prefix: '+54' },
-  { code: 'BO', name: 'Bolivia', prefix: '+591' },
-  { code: 'BR', name: 'Brasil', prefix: '+55' },
-  { code: 'CL', name: 'Chile', prefix: '+56' },
-  { code: 'CO', name: 'Colombia', prefix: '+57' },
-  { code: 'EC', name: 'Ecuador', prefix: '+593' },
-  { code: 'GY', name: 'Guyana', prefix: '+592' },
-  { code: 'PY', name: 'Paraguay', prefix: '+595' },
-  { code: 'PE', name: 'Perú', prefix: '+51' },
-  { code: 'SR', name: 'Surinam', prefix: '+597' },
-  { code: 'UY', name: 'Uruguay', prefix: '+598' },
-  { code: 'VE', name: 'Venezuela', prefix: '+58' },
+  { code: 'AR', flag: '🇦🇷', name: 'Argentina', prefix: '+54' },
+  { code: 'BO', flag: '🇧🇴', name: 'Bolivia', prefix: '+591' },
+  { code: 'BR', flag: '🇧🇷', name: 'Brasil', prefix: '+55' },
+  { code: 'CL', flag: '🇨🇱', name: 'Chile', prefix: '+56' },
+  { code: 'CO', flag: '🇨🇴', name: 'Colombia', prefix: '+57' },
+  { code: 'EC', flag: '🇪🇨', name: 'Ecuador', prefix: '+593' },
+  { code: 'GY', flag: '🇬🇾', name: 'Guyana', prefix: '+592' },
+  { code: 'PY', flag: '🇵🇾', name: 'Paraguay', prefix: '+595' },
+  { code: 'PE', flag: '🇵🇪', name: 'Perú', prefix: '+51' },
+  { code: 'SR', flag: '🇸🇷', name: 'Surinam', prefix: '+597' },
+  { code: 'UY', flag: '🇺🇾', name: 'Uruguay', prefix: '+598' },
+  { code: 'VE', flag: '🇻🇪', name: 'Venezuela', prefix: '+58' },
   // España
-  { code: 'ES', name: 'España', prefix: '+34' },
+  { code: 'ES', flag: '🇪🇸', name: 'España', prefix: '+34' },
 ];
 
 interface PhoneInputProps {
@@ -177,7 +175,7 @@ export function PhoneInput({
             aria-haspopup="listbox"
             aria-expanded={isOpen}
           >
-            <FlagBadge code={selectedCountry.code} />
+            <FlagBadge flag={selectedCountry.flag} />
             <span className="flex-1 text-left truncate">{selectedCountry.prefix}</span>
             <svg
               className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''} flex-shrink-0`}
@@ -245,7 +243,7 @@ export function PhoneInput({
                       role="option"
                       aria-selected={country.prefix === selectedPrefix}
                     >
-                      <FlagBadge code={country.code} />
+                      <FlagBadge flag={country.flag} />
                       <span className="flex-1 text-left">{country.name}</span>
                       <span style={{ color: 'var(--text-muted)' }}>{country.prefix}</span>
                     </button>
