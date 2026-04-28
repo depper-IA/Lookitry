@@ -18,7 +18,7 @@ export default function ContactoPage() {
       <LandingNav />
       <main className="min-h-screen bg-[#030303]">
         {/* Hero Section with Stats */}
-        <section className="px-6 md:px-8 pt-16 pb-12 border-b border-[#1a1a1a]">
+        <section className="px-6 md:px-8 pt-16 pb-12">
           <div className="max-w-5xl mx-auto">
             <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#FF5C3A] mb-3 text-center">
               Contacto
@@ -34,7 +34,7 @@ export default function ContactoPage() {
             <HeroStatsClient />
 
             {/* Trust Bar */}
-            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 py-4 border-t border-b border-[#1a1a1a]">
+            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 py-4">
               <div className="flex items-center gap-2 text-white/50">
                 <svg className="h-4 w-4 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
