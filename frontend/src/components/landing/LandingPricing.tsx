@@ -189,9 +189,11 @@ function PricingCard({
         className={`
           group mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-sm text-center
           transition-all duration-300 ease-out
-          ${isDark
-            ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20 hover:bg-white hover:text-black hover:scale-[1.02] active:scale-[0.98]'
-            : 'bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 text-black dark:text-white hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] hover:scale-[1.02] active:scale-[0.98]'
+          ${isEnterprise
+            ? 'bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 text-black dark:text-white hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] hover:scale-[1.02] active:scale-[0.98]'
+            : isDark
+              ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20 hover:bg-white hover:text-black hover:scale-[1.02] active:scale-[0.98]'
+              : 'bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 text-black dark:text-white hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] hover:scale-[1.02] active:scale-[0.98]'
           }
         `}
       >
