@@ -6,11 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 const words = [
   { text: '🖤', color: '#161616ff', isEmoji: true },
   { text: 'AMOR', color: '#161616ff', isEmoji: false },
-  { text: 'PASION', color: '#161616ff', isEmoji: false },
-  { text: 'AI', color: '#161616ff', isEmoji: false },
-  { text: 'CODE', color: '#161616ff', isEmoji: false },
-  { text: 'PIZZA', color: '#161616ff', isEmoji: false },
-  { text: 'CAFE', color: '#161616ff', isEmoji: false },
 ];
 
 export default function DynamicLoveAnimation() {
