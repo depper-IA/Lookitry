@@ -7,6 +7,7 @@ import { PromoBannerProvider } from '@/contexts/PromoBannerContext';
 import { PricingConfig } from '@/lib/pricing';
 import { PublicReview } from '@/types';
 import { useCurrency } from '@/hooks/useCurrency';
+import { LandingSkeleton } from './LandingSkeleton';
 
 // ============================================================================
 // CODE SPLITTING - Lazy loading de componentes below-the-fold
@@ -44,16 +45,7 @@ const PromoModal = dynamic(
 
 // Skeleton placeholder para componentes en carga (BelowTheFold skeleton)
 const BelowTheFoldSkeleton = () => (
-  <div className="py-20 sm:py-24 md:py-32 lg:py-40 px-4 sm:px-6 bg-white dark:bg-black" style={{ minHeight: '500px' }}>
-    <div className="max-w-7xl mx-auto animate-pulse">
-      <div className="h-8 w-48 bg-gray-200 dark:bg-gray-800 rounded mb-8 mx-auto" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="h-80 bg-gray-100 dark:bg-gray-900 rounded-2xl" />
-        ))}
-      </div>
-    </div>
-  </div>
+  <LandingSkeleton />
 );
 
 interface PremiumLandingProps {
