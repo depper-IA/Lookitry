@@ -1,5 +1,30 @@
 # CHANGELOG — Lookitry
 
+## 28 de Abril 2026 — Footer Dark Mode + Social Buttons Animation
+
+### Design.md - Nueva Seccion 7.3 (Footer Dark Mode)
+- Nueva regla obligatoria para el footer en modo oscuro
+- Enlaces de Ecosistema/Recursos/Legal: color `white/60` → hover `#FF5C3A` con underline animado
+- Botones redes sociales: hover con scale `1.1`, fondo `#FF5C3A` y sombra naranja
+
+### LandingFooter.tsx - Interacciones mejoradas
+- Enlaces de secciones: nuevo underline animado con `group-hover:w-full`
+- Botones social-btn: clase unificada con CSS en globals.css
+- Animacion social buttons: scale `1.1` + box-shadow `rgba(255, 92, 58, 0.4)`
+- Transicion suave `300ms cubic-bezier(0.4, 0, 0.2, 1)`
+
+### globals.css - Estilos social-btn
+- Nueva clase `.social-btn` para botones de redes sociales
+- Dark mode: `color: rgba(255, 255, 255, 0.6)`, `background: rgba(255, 255, 255, 0.05)`
+- Hover dark: fondo `#FF5C3A`, scale `1.1`, sombra naranja
+
+**Archivos modificados:**
+- `Lookitry_Brain_Vault/Cerebro/DESIGN.md` — Nueva seccion 7.3
+- `frontend/src/components/landing/LandingFooter.tsx` — Social buttons + underline
+- `frontend/src/app/globals.css` — Clase .social-btn
+
+---
+
 ## 28 de Abril 2026 — Sistema de Captura de Leads Orgánicos (Partes 3 y 4)
 
 ### Lead Magnet en Blog

@@ -144,7 +144,44 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 - Dashboard: `#0a0a0a` (oscuro por defecto)
 - Landing: puede usar `#f5f2ee` como sección alternativa
 
-### 7.3 Sitemap - Páginas Públicas
+### 7.3 Footer - Modo Oscuro (Regla Obligatoria)
+En el footer de la página principal (`LandingFooter.tsx`), los enlaces de las secciones **Ecosistema**, **Recursos** y **Legal** deben seguir estas reglas en modo oscuro:
+
+| Elemento | Color Normal | Color Hover | Efecto Hover |
+|----------|--------------|-------------|--------------|
+| Enlaces de secciones (Ecosistema/Recursos/Legal) | `white/60` | `#FF5C3A` | Transición `300ms` + scale sutil `1.02` |
+| Botones de redes sociales | `white/60` con borde `white/5` | Fondo `#FF5C3A`, borde `#FF5C3A`, icono blanco | Transición `300ms` + scale `1.1` + sombra |
+| Título de sección | `white` | — | — |
+
+**Regla CSS obligatoria:**
+```css
+/* Footer dark mode links */
+footer a.hover-naranja {
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 300ms ease, transform 300ms ease;
+}
+footer a.hover-naranja:hover {
+  color: #FF5C3A;
+  transform: scale(1.02);
+}
+
+/* Social buttons */
+footer .social-btn {
+  color: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+footer .social-btn:hover {
+  color: #ffffff;
+  background: #FF5C3A;
+  border-color: #FF5C3A;
+  transform: scale(1.1);
+  box-shadow: 0 4px 20px rgba(255, 92, 58, 0.4);
+}
+```
+
+### 7.4 Sitemap - Páginas Públicas
 
 | URL | Priority | Frecuencia |
 |-----|----------|------------|
