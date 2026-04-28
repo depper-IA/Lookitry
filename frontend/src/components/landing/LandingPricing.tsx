@@ -19,7 +19,7 @@ interface PricingCardProps {
   category: string;
   badge?: string;
   badgeColor?: string;
-  price: number;
+  price: number | null;
   originalPrice?: number;
   currency: string;
   period: string;
@@ -28,6 +28,7 @@ interface PricingCardProps {
   ctaHref: string;
   isDark?: boolean;
   isPro?: boolean;
+  isEnterprise?: boolean;
   delay: number;
 }
 
@@ -45,12 +46,13 @@ function PricingCard({
   ctaHref,
   isDark = false,
   isPro = false,
+  isEnterprise = false,
   delay,
 }: PricingCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const hasDiscount = originalPrice && originalPrice > price;
-  const discountPct = hasDiscount ? Math.round((1 - price / originalPrice!) * 100) : 0;
+  const hasDiscount = originalPrice && originalPrice > price!;
+  const discountPct = hasDiscount ? Math.round((1 - price! / originalPrice!) * 100) : 0;
 
   return (
     <motion.div
@@ -64,11 +66,11 @@ function PricingCard({
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ perspective: 1000 }}
       className={`
         relative w-full max-w-sm rounded-3xl p-8 md:p-10
-        flex flex-col transition-all duration-500 ease-out
-        ${isHovered ? 'scale-[1.02] shadow-2xl' : ''}
+        flex flex-col
+        transition-all duration-500 ease-out
+        hover:-translate-y-2 hover:shadow-2xl
         ${isDark
           ? 'bg-[#1c1c1c] border border-[#FF5C3A]/40 shadow-[0_30px_80px_rgba(255,92,58,0.12)]'
           : 'bg-[#f8f6f4] dark:bg-[#1a1a1a] border border-[#e8e4df] dark:border-white/10 shadow-sm'
@@ -99,50 +101,66 @@ function PricingCard({
         {name}
       </h3>
 
-      {/* Price */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex items-baseline gap-2">
-          <span
-            className={`font-jakarta font-black text-3xl sm:text-4xl tracking-tighter ${isDark ? 'text-white' : 'text-black dark:text-white'}`}
-          >
-            {currency === 'USD'
-              ? formatDynamicPrice(price, 'USD', 0)
-              : formatCurrency(price)
-            }
-          </span>
-          <span className={`text-[10px] sm:text-[12px] font-bold uppercase tracking-widest ${isDark ? 'text-white/60' : 'text-black/60 dark:text-white/60'}`}>
-            {currency}/{period}
-          </span>
-        </div>
-
-        {/* Original + discount */}
-        {hasDiscount && originalPrice && (
-          <div className="flex items-center gap-3 mt-2">
-            <span className={`text-[14px] sm:text-[16px] font-medium line-through ${isDark ? 'text-white/40' : 'text-black/40 dark:text-white/40'}`}>
+      {/* Price - hide for Enterprise */}
+      {!isEnterprise && price !== null && (
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-baseline gap-2">
+            <span
+              className={`font-jakarta font-black text-3xl sm:text-4xl tracking-tighter ${isDark ? 'text-white' : 'text-black dark:text-white'}`}
+            >
               {currency === 'USD'
-                ? formatDynamicPrice(originalPrice, 'USD', 0)
-                : formatCurrency(originalPrice)
+                ? formatDynamicPrice(price, 'USD', 0)
+                : formatCurrency(price)
               }
             </span>
-            <span
-              className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10B981' }}
-            >
-              -{discountPct}%
+            <span className={`text-[10px] sm:text-[12px] font-bold uppercase tracking-widest ${isDark ? 'text-white/60' : 'text-black/60 dark:text-white/60'}`}>
+              {currency}/{period}
             </span>
           </div>
-        )}
 
-        {/* Savings */}
-        {hasDiscount && (
-          <div className={`mt-1.5 text-[10px] sm:text-[11px] font-medium ${isDark ? 'text-white/50' : 'text-black/50 dark:text-white/50'}`}>
-            Ahorras {currency === 'USD'
-              ? formatDynamicPrice(originalPrice! - price, 'USD', 0)
-              : formatCurrency(originalPrice! - price)
-            }
+          {/* Original + discount */}
+          {hasDiscount && originalPrice && (
+            <div className="flex items-center gap-3 mt-2">
+              <span className={`text-[14px] sm:text-[16px] font-medium line-through ${isDark ? 'text-white/40' : 'text-black/40 dark:text-white/40'}`}>
+                {currency === 'USD'
+                  ? formatDynamicPrice(originalPrice, 'USD', 0)
+                  : formatCurrency(originalPrice)
+                }
+              </span>
+              <span
+                className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10B981' }}
+              >
+                -{discountPct}%
+              </span>
+            </div>
+          )}
+
+          {/* Savings */}
+          {hasDiscount && (
+            <div className={`mt-1.5 text-[10px] sm:text-[11px] font-medium ${isDark ? 'text-white/50' : 'text-black/50 dark:text-white/50'}`}>
+              Ahorras {currency === 'USD'
+                ? formatDynamicPrice(originalPrice! - price, 'USD', 0)
+                : formatCurrency(originalPrice! - price)
+              }
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Enterprise placeholder */}
+      {isEnterprise && (
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-baseline gap-2">
+            <span className={`font-jakarta font-black text-2xl sm:text-3xl tracking-tight ${isDark ? 'text-white/60' : 'text-black/60 dark:text-white/60'}`}>
+              Consultar
+            </span>
           </div>
-        )}
-      </div>
+          <p className={`text-[11px] sm:text-[12px] mt-1 ${isDark ? 'text-white/40' : 'text-black/40 dark:text-white/40'}`}>
+            Precio según necesidades
+          </p>
+        </div>
+      )}
 
       {/* Divider */}
       <div className={`h-[1px] w-full mb-6 sm:mb-8 ${isDark ? 'bg-white/10' : 'bg-black/10 dark:bg-white/10'}`} />
@@ -169,15 +187,15 @@ function PricingCard({
       <Link
         href={ctaHref}
         className={`
-          group relative mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-sm text-center
-          transition-all duration-300 ease-out overflow-hidden
+          group mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-sm text-center
+          transition-all duration-300 ease-out
           ${isDark
             ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20 hover:bg-white hover:text-black hover:scale-[1.02] active:scale-[0.98]'
             : 'bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 text-black dark:text-white hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] hover:scale-[1.02] active:scale-[0.98]'
           }
         `}
       >
-        <span className="relative z-10">{ctaText}</span>
+        {ctaText}
       </Link>
     </motion.div>
   );
@@ -241,7 +259,6 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="features-grid flex flex-wrap justify-center items-stretch gap-6 sm:gap-8 lg:gap-10"
-          style={{ perspective: 1000 }}
         >
           {/* Basic */}
           <PricingCard
@@ -291,9 +308,8 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
           <PricingCard
             name="Enterprise"
             category="Retail y Corp"
-            price={pricing.enterprise.precio_mensual_cop}
-            currency={currency}
-            period="mes"
+            price={null}
+            isEnterprise
             features={[
               '50+ productos',
               'Generaciones ilimitadas',
