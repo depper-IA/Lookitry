@@ -9,6 +9,7 @@ import { productsService } from '@/services/products.service';
 import { EmbedSection } from './EmbedSection';
 import { TemplatePreviewCard } from './TemplatePreviewCard';
 import { WidgetRealPreview } from './WidgetRealPreview';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 
 interface SettingsFormProps {
   brand: Brand;
@@ -23,30 +24,30 @@ const TEMPLATES: Array<{
   description: string;
   proOnly?: boolean;
 }> = [
-  {
-    id: 'bare',
-    label: 'Bare',
-    description: 'Template básico con flujo directo',
-  },
-  {
-    id: 'modern',
-    label: 'Modern',
-    description: 'Navegación lateral con barra de progreso',
-    proOnly: true,
-  },
-  {
-    id: 'bold',
-    label: 'Bold',
-    description: 'Experiencia premium con diseño oscuro',
-    proOnly: true,
-  },
-  {
-    id: 'showcase',
-    label: 'Showcase',
-    description: 'Optimizado para bios con scroll horizontal',
-    proOnly: true,
-  },
-];
+    {
+      id: 'bare',
+      label: 'Bare',
+      description: 'Template básico con flujo directo',
+    },
+    {
+      id: 'modern',
+      label: 'Modern',
+      description: 'Navegación lateral con barra de progreso',
+      proOnly: true,
+    },
+    {
+      id: 'bold',
+      label: 'Bold',
+      description: 'Experiencia premium con diseño oscuro',
+      proOnly: true,
+    },
+    {
+      id: 'showcase',
+      label: 'Showcase',
+      description: 'Optimizado para bios con scroll horizontal',
+      proOnly: true,
+    },
+  ];
 
 export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   const isPro = brand.plan === 'PRO';
@@ -189,11 +190,10 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-bold transition-all ${
-                activeTab === tab.id
+              className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-bold transition-all ${activeTab === tab.id
                   ? 'bg-[#FF5C3A] text-white'
                   : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'
-              }`}
+                }`}
             >
               {tab.icon}
               <span>{tab.label}</span>
@@ -206,11 +206,11 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
             Vista Previa Real
           </label>
           <div className="flex justify-center p-4 rounded-[2.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-inner">
-            <div 
+            <div
               className="relative rounded-[2.2rem] overflow-hidden shadow-2xl border-4 border-black ring-1 ring-white/10"
-              style={{ 
+              style={{
                 width: '100%',
-                maxWidth: '260px', 
+                maxWidth: '260px',
                 height: '520px',
                 backgroundColor: formData.secondaryColor || '#ffffff'
               }}
@@ -218,7 +218,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-b-2xl z-50 flex items-center justify-center">
                 <div className="w-10 h-1 bg-white/10 rounded-full" />
               </div>
-              
+
               <div className="w-full h-full">
                 <WidgetRealPreview
                   template={(formData.widgetTemplate || 'bare') as WidgetTemplate}
@@ -249,7 +249,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                 Vista previa real activa
               </div>
             </div>
-            
+
             <div className="mb-8">
               <label className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Logo de la marca</label>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-base)] p-4 sm:p-5">
@@ -265,7 +265,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                 </div>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Nombre de la marca</label>
@@ -273,17 +273,17 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               </div>
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Slug</label>
-                <input 
-                  name="slug" 
-                  value={formData.slug || ''} 
-                  onChange={handleChange} 
-                  className={inputClass} 
+                <input
+                  name="slug"
+                  value={formData.slug || ''}
+                  onChange={handleChange}
+                  className={inputClass}
                   disabled={!isPro}
                   placeholder={!isPro ? "Plan Pro" : undefined}
                 />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Color principal (Acción)</label>
@@ -304,7 +304,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                 </div>
               </div>
             </div>
-            
+
             {/* Widget Cover Image — PRO only */}
             {isPro && (
               <div className="mb-8">
@@ -367,7 +367,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                 ))}
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Texto del botón central</label>
@@ -384,7 +384,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               <div className="mb-10">
                 <div className="flex items-center gap-2 mb-3">
                   <label className="block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Mensaje para compartir en redes</label>
-                  <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-full">Premium</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-full">PRO</span>
                 </div>
                 <textarea
                   name="shareMessage"
@@ -402,29 +402,26 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
 
             {/* WhatsApp Contact - Available in all plans */}
             <div className="mb-10">
-              <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">WhatsApp para comprar</label>
-              <input
-                type="tel"
-                name="whatsappContact"
+              <PhoneInput
+                label="WhatsApp para comprar"
                 value={formData.whatsappContact || ''}
-                onChange={handleChange}
-                className={inputClass}
-                placeholder="573105436281"
+                onChange={(value) => setFormData((prev) => ({ ...prev, whatsappContact: value }))}
+                placeholder="Ej: 3105006080"
               />
               <p className="mt-2 text-[10px] text-[var(--text-muted)]">
-                Número de WhatsApp con código de país (sin + ni espacios). Ejemplo: &quot;573105436281&quot; — Aparece en el resultado para comprar directamente.
+                Número de WhatsApp con código de país (sin + ni espacios). Ejemplo: &quot;573105006080&quot; — Aparece en el resultado para comprar directamente.
               </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-6 border-t border-[var(--border-color)]">
               {!isPro ? (
                 <p className="hidden md:block text-[11px] text-[var(--text-muted)] italic font-medium">Los templates PRO y slugs personalizados están bloqueados</p>
               ) : (
                 <div />
               )}
-              
+
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                <a 
+                <a
                   href={`/marca/${brand.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -434,9 +431,9 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                   <Code2 size={16} className="text-[#FF5C3A]" />
                 </a>
 
-                <button 
-                  type="button" 
-                  onClick={handleSubmit} 
+                <button
+                  type="button"
+                  onClick={handleSubmit}
                   disabled={isSubmitting}
                   className="rounded-2xl bg-[#FF5C3A] hover:bg-[#ff451f] disabled:opacity-50 px-6 py-3 sm:px-10 sm:py-4 text-xs font-black uppercase tracking-[0.18em] text-white shadow-lg shadow-[#FF5C3A]/20 transition-all active:scale-[0.98]"
                 >
