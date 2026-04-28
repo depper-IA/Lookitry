@@ -488,3 +488,125 @@ img[data-next-image] {
   transform: scale(1.1);
   box-shadow: 0 4px 20px rgba(255, 92, 58, 0.4);
 }
+
+/* ── Navigation Hover Effects ─────────────────────────────────────────────────── */
+.nav-logo:hover {
+  transform: scale(1.02);
+}
+
+.nav-currency-btn:hover {
+  color: #FF5C3A;
+  transform: scale(1.05);
+}
+
+.nav-products-btn:hover {
+  color: #FF5C3A;
+}
+
+.nav-product-link:hover .nav-product-icon {
+  transform: scale(1.1);
+}
+
+.nav-product-link:hover .nav-product-title {
+  color: #FF5C3A;
+}
+
+.nav-product-link:hover .nav-product-title svg {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.nav-link:hover .nav-link-underline {
+  transform: scaleX(1);
+}
+
+.nav-user-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.dark .nav-user-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.nav-user-avatar:hover {
+  transform: scale(1.05);
+}
+
+.nav-login-link:hover {
+  color: #FF5C3A !important;
+  transform: scale(1.05);
+}
+
+.nav-trial-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 40px rgba(255, 92, 58, 0.3);
+}
+
+.nav-trial-btn:hover .nav-trial-shimmer {
+  transform: translateY(0);
+}
+
+.nav-dropdown-link:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.dark .nav-dropdown-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-dropdown-link:hover svg {
+  color: #FF5C3A !important;
+}
+
+.nav-dropdown-logout:hover svg {
+  color: #ef4444 !important;
+}
+
+.nav-mobile-menu-btn:hover {
+  color: #FF5C3A;
+  transform: scale(1.1);
+}
+
+.mobile-currency-btn:hover {
+  color: #FF5C3A;
+  transform: scale(1.1);
+}
+
+.mobile-theme-btn:hover {
+  color: #FF5C3A;
+  transform: scale(1.1);
+  border-color: #FF5C3A;
+}
+
+.mobile-product-link:hover .mobile-product-icon {
+  transform: scale(1.1);
+  background: #FF5C3A/20;
+}
+
+.mobile-product-link:hover .mobile-product-icon svg {
+  color: #FF5C3A;
+}
+
+.mobile-login-btn:hover,
+.mobile-panel-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #FF5C3A;
+}
+
+.dark .mobile-login-btn:hover,
+.dark .mobile-panel-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.mobile-trial-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 30px rgba(255, 92, 58, 0.3);
+}
+
+.mobile-footer-link:hover {
+  color: #FF5C3A !important;
+}
