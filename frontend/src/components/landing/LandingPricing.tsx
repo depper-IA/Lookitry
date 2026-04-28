@@ -15,6 +15,8 @@ interface LandingPricingProps {
 }
 
 const EASING_OUT = [0.22, 1, 0.36, 1] as const;
+
+interface PricingCardProps {
   name: string;
   category: string;
   badge?: string;
@@ -167,7 +169,7 @@ function PricingCard({
 
       {/* Features */}
       <ul className="flex flex-col gap-4 sm:gap-5 mb-8 sm:mb-10 flex-1">
-        {features.map((feature, idx) => (
+        {features.map((feature: string, idx: number) => (
           <li
             key={idx}
             className={`flex items-center gap-3 text-[13px] sm:text-[14px] font-medium ${isDark ? 'text-white/80' : 'text-[#333] dark:text-white/80'}`}
@@ -242,7 +244,7 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.6, ease: EASING_OUT as unknown as number[] }}
           className="text-center mb-12 sm:mb-16 md:mb-20 lg:mb-24"
         >
           <SectionTag text="Planes de Crecimiento" light />
