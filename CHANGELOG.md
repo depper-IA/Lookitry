@@ -1,5 +1,22 @@
 # CHANGELOG — Lookitry
 
+## 27 de Abril 2026 — Fix WhatsApp Input + Selector de País
+
+### Problema
+El campo WhatsApp en `/dashboard/settings` no guardaba correctamente el número — al refrescar aparecía vacío.
+
+### Solución
+- Nuevo componente `PhoneInput` con selector de país (América + España)
+- 11 países soportados: Colombia, México, Argentina, España, Chile, Perú, Ecuador, Venezuela, Costa Rica, Rep. Dominicana, USA/Canadá
+- Input separado para prefijo y número local
+- Concatenación automática: `prefijonumero` ej: `573105436281`
+
+### Archivos
+- `frontend/src/components/ui/PhoneInput.tsx` (nuevo)
+- `frontend/src/components/dashboard/SettingsForm.tsx` (actualizado)
+
+---
+
 ## 27 de Abril 2026 — Actualización de Repositorio y Arquitectura
 
 ### Sincronización y Mantenimiento
