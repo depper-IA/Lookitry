@@ -11,6 +11,7 @@ import LandingFooter from '@/components/landing/LandingFooter';
 import { cn } from '@/utils/cn';
 import { getBlogFeaturedImage, getBlogTeaser } from '@/services/blog.service';
 import { BlogShareRail } from './BlogShareRail';
+import LeadMagnetBanner from './LeadMagnetBanner';
 
 interface BlogPostContentProps {
   post: any;
@@ -197,6 +198,9 @@ export default function BlogPostContent({ post, recentPosts, shareUrl }: BlogPos
                 publishedAt={post.published_at || post.created_at}
                 readingTime={post.reading_time}
               />
+
+              {/* Lead Magnet Banner */}
+              <LeadMagnetBanner />
 
               <section className={cn(
                 "mt-10 rounded-[2rem] border p-8 md:p-10 transition-all duration-300",

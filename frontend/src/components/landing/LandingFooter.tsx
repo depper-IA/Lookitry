@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Instagram, Facebook, MessageCircle, ShieldCheck, Sun, Moon, ChevronDown } from 'lucide-react';
 import { fetchPublicPaymentSettings, normalizeSocialUrl, toWhatsAppUrl } from '@/services/public-config.service';
+import DynamicLoveAnimation from './DynamicLoveAnimation';
 
 interface FooterSection {
   title: string;
@@ -295,9 +296,11 @@ export default function LandingFooter() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 md:px-12 md:py-10">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             {/* Copyright */}
-            <div className="font-dm-sans text-xs font-medium text-white/80 sm:text-sm">
-              © {currentYear} Lookitry · Un producto de{' '}
-              <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="font-semibold transition-colors hover:text-white">
+            <div className="font-dm-sans text-xs font-medium text-white/80 sm:text-sm flex items-center flex-wrap justify-center sm:justify-start">
+              <span>© {currentYear} Lookitry · Hecho con</span>
+              <DynamicLoveAnimation />
+              <span>por</span>
+              <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="font-semibold transition-colors hover:text-white ml-1.5">
                 Wilkie Devs
               </Link>
             </div>

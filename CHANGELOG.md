@@ -1,47 +1,101 @@
 # CHANGELOG — Lookitry
 
-## 28 de Abril 2026 — Sistema de Captura de Leads Orgánicos
+## 28 de Abril 2026 — Sistema de Captura de Leads Orgánicos (Partes 3 y 4)
+
+### Lead Magnet en Blog
+- Nuevo componente `LeadMagnetBanner.tsx` con diseño horizontal
+- Icono de descarga (lucide Download), campos: email + nombre opcional
+- CTA: "Descargar guia"
+- Payload: `source: 'blog_lead_magnet'`
+- Integración en `BlogPostContent.tsx` despues del articulo
+
+### Exit-Intent Popup
+- Nuevo componente `ExitIntentPopup.tsx` con backdrop blur premium
+- Trigger: mouse cursor hacia arriba del navegador (clientY <= 0)
+- Restricción: solo una vez por sesión (localStorage: exit_intent_captured)
+- Campos: solo email
+- CTA: "Mantenerme informado"
+- Payload: `source: 'exit_intent'`
+
+### ExitIntentProvider
+- Nuevo componente `ExitIntentProvider.tsx` que envuelve toda la app
+- Detecta intent de salida en cualquier pagina
+- Integración en `layout.tsx`
+
+### Archivos
+- `frontend/src/components/blog/LeadMagnetBanner.tsx` (nuevo - 215 líneas)
+- `frontend/src/components/landing/ExitIntentPopup.tsx` (nuevo - 198 líneas)
+- `frontend/src/components/landing/ExitIntentProvider.tsx` (nuevo - 42 líneas)
+- `frontend/src/components/blog/BlogPostContent.tsx` (actualizado - import + uso)
+- `frontend/src/app/layout.tsx` (actualizado - ExitIntentProvider)
+
+---
+
+## 28 de Abril 2026 — Sistema Completo de Captura de Leads Orgánicos
 
 ### Problema
 Lookitry tenía infraestructura CRM sólida pero carecía de puntos de captación en el frontend. El 90% de leads venía solo de Google Places API.
 
 ### Solución
-Implementación de DOS componentes premium de captura de leads:
+Implementación de 4 puntos de captura premium en el frontend:
 
 #### 1. Formulario de Contacto (`/contacto`)
-- Nuevo componente `ContactoClient.tsx` con diseño Double-Bezel glass architecture
+- Componente `ContactoClient.tsx` con diseño Double-Bezel glass architecture
 - 6 campos: nombre, email, teléfono, nombre negocio, tipo negocio, mensaje
 - Validación en tiempo real (on blur)
 - Estados: idle → submitting → success → error con WhatsApp fallback
 - Endpoint: `POST /api/leads/public` con `source: 'organic_contact'`
 
 #### 2. Modal Post-Demo Email Capture
-- Nuevo componente `PostDemoModal.tsx` con backdrop blur premium
+- Componente `PostDemoModal.tsx` con backdrop blur premium
 - Trigger: 2 segundos después de ver resultado del try-on
 - Restricción: solo una vez por sesión (localStorage)
 - Campos: email + nombre marca (opcional)
 - Endpoint: `POST /api/leads/public` con `source: 'post_demo_capture'`
 
-#### 3. Backend API
-- Nuevo endpoint `POST /api/leads/public` (Nadia)
-- Nuevo endpoint `GET /api/leads/public/check?email=xxx`
+#### 3. Lead Magnets en Blog
+- Componente `LeadMagnetBanner.tsx` al final de cada artículo
+- Campos: email (required) + nombre (optional)
+- CTA: "Descargar guía"
+- Endpoint: `POST /api/leads/public` con `source: 'blog_lead_magnet'`
+- Integración en `BlogPostContent.tsx`
+
+#### 4. Exit-Intent Popup
+- Componente `ExitIntentPopup.tsx` con detección de mouse leaving viewport
+- Provider global `ExitIntentProvider.tsx` que envuelve toda la app
+- Trigger: cuando el cursor sale por la parte superior del navegador
+- Restricción: solo una vez por sesión (localStorage)
+- Campos: email (solo 1)
+- Endpoint: `POST /api/leads/public` con `source: 'exit_intent'`
+
+#### Backend API
+- Endpoint `POST /api/leads/public` (Nadia)
+- Endpoint `GET /api/leads/public/check?email=xxx`
 - Validación completa, rate limiting, lógica de enriquecimiento automático
 
-### Archivos
-- `frontend/src/app/contacto/ContactoClient.tsx` (nuevo - 594 líneas)
-- `frontend/src/components/landing/PostDemoModal.tsx` (nuevo - 304 líneas)
+### Archivos Frontend
+- `frontend/src/app/contacto/ContactoClient.tsx` (nuevo)
+- `frontend/src/components/landing/PostDemoModal.tsx` (nuevo)
+- `frontend/src/components/blog/LeadMagnetBanner.tsx` (nuevo)
+- `frontend/src/components/landing/ExitIntentPopup.tsx` (nuevo)
+- `frontend/src/components/landing/ExitIntentProvider.tsx` (nuevo)
 - `frontend/src/app/contacto/page.tsx` (actualizado)
+- `frontend/src/app/layout.tsx` (actualizado con ExitIntentProvider)
 - `frontend/src/components/landing/LandingHero.tsx` (actualizado)
+- `frontend/src/components/blog/BlogPostContent.tsx` (actualizado)
+
+### Archivos Backend
 - `backend/src/routes/leadsPublic.routes.ts` (nuevo - 312 líneas)
 - `backend/src/app.ts` (actualizado con nuevas rutas)
 
 ### Diseño Premium
 - Double-Bezel architecture (glass cards anidados)
-- Custom cubic-bezier transiciones (no linear)
-- Framer Motion animaciones
-- Double-Bezel input fields con ring-1 ring-white/10
+- Custom cubic-bezier transiciones `cubic-bezier(0.32,0.72,0,1)` (no linear)
+- Framer Motion animaciones con spring physics
+- Double-Bezel input fields con `ring-1 ring-white/10`
 - Micro-interacciones hover (scale, translate)
 - Sin emojis — solo SVG/lucide-react
+- Brand colors: #FF5C3A, #0a0a0a, #141414
 
 ---
 

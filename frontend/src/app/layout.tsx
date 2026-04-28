@@ -105,6 +105,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Analytics } from '@/components/analytics/Analytics';
 import { RouteChrome } from '@/components/layout/RouteChrome';
 import { Toaster } from 'sonner';
+import { ExitIntentProvider } from '@/components/landing/ExitIntentProvider';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
@@ -165,23 +166,25 @@ style={
           />
         )}
         <ThemeProvider>
-          <Suspense fallback={null}>
-            <Analytics />
-          </Suspense>
-          {children}
-          <Suspense fallback={null}>
-            <RouteChrome />
-          </Suspense>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-primary)',
-              },
-            }}
-          />
+          <ExitIntentProvider>
+            <Suspense fallback={null}>
+              <Analytics />
+            </Suspense>
+            {children}
+            <Suspense fallback={null}>
+              <RouteChrome />
+            </Suspense>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                },
+              }}
+            />
+          </ExitIntentProvider>
         </ThemeProvider>
       </body>
     </html>
