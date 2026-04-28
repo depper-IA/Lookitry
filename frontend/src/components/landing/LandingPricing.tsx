@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Check, Tag, Sparkles, ShieldCheck } from 'lucide-react';
+import { Check, Sparkles, ShieldCheck } from 'lucide-react';
 import { PricingConfig } from '@/lib/pricing';
 import { formatCurrency, formatPrice as formatDynamicPrice } from '@/utils/currency';
 import { useActivePromotions } from '@/hooks/useActivePromotions';
@@ -13,11 +13,6 @@ interface LandingPricingProps {
   currency: 'COP' | 'USD';
   trm: number;
 }
-
-const EASING = {
-  outQuart: [0.25, 1, 0.5, 1] as const,
-  outQuint: [0.22, 1, 0.36, 1] as const,
-};
 
 interface PricingCardProps {
   name: string;
@@ -52,8 +47,7 @@ function PricingCard({
   isPro = false,
   delay,
 }: PricingCardProps) {
-  const [cardHovered, setCardHovered] = useState(false);
-  const [buttonHovered, setButtonHovered] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const hasDiscount = originalPrice && originalPrice > price;
   const discountPct = hasDiscount ? Math.round((1 - price / originalPrice!) * 100) : 0;
@@ -68,25 +62,19 @@ function PricingCard({
         duration: 0.8,
         ease: [0.22, 1, 0.36, 1] as unknown as number[],
       }}
-      onMouseEnter={() => setCardHovered(true)}
-      onMouseLeave={() => setCardHovered(false)}
-      style={{
-        perspective: 1000,
-      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ perspective: 1000 }}
       className={`
         relative w-full max-w-sm rounded-3xl p-8 md:p-10
         flex flex-col transition-all duration-500 ease-out
-        ${cardHovered ? '-translate-y-2 shadow-2xl' : ''}
+        ${isHovered ? 'scale-[1.02] shadow-2xl' : ''}
         ${isDark
-          ? 'bg-[#1c1c1c] border border-[#FF5C3A]/60 shadow-[0_30px_80px_rgba(255,92,58,0.12)]'
+          ? 'bg-[#1c1c1c] border border-[#FF5C3A]/40 shadow-[0_30px_80px_rgba(255,92,58,0.12)]'
           : 'bg-[#f8f6f4] dark:bg-[#1a1a1a] border border-[#e8e4df] dark:border-white/10 shadow-sm'
         }
         ${isPro ? 'z-10' : ''}
       `}
-      animate={{
-        rotateX: cardHovered ? -3 : 0,
-        rotateY: cardHovered ? 2 : 0,
-      }}
     >
       {/* Badge */}
       {badge && (
@@ -180,29 +168,16 @@ function PricingCard({
       {/* CTA Button */}
       <Link
         href={ctaHref}
-        onMouseEnter={() => setButtonHovered(true)}
-        onMouseLeave={() => setButtonHovered(false)}
         className={`
           group relative mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-sm text-center
           transition-all duration-300 ease-out overflow-hidden
           ${isDark
-            ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20'
-            : 'bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 text-black dark:text-white'
+            ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20 hover:bg-white hover:text-black hover:scale-[1.02] active:scale-[0.98]'
+            : 'bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 text-black dark:text-white hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] hover:scale-[1.02] active:scale-[0.98]'
           }
-          ${buttonHovered ? (isDark ? 'bg-white text-black scale-[1.02]' : 'bg-[#FF5C3A] text-white border-[#FF5C3A] scale-[1.02]') : ''}
         `}
       >
         <span className="relative z-10">{ctaText}</span>
-
-        {/* Shimmer overlay */}
-        <div
-          className={`
-            absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent
-            transition-transform duration-700
-            ${buttonHovered ? 'translate-x-full' : '-translate-x-full'}
-          `}
-          style={{ transform: buttonHovered ? 'translateX(100%)' : 'translateX(-100%)' }}
-        />
       </Link>
     </motion.div>
   );
@@ -221,12 +196,6 @@ const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) 
 
 export default function LandingPricing({ pricing, currency, trm }: LandingPricingProps) {
   const { planOverrides } = useActivePromotions();
-
-  const formatPrice = (cop: number) => {
-    return currency === 'USD'
-      ? formatDynamicPrice(cop, 'USD', trm)
-      : formatCurrency(cop);
-  };
 
   // Basic plan
   const basicOverride = planOverrides.BASIC;
@@ -326,9 +295,9 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
             currency={currency}
             period="mes"
             features={[
-              'Catálogo masivo',
+              '50+ productos',
               'Generaciones ilimitadas',
-              'Acceso API full',
+              'Acceso API completo',
               'Gerente de cuenta 24/7',
             ]}
             ctaText="Hablar con Ventas"
@@ -337,26 +306,36 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
           />
         </motion.div>
 
-        {/* Trust indicators */}
+        {/* Compare link */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex items-center justify-center gap-6 sm:gap-10 mt-12 sm:mt-16 text-[11px] sm:text-[12px] font-medium text-black/40 dark:text-white/40 uppercase tracking-widest"
+          className="text-center mt-12 sm:mt-16"
         >
-          <span className="flex items-center gap-2">
-            <Check size={14} className="text-emerald-500" />
-            Sin contratos
-          </span>
-          <span className="flex items-center gap-2">
-            <Check size={14} className="text-emerald-500" />
-            Cancela cuando quieras
-          </span>
-          <span className="flex items-center gap-2">
-            <ShieldCheck size={14} className="text-emerald-500" />
-            Pagos seguros
-          </span>
+          <p className="text-[11px] sm:text-sm text-black/40 dark:text-white/40 mb-4">
+            ¿No sabes qué plan elegir?{' '}
+            <Link href="/planes#comparacion" className="text-[#FF5C3A] hover:underline font-medium">
+              Compara todos los features →
+            </Link>
+          </p>
+
+          {/* Trust indicators */}
+          <div className="flex items-center justify-center gap-6 sm:gap-10 text-[11px] sm:text-[12px] font-medium text-black/40 dark:text-white/40 uppercase tracking-widest">
+            <span className="flex items-center gap-2">
+              <Check size={14} className="text-emerald-500" />
+              Sin contratos
+            </span>
+            <span className="flex items-center gap-2">
+              <Check size={14} className="text-emerald-500" />
+              Cancela cuando quieras
+            </span>
+            <span className="flex items-center gap-2">
+              <ShieldCheck size={14} className="text-emerald-500" />
+              Pagos seguros
+            </span>
+          </div>
         </motion.div>
       </div>
     </section>
