@@ -131,36 +131,31 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         {visibleNavigation.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (
-            <motion.div
+            <div
               key={item.name}
-              whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              className="relative"
+              className="group/nav relative"
             >
               {isActive && (
-                <motion.div
-                  layoutId="activeNav"
+                <div
                   className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF5C3A] rounded-r-full"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               )}
               <Link
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
                 title={isCollapsed ? item.name : ''}
-                className={`group flex items-center rounded-2xl py-3.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                className={`flex items-center rounded-2xl py-3.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
                   isCollapsed ? 'justify-center' : 'gap-3 px-5'
-                } ${isActive ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' : 'text-gray-400 hover:text-white'}`}
+                } ${isActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
               >
-                <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-[#FF5C3A]'}`} />
+                <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover/nav:scale-110 ${isActive ? 'text-white' : 'text-gray-400 group-hover/nav:text-[#FF5C3A]'}`} />
                 {!isCollapsed && (
-                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="block leading-none lg:hidden xl:block">
+                  <span className="block leading-none lg:hidden xl:block">
                     {item.name}
-                  </motion.span>
+                  </span>
                 )}
               </Link>
-            </motion.div>
+            </div>
           );
         })}
       </nav>
@@ -254,31 +249,26 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
             {visibleNavigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
               return (
-                <motion.div
+                <div
                   key={item.name}
-                  whileHover={{ x: 5, backgroundColor: "rgba(255,255,255,0.05)" }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                  className="relative"
+                  className="group/nav-mobile relative"
                 >
                   {isActive && (
-                    <motion.div
-                      layoutId="activeNavMobile"
+                    <div
                       className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF5C3A] rounded-r-full"
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   )}
                   <Link
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className={`group flex items-center gap-3 rounded-2xl px-5 py-3.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
-                      isActive ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' : 'text-gray-400 hover:text-white'
+                    className={`flex items-center gap-3 rounded-2xl px-5 py-3.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                      isActive ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' : 'text-gray-400 hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-600 group-hover:text-[#FF5C3A]'}`} />
+                    <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover/nav-mobile:scale-110 ${isActive ? 'text-white' : 'text-gray-400 group-hover/nav-mobile:text-[#FF5C3A]'}`} />
                     <span className="block leading-none">{item.name}</span>
                   </Link>
-                </motion.div>
+                </div>
               );
             })}
           </nav>
