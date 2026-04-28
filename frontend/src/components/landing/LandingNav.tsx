@@ -489,28 +489,27 @@ export default function LandingNav({
               <motion.div
                 custom={0}
                 variants={mobileCardVariants}
-                className="flex w-full items-center justify-center gap-8 px-4"
+                className="flex w-full items-center justify-center gap-6"
               >
-                <div className="flex flex-col items-center gap-3">
+                <div className="flex flex-col items-center gap-2">
                   <span className="text-[9px] font-bold uppercase tracking-widest text-black/25 dark:text-white/25">Moneda</span>
                   <div
-                    className="flex items-center gap-2.5 rounded-full border border-black/10 bg-black/5 px-3 py-1.5 dark:border-white/10 dark:bg-white/5"
+                    className="flex items-center rounded-full border border-black/10 bg-black/5 dark:border-white/10 dark:bg-white/5 p-1"
                     role="group"
                     aria-label="Selector de moneda"
                   >
                     <button
                       onClick={() => onCurrencyChange('COP')}
                       aria-pressed={currency === 'COP'}
-                      className={`mobile-currency-btn cursor-pointer text-xs font-bold uppercase transition-all duration-200 ${currency === 'COP' ? 'text-[#FF5C3A] scale-110' : 'text-black/35 hover:text-black/60 dark:text-white/35 dark:hover:text-white'
+                      className={`mobile-currency-btn cursor-pointer px-3 py-1.5 text-xs font-bold uppercase transition-all duration-200 rounded-full ${currency === 'COP' ? 'bg-[#FF5C3A] text-white scale-105' : 'text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white'
                         }`}
                     >
                       COP
                     </button>
-                    <div className="h-2.5 w-[1px] bg-black/10 dark:bg-white/10" aria-hidden="true" />
                     <button
                       onClick={() => onCurrencyChange('USD')}
                       aria-pressed={currency === 'USD'}
-                      className={`mobile-currency-btn cursor-pointer text-xs font-bold uppercase transition-all duration-200 ${currency === 'USD' ? 'text-[#FF5C3A] scale-110' : 'text-black/35 hover:text-black/60 dark:text-white/35 dark:hover:text-white'
+                      className={`mobile-currency-btn cursor-pointer px-3 py-1.5 text-xs font-bold uppercase transition-all duration-200 rounded-full ${currency === 'USD' ? 'bg-[#FF5C3A] text-white scale-105' : 'text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white'
                         }`}
                     >
                       USD
@@ -518,15 +517,15 @@ export default function LandingNav({
                   </div>
                 </div>
 
-                <div className="flex flex-col items-center gap-3">
+                <div className="flex flex-col items-center gap-2">
                   <span className="text-[9px] font-bold uppercase tracking-widest text-black/25 dark:text-white/25">Tema</span>
                   <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={toggleTheme}
-                    className="mobile-theme-btn flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-black/5 text-[#FF5C3A] transition-all duration-300 hover:scale-110 hover:border-[#FF5C3A] dark:border-white/10 dark:bg-white/5"
+                    className="mobile-theme-btn flex items-center justify-center px-3 py-1.5 rounded-full border border-black/10 bg-black/5 text-[#FF5C3A] text-xs font-bold uppercase transition-all duration-300 hover:scale-105 hover:border-[#FF5C3A] dark:border-white/10 dark:bg-white/5"
                     aria-label={isDark ? 'Modo claro' : 'Modo oscuro'}
                   >
-                    {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                    {isDark ? <Sun size={14} /> : <Moon size={14} />}
                   </motion.button>
                 </div>
               </motion.div>
