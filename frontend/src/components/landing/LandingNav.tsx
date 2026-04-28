@@ -542,9 +542,9 @@ export default function LandingNav({
                     <Link
                       href={link.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-nav-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-black/12 hover:bg-black/[0.05] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
+                      className="mobile-nav-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/5 dark:border-white/5 dark:bg-white/5 dark:hover:border-[#FF5C3A]/30 dark:hover:bg-[#FF5C3A]/10"
                     >
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a] dark:text-white">{link.label}</span>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a] transition-colors duration-200 group-hover:text-[#FF5C3A] dark:text-white dark:group-hover:text-[#FF5C3A]">{link.label}</span>
                       <ArrowRight size={14} className="text-[#FF5C3A] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                     </Link>
                   </motion.div>
@@ -569,7 +569,7 @@ export default function LandingNav({
                     <Link
                       href={prod.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-product-link group flex items-center gap-3.5 rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-black/12 hover:bg-black/[0.05] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
+                      className="mobile-product-link group flex items-center gap-3.5 rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/5 dark:border-white/5 dark:bg-white/5 dark:hover:border-[#FF5C3A]/30 dark:hover:bg-[#FF5C3A]/10"
                     >
                       <motion.div
                         className="mobile-product-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FF5C3A]/10 transition-transform duration-300 group-hover:scale-110"
@@ -578,8 +578,8 @@ export default function LandingNav({
                         <ArrowRight size={16} className="text-[#FF5C3A]" />
                       </motion.div>
                       <div className="text-left">
-                        <p className="text-[11px] font-black uppercase tracking-wider text-[#0a0a0a] dark:text-white">{prod.title}</p>
-                        <p className="text-[10px] font-medium text-black/35 dark:text-white/35">{prod.desc}</p>
+                        <p className="text-[11px] font-black uppercase tracking-wider text-[#0a0a0a] transition-colors duration-200 group-hover:text-[#FF5C3A] dark:text-white dark:group-hover:text-[#FF5C3A]">{prod.title}</p>
+                        <p className="text-[10px] font-medium text-black/35 transition-colors duration-200 group-hover:text-[#FF5C3A]/70 dark:text-white/35 dark:group-hover:text-[#FF5C3A]/70">{prod.desc}</p>
                       </div>
                     </Link>
                   </motion.div>
@@ -598,9 +598,9 @@ export default function LandingNav({
                     <Link
                       href={link.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-company-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-black/12 hover:bg-black/[0.05] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
+                      className="mobile-company-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/5 dark:border-white/5 dark:bg-white/5 dark:hover:border-[#FF5C3A]/30 dark:hover:bg-[#FF5C3A]/10"
                     >
-                      <span className="text-[11px] font-medium text-[#0a0a0a] dark:text-white">{link.title}</span>
+                      <span className="text-[11px] font-medium text-[#0a0a0a] transition-colors duration-200 group-hover:text-[#FF5C3A] dark:text-white dark:group-hover:text-[#FF5C3A]">{link.title}</span>
                       <ArrowRight size={14} className="text-[#FF5C3A] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                     </Link>
                   </motion.div>
