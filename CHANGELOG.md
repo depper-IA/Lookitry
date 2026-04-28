@@ -1,5 +1,50 @@
 # CHANGELOG — Lookitry
 
+## 28 de Abril 2026 — Sistema de Captura de Leads Orgánicos
+
+### Problema
+Lookitry tenía infraestructura CRM sólida pero carecía de puntos de captación en el frontend. El 90% de leads venía solo de Google Places API.
+
+### Solución
+Implementación de DOS componentes premium de captura de leads:
+
+#### 1. Formulario de Contacto (`/contacto`)
+- Nuevo componente `ContactoClient.tsx` con diseño Double-Bezel glass architecture
+- 6 campos: nombre, email, teléfono, nombre negocio, tipo negocio, mensaje
+- Validación en tiempo real (on blur)
+- Estados: idle → submitting → success → error con WhatsApp fallback
+- Endpoint: `POST /api/leads/public` con `source: 'organic_contact'`
+
+#### 2. Modal Post-Demo Email Capture
+- Nuevo componente `PostDemoModal.tsx` con backdrop blur premium
+- Trigger: 2 segundos después de ver resultado del try-on
+- Restricción: solo una vez por sesión (localStorage)
+- Campos: email + nombre marca (opcional)
+- Endpoint: `POST /api/leads/public` con `source: 'post_demo_capture'`
+
+#### 3. Backend API
+- Nuevo endpoint `POST /api/leads/public` (Nadia)
+- Nuevo endpoint `GET /api/leads/public/check?email=xxx`
+- Validación completa, rate limiting, lógica de enriquecimiento automático
+
+### Archivos
+- `frontend/src/app/contacto/ContactoClient.tsx` (nuevo - 594 líneas)
+- `frontend/src/components/landing/PostDemoModal.tsx` (nuevo - 304 líneas)
+- `frontend/src/app/contacto/page.tsx` (actualizado)
+- `frontend/src/components/landing/LandingHero.tsx` (actualizado)
+- `backend/src/routes/leadsPublic.routes.ts` (nuevo - 312 líneas)
+- `backend/src/app.ts` (actualizado con nuevas rutas)
+
+### Diseño Premium
+- Double-Bezel architecture (glass cards anidados)
+- Custom cubic-bezier transiciones (no linear)
+- Framer Motion animaciones
+- Double-Bezel input fields con ring-1 ring-white/10
+- Micro-interacciones hover (scale, translate)
+- Sin emojis — solo SVG/lucide-react
+
+---
+
 ## 27 de Abril 2026 — Fix WhatsApp Input + Selector de País
 
 ### Problema
