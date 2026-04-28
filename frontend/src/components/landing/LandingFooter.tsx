@@ -139,7 +139,7 @@ export default function LandingFooter() {
             </p>
           </div>
 
-<div className="mb-5 flex items-center justify-center gap-2.5">
+          <div className="mb-5 flex items-center justify-center gap-2.5">
             {[
               { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
               { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
@@ -217,66 +217,37 @@ export default function LandingFooter() {
             </Link>
           </div>
         </div>
+      </div>
 
-        <div className="mb-16 hidden grid-cols-1 gap-10 sm:mb-20 sm:grid sm:grid-cols-2 sm:gap-14 md:mb-24 md:gap-16 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:gap-20">
-          <div>
-            <Link href="/" className="group mb-6 inline-flex items-center gap-2.5 sm:mb-8 sm:gap-3 md:mb-10">
-              <div className="relative h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10">
-                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
-                <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
-              </div>
-              <span className="font-jakarta text-2xl font-bold tracking-tighter text-black dark:text-white sm:text-3xl">
-                Look<span className="text-[#FF5C3A]">itry</span>
-              </span>
+      <div className="mb-16 hidden grid-cols-1 gap-10 sm:mb-20 sm:grid sm:grid-cols-2 sm:gap-14 md:mb-24 md:gap-16 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:gap-20">
+        <div>
+          <Link href="/" className="group mb-6 inline-flex items-center gap-2.5 sm:mb-8 sm:gap-3 md:mb-10">
+            <div className="relative h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10">
+              <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
+              <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
+            </div>
+            <span className="font-jakarta text-2xl font-bold tracking-tighter text-black dark:text-white sm:text-3xl">
+              Look<span className="text-[#FF5C3A]">itry</span>
+            </span>
+          </Link>
+          <p className="mb-6 max-w-xs text-sm font-light leading-relaxed text-black/70 dark:text-white/70 sm:mb-8 sm:text-base">
+            Empoderamos al retail con Inteligencia Artificial. La primera solución de visualización personalizada líder en Colombia y Latinoamérica.
+          </p>
+          <div className="mb-6 sm:mb-8 md:mb-10">
+            <Link
+              href="/sobre-nosotros"
+              className="border-b border-[#FF5C3A]/30 pb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#FF5C3A] transition-colors hover:text-[#FF5C3A]/80 sm:text-[11px] sm:tracking-[0.2em]"
+            >
+              Conoce nuestra historia
             </Link>
-            <p className="mb-6 max-w-xs text-sm font-light leading-relaxed text-black/70 dark:text-white/70 sm:mb-8 sm:text-base">
-              Empoderamos al retail con Inteligencia Artificial. La primera solución de visualización personalizada líder en Colombia y Latinoamérica.
-            </p>
-<div className="mb-6 sm:mb-8 md:mb-10">
+          </div>
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {[
+              { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
+              { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
+              { Icon: MessageCircle, href: socialLinks.whatsapp, label: 'WhatsApp' },
+            ].map((item, idx) => (
               <Link
-                href="/sobre-nosotros"
-                className="border-b border-[#FF5C3A]/30 pb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#FF5C3A] transition-colors hover:text-[#FF5C3A]/80 sm:text-[11px] sm:tracking-[0.2em]"
-              >
-                Conoce nuestra historia
-              </Link>
-            </div>
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              {[
-                { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
-                { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
-                { Icon: MessageCircle, href: socialLinks.whatsapp, label: 'WhatsApp' },
-              ].map((item, idx) => (
-                <Link
-                  key={idx}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
-                  aria-label={item.label}
-                >
-                  <item.Icon size={18} aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110" />
-                </Link>
-              ))}
-              <Link
-                href={socialLinks.tiktok}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
-                aria-label="TikTok"
-                suppressHydrationWarning
-              >
-                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" aria-hidden="true" suppressHydrationWarning>
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
-                </svg>
-              </Link>
-            </div>
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              {[
-                { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
-                { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
-                { Icon: MessageCircle, href: socialLinks.whatsapp, label: 'WhatsApp' },
-              ].map((item, idx) => (
-                <Link
                 key={idx}
                 href={item.href}
                 target="_blank"
@@ -286,20 +257,19 @@ export default function LandingFooter() {
               >
                 <item.Icon size={18} aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110" />
               </Link>
-              ))}
-              <Link
-                href={socialLinks.tiktok}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
-                aria-label="TikTok"
-                suppressHydrationWarning
-              >
-                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" aria-hidden="true" suppressHydrationWarning>
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
-                </svg>
-              </Link>
-            </div>
+            ))}
+            <Link
+              href={socialLinks.tiktok}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-btn group flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
+              aria-label="TikTok"
+              suppressHydrationWarning
+            >
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" aria-hidden="true" suppressHydrationWarning>
+                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
+              </svg>
+            </Link>
           </div>
 
           {footerSections.map((section) => (
@@ -340,7 +310,7 @@ export default function LandingFooter() {
 
             {/* Trust badges */}
             <div className="flex items-center gap-6 sm:gap-8">
-              <div className="flex items-center gap-2 font-dm-sans text-xs font-medium text-white/80 sm:text-sm">
+              <div className="flex items-center gap-2 font-dm-sans text-xs font-medium text-black/80 sm:text-sm">
                 <ShieldCheck size={16} aria-hidden="true" /> Pagos seguros
               </div>
 
@@ -348,7 +318,7 @@ export default function LandingFooter() {
               <button
                 onClick={toggle}
                 aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                className="flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-xs font-medium text-white/90 transition-all hover:border-white/40 hover:bg-white/10 hover:text-white sm:text-sm"
+                className="flex items-center gap-2 rounded-full border border-black/20 px-4 py-2 text-xs font-medium text-black/90 transition-all hover:border-black/40 hover:bg-black/10 hover:text-black sm:text-sm"
               >
                 {mounted ? (
                   isDark ? (
