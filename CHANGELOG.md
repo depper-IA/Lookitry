@@ -31,7 +31,27 @@
 
 ---
 
-## 28 de Abril 2026 — Sistema Completo de Captura de Leads Orgánicos
+## 28 de Abril 2026 — Sistema Completo de Captura de Leads Orgánicos + Regla Anti-Duplicación
+
+### Nueva Regla: Anti-Duplicación de Código (Regla 13)
+
+**AGENTES:** Code Sync Checker ahora es obligatorio para TODOS los agentes.
+
+**Protocolo:**
+1. ANTES de crear cualquier función/componente/endpoint → BUSCAR si ya existe
+2. Si existe código similar → Comparar y quedarse con la MEJOR implementación
+3. Si la nueva es mejor → BORRAR el código antiguo y dejar la nueva
+4. Commit: "refactor: replace [old] with improved [new]"
+
+**Skill creada:** `Lookitry_Brain_Vault/Cerebro/Skills/code-sync-checker.md`
+**Indexada en:** `Lookitry_Brain_Vault/Cerebro/Agentes/Skills.md`
+
+**Archivos actualizados:**
+- `REGLAS_IMPORTANTES.md` — Nueva sección 13 (Anti-Duplicación)
+- `Cerebro/Skills/code-sync-checker.md` — Nueva skill
+- `Cerebro/Agentes/Skills.md` — Índice actualizado
+
+---
 
 ### Problema
 Lookitry tenía infraestructura CRM sólida pero carecía de puntos de captación en el frontend. El 90% de leads venía solo de Google Places API.

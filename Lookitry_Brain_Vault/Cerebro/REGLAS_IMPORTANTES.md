@@ -437,6 +437,64 @@ Los agentes ya NO necesitan notificar por Telegram cuando completan tareas. Esta
 
 ---
 
+## 13. Regla Anti-Duplicación de Código (OBLIGATORIO)
+
+### 13.1 Verificación Obligatoria ANTES de Crear
+
+**REGLA CRÍTICA para TODOS los agentes:**
+
+ANTES de crear cualquier función, componente, endpoint, hook, servicio o utilidad, el agente DEBE:
+
+1. **Buscar si ya existe:**
+   - Buscar por nombre del componente/función
+   - Buscar por funcionalidad similar
+   - Buscar por endpoint/ruta similar
+
+2. **Si encuentra código existente:**
+   ```
+   ¿Es IDÉNTICO? → USAR existente, no crear nuevo
+   ¿Es SIMILAR? → Comparar, quedarse con la MEJOR implementación
+   ¿Es RELATED pero diferente? → Considerar extraer lógica compartida
+   ```
+
+3. **Si la nueva implementación es MEJOR:**
+   - Borrar código antiguo COMPLETAMENTE
+   - Implementar nuevo
+   - Verificar todos los imports/calls usen el nuevo
+   - Commit: "refactor: replace [old] with improved [new]"
+
+### 13.2 Criterios para "Mejor Implementación"
+
+✅ **MEJOR si:**
+- Más eficiente (menos queries, mejor caching)
+- Más segura (mejor validación, sanitización)
+- Más mantenible (mejor typed, documentado)
+- Consistente con el estilo del proyecto
+
+❌ **NO es mejor solo porque:**
+- Es más nuevo
+- Usa una librería "mejor según internet"
+- Es más corto (puede ser menos legible)
+
+### 13.3 Protocolo de Búsqueda
+
+```bash
+# Componentes/UI
+grep -r "ComponentName" --include="*.tsx"
+
+# Endpoints/API
+grep -r "/api/leads" --include="*.ts"
+
+# Servicios/Hooks
+grep -r "useWhatsApp\|fetchPublicPaymentSettings" --include="*.ts" --include="*.tsx"
+```
+
+### 13.4 Skill Asociada
+
+Ver: `Cerebro/Skills/code-sync-checker.md`
+
+---
+
 ## 14. Seguridad Reforzada (Implementada Abril 2026)
 
 ### Account Lockout
