@@ -321,7 +321,8 @@ export default function ContactoClient() {
   useEffect(() => {
     fetchPublicPaymentSettings().then(settings => {
       if (settings?.manualWhatsapp) {
-        setWhatsappUrl(toWhatsAppUrl(settings.manualWhatsapp));
+        const url = toWhatsAppUrl(settings.manualWhatsapp);
+        if (url) setWhatsappUrl(url);
       }
     });
   }, []);

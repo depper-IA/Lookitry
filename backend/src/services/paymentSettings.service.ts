@@ -124,6 +124,10 @@ export interface PaymentSettings {
 
   ga_measurement_id: string;
 
+  // WhatsApp configurable para lead capture
+
+  whatsapp_contact: string;
+
   updated_at?: string;
 
 }
@@ -223,6 +227,8 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   maintenance_message: 'Estamos realizando mejoras en nuestra plataforma. Volveremos pronto.',
 
   ga_measurement_id: '',
+
+  whatsapp_contact: '+573105436281',
 
 };
 
@@ -462,6 +468,8 @@ export class PaymentSettingsService {
 
     gaMeasurementId: string;
 
+    whatsappContact: string;
+
   }> {
 
     const s = await this.getSettings();
@@ -571,6 +579,8 @@ export class PaymentSettingsService {
       trm,
 
       gaMeasurementId: s.ga_measurement_id || '',
+
+      whatsappContact: s.whatsapp_contact || '+573105436281',
 
     };
 

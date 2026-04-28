@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const words = [
-  { text: '❤️', color: '#FFFFFF', isEmoji: true },
-  { text: 'LOVE', color: '#9B30FF', isEmoji: false },
-  { text: 'PASSION', color: '#9B30FF', isEmoji: false },
-  { text: 'AI', color: '#9B30FF', isEmoji: false },
-  { text: 'CODE', color: '#9B30FF', isEmoji: false },
-  { text: 'PIZZA', color: '#9B30FF', isEmoji: false },
-  { text: 'COFFEE', color: '#9B30FF', isEmoji: false },
+  { text: '❤️', color: '#161616ff', isEmoji: true },
+  { text: 'AMOR', color: '#161616ff', isEmoji: false },
+  { text: 'PASION', color: '#161616ff', isEmoji: false },
+  { text: 'AI', color: '#161616ff', isEmoji: false },
+  { text: 'CODE', color: '#161616ff', isEmoji: false },
+  { text: 'PIZZA', color: '#161616ff', isEmoji: false },
+  { text: 'CAFE', color: '#161616ff', isEmoji: false },
 ];
 
 export default function DynamicLoveAnimation() {
@@ -19,7 +19,7 @@ export default function DynamicLoveAnimation() {
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % words.length);
-    }, 2500);
+    }, 1500);
     return () => clearInterval(interval);
   }, []);
 
