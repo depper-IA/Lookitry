@@ -367,7 +367,7 @@ export default function MiniLandingPage() {
             initial="hidden"
             animate={problemInView ? 'visible' : 'hidden'}
             variants={staggerContainer}
-            className="mb-40 pt-10 border-t border-white/10"
+            className="mb-40"
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
@@ -432,7 +432,7 @@ export default function MiniLandingPage() {
             initial="hidden"
             animate={featuresInView ? 'visible' : 'hidden'}
             variants={staggerContainer}
-            className="mb-40 pt-10 border-t border-white/10"
+            className="mb-40"
           >
             <motion.div variants={fadeUp} className="text-center mb-16 flex flex-col items-center">
               <SectionLabel text="Todo incluido" />
@@ -476,7 +476,7 @@ export default function MiniLandingPage() {
             initial="hidden"
             animate={priceInView ? 'visible' : 'hidden'}
             variants={staggerContainer}
-            className="mb-40 pt-10 border-t border-white/10"
+            className="mb-40"
           >
             <div className="rounded-[3.5rem] overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF5C3A]/10 via-[#141414] to-[#0a0a0a]" />
@@ -567,7 +567,7 @@ export default function MiniLandingPage() {
             initial="hidden"
             animate={faqInView ? 'visible' : 'hidden'}
             variants={staggerContainer}
-            className="mb-20 pt-10 border-t border-white/10"
+            className="mb-20"
           >
             <motion.div variants={fadeUp} className="text-center mb-16 flex flex-col items-center">
               <SectionLabel text="Preguntas Frecuentes" />
