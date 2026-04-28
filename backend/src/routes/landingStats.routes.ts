@@ -9,12 +9,17 @@ const router = Router();
 
 router.get('/', async (_req, res) => {
   try {
-    // Try cache first
+    // Try cache first (graceful Redis fallback — don't let Redis errors kill the endpoint)
+    let cached: string | null = null;
     if (redis) {
-      const cached = await redis.get(CACHE_KEY);
-      if (cached) {
-        return res.status(200).json(JSON.parse(cached));
+      try {
+        cached = await redis.get(CACHE_KEY);
+      } catch (redisError) {
+        console.warn('[LandingStats] Redis get failed, proceeding without cache:', redisError instanceof Error ? redisError.message : redisError);
       }
+    }
+    if (cached) {
+      return res.status(200).json(JSON.parse(cached));
     }
 
     // Count brands with ACTIVE subscription status only
@@ -68,9 +73,13 @@ router.get('/', async (_req, res) => {
       reviews_count: reviewsCount,
     };
 
-    // Cache result
+    // Cache result (graceful Redis fallback)
     if (redis) {
-      await redis.setex(CACHE_KEY, CACHE_TTL, JSON.stringify(result));
+      try {
+        await redis.setex(CACHE_KEY, CACHE_TTL, JSON.stringify(result));
+      } catch (redisError) {
+        console.warn('[LandingStats] Redis setex failed, stats served without cache:', redisError instanceof Error ? redisError.message : redisError);
+      }
     }
 
     return res.status(200).json(result);
