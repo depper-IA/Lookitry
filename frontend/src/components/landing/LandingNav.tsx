@@ -501,7 +501,7 @@ export default function LandingNav({
                     <button
                       onClick={() => onCurrencyChange('COP')}
                       aria-pressed={currency === 'COP'}
-                      className={`mobile-currency-btn cursor-pointer px-3 py-1.5 text-xs font-bold uppercase transition-all duration-200 rounded-full ${currency === 'COP' ? 'bg-[#FF5C3A] text-white scale-105' : 'text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white'
+                      className={`mobile-currency-btn cursor-pointer px-3 py-1.5 text-xs font-bold uppercase transition-all duration-200 rounded-full ${currency === 'COP' ? 'bg-[#FF5C3A] text-white scale-105 hover:bg-[#FF5C3A] hover:text-white' : 'text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white'
                         }`}
                     >
                       COP
@@ -509,7 +509,7 @@ export default function LandingNav({
                     <button
                       onClick={() => onCurrencyChange('USD')}
                       aria-pressed={currency === 'USD'}
-                      className={`mobile-currency-btn cursor-pointer px-3 py-1.5 text-xs font-bold uppercase transition-all duration-200 rounded-full ${currency === 'USD' ? 'bg-[#FF5C3A] text-white scale-105' : 'text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white'
+                      className={`mobile-currency-btn cursor-pointer px-3 py-1.5 text-xs font-bold uppercase transition-all duration-200 rounded-full ${currency === 'USD' ? 'bg-[#FF5C3A] text-white scale-105 hover:bg-[#FF5C3A] hover:text-white' : 'text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white'
                         }`}
                     >
                       USD
