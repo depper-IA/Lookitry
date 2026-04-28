@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { fetchPublicPaymentSettings, formatWhatsAppDisplay, toWhatsAppUrl } from '@/services/public-config.service';
 
 export function ContactCards() {
@@ -25,27 +26,32 @@ export function ContactCards() {
 
   return (
     <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5">
-      <a
+      <motion.a
         href={`mailto:${contact.email}`}
-        className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 hover:border-[#FF5C3A]/40 transition-colors"
+        whileHover={{ y: -8, transition: { duration: 0.3 } }}
+        className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 hover:border-[#FF5C3A]/40 transition-all"
       >
         <p className="text-[11px] uppercase tracking-[0.1em] text-[#FF5C3A] font-semibold">Canal oficial</p>
         <p className="text-white text-lg font-semibold mt-1">Email corporativo</p>
         <p className="text-[#bbb] text-sm mt-2">{contact.email}</p>
         <p className="text-[#666] text-xs mt-3">Respuesta típica: menos de 24h hábiles.</p>
-      </a>
-      <a
+      </motion.a>
+      <motion.a
         href={contact.whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 hover:border-[#FF5C3A]/40 transition-colors"
+        whileHover={{ y: -8, transition: { duration: 0.3 } }}
+        className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 hover:border-[#FF5C3A]/40 transition-all"
       >
         <p className="text-[11px] uppercase tracking-[0.1em] text-[#FF5C3A] font-semibold">Canal rápido</p>
         <p className="text-white text-lg font-semibold mt-1">WhatsApp de soporte</p>
         <p className="text-[#bbb] text-sm mt-2">{contact.whatsappDisplay}</p>
         <p className="text-[#666] text-xs mt-3">Ideal para onboarding e integración inicial.</p>
-      </a>
-      <div className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 md:col-span-2">
+      </motion.a>
+      <motion.div
+        whileHover={{ y: -8, transition: { duration: 0.3 } }}
+        className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 md:col-span-2 hover:border-[#FF5C3A]/40 transition-all"
+      >
         <p className="text-white text-lg font-semibold">Horario y cobertura</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
           <div>
@@ -61,7 +67,7 @@ export function ContactCards() {
             <p className="text-[#bbb] text-sm mt-1">Acompañamiento en integración y configuración del widget.</p>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
