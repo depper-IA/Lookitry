@@ -14,7 +14,7 @@ interface LandingPricingProps {
   trm: number;
 }
 
-interface PricingCardProps {
+const EASING_OUT = [0.22, 1, 0.36, 1] as const;
   name: string;
   category: string;
   badge?: string;
@@ -62,7 +62,7 @@ function PricingCard({
       transition={{
         delay,
         duration: 0.8,
-        ease: [0.22, 1, 0.36, 1] as unknown as number[],
+        ease: EASING_OUT as unknown as number[],
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -311,6 +311,8 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
             name="Enterprise"
             category="Retail y Corp"
             price={null}
+            currency={currency}
+            period="mes"
             isEnterprise
             features={[
               '50+ productos',
