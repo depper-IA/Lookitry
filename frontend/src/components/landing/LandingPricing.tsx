@@ -244,7 +244,7 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: EASING_OUT as unknown as number[] }}
+          transition={{ duration: 0.6, ease: EASING_OUT }}
           className="text-center mb-12 sm:mb-16 md:mb-20 lg:mb-24"
         >
           <SectionTag text="Planes de Crecimiento" light />
