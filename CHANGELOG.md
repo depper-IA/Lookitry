@@ -1,5 +1,33 @@
 # CHANGELOG — Lookitry
 
+## 28 de Abril 2026 — LandingPlugin Animaciones Mejoradas
+
+### Animaciones de entrada mejoradas
+- Badge "Plugin Oficial": animación de entrada scale con `fadeInScale`
+- Título y descripción: `staggerContainer` con delays escalonados
+- Cards de features: entrada con `scale(0.95) → scale(1)` + `y: 40 → 0`, staggered 120ms
+- Icono del badge con `animate-ping` para efecto de vida
+
+### Micro-interacciones hover mejoradas
+- Cards: `y: -12` con easing refinada y borde luminoso con gradiente naranja
+- Iconos: `scale(1.15)` + `rotate([-10, 10, 0])` para efecto de "shake"
+- Iconos: glow effect con `blur-xl` que aparece en hover
+- Flecha decorativa que aparece en hover con `opacity: 0 → 1`
+- Botón descarga: `scale(1.03)` hover, `scale(0.97)` tap
+- Badge PRO: `scale(1.05)` hover con fondo pulsante animado
+- Logo WooCommerce: `scale(1.1)` hover con `drop-shadow` naranja
+
+### Efectos decorativos adicionales
+- Shimmer effect en botón de descarga que se mueve en loop
+- Icono de descarga con `animate: y: [0, -3, 0]` flotante
+- IconGlow con `motion.div` y `layoutId` para continuidad
+- `useReducedMotion` para respetar accesibilidad `prefers-reduced-motion`
+
+**Archivos modificados:**
+- `frontend/src/components/landing/LandingPlugin.tsx` — Animaciones mejoradas
+
+---
+
 ## 28 de Abril 2026 — Footer Dark Mode + Social Buttons Animation
 
 ### Design.md - Nueva Seccion 7.3 (Footer Dark Mode)
