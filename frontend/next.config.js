@@ -20,9 +20,7 @@ const nextConfig = {
     return [
       // Redirecciones de páginas 404
       { source: '/probador-virtual', destination: '/', permanent: false },
-      { source: '/mini-landing', destination: '/planes', permanent: false },
-      { source: '/plugin-woocommerce', destination: '/planes', permanent: false },
-      { source: '/api-developer', destination: '/planes', permanent: false },
+      // Las rutas de producto se eliminaron porque bloqueaban el acceso a las páginas reales
     ];
   },
   images: {
