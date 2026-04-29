@@ -337,7 +337,7 @@ export default function LandingNav({
                       <div className="nav-promo-image relative w-full aspect-[4/3] rounded-xl overflow-hidden group">
                         <Link href="/trial-checkout" onClick={() => setMegaMenuOpen(false)} className="block absolute inset-0 z-10" aria-label="Pruébalo gratis" />
                         <Image
-                          src="/hero/promo_landing.png"
+                          src="/images/rebeca.webp"
                           alt="Lookitry - Transforma tu tienda con IA"
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
@@ -346,7 +346,7 @@ export default function LandingNav({
                       </div>
 
                       {/* CTA — small, subtle, below image */}
-                      <div className="mt-3 flex items-center justify-between">
+                      <div className="mt-3 flex flex-col items-center text-center gap-2">
                         <div>
                           <p className="text-[10px] font-semibold text-[#0a0a0a] dark:text-white leading-tight">Transforma tu tienda</p>
                           <p className="text-[9px] text-[#999]">Sin tarjeta requerida</p>

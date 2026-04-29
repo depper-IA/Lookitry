@@ -22,14 +22,14 @@ const FOOTER_SECTIONS: FooterSection[] = [
       { name: 'Mini-Landing Pro', href: '/mini-landing' },
       { name: 'Plugin WooCommerce', href: '/plugin-woocommerce' },
       { name: 'API Developer', href: '/api-developer' },
-      { name: 'Planes Mensuales', href: '/planes' },
+      { name: 'Planes', href: '/planes' },
     ],
   },
   {
     title: 'Recursos',
     links: [
       { name: 'Centro de Ayuda', href: '/ayuda' },
-      { name: 'Blog Tecnico', href: '/blog' },
+      { name: 'Lookitry Blog', href: '/blog' },
       { name: 'Sobre Nosotros', href: '/sobre-nosotros' },
       { name: 'Casos de Uso', href: '/casos-de-exito' },
       { name: 'Estado del sistema', href: '/estado' },
