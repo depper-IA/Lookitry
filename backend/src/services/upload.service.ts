@@ -129,10 +129,34 @@ export class UploadService {
 
 
   async uploadImageBuffer(data: UploadImageBufferDto): Promise<UploadResponse> {
-
     try {
-
       let { buffer, filename, temporary, folder, assetType } = data;
+
+      // === VALIDACIÓN DE MAGIC BYTES CON SHARP ===
+      // Verificar que el buffer es una imagen válida antes de procesarla
+      // Esto previene uploads de archivos maliciosos con extensiones falsificadas
+      try {
+        const validatedImage = sharp(buffer);
+        const metadata = await validatedImage.metadata();
+
+        // Verificar que sharp puede identificar el formato de imagen
+        if (!metadata.format) {
+          throw new Error('No se pudo identificar el formato de imagen');
+        }
+
+        // Lista de formatos de imagen permitidos por sharp
+        const allowedFormats = ['jpeg', 'jpg', 'png', 'webp', 'gif', 'avif', 'tiff'];
+        if (!allowedFormats.includes(metadata.format)) {
+          throw new Error(`Formato de imagen no permitido: ${metadata.format}`);
+        }
+
+        console.log(`[Upload Service] Magic bytes validados: ${metadata.format}, ${buffer.length} bytes`);
+      } catch (sharpError: any) {
+        console.error('[Upload Service] Validación de imagen falló:', sharpError.message);
+        throw new Error('El archivo no es una imagen válida o está corrupto');
+      }
+
+      // OPTIMIZACIÓN CON SHARP
 
       
 
