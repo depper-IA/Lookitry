@@ -12,6 +12,7 @@ import { cn } from '@/utils/cn';
 import { getBlogFeaturedImage, getBlogTeaser } from '@/services/blog.service';
 import { BlogShareRail } from './BlogShareRail';
 import LeadMagnetBanner from './LeadMagnetBanner';
+import SafeJsonLd from './SafeJsonLd';
 
 interface BlogPostContentProps {
   post: any;
@@ -101,15 +102,9 @@ export default function BlogPostContent({ post, recentPosts, shareUrl }: BlogPos
   return (
     <div className="overflow-x-clip">
       {/* BlogPosting Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <SafeJsonLd data={jsonLd} />
       {/* BreadcrumbList Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <SafeJsonLd data={breadcrumbJsonLd} />
       <BlogShareRail title={post.title} url={shareUrl} />
       <LandingNav />
       <main className={cn(

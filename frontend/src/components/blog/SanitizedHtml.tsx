@@ -2,13 +2,15 @@
 
 import { useMemo } from 'react';
 import DOMPurify from 'dompurify';
+import type { CSSProperties } from 'react';
 
 type Props = {
   html: string;
   className?: string;
+  style?: CSSProperties;
 };
 
-export default function SanitizedHtml({ html, className }: Props) {
+export default function SanitizedHtml({ html, className, style }: Props) {
   const cleanHtml = useMemo(() => {
     if (typeof window === 'undefined') return html;
     return DOMPurify.sanitize(html, {
@@ -28,5 +30,5 @@ export default function SanitizedHtml({ html, className }: Props) {
     });
   }, [html]);
 
-  return <div className={className} dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
+  return <div className={className} style={style} dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
 }

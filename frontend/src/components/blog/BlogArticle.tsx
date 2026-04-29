@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/utils/cn';
+import DOMPurify from 'dompurify';
 import { 
   Calendar, 
   Tag, 
@@ -585,7 +586,24 @@ function ArticleContent({ html }: { html: string }) {
         }
       }
     });
-    return doc.body.innerHTML;
+    // Sanitizar el HTML procesado para prevenir XSS
+    const rawHtml = doc.body.innerHTML;
+    if (typeof window === 'undefined') return rawHtml;
+    return DOMPurify.sanitize(rawHtml, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre',
+        'img', 'figure', 'figcaption', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+        'span', 'div', 'hr', 'abbr', 'sub', 'sup', 'del', 'ins', 'mark',
+        'video', 'audio', 'source',
+      ],
+      ALLOWED_ATTR: [
+        'href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height',
+        'class', 'id', 'style', 'loading', 'referrerpolicy',
+        'controls', 'autoplay', 'loop', 'muted', 'playsinline',
+      ],
+      ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.]+(?:[^a-z+.]+|$))/i,
+    });
   }, [html]);
 
   return (

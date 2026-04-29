@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { adminApi } from '@/services/adminApi';
 import { Toast, ToastType } from '@/components/ui/Toast';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import DOMPurify from 'dompurify';
+import SanitizedEmailHtml from '@/components/blog/SanitizedEmailHtml';
 
 type CampaignStatus = 'draft' | 'scheduled' | 'processing' | 'completed' | 'cancelled';
 type FilterType = 'all' | 'trial' | 'paid' | 'plan' | 'leads';
@@ -932,10 +934,10 @@ export default function EmailCampaignsPage() {
                   {previews.map((preview, idx) => (
                     <div key={idx}>
                       <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>{preview.email}</p>
-                      <div
+                      <SanitizedEmailHtml
+                        html={preview.html}
                         className="border rounded-lg p-4"
-                        style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-base)' }}
-                        dangerouslySetInnerHTML={{ __html: preview.html }}
+                        style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-base)' } as React.CSSProperties}
                       />
                     </div>
                   ))}

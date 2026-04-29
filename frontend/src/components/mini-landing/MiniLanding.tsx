@@ -7,6 +7,7 @@ import { TemplateEditorial } from './TemplateEditorial';
 import { TemplateModerno } from './TemplateModerno';
 import type { BrandData, ProductData, MiniLandingProps } from './shared';
 import { DynamicFontStyles } from './shared';
+import SafeJsonLd from '@/components/blog/SafeJsonLd';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -141,24 +142,19 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${process.env.NEXT_PUBLIC_BASE_URL || 'https://lookitry.com'}/sitio/${brand.slug}`} />
         <meta name="twitter:card" content="summary_large_image" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Product",
-              "name": brand.name,
-              "description": brand.brand_description,
-              "image": brand.cover_image_url,
-              "brand": { "@type": "Brand", "name": brand.name },
-              "offers": {
-                "@type": "Offer",
-                "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://lookitry.com'}/sitio/${brand.slug}`,
-                "priceCurrency": "COP"
-              }
-            })
-          }}
-        />
+        <SafeJsonLd data={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": brand.name,
+          "description": brand.brand_description,
+          "image": brand.cover_image_url,
+          "brand": { "@type": "Brand", "name": brand.name },
+          "offers": {
+            "@type": "Offer",
+            "url": `${process.env.NEXT_PUBLIC_BASE_URL || 'https://lookitry.com'}/sitio/${brand.slug}`,
+            "priceCurrency": "COP"
+          }
+        }} />
       </Head>
       <DynamicFontStyles />
       {/* Timer flotante discreto (Datos dinámicos) */}
