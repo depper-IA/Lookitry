@@ -257,6 +257,7 @@ sammantha_voice:
 - Toggle activo: `#FF5C3A` (nunca `bg-blue-600`)
 - Logo: siempre SVG + texto `Look<span className="text-[#FF5C3A]">itry</span>`
 - Accesibilidad: botones de mostrar/ocultar contrasena deben ser focusables y llevar `aria-label`
+- **PROHIBIDO lineas separadoras entre secciones**: NO usar `border-t border-[#eeebe7]` o `bg-gradient-to-r from-transparent via-black/10` en los `<section>` del landing page (PremiumLanding). Las secciones se separan por espaciado y contraste de color, no por lineas horizontales. Ver archivo `REGLAS_IMPORTANTES.md` para excepciones internas de componentes.
 
 ---
 
@@ -272,6 +273,7 @@ Para evitar corrupciones de codigo y caidas del sistema:
 - **Optional Chaining (?.)**: Obligatorio en TODOS los accesos a datos de API o Supabase
 - **Fallbacks de Renderizado**: Siempre proveer valores por defecto en componentes de UI.
 - **Precios dinámicos obligatorios**: Los precios de planes NUNCA deben estar hardcodeados en componentes de UI. Usar siempre `getPricingConfig()` de `@/lib/pricing` que lee de Supabase `pricing_config`.
+- **Conversión COP → USD (OBLIGATORIO)**: Ver [[CURRENCY_CONVERSION_RULE|Método único aprobado]] en `Lookitry_Brain_Vault/Cerebro/Rules/CURRENCY_CONVERSION_RULE.md`. Fórmula: `Math.ceil((precioCOP + 10000) / trm)`. PROHIBIDO usar `precioCOP / trm` sin margen.
 
 ### 5.3 Robustez de Backend
 - Usar bloques try-catch granulares

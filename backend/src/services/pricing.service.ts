@@ -1,6 +1,9 @@
 import { supabaseAdmin } from '../config/supabase';
 import { PaymentSettingsService } from './paymentSettings.service';
 import { TrmService } from '../utils/trm';
+import { calculatePriceUSD, getMinimumTrmForConsistency } from '../utils/pricingCurrency';
+
+export { calculatePriceUSD, getMinimumTrmForConsistency };
 
 export interface PricingConfig {
   id: string;

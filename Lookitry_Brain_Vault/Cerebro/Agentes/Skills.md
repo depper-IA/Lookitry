@@ -1,6 +1,6 @@
 # Skills del Equipo Lookitry
 
-**Última actualización:** 28 de Abril 2026
+**Última actualización:** 29 de Abril 2026
 
 ---
 
@@ -11,6 +11,7 @@
 | **Code Sync Checker** | `code-sync-checker.md` | Verificacion obligatoria ANTES de crear codigo | TODOS |
 | **Brainstorming** | `brainstorming.md` | Exploracion de requisitos antes de crear features | TODOS |
 | **Refactor** | `refactor.md` | Refactorizacion de archivos >600 lineas | TODOS |
+| **Currency Conversion** | `CURRENCY_CONVERSION_RULE.md` | Conversión COP→USD con margen obligatorio | TODOS |
 
 ---
 
