@@ -1,5 +1,36 @@
 # CHANGELOG — Lookitry
 
+## 29 de Abril 2026 — Fix Revocación de Sesiones JWT para Administradores
+
+### Problema
+Tokens JWT de administradores no eran revocados al hacer logout, permitiendo reutilización de tokens incluso después de cerrar sesión.
+
+### Solución Implementada
+
+**1. `adminLogout` actualizado (`auth.admin.controller.ts`):**
+- Extrae el token JWT de la cookie `admin_token`
+- Añade el token a la blacklist de Redis usando `blacklistToken`
+- Manejo de errores de Redis de forma graceful (no bloquea el logout)
+- Dynamic import para evitar dependencias circulares
+
+**2. `adminAuthMiddleware` actualizado (`adminAuth.ts`):**
+- Verifica si el token está en la blacklist antes de procesar
+- Usa `isTokenBlacklisted()` de `config/redis`
+- Rechaza acceso con error `TOKEN_REVOKED` si está en blacklist
+- Errores de Redis handled gracefully (retorna `false`, permitiendo acceso)
+
+### Flujo de Revocación
+```
+Admin logout → Extrae token → blacklistToken() → Redis (TTL = tiempo restante del token)
+Admin下次请求 → isTokenBlacklisted() → true → 401 TOKEN_REVOKED
+```
+
+### Archivos Modificados
+- `backend/src/controllers/admin/auth.admin.controller.ts`
+- `backend/src/middleware/adminAuth.ts`
+
+---
+
 ## 28 de Abril 2026 — Fix Conversión COP→USD con Margen Mínimo de 10,000 COP
 
 ### Problema Reportado
