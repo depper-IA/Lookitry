@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
-
+import { isTokenBlacklisted } from '../config/redis';
 import { AdminService } from '../services/admin.service';
 
 
@@ -78,12 +78,14 @@ export const adminAuthMiddleware = async (
 
 
     if (!token) {
-
       return res.status(401).json({ error: 'UNAUTHORIZED', message: 'No se encontró token de administración' });
-
     }
 
-
+    // Verificar si el token está en la blacklist (revocado)
+    const blacklisted = await isTokenBlacklisted(token);
+    if (blacklisted) {
+      return res.status(401).json({ error: 'TOKEN_REVOKED', message: 'Sesión ha sido revocada' });
+    }
 
     const payload = verifyToken(token);
 

@@ -210,8 +210,12 @@ export const adminResetPassword = async (req: any, res: Response) => {
  * POST /api/admin/auth/logout
  * Cerrar sesión de administrador
  */
-export const adminLogout = async (_req: any, res: Response) => {
+export const adminLogout = async (req: any, res: Response) => {
   try {
+    // Extraer token de la cookie para añadirlo a la blacklist
+    const token = req.cookies?.admin_token;
+
+    // Limpiar cookie primero
     const cookieOptions: any = {
       httpOnly: true,
       secure: IS_PROD,
@@ -225,6 +229,14 @@ export const adminLogout = async (_req: any, res: Response) => {
     }
 
     res.cookie('admin_token', '', cookieOptions);
+
+    // Añadir token a la blacklist (errors handled gracefully to not block logout)
+    if (token) {
+      const { blacklistToken } = await import('../../config/redis');
+      blacklistToken(token, 'admin_logout').catch(err => {
+        console.error('[AdminLogout] Error adding token to blacklist:', err);
+      });
+    }
 
     return res.status(200).json({ message: 'Sesión cerrada exitosamente' });
   } catch (error: any) {
