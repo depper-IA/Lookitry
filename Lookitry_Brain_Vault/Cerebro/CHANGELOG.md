@@ -2,6 +2,14 @@
 
 ---
 
+## 2026-04-28
+
+### fix(landing): Replace megamenu promo image with rebeca.webp
+
+**Archivo modificado:** `frontend/src/components/landing/LandingNav.tsx`
+
+---
+
 ## 2026-04-27
 
 ### fix(try-on): Prevent body shape alteration in generated images

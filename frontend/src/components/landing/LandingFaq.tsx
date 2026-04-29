@@ -109,7 +109,7 @@ export default function LandingFaq() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   return (
-    <section className="bg-white dark:bg-black py-20 sm:py-24 md:py-28 lg:py-40 px-4 sm:px-6 md:px-12 border-t border-[#eeebe7] dark:border-white/5 relative overflow-hidden" aria-label="Preguntas frecuentes">
+    <section className="bg-white dark:bg-black py-20 sm:py-24 md:py-28 lg:py-40 px-4 sm:px-6 md:px-12 relative overflow-hidden" aria-label="Preguntas frecuentes">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#FF5C3A]/3 via-transparent to-transparent" />
 

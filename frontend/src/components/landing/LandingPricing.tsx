@@ -234,8 +234,6 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
 
   return (
     <section id="planes" className="py-20 sm:py-24 md:py-32 lg:py-40 px-4 sm:px-6 bg-white dark:bg-black relative overflow-hidden" aria-label="Planes y precios">
-      {/* Decorative top border */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[100%] h-[1px] bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" aria-hidden="true" />
 
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         {/* Header */}
