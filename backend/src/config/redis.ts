@@ -1,4 +1,5 @@
 import Redis from 'ioredis';
+import crypto from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -84,5 +85,55 @@ export async function redisSetExSafe(key: string, ttl: number, value: string): P
     await redis.setex(key, ttl, value);
   } catch {
     // Silently fail — cache is best-effort
+  }
+}
+
+/**
+ * JWT Blacklist - Almacena tokens revocados en Redis
+ * Key format: jwt:blacklist:{tokenHash}
+ * Value: '1' (razón de revocación)
+ * TTL: basado en tiempo restante del token
+ */
+const JWT_BLACKLIST_PREFIX = 'jwt:blacklist:';
+
+export async function blacklistToken(token: string, reason: string = 'logout'): Promise<void> {
+  if (!RedisService.isAlive()) return;
+  try {
+    // Usar hash del token como key (no almacenar el token completo)
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const key = `${JWT_BLACKLIST_PREFIX}${tokenHash}`;
+
+    // Calcular TTL restante del token (max 7 días = 604800 segundos)
+    let ttl = 7 * 24 * 60 * 60;
+    try {
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.decode(token) as { exp?: number } | null;
+      if (decoded?.exp) {
+        const remaining = decoded.exp - Math.floor(Date.now() / 1000);
+        if (remaining > 0 && remaining < ttl) {
+          ttl = remaining;
+        }
+      }
+    } catch {
+      // Si no se puede decodificar, usar TTL por defecto
+    }
+
+    await redis.setex(key, ttl, reason);
+    console.log(`[JWT Blacklist] Token blacklisted: ${reason}`);
+  } catch (err) {
+    console.error('[JWT Blacklist] Error blacklisting token:', err);
+  }
+}
+
+export async function isTokenBlacklisted(token: string): Promise<boolean> {
+  if (!RedisService.isAlive()) return false;
+  try {
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const key = `${JWT_BLACKLIST_PREFIX}${tokenHash}`;
+    const result = await redis.get(key);
+    return result !== null;
+  } catch (err) {
+    console.error('[JWT Blacklist] Error checking blacklist:', err);
+    return false;
   }
 }

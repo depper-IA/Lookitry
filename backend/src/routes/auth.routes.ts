@@ -12,6 +12,8 @@ import { authMiddleware, optionalAuth } from '../middleware/auth';
 
 import { supabaseAdmin } from '../config/supabase';
 
+import { blacklistToken } from '../config/redis';
+
 
 
 const router = Router();
@@ -204,7 +206,15 @@ router.post('/google/onboarding', asyncHandler((req, res) => authController.comp
 
 // POST /api/auth/logout â limpia la cookie HTTP-Only del lado del servidor
 
-router.post('/logout', (_req, res) => {
+router.post('/logout', async (req, res) => {
+  // Extraer token de la cookie para añadirlo a la blacklist
+  const token = (req as any).cookies?.token;
+  if (token) {
+    // Añadir token a blacklist de Redis (async, no bloquear respuesta)
+    blacklistToken(token, 'logout').catch(err => {
+      console.error('[Logout] Error blacklisting token:', err);
+    });
+  }
 
   const IS_PROD = process.env.NODE_ENV === 'production';
 

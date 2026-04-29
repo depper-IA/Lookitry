@@ -328,7 +328,7 @@ export const publicRateLimiter = rateLimit({
 
   handler: (req: Request, res: Response) => {
 
-    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || 'unknown';
+    const ip = req.ip || 'unknown';
 
     console.warn(`â ï¸  Rate limit excedido para IP: ${ip}`);
 
@@ -347,15 +347,11 @@ export const publicRateLimiter = rateLimit({
   },
 
   // Omitir rate limiting para ciertas condiciones
-
   skip: (req: Request) => {
-
-    // Prioridad: x-forwarded-for (real client IP through Traefik) > req.ip (Docker internal)
-
-    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+    // Usar req.ip exclusivamente - trust proxy está configurado en Express
+    const ip = req.ip || '';
 
     // Skip si está en whitelist (sync check - locals + hardcoded)
-
     if (isWhitelistedSync(ip)) return true;
 
     // Omitir rate limiting para localhost en desarrollo
@@ -425,8 +421,8 @@ export const generationRateLimiter = rateLimit({
   },
 
   skip: (req: Request) => {
-
-    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+    // Usar req.ip exclusivamente - trust proxy está configurado en Express
+    const ip = req.ip || '';
 
     if (isWhitelistedSync(ip)) return true;
 
@@ -767,8 +763,8 @@ function createSlugRateLimiter() {
 
 
     // Bypass para IPs en whitelist (Travis, Sam, etc.)
-
-    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+    // Usar req.ip exclusivamente - trust proxy está configurado en Express
+    const ip = req.ip || '';
 
     if (isWhitelistedSync(ip)) {
 

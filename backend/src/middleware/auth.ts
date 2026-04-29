@@ -4,6 +4,7 @@ import { verifyToken } from '../utils/jwt';
 
 import { AuthService } from '../services/auth.service';
 
+import { isTokenBlacklisted } from '../config/redis';
 
 
 const authService = new AuthService();
@@ -79,8 +80,18 @@ if (!token) {
 
 
 
-    // Verificar token
+    // Verificar token no está en blacklist (revocado)
+    const isBlacklisted = await isTokenBlacklisted(token);
+    if (isBlacklisted) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      return res.status(401).json({
+        error: 'TOKEN_REVOKED',
+        message: 'Token ha sido revocado',
+      });
+    }
 
+    // Verificar token
     const payload = verifyToken(token);
 
 
