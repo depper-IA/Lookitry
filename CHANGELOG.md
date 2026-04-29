@@ -1,6 +1,52 @@
 # CHANGELOG — Lookitry
 
-## 28 de Abril 2026 — Fix Interval/Timer Accumulation (Console Errors Multiplicándose)
+## 28 de Abril 2026 — Fix Conversión COP→USD con Margen Mínimo de 10,000 COP
+
+### Problema Reportado
+Precio en USD era más bajo que el precio equivalente en COP (ej: 180,000 COP / 4000 = 45 USD pero debería ser más caro en COP equivalente).
+
+### Solución Implementada
+
+**1. Nueva utilidad centralizada en backend:**
+- `backend/src/utils/pricingCurrency.ts` — función `calculatePriceUSD(amountCOP, trm)` con fórmula: `Math.ceil((amountCOP + 10000) / trm)`
+- Margen mínimo obligatorio de 10,000 COP entre precio COP y su equivalente USD
+
+**2. Backend actualizado:**
+- `paypal.service.ts` — `convertCopToUsd()` ahora usa `calculatePriceUSD`
+- Backward compatibility mantenida
+
+**3. Frontend actualizado (todos los puntos de conversión USD):**
+- `frontend/src/lib/pricing.ts` — `precioEnUSD()`
+- `frontend/src/utils/currency.ts` — `formatPrice()`
+- `frontend/src/lib/paymentDisplay.ts` — `priceInUsd()`
+- `frontend/src/components/checkout/PaymentMethodSelector.tsx` — `formatUSD()`
+- `frontend/src/components/checkout/CheckoutSummary.tsx` — cálculo inline
+- `frontend/src/app/dashboard/checkout/page.tsx` — `formatPaypalUsd()`
+- `frontend/src/app/dashboard/checkout-landing/page.tsx` — `formatPaypalUsd()` ← **CORRECCIÓN CRÍTICA**
+
+### Verificación de Precios
+
+| Plan | Precio COP | TRM 4000 | Precio USD | Equivalente COP | Margen |
+|------|------------|----------|------------|-----------------|--------|
+| BASIC | 180,000 | 4000 | 48 USD | 192,000 | 12,000 ✅ |
+| PRO | 350,000 | 4000 | 90 USD | 360,000 | 10,000 ✅ |
+| Landing | 650,000 | 4000 | 165 USD | 660,000 | 10,000 ✅ |
+
+### Archivos Modificados
+- `backend/src/utils/pricingCurrency.ts` (nuevo)
+- `backend/src/services/paypal.service.ts`
+- `backend/src/services/pricing.service.ts`
+- `frontend/src/lib/pricing.ts`
+- `frontend/src/utils/currency.ts`
+- `frontend/src/lib/paymentDisplay.ts`
+- `frontend/src/components/checkout/PaymentMethodSelector.tsx`
+- `frontend/src/components/checkout/CheckoutSummary.tsx`
+- `frontend/src/app/dashboard/checkout/page.tsx`
+- `frontend/src/app/dashboard/checkout-landing/page.tsx`
+
+---
+
+## 28 de Abril 2026 — Fix Interval/Timer Accumulation
 
 ### Problema Reportado
 Errores en consola que se multiplicaban sin detenerse progresivamente.

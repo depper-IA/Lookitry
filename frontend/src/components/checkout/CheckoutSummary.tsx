@@ -42,9 +42,11 @@ function formatCOP(amount: number): string {
   }).format(amount);
 }
 
+const MINIMUM_MARGIN_COP = 10000;
+
 function formatUSD(amountInCOP: number, trm: number): string {
-  if (!trm || trm <= 0) return `$${(amountInCOP / 3900).toFixed(2)} USD`;
-  const amountUSD = amountInCOP / trm;
+  if (!trm || trm <= 0) return `$${Math.ceil((amountInCOP + MINIMUM_MARGIN_COP) / 3900).toFixed(2)} USD`;
+  const amountUSD = Math.ceil((amountInCOP + MINIMUM_MARGIN_COP) / trm);
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',

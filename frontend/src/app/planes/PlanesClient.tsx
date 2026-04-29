@@ -459,74 +459,201 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
           variants={staggerContainer}
           className="py-16 px-4 md:px-6 theme-bg-base"
         >
-          <div className="max-w-4xl mx-auto">
-            <h2 className="font-jakarta font-bold text-2xl md:text-3xl theme-text text-center mb-8">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="font-jakarta font-extrabold text-2xl md:text-4xl theme-text text-center mb-10 tracking-tight">
               Comparativa completa
             </h2>
-            <div className="theme-bg-card theme-border border rounded-2xl overflow-hidden shadow-2xl">
-              <table className="w-full text-[13px] font-dm-sans">
-                <thead>
-                  <tr className="border-b theme-border">
-                    <th className="text-left px-5 py-4 font-bold theme-text-muted uppercase tracking-widest text-[9px] w-1/2">Característica</th>
-                    <th className="text-center px-4 py-4 font-bold theme-text-muted uppercase tracking-widest text-[9px] w-1/6">Básico</th>
-                    <th className="text-center px-4 py-4 font-bold text-[#FF5C3A] uppercase tracking-widest text-[9px] w-1/6">Pro</th>
-                    <th className="text-center px-4 py-4 font-bold theme-text uppercase tracking-widest text-[9px] w-1/6">Enterprise</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y theme-border">
-                  <tr className="hover:theme-bg-hover transition-colors">
-                    <td className="px-5 py-4 theme-text/80 font-medium">Productos en el probador</td>
-                    <td className="px-4 py-4 text-center"><span className="font-bold theme-text-muted">{basic.productos_max}</span></td>
-                    <td className="px-4 py-4 text-center"><span className="font-bold text-[#FF5C3A]">{pro.productos_max}</span></td>
-                    <td className="px-4 py-4 text-center"><span className="font-bold theme-text">{enterprise.productos_max}+</span></td>
-                  </tr>
-                  <tr className="hover:theme-bg-hover transition-colors">
-                    <td className="px-5 py-4 theme-text/80 font-medium">Generaciones por mes</td>
-                    <td className="px-4 py-4 text-center"><span className="font-bold theme-text-muted">{basic.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
-                    <td className="px-4 py-4 text-center"><span className="font-bold text-[#FF5C3A]">{pro.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
-                    <td className="px-4 py-4 text-center"><span className="font-bold theme-text">{enterprise.generaciones_mensuales.toLocaleString('es-CO')}+</span></td>
-                  </tr>
-                  {allFeatures.filter(f => 
-                    f !== 'Template Bare, minimal y classical' && 
-                    f !== 'Widget embebible (script)'
-                  ).map(feature => {
-                    if (
-                      feature.includes('productos en el probador') ||
-                      feature.includes('generaciones por mes') ||
-                      feature.includes('Volumen a medida') ||
-                      feature.includes('+50 productos')
-                    ) return null;
 
-                    const inPro = pro.features.includes(feature);
-                    // Enterprise incluye todo lo de Pro + las suyas
-                    const inEnterprise = inPro || enterprise.features.includes(feature);
-
-                    return (
-                      <tr key={feature} className="hover:theme-bg-hover transition-colors">
-                        <td className="px-5 py-3.5 theme-text-muted/90">{feature}</td>
-                        <td className="px-4 py-3.5 text-center">
-                          {basic.features.includes(feature) 
-                            ? <IconCheckTable /> 
-                            : <span className="theme-text-muted/50 text-sm">—</span>
-                          }
-                        </td>
-                        <td className="px-4 py-3.5 text-center">
-                          {inPro 
-                            ? <IconCheckTable /> 
-                            : <span className="theme-text-muted/50 text-sm">—</span>
-                          }
-                        </td>
-                        <td className="px-4 py-3.5 text-center">
-                          {inEnterprise 
-                            ? <IconCheckTable /> 
-                            : <span className="theme-text-muted/50 text-sm">—</span>
-                          }
-                        </td>
+            {/* Desktop: Premium Table with glassmorphism */}
+            <div className="hidden md:block">
+              <div className="relative">
+                {/* Glassmorphism container */}
+                <div className="relative backdrop-bluster-md rounded-3xl overflow-hidden
+                  bg-gradient-to-br from-white/[0.03] to-white/[0.01]
+                  border border-white/[0.08]
+                  shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)]">
+                  
+                  <table className="w-full text-[13px] font-dm-sans">
+                    <thead className="sticky top-0 z-10 bg-[var(--bg-card)]/80 backdrop-blur-xl">
+                      <tr>
+                        <th className="text-left px-6 py-5 font-bold theme-text-muted uppercase tracking-widest text-[9px] w-2/5">Característica</th>
+                        <th className="text-center px-4 py-5 font-bold theme-text-muted uppercase tracking-widest text-[9px] w-1/5">Básico</th>
+                        <th className="text-center px-4 py-5 font-bold relative">
+                          <span className="text-[#FF5C3A] uppercase tracking-widest text-[9px]">Pro</span>
+                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#FF5C3A]/50 to-transparent" />
+                        </th>
+                        <th className="text-center px-4 py-5 font-bold theme-text uppercase tracking-widest text-[9px] w-1/5">Enterprise</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {[
+                        { label: 'Productos en el probador', basic: basic.productos_max, pro: pro.productos_max, enterprise: `${enterprise.productos_max}+`, highlight: true },
+                        { label: 'Generaciones por mes', basic: basic.generaciones_mensuales.toLocaleString('es-CO'), pro: pro.generaciones_mensuales.toLocaleString('es-CO'), enterprise: `${enterprise.generaciones_mensuales.toLocaleString('es-CO')}+`, highlight: true },
+                      ].map((row, i) => (
+                        <motion.tr
+                          key={row.label}
+                          initial={{ opacity: 0 }}
+                          animate={tableInView ? { opacity: 1 } : { opacity: 0 }}
+                          transition={{ delay: i * 0.05 + 0.2 }}
+                          className="group"
+                        >
+                          <td className="px-6 py-4 font-semibold theme-text/90">{row.label}</td>
+                          <td className="px-4 py-4 text-center"><span className="font-bold theme-text-muted">{row.basic}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="font-bold text-[#FF5C3A]">{row.pro}</span></td>
+                          <td className="px-4 py-4 text-center"><span className="font-bold theme-text">{row.enterprise}</span></td>
+                        </motion.tr>
+                      ))}
+                      
+                      {allFeatures
+                        .filter(f => 
+                          f !== 'Template Bare, minimal y classical' && 
+                          f !== 'Widget embebible (script)' &&
+                          !f.includes('productos en el probador') &&
+                          !f.includes('generaciones por mes') &&
+                          !f.includes('Volumen a medida') &&
+                          !f.includes('+50 productos')
+                        )
+                        .map((feature, idx) => {
+                          const inPro = pro.features.includes(feature);
+                          const inEnterprise = inPro || enterprise.features.includes(feature);
+                          const inBasic = basic.features.includes(feature);
+                          
+                          return (
+                            <motion.tr
+                              key={feature}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={tableInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+                              transition={{ delay: idx * 0.03 + 0.3 }}
+                              className="group hover:bg-white/[0.03] transition-colors duration-200"
+                            >
+                              <td className="px-6 py-3.5 theme-text-muted/90 text-[12px]">{feature}</td>
+                              <td className="px-4 py-3.5 text-center">
+                                {inBasic ? (
+                                  <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={tableInView ? { scale: 1 } : { scale: 0 }}
+                                    transition={{ delay: idx * 0.03 + 0.4, type: 'spring', stiffness: 300 }}
+                                    className="flex justify-center"
+                                  >
+                                    <IconCheckTable />
+                                  </motion.div>
+                                ) : (
+                                  <span className="theme-text-muted/30 text-sm">—</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3.5 text-center">
+                                {inPro ? (
+                                  <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={tableInView ? { scale: 1 } : { scale: 0 }}
+                                    transition={{ delay: idx * 0.03 + 0.45, type: 'spring', stiffness: 300 }}
+                                    className="flex justify-center"
+                                  >
+                                    <IconCheckTable />
+                                  </motion.div>
+                                ) : (
+                                  <span className="theme-text-muted/30 text-sm">—</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3.5 text-center">
+                                {inEnterprise ? (
+                                  <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={tableInView ? { scale: 1 } : { scale: 0 }}
+                                    transition={{ delay: idx * 0.03 + 0.5, type: 'spring', stiffness: 300 }}
+                                    className="flex justify-center"
+                                  >
+                                    <IconCheckTable />
+                                  </motion.div>
+                                ) : (
+                                  <span className="theme-text-muted/30 text-sm">—</span>
+                                )}
+                              </td>
+                            </motion.tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile: Card-based comparison */}
+            <div className="md:hidden space-y-4">
+              {[
+                { name: 'Básico', color: 'theme-text-muted', bg: 'theme-bg-card' },
+                { name: 'Pro', color: 'text-[#FF5C3A]', bg: 'theme-bg-card' },
+                { name: 'Enterprise', color: 'theme-text', bg: 'theme-bg-card' },
+              ].map((plan, planIdx) => (
+                <motion.div
+                  key={plan.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={tableInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                  transition={{ delay: planIdx * 0.15 + 0.2 }}
+                  className="relative backdrop-blur-sm rounded-2xl overflow-hidden
+                    bg-gradient-to-br from-white/[0.04] to-white/[0.01]
+                    border border-white/[0.06]
+                    shadow-[0_4px_20px_rgba(0,0,0,0.25)]"
+                >
+                  {/* Plan header */}
+                  <div className="px-5 py-4 border-b border-white/[0.05]">
+                    <h3 className={`font-bold text-lg ${plan.color}`}>{plan.name}</h3>
+                  </div>
+                  
+                  {/* Features list */}
+                  <div className="p-5 space-y-3">
+                    {[
+                      { label: 'Productos en el probador', basic: basic.productos_max, pro: pro.productos_max, enterprise: enterprise.productos_max },
+                      { label: 'Generaciones por mes', basic: basic.generaciones_mensuales.toLocaleString('es-CO'), pro: pro.generaciones_mensuales.toLocaleString('es-CO'), enterprise: `${enterprise.generaciones_mensuales.toLocaleString('es-CO')}+` },
+                    ].map(row => (
+                      <div key={row.label} className="flex justify-between items-center">
+                        <span className="theme-text-muted/80 text-sm">{row.label}</span>
+                        <span className={`font-bold ${planIdx === 1 ? 'text-[#FF5C3A]' : 'theme-text'}`}>
+                          {planIdx === 0 ? row.basic : planIdx === 1 ? row.pro : row.enterprise}
+                        </span>
+                      </div>
+                    ))}
+                    
+                    {/* Divider */}
+                    <div className="border-t border-white/[0.05] pt-3 mt-3" />
+                    
+                    {/* Boolean features */}
+                    {allFeatures
+                      .filter(f => 
+                        f !== 'Template Bare, minimal y classical' && 
+                        f !== 'Widget embebible (script)' &&
+                        !f.includes('productos en el probador') &&
+                        !f.includes('generaciones por mes') &&
+                        !f.includes('Volumen a medida') &&
+                        !f.includes('+50 productos')
+                      )
+                      .map(feature => {
+                        const inBasic = basic.features.includes(feature);
+                        const inPro = pro.features.includes(feature);
+                        const inEnterprise = inPro || enterprise.features.includes(feature);
+                        
+                        const hasFeature = planIdx === 0 ? inBasic : planIdx === 1 ? inPro : inEnterprise;
+                        
+                        return (
+                          <div key={feature} className="flex justify-between items-center">
+                            <span className="theme-text-muted/80 text-sm pr-2">{feature}</span>
+                            {hasFeature ? (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: 'spring', stiffness: 300 }}
+                              >
+                                <IconCheckTable />
+                              </motion.div>
+                            ) : (
+                              <span className="theme-text-muted/30">—</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </motion.section>

@@ -72,9 +72,12 @@ const MONTH_DISCOUNTS_FALLBACK = [
   { months: 12, pct: 15, label: '12 meses' },
 ];
 
+const MINIMUM_MARGIN_COP = 10000;
+const FALLBACK_TRM = 4000;
+
 function formatPaypalUsd(amountCop: number, trm: number): string {
-  const safeTrm = trm > 0 ? trm : 3900;
-  return String(Math.ceil(amountCop / safeTrm));
+  const safeTrm = trm > 0 ? trm : FALLBACK_TRM;
+  return String(Math.ceil((amountCop + MINIMUM_MARGIN_COP) / safeTrm));
 }
 
 function paymentMethodLabel(method?: PaymentFlowMethod): string {

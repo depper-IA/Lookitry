@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 import { supabaseAdmin } from '../config/supabase';
-
+import { calculatePriceUSD } from '../utils/pricingCurrency';
 
 
 type PaypalOrderRecord = {
@@ -32,12 +32,12 @@ type PaypalOrderRecord = {
 
 export class PaypalService {
 
+  /**
+   * Convierte COP a USD con margen mínimo de 10,000 COP.
+   * Alias para backward compatibility - usa la función centralizada.
+   */
   convertCopToUsd(amountCOP: number, trm: number): number {
-
-    const safeTrm = trm > 0 ? trm : 3900;
-
-    return Math.ceil(amountCOP / safeTrm);
-
+    return calculatePriceUSD(amountCOP, trm);
   }
 
 

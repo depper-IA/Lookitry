@@ -9,7 +9,8 @@ import { Spinner } from '@/components/ui/Spinner';
 
 function formatPaypalUsd(amountCop: number, trm: number): string {
   const safeTrm = trm > 0 ? trm : 3900;
-  return String(Math.ceil(amountCop / safeTrm));
+  const MINIMUM_MARGIN_COP = 10000;
+  return String(Math.ceil((amountCop + MINIMUM_MARGIN_COP) / safeTrm));
 }
 
 function IconCheck() {
