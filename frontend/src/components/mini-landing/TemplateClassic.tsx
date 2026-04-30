@@ -20,11 +20,9 @@ import {
   getVisibleSocialEntries,
   useContrastTheme,
   useLandingTheme,
-  YouTubeIcon,
-  XIcon,
-  InstagramIcon,
-  FacebookIcon,
-  TikTokIcon,
+  SocialLinks,
+  FiveStars,
+  getCssColor,
 } from './shared';
 
 // ── Iconos reutilizables ───────────────────────────────────────────────────────
@@ -37,9 +35,9 @@ function SparklesIcon({ className, style }: { className?: string; style?: React.
   );
 }
 
-function StarIcon({ className, filled }: { className?: string; filled?: boolean }) {
+function StarIcon({ className, style, filled }: { className?: string; style?: React.CSSProperties; filled?: boolean }) {
   return (
-    <svg className={className} fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={className} style={style} fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
     </svg>
   );
@@ -79,9 +77,20 @@ function TruckIcon({ className }: { className?: string }) {
   );
 }
 
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+    </svg>
+  );
+}
+
+
 // ── TrustBar Component ────────────────────────────────────────────────────────
 
 function ClassicTrustBar({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
+  const theme = useLandingTheme(brand);
+  const localTheme = useContrastTheme(theme.surface, primaryColor);
   const rating = brand.rating ?? 0;
   const reviews = brand.total_reviews ?? 0;
   const hasRating = rating > 0;
@@ -89,28 +98,43 @@ function ClassicTrustBar({ brand, primaryColor }: { brand: BrandData; primaryCol
 
   // Solo mostrar stats que vengas de DB (no fake data)
   const items = [
-    ...(hasRating ? [{ value: rating.toFixed(1), label: 'Rating', icon: 'star' as const }] : []),
-    ...(hasReviews ? [{ value: `+${reviews}`, label: 'Reviews', icon: 'users' as const }] : []),
+    ...(hasRating ? [{ value: rating.toFixed(1), label: 'Valoración Global', icon: 'star' as const }] : []),
+    ...(hasReviews ? [{ value: `+${reviews}`, label: 'Clientes Satisfechos', icon: 'users' as const }] : []),
   ];
 
   // Si no hay datos reales, no mostrar TrustBar
   if (items.length === 0) return null;
 
   return (
-    <div className="flex border-b overflow-x-auto no-scrollbar" style={{ backgroundColor: '#ffffff', borderColor: '#f3f4f6' }}>
-      {items.map((item, i) => (
-        <div
-          key={i}
-          className="flex-1 min-w-[100px] flex flex-col items-center justify-center py-5 px-4 text-center border-r last:border-r-0"
-          style={{ borderColor: '#f3f4f6' }}
-        >
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-base md:text-xl font-black" style={{ color: '#111111' }}>{item.value}</span>
-            {item.icon === 'star' && <StarIcon className="w-4 h-4 text-yellow-400" filled />}
-          </div>
-          <span className="text-[10px] md:text-xs font-bold uppercase tracking-wide" style={{ color: '#6b7280' }}>{item.label}</span>
+    <div className="relative z-20 -mt-10 md:-mt-14 px-6 max-w-4xl mx-auto w-full group animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500">
+      <div className="backdrop-blur-xl border shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] rounded-[2rem] p-2 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)]" style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
+        <div className="flex flex-col sm:flex-row items-stretch rounded-[1.5rem] overflow-hidden">
+          {items.map((item, i) => (
+            <div
+              key={i}
+              className={`flex-1 flex items-center justify-center gap-5 sm:gap-6 py-6 px-4 text-center sm:text-left ${i !== items.length - 1 ? 'border-b sm:border-b-0 sm:border-r' : ''}`}
+              style={{ borderColor: theme.borderLight }}
+            >
+              <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3" style={{ backgroundColor: `${primaryColor}15` }}>
+                {item.icon === 'star' ? (
+                  <StarIcon className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: primaryColor }} filled />
+                ) : (
+                  <svg className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex flex-col items-center sm:items-start">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl sm:text-4xl font-black tracking-tighter" style={{ color: localTheme.text }}>{item.value}</span>
+                  {item.icon === 'star' && <span className="text-sm font-bold" style={{ color: localTheme.muted }}>/ 5.0</span>}
+                </div>
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] mt-1" style={{ color: localTheme.muted }}>{item.label}</span>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }
@@ -127,13 +151,6 @@ function ClassicHeader({ brand, primaryColor, secondaryColor, onScrollDown }: { 
 
   const socialLinks = brand.social_links || {};
   const entries = getVisibleSocialEntries(socialLinks);
-  const socialIcons: Record<string, React.ReactNode> = {
-    instagram: <InstagramIcon className="w-4 h-4" />,
-    facebook: <FacebookIcon className="w-4 h-4" />,
-    tiktok: <TikTokIcon className="w-4 h-4" />,
-    youtube: <YouTubeIcon className="w-4 h-4" />,
-    x: <XIcon className="w-4 h-4" />,
-  };
 
   return (
     <header
@@ -146,10 +163,10 @@ function ClassicHeader({ brand, primaryColor, secondaryColor, onScrollDown }: { 
       <div className="max-w-6xl mx-auto h-full px-4 md:px-8 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           {brand.logo ? (
-            <BrandLogo src={logoSrc} alt={brand.name} className="h-10 md:h-12 w-auto max-w-[140px] object-contain shrink-0" />
+            <BrandLogo src={logoSrc} alt={brand.name} className="h-8 md:h-10 w-auto max-w-[160px] object-contain shrink-0" />
           ) : (
             brand.show_brand_name !== false ? (
-              <span className="font-black text-lg md:text-xl uppercase tracking-tighter truncate" style={{ color: headerIsDark ? '#ffffff' : primaryColor }}>
+              <span className="font-black text-xl md:text-2xl uppercase tracking-tighter truncate" style={{ color: headerIsDark ? '#ffffff' : primaryColor }}>
                 {brand.name}
               </span>
             ) : null
@@ -168,23 +185,14 @@ function ClassicHeader({ brand, primaryColor, secondaryColor, onScrollDown }: { 
         </nav>
 
         {/* Social Icons - Desktop */}
-        {entries.length > 0 && (
-          <div className="hidden lg:flex items-center gap-2">
-            {entries.slice(0, 4).map(([platform, url]) => (
-              <a 
-                key={platform} 
-                href={url} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                aria-label={`Síguenos en ${platform}`}
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2"
-                style={{ backgroundColor: headerIsDark ? 'rgba(255,255,255,0.1)' : `${primaryColor}10`, color: headerIsDark ? '#ffffff' : primaryColor }}
-              >
-                {socialIcons[platform.toLowerCase()] ?? platform.slice(0, 1)}
-              </a>
-            ))}
-          </div>
-        )}
+        <SocialLinks
+          entries={entries}
+          limit={4}
+          className="hidden lg:flex items-center gap-2"
+          linkClassName="w-9 h-9 rounded-xl hover:scale-110"
+          iconClassName="w-4 h-4"
+          linkStyle={{ backgroundColor: headerIsDark ? 'rgba(255,255,255,0.1)' : `${primaryColor}10`, color: headerIsDark ? '#ffffff' : primaryColor }}
+        />
 
         <div className="flex items-center gap-3">
           <button
@@ -194,8 +202,8 @@ function ClassicHeader({ brand, primaryColor, secondaryColor, onScrollDown }: { 
           >
             Probar Ahora
           </button>
-          <button 
-            onClick={() => setMobileMenuOpen(v => !v)} 
+          <button
+            onClick={() => setMobileMenuOpen(v => !v)}
             className="lg:hidden p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2 rounded-lg"
             style={{ color: headerMutedColor }}
             aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
@@ -219,19 +227,14 @@ function ClassicHeader({ brand, primaryColor, secondaryColor, onScrollDown }: { 
             <button onClick={() => { document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' }); setMobileMenuOpen(false); }} aria-label="Ir a probador IA" className="text-sm font-bold uppercase tracking-widest text-left py-3 border-b" style={{ color: headerTextColor, borderColor: headerIsDark ? 'rgba(255,255,255,0.08)' : '#f9fafb' }}>Probador IA</button>
             <button onClick={() => { document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }); setMobileMenuOpen(false); }} aria-label="Ir a horarios y contacto" className="text-sm font-bold uppercase tracking-widest text-left py-3" style={{ color: headerTextColor }}>Horarios y Contacto</button>
             {entries.length > 0 && (
-              <div className="flex gap-3 pt-4 border-t" style={{ borderColor: headerIsDark ? 'rgba(255,255,255,0.08)' : '#f9fafb' }}>
-                {entries.map(([platform, url]) => (
-                  <a 
-                    key={platform} 
-                    href={url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: headerIsDark ? 'rgba(255,255,255,0.1)' : `${primaryColor}15`, color: headerIsDark ? '#ffffff' : primaryColor }}
-                  >
-                    {socialIcons[platform.toLowerCase()] ?? platform.slice(0, 1)}
-                  </a>
-                ))}
+              <div className="pt-4 border-t" style={{ borderColor: headerIsDark ? 'rgba(255,255,255,0.08)' : '#f9fafb' }}>
+                <SocialLinks
+                  entries={entries}
+                  className="gap-3"
+                  linkClassName="w-10 h-10 rounded-xl"
+                  iconClassName="w-4 h-4"
+                  linkStyle={{ backgroundColor: headerIsDark ? 'rgba(255,255,255,0.1)' : `${primaryColor}15`, color: headerIsDark ? '#ffffff' : primaryColor }}
+                />
               </div>
             )}
           </nav>
@@ -244,56 +247,57 @@ function ClassicHeader({ brand, primaryColor, secondaryColor, onScrollDown }: { 
 // ── Hero Component ────────────────────────────────────────────────────────────
 
 function ClassicHero({ brand, primaryColor, secondaryColor, onScrollDown, isPreview = false }: { brand: BrandData; primaryColor: string; secondaryColor: string; onScrollDown: () => void; isPreview?: boolean }) {
+  const theme = useLandingTheme(brand);
   const hasCover = !!brand.cover_image_url;
   const { backgroundColor: coverBaseColor, imageOpacity } = getCoverPresentation(brand, primaryColor + '10');
   const bgColor = brand.cover_bg_color || '#f9f8f6';
   const isBgDark = isDarkColor(bgColor);
   const textColor = isBgDark ? '#ffffff' : '#111111';
-  const mutedColor = bgColor && isDarkColor(bgColor) 
+  const mutedColor = bgColor && isDarkColor(bgColor)
     ? 'rgba(255,255,255,0.85)' // más opaco para fondos oscuros
     : '#6b7280'; // gray-500 para fondos claros
 
   return (
-    <section 
+    <section
       className={`relative w-full ${isPreview ? 'py-8 md:py-12' : 'py-12 md:py-20'} px-6 overflow-hidden`}
       style={{ backgroundColor: bgColor }}
     >
       {/* Decorative Elements */}
-      <div className="absolute top-0 right-0 w-64 h-64 opacity-5" style={{ 
+      <div className="absolute top-0 right-0 w-64 h-64 opacity-5" style={{
         background: `radial-gradient(circle, ${primaryColor} 0%, transparent 70%)`,
         transform: 'translate(30%, -30%)'
       }} />
-      <div className="absolute bottom-0 left-0 w-48 h-48 opacity-5" style={{ 
+      <div className="absolute bottom-0 left-0 w-48 h-48 opacity-5" style={{
         background: `radial-gradient(circle, ${secondaryColor} 0%, transparent 70%)`,
         transform: 'translate(-30%, 30%)'
       }} />
-      
+
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-10 md:gap-16 z-10">
         <div className="flex-1 text-center lg:text-left space-y-6 md:space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wider animate-in fade-in slide-in-from-bottom-2 duration-700"
-            style={{ 
+            style={{
               backgroundColor: isBgDark ? 'rgba(255,255,255,0.1)' : `${primaryColor}15`,
               borderColor: isBgDark ? 'rgba(255,255,255,0.2)' : `${primaryColor}30`,
-              color: isBgDark ? '#ffffff' : primaryColor 
+              color: isBgDark ? '#ffffff' : primaryColor
             }}
           >
             <SparklesIcon className="w-4 h-4" />
             Nueva tecnología de probador IA
           </div>
-          
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tighter uppercase italic animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150" style={{ color: textColor }}>
+
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tighter uppercase italic animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150" style={{ color: secondaryColor || textColor }}>
             {brand.name}<br />
             <span style={{ color: primaryColor }}>{brand.slogan || 'Colección 2026'}</span>
           </h1>
-          
+
           {brand.brand_description && (
             <p className="text-sm md:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300" style={{ color: mutedColor }}>
               {brand.brand_description}
             </p>
           )}
-          
+
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-500">
-            <button onClick={onScrollDown} className="w-full sm:w-auto px-10 py-4 rounded-xl text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:brightness-110 active:scale-95 transition-all" style={{ backgroundColor: primaryColor }}>Ver Productos</button>
+            <button onClick={onScrollDown} className="w-full sm:w-auto px-10 py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:brightness-110 active:scale-95 transition-all" style={{ backgroundColor: primaryColor, color: getContrastColor(primaryColor) }}>Ver Productos</button>
             <div className="flex items-center gap-1.5">
               {brand.total_reviews ? (
                 <>
@@ -304,16 +308,7 @@ function ClassicHero({ brand, primaryColor, secondaryColor, onScrollDown, isPrev
                     +{(brand.total_reviews as number).toLocaleString()}
                   </span>
                 </>
-              ) : (
-                <div className="flex -space-x-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-md" />
-                  ))}
-                  <div className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold shadow-md" style={{ backgroundColor: isBgDark ? 'rgba(255,255,255,0.15)' : '#f0edea', color: mutedColor }}>
-                    +500
-                  </div>
-                </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -341,6 +336,8 @@ function ClassicHero({ brand, primaryColor, secondaryColor, onScrollDown, isPrev
 // ── Steps Component ────────────────────────────────────────────────────────────
 
 function ClassicSteps({ brand, primaryColor, secondaryColor }: { brand: BrandData; primaryColor: string; secondaryColor: string }) {
+  const theme = useLandingTheme(brand);
+  const localTheme = useContrastTheme(theme.productsBg, primaryColor);
   const stepsDef = brand.landing_steps;
   const steps = [
     {
@@ -359,20 +356,25 @@ function ClassicSteps({ brand, primaryColor, secondaryColor }: { brand: BrandDat
       d: stepsDef?.result_desc || 'Nuestra IA renderiza la prenda sobre ti. Descarga y comparte.',
     },
   ];
-  const theme = useContrastTheme(brand.cover_bg_color);
 
   return (
-    <section className="py-16 px-6 border-b" style={{ backgroundColor: theme.bg, borderColor: theme.border }}>
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
-        {steps.map((s, i) => (
-          <div key={s.n} className="flex flex-col items-center md:items-start text-center md:text-left space-y-4 group">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl transition-transform group-hover:scale-110" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
-              {s.n}
+    <section className="pt-24 pb-16 px-6 border-b" style={{ backgroundColor: theme.productsBg, borderColor: getSmartBorderColor(theme.productsBg) }}>
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-16 space-y-3">
+          <span className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: secondaryColor || primaryColor }}>¿Cómo funciona?</span>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tighter uppercase italic leading-none" style={{ color: localTheme.text }}>En tres simples pasos</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+          {steps.map((s, i) => (
+            <div key={s.n} className="flex flex-col items-center md:items-start text-center md:text-left p-8 rounded-[2rem] border transition-all duration-500 group hover:shadow-xl hover:scale-[1.02]" style={{ backgroundColor: `${primaryColor}05`, borderColor: getSmartBorderColor(theme.productsBg) }}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl shadow-inner mb-6 transition-transform duration-500 group-hover:-translate-y-2" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
+                {s.n}
+              </div>
+              <h3 className="text-xl font-black uppercase tracking-tight italic mb-3" style={{ color: localTheme.text }}>{s.t}</h3>
+              <p className="text-sm leading-relaxed font-medium" style={{ color: localTheme.muted }}>{s.d}</p>
             </div>
-            <h3 className="text-xl font-black uppercase tracking-tight italic" style={{ color: theme.text }}>{s.t}</h3>
-            <p className="text-sm leading-relaxed font-medium" style={{ color: theme.muted }}>{s.d}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -384,107 +386,180 @@ function ClassicProducts({ products, brand, primaryColor, secondaryColor, ctaTex
   const [isLoading, setIsLoading] = useState(true);
   const { ref: sectionRef, isVisible } = useScrollReveal();
   const theme = useLandingTheme(brand);
+  const localTheme = useContrastTheme(theme.productsBg, primaryColor);
+  
+  const [filterCat, setFilterCat] = useState<string>('all');
+  const [sortOption, setSortOption] = useState<string>('featured');
 
   useEffect(() => {
-    // products es undefined durante la carga inicial
-    // products.length === 0 puede ser array vacío real o datos no cargados aún
     if (products && products.length > 0) {
       setIsLoading(false);
     }
   }, [products]);
 
-  // Si no hay productos cargados (undefined o array vacío), no renderizar nada
-  // Esto evita both: el skeleton que nunca aparece y el estado vacío sin datos
   if (!products || products.length === 0) {
-    // Opcional: podrías retornar un estado vacío con mensaje aquí
-    // Pero por ahora retornamos null para no mostrar nada hasta que carguen
     return null;
   }
 
+  const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean))) as string[];
+
+  const filteredProducts = products.filter(p => filterCat === 'all' || p.category === filterCat);
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOption === 'price_asc') return (a.price || 0) - (b.price || 0);
+    if (sortOption === 'price_desc') return (b.price || 0) - (a.price || 0);
+    if (sortOption === 'name_asc') return a.name.localeCompare(b.name);
+    return 0; // featured/newest
+  });
+
+  const gridClass = sortedProducts.length === 1
+    ? "grid grid-cols-2 max-w-lg mx-auto gap-4"
+    : sortedProducts.length === 2
+    ? "grid grid-cols-2 md:grid-cols-3 max-w-4xl mx-auto gap-4"
+    : sortedProducts.length === 3
+    ? "grid grid-cols-2 md:grid-cols-4 max-w-6xl mx-auto gap-3 sm:gap-6"
+    : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 max-w-[100rem] mx-auto gap-3 sm:gap-4 md:gap-5";
+
   return (
-    <section ref={sectionRef} id="productos" className={`py-20 px-6 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ backgroundColor: theme.productsBg }}>
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-14 space-y-3">
-          <span className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: secondaryColor || primaryColor }}>Colección de Temporada</span>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tighter uppercase italic leading-none" style={{ color: theme.text }}>Nuestros Productos</h2>
-          <p className="text-sm font-medium" style={{ color: theme.muted }}>{products.length} prendas disponibles para probar</p>
+    <section ref={sectionRef} id="productos" className={`py-20 px-4 md:px-6 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ backgroundColor: theme.productsBg }}>
+      <div className="max-w-[90rem] mx-auto">
+        <div className="text-center mb-10 space-y-3">
+          <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em]" style={{ color: secondaryColor || primaryColor }}>Colección de Temporada</span>
+          <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none" style={{ color: localTheme.text }}>Catálogo Premium</h2>
+          <p className="text-xs md:text-sm font-medium max-w-xl mx-auto" style={{ color: localTheme.muted }}>Explora nuestra colección seleccionada con tecnología de probador IA. Filtra y encuentra tu estilo ideal.</p>
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+
+        {/* Filters & Sorting */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-6 border-b" style={{ borderColor: getSmartBorderColor(theme.productsBg) }}>
+          <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 hide-scrollbar">
+            <button
+              onClick={() => setFilterCat('all')}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${filterCat === 'all' ? 'shadow-lg scale-105' : 'opacity-80 hover:opacity-100'}`}
+              style={filterCat === 'all' ? { backgroundColor: secondaryColor || primaryColor, color: getContrastColor(secondaryColor || primaryColor) } : { backgroundColor: `${primaryColor}15`, color: localTheme.text }}
+            >
+              Todos
+            </button>
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setFilterCat(cat)}
+                className={`whitespace-nowrap px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${filterCat === cat ? 'shadow-lg scale-105' : 'opacity-80 hover:opacity-100'}`}
+                style={filterCat === cat ? { backgroundColor: secondaryColor || primaryColor, color: getContrastColor(secondaryColor || primaryColor) } : { backgroundColor: `${primaryColor}15`, color: localTheme.text }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 mt-4 md:mt-0 w-full md:w-auto">
+            <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest hidden md:block" style={{ color: localTheme.muted }}>Ordenar por:</span>
+            <div className="relative w-full md:w-auto">
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                className="w-full md:w-auto appearance-none pl-4 pr-10 py-2.5 rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest outline-none transition-all cursor-pointer border"
+                style={{ backgroundColor: theme.productsBg, color: localTheme.text, borderColor: getSmartBorderColor(theme.productsBg), focusRingColor: primaryColor } as React.CSSProperties}
+              >
+                <option value="featured">Destacados</option>
+                <option value="price_asc">Menor Precio</option>
+                <option value="price_desc">Mayor Precio</option>
+                <option value="name_asc">A - Z</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3" style={{ color: localTheme.muted }}>
+                <ChevronDownIcon className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className={gridClass}>
           {isLoading ? (
             <>
-              {[0,1,2,3,4,5].map(i => <ProductSkeleton key={i} primaryColor={primaryColor} />)}
+              {[0, 1, 2, 3, 4, 5, 6, 7].map(i => <ProductSkeleton key={i} primaryColor={primaryColor} />)}
             </>
           ) : (
-            products.map(p => {
+            sortedProducts.map(p => {
               const isSelected = selectedId === p.id;
+              const prodDesc = p.short_description || p.description;
+
               return (
-                <div 
-                  key={p.id} 
-                  className={`group relative bg-white rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-2xl ${isSelected ? 'ring-2 ring-offset-2' : 'border border-gray-100'}`}
-                  style={{ 
-                    ...(isSelected ? { ringColor: primaryColor } : {}),
+                <div
+                  key={p.id}
+                  className={`group relative rounded-2xl md:rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-2xl flex flex-col ${isSelected ? 'ring-2 ring-offset-2' : 'border'}`}
+                  style={{
+                    backgroundColor: theme.cardBg,
+                    borderColor: isSelected ? undefined : theme.borderLight,
+                    ...(isSelected ? { ringColor: primaryColor } as React.CSSProperties : {}),
                     boxShadow: isSelected ? `0 25px 50px -12px ${primaryColor}25` : undefined
                   }}
                 >
                   {isSelected && (
-                    <div className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-full bg-white shadow-lg flex items-center gap-1.5">
-                      <SparklesIcon className="w-3.5 h-3.5" style={{ color: primaryColor }} />
-                      <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: primaryColor }}>Seleccionado</span>
+                    <div className="absolute top-3 right-3 md:top-4 md:right-4 z-10 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full shadow-lg flex items-center gap-1.5" style={{ backgroundColor: theme.surface }}>
+                      <SparklesIcon className="w-3 h-3 md:w-3.5 md:h-3.5" style={{ color: primaryColor }} />
+                      <span className="text-[9px] md:text-[10px] font-black uppercase tracking-wider" style={{ color: primaryColor }}>Select</span>
                     </div>
                   )}
-                  
-                  <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
-                    <ProductImage 
-                      src={p.image_url} 
-                      alt={p.name} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" 
+
+                  <div className="relative aspect-[3/4] overflow-hidden shrink-0" style={{ backgroundColor: theme.surface }}>
+                    <ProductImage
+                      src={p.image_url}
+                      alt={p.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     />
                     {p.badge && (
-                      <div className="absolute top-4 left-4">
+                      <div className="absolute top-3 left-3 md:top-4 md:left-4 z-10 scale-90 md:scale-100 origin-top-left">
                         <ProductBadge badge={p.badge} />
                       </div>
                     )}
-                    
-                    {/* CTA Button - Siempre visible en móvil, hover en desktop */}
-                    <div className="absolute bottom-5 left-4 right-4 opacity-0 lg:opacity-0 group-hover:opacity-100 lg:group-hover:opacity-100 transition-all duration-300 translate-y-2 lg:translate-y-0">
-                      <button 
-                        onClick={() => onProductClick(p.id)} 
+
+                    {/* CTA Button */}
+                    <div className="absolute inset-x-3 bottom-3 md:inset-x-4 md:bottom-4 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-0 lg:translate-y-2 lg:group-hover:translate-y-0 z-20">
+                      <button
+                        onClick={() => onProductClick(p.id)}
                         aria-label={`Probar ${p.name} con IA`}
-                        className="w-full py-3.5 bg-white text-black rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-gray-900 hover:text-white active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2"
+                        className="w-full py-2.5 md:py-3.5 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest shadow-xl hover:brightness-110 active:scale-95 transition-all"
+                        style={{ backgroundColor: theme.ctaBg, color: theme.ctaText }}
                       >
-                        {ctaText || 'Probar con IA'}
+                        {ctaText || 'Probar IA'}
                       </button>
                     </div>
-                    
-                    {/* Quick Try Button - Mobile */}
-                    <button 
-                      onClick={() => onProductClick(p.id)} 
-                      className="lg:hidden absolute bottom-5 left-4 right-4 py-3.5 bg-white text-black rounded-xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all"
-                    >
-                      {ctaText || 'Probar con IA'}
-                    </button>
                   </div>
-                  
-                  <div className="p-6 text-left">
-                    <div className="flex justify-between items-start mb-2">
-                      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: secondaryColor || primaryColor }}>{p.category}</p>
-                      {p.price && <p className="text-base font-black" style={{ color: theme.text }}>${p.price.toLocaleString('es-CO')}</p>}
+
+                  <div className="p-4 md:p-6 text-left flex flex-col flex-1">
+                    <div className="flex justify-between items-start mb-1.5 md:mb-2 gap-2">
+                      <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest truncate" style={{ color: secondaryColor || primaryColor }}>{p.category}</p>
+                      {p.price && <p className="text-sm md:text-base font-black shrink-0" style={{ color: theme.cardText }}>${p.price.toLocaleString('es-CO')}</p>}
                     </div>
-                    <h3 className="text-base font-bold uppercase tracking-tight line-clamp-1" style={{ color: theme.text }}>{p.name}</h3>
-                    {p.short_description && (
-                      <p className="text-sm mt-2 line-clamp-2 leading-relaxed font-medium" style={{ color: theme.muted }}>{p.short_description}</p>
+                    <h3 className="text-sm md:text-base font-black uppercase tracking-tight line-clamp-2 mb-2 leading-snug" style={{ color: theme.cardText }}>{p.name}</h3>
+                    
+                    {prodDesc && (
+                      <p className="hidden md:block text-[10px] md:text-xs line-clamp-2 leading-relaxed font-medium mb-3 flex-1" style={{ color: theme.cardMuted }}>{prodDesc}</p>
                     )}
+                    
                     {p.attributes && Object.keys(p.attributes).length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {Object.entries(p.attributes).slice(0, 4).map(([key, value]) => {
+                      <div className="mt-auto pt-3 md:pt-4 border-t border-gray-100 flex flex-wrap gap-1.5 md:gap-2">
+                        {Object.entries(p.attributes).map(([key, value]) => {
                           if (!value || (Array.isArray(value) && value.length === 0)) return null;
-                          const displayValue = Array.isArray(value) ? value.slice(0, 3).join(', ') : String(value);
+                          const isColor = key.toLowerCase() === 'color' || key.toLowerCase() === 'colores';
+                          const displayValue = Array.isArray(value) ? value.join(', ') : String(value);
+                          
+                          if (isColor && typeof value === 'string') {
+                             const cssColor = getCssColor(value);
+                             if (cssColor) {
+                               return (
+                                 <div key={key} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border" style={{ borderColor: theme.borderLight, backgroundColor: theme.surface }} title={displayValue}>
+                                   <div className="w-3 h-3 md:w-4 md:h-4 rounded-full border border-black/10 shadow-sm" style={{ backgroundColor: cssColor }} />
+                                   <span className="text-[9px] md:text-[10px] font-bold capitalize" style={{ color: theme.cardMuted }}>{displayValue}</span>
+                                 </div>
+                               );
+                             }
+                          }
+                          
                           return (
-                            <span key={key} className="text-xs px-2.5 py-1 rounded-full font-bold" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
-                              {displayValue}
-                            </span>
+                            <div key={key} className="inline-flex items-center text-[9px] md:text-[10px] px-2 py-1 rounded-md font-bold border transition-colors" style={{ backgroundColor: `${primaryColor}08`, color: theme.cardText, borderColor: theme.borderLight }}>
+                              <span className="opacity-70 mr-1 capitalize">{key}:</span>
+                              <span className="truncate max-w-[50px] md:max-w-[80px]">{displayValue}</span>
+                            </div>
                           );
                         })}
                       </div>
@@ -495,6 +570,13 @@ function ClassicProducts({ products, brand, primaryColor, secondaryColor, ctaTex
             })
           )}
         </div>
+        
+        {sortedProducts.length === 0 && !isLoading && (
+          <div className="text-center py-20">
+            <p className="text-gray-500 font-medium">No se encontraron productos en esta categoría.</p>
+            <button onClick={() => setFilterCat('all')} className="mt-4 text-xs font-bold uppercase tracking-widest underline" style={{ color: primaryColor }}>Ver todos</button>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -503,6 +585,8 @@ function ClassicProducts({ products, brand, primaryColor, secondaryColor, ctaTex
 // ── Info Section Component ────────────────────────────────────────────────────
 
 function ClassicInfo({ brand, primaryColor, secondaryColor }: { brand: BrandData; primaryColor: string; secondaryColor: string }) {
+  const theme = useLandingTheme(brand);
+  const localTheme = useContrastTheme(theme.productsBg, primaryColor);
   const DAYS_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   let scheduleEntries: [string, string][] = [];
   try {
@@ -510,7 +594,7 @@ function ClassicInfo({ brand, primaryColor, secondaryColor }: { brand: BrandData
     if (raw && typeof raw === 'object') {
       scheduleEntries = DAYS_ORDER.filter(d => raw[d] || raw[d.toLowerCase()]).map(d => [d, (raw[d] || raw[d.toLowerCase()]) as string]);
     }
-  } catch (e) {}
+  } catch (e) { }
 
   const hasLocationBlock = !!brand.city_display || !!brand.national_shipping;
   const hasRatings = typeof brand.rating === 'number' || typeof brand.total_reviews === 'number';
@@ -518,9 +602,9 @@ function ClassicInfo({ brand, primaryColor, secondaryColor }: { brand: BrandData
   if (!hasLocationBlock && scheduleEntries.length === 0 && !hasRatings) return null;
 
   return (
-    <section className="py-16 px-6 border-b" style={{ backgroundColor: '#ffffff', borderColor: '#f3f4f6' }}>
+    <section className="py-16 px-6 border-b" style={{ backgroundColor: theme.productsBg, borderColor: getSmartBorderColor(theme.productsBg) }}>
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16">
           {/* Ubicación */}
           {hasLocationBlock && (
             <div className="space-y-6">
@@ -530,13 +614,13 @@ function ClassicInfo({ brand, primaryColor, secondaryColor }: { brand: BrandData
                 </div>
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-widest" style={{ color: secondaryColor || primaryColor }}>Encuéntranos</h4>
-                  <p className="text-lg font-black italic" style={{ color: '#111111' }}>{brand.city_display}</p>
+                  <p className="text-lg font-black italic" style={{ color: localTheme.text }}>{brand.city_display}</p>
                 </div>
               </div>
               {brand.national_shipping && (
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl w-fit" style={{ backgroundColor: '#ecfdf5' }}>
-                  <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#10b981' }} />
-                  <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#059669' }}>Envíos Nacionales</span>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl w-fit" style={{ backgroundColor: `${primaryColor}15` }}>
+                  <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                  <span className="text-xs font-bold uppercase tracking-widest" style={{ color: localTheme.text }}>Envíos Nacionales</span>
                 </div>
               )}
             </div>
@@ -555,9 +639,9 @@ function ClassicInfo({ brand, primaryColor, secondaryColor }: { brand: BrandData
               </div>
               <div className="space-y-3">
                 {scheduleEntries.slice(0, 5).map(([d, h]) => (
-                  <div key={d} className="flex justify-between items-center py-2 border-b text-sm" style={{ borderColor: '#f3f4f6' }}>
-                    <span className="font-bold uppercase" style={{ color: '#6b7280' }}>{d}</span>
-                    <span className={`font-black ${h.toLowerCase().includes('cerrado') ? 'italic text-red-500' : ''}`} style={{ color: h.toLowerCase().includes('cerrado') ? undefined : '#111111' }}>{h}</span>
+                  <div key={d} className="flex justify-between items-center py-2 border-b text-sm" style={{ borderColor: getSmartBorderColor(theme.productsBg) }}>
+                    <span className="font-bold uppercase" style={{ color: localTheme.muted }}>{d}</span>
+                    <span className={`font-black ${h.toLowerCase().includes('cerrado') ? 'italic' : ''}`} style={{ color: h.toLowerCase().includes('cerrado') ? '#ef4444' : localTheme.text }}>{h}</span>
                   </div>
                 ))}
               </div>
@@ -568,18 +652,16 @@ function ClassicInfo({ brand, primaryColor, secondaryColor }: { brand: BrandData
           {hasRatings && (
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ backgroundColor: '#fef3c7' }}>
-                  <StarIcon className="w-7 h-7 text-yellow-400" filled />
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${primaryColor}15` }}>
+                  <StarIcon className="w-7 h-7" style={{ color: primaryColor }} filled />
                 </div>
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-widest" style={{ color: secondaryColor || primaryColor }}>Valoraciones</h4>
-                  <p className="text-3xl font-black" style={{ color: '#111111' }}>{brand.rating?.toFixed(1) || '4.9'}</p>
+                  <p className="text-3xl font-black" style={{ color: localTheme.text }}>{brand.rating?.toFixed(1) ?? '—'}</p>
                 </div>
               </div>
-              <div className="flex gap-1 text-yellow-400">
-                {[1, 2, 3, 4, 5].map(i => <StarIcon key={i} className="w-5 h-5" filled={i <= Math.round(brand.rating || 0)} />)}
-              </div>
-              <p className="text-sm font-bold" style={{ color: '#6b7280' }}>{(brand.total_reviews || 0).toLocaleString()} reseñas de clientes</p>
+              <FiveStars rating={brand.rating} />
+              <p className="text-sm font-bold" style={{ color: localTheme.muted }}>{(brand.total_reviews || 0).toLocaleString()} reseñas de clientes</p>
             </div>
           )}
         </div>
@@ -613,121 +695,83 @@ function ClassicAbout({ brand, primaryColor }: { brand: BrandData; primaryColor:
 // ── Footer Component ────────────────────────────────────────────────────────────
 
 function ClassicFooter({ brand, primaryColor, secondaryColor, footerUrl }: { brand: BrandData; primaryColor: string; secondaryColor: string; footerUrl?: string }) {
-  const socialIcons: Record<string, React.ReactNode> = {
-    instagram: <InstagramIcon className="w-5 h-5" />,
-    facebook: <FacebookIcon className="w-5 h-5" />,
-    tiktok: <TikTokIcon className="w-5 h-5" />,
-    youtube: <YouTubeIcon className="w-5 h-5" />,
-    x: <XIcon className="w-5 h-5" />,
-  };
+
   const entries = getVisibleSocialEntries(brand.social_links);
-  const theme = useContrastTheme('#ffffff');
+  const theme = useLandingTheme(brand);
+  const localTheme = useContrastTheme(theme.productsBg, primaryColor);
 
   return (
-    <footer id="contacto" className="pt-24 pb-12 px-6 border-t" style={{ backgroundColor: '#ffffff', borderColor: '#f3f4f6' }}>
+    <footer id="contacto" className="pt-24 pb-12 px-6 border-t" style={{ backgroundColor: theme.productsBg, borderColor: getSmartBorderColor(theme.productsBg) }}>
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 mb-20">
           {/* Brand Column */}
-          <div className="lg:col-span-5 space-y-8">
+          <div className="space-y-8">
             <div className="flex items-center gap-4">
               {brand.logo ? (
-                <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-10 object-contain" />
+                <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-14 md:h-16 object-contain" />
               ) : (
-                <span className="font-black text-2xl uppercase italic" style={{ color: primaryColor }}>{brand.name}</span>
+                <span className="font-black text-2xl md:text-3xl uppercase italic" style={{ color: primaryColor }}>{brand.name}</span>
               )}
             </div>
-            
-            {brand.brand_description && (
-              <p className="text-base leading-relaxed font-medium italic max-w-sm" style={{ color: '#6b7280' }}>
-                &quot;{brand.brand_description}&quot;
-              </p>
-            )}
 
             {/* Social Icons */}
-            {entries.length > 0 && (
-              <div className="flex gap-3">
-                {entries.map(([platform, url]) => (
-                  <a 
-                    key={platform} 
-                    href={url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    aria-label={`Síguenos en ${platform}`}
-                    className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2"
-                    style={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', color: '#6b7280' }}
-                  >
-                    {socialIcons[platform.toLowerCase()] || platform.slice(0, 1)}
-                  </a>
-                ))}
-              </div>
-            )}
+            <SocialLinks
+              entries={entries}
+              className="gap-3"
+              linkClassName="w-12 h-12 rounded-xl hover:scale-110"
+              iconClassName="w-5 h-5"
+              linkStyle={{ backgroundColor: `${primaryColor}10`, border: `1px solid ${getSmartBorderColor(theme.productsBg)}`, color: localTheme.text }}
+            />
 
-            {/* Location */}
-            {(brand.city_display || brand.national_shipping) && (
-              <div className="space-y-2">
-                {brand.city_display && (
-                  <p className="text-sm font-bold uppercase tracking-widest" style={{ color: secondaryColor || primaryColor }}>{brand.city_display}</p>
-                )}
-                {brand.national_shipping && (
-                  <p className="text-sm font-bold uppercase tracking-widest text-emerald-600">Envíos nacionales activos</p>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Quick Links / Contact */}
-          <div className="lg:col-span-4 space-y-8">
+          <div className="space-y-8">
             <h4 className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: secondaryColor || primaryColor }}>Contacto Rápido</h4>
+            
+            {/* Contact Info */}
+            {(brand.whatsapp_number || brand.support_email) && (
+              <div className="space-y-3 mb-6">
+                {brand.whatsapp_number && (
+                  <p className="text-sm font-medium" style={{ color: localTheme.text }}>WhatsApp: {brand.whatsapp_number}</p>
+                )}
+                {brand.support_email && (
+                  <p className="text-sm font-medium" style={{ color: localTheme.text }}>Email: {brand.support_email}</p>
+                )}
+              </div>
+            )}
             <div className="space-y-4">
-              <button 
+              <button
                 onClick={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })}
-                className="block text-sm font-medium hover:opacity-70 transition-opacity text-left" style={{ color: '#374151' }}
+                className="block text-sm font-medium hover:opacity-70 transition-opacity text-left" style={{ color: localTheme.text }}
               >
                 Ver Catálogo
               </button>
-              <button 
+              <button
                 onClick={() => document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' })}
-                className="block text-sm font-medium hover:opacity-70 transition-opacity text-left" style={{ color: '#374151' }}
+                className="block text-sm font-medium hover:opacity-70 transition-opacity text-left" style={{ color: localTheme.text }}
               >
                 Probador Virtual IA
               </button>
-              <button 
+              <button
                 onClick={() => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' })}
-                className="block text-sm font-medium hover:opacity-70 transition-opacity text-left" style={{ color: '#374151' }}
+                className="block text-sm font-medium hover:opacity-70 transition-opacity text-left" style={{ color: localTheme.text }}
               >
                 Horarios y Ubicación
               </button>
             </div>
           </div>
 
-          {/* Rating Column */}
-          {(typeof brand.rating === 'number' || typeof brand.total_reviews === 'number') && (
-            <div className="lg:col-span-3 space-y-6">
-              <h4 className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: '#9ca3af' }}>Valoraciones</h4>
-              <div className="space-y-3">
-                <div className="flex gap-1 text-yellow-400">
-                  {[1, 2, 3, 4, 5].map(i => <StarIcon key={i} className="w-5 h-5" filled={i <= Math.round(brand.rating || 0)} />)}
-                </div>
-                {typeof brand.rating === 'number' && (
-                  <p className="text-4xl font-black tracking-tight" style={{ color: '#111111' }}>{brand.rating.toFixed(1)}</p>
-                )}
-                {typeof brand.total_reviews === 'number' && (
-                  <p className="text-xs font-bold uppercase" style={{ color: '#9ca3af' }}>
-                    {brand.total_reviews.toLocaleString()} Reseñas
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderColor: '#f3f4f6' }}>
-          <p className="text-xs font-bold uppercase tracking-widest text-center md:text-left" style={{ color: '#9ca3af' }}>
-            © 2026 {brand.name}
+        <div className="pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderColor: getSmartBorderColor(theme.productsBg) }}>
+          <p className="text-xs font-bold uppercase tracking-widest text-center md:text-left" style={{ color: localTheme.muted }}>
+            © {new Date().getFullYear()} {brand.name}
           </p>
-          <p className="text-xs font-bold uppercase tracking-widest text-center md:text-right" style={{ color: '#9ca3af' }}>
-            Powered by <a href={footerUrl || 'https://lookitry.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-opacity" style={{ color: '#111111' }}>Look<span style={{ color: '#FF5C3A' }}>itry</span> IA</a>
+          <p className="text-xs font-bold uppercase tracking-widest text-center md:text-right" style={{ color: localTheme.muted }}>
+            Powered by <a href={footerUrl || 'https://lookitry.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-opacity" style={{ color: localTheme.text }}>Look<span style={{ color: '#FF5C3A' }}>itry</span> IA</a>
           </p>
         </div>
       </div>
@@ -741,6 +785,7 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPrevi
   const theme = useLandingTheme(brand);
   const primary = theme.primary;
   const secondary = theme.secondary;
+  const tryOnTheme = useContrastTheme(brand.widget_bg_color || '#0a0a0a', primary);
   const [selectedId, setSelectedId] = useState<string | null>(products?.[0]?.id || null);
 
   const handleProductClick = (id: string) => {
@@ -749,15 +794,15 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPrevi
   };
 
   return (
-    <div 
+    <div
       className={`min-h-screen bg-white flex flex-col // TODO: landing_font from brand config - pending API support
-      ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500 ${isPreview ? 'p-0 h-auto' : ''}`} 
-      style={{ 
-        '--primary': primary, 
-        '--secondary': secondary, 
-        '--secondary-10': secondary + '1a', 
-        '--secondary-20': secondary + '33', 
-        '--secondary-05': secondary + '0d' 
+      ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500 ${isPreview ? 'p-0 h-auto' : ''}`}
+      style={{
+        '--primary': primary,
+        '--secondary': secondary,
+        '--secondary-10': secondary + '1a',
+        '--secondary-20': secondary + '33',
+        '--secondary-05': secondary + '0d'
       } as React.CSSProperties}
     >
       <ClassicHeader brand={brand} primaryColor={primary} secondaryColor={secondary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
@@ -776,14 +821,14 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPrevi
               <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
               Probador Virtual Premium
             </span>
-            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase italic leading-none">Experiencia Inteligente</h2>
-            <p className="text-sm text-white/60 font-medium">Selecciona un producto y pruébatelo virtualmente con nuestra IA</p>
+            <h2 className="text-3xl md:text-4xl font-black tracking-tighter uppercase italic leading-none" style={{ color: tryOnTheme.text }}>Experiencia Inteligente</h2>
+            <p className="text-sm font-medium" style={{ color: tryOnTheme.muted }}>Selecciona un producto y pruébatelo virtualmente con nuestra IA</p>
           </div>
           <div className={isPreview ? 'overflow-hidden' : 'rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/5'}>
-            <TryOnWidget 
-              brandSlug={brandSlug} 
-              isEmbed={true} 
-              initialProductId={selectedId} 
+            <TryOnWidget
+              brandSlug={brandSlug}
+              isEmbed={true}
+              initialProductId={selectedId}
               forceLayout="bare"
               lockProductSelection={true}
             />
