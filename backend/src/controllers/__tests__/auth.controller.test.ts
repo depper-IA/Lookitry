@@ -93,10 +93,16 @@ jest.mock('../../services/notification.service', () => ({
 }));
 
 
-
 import { AuthController } from '../auth.controller';
 
-
+function buildReq(body: Record<string, unknown>, options: { ip?: string; authorization?: string } = {}) {
+  return {
+    body,
+    headers: options.authorization ? { authorization: options.authorization } : {},
+    ip: options.ip || '127.0.0.1',
+    cookies: {},
+  } as unknown as Request;
+}
 
 function buildRes() {
 

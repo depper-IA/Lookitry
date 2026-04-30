@@ -1,5 +1,27 @@
 # CHANGELOG — Lookitry
 
+## 30 de Abril 2026 — Ejecución del Plan de Limpieza de Proyecto
+
+### Acciones Realizadas
+
+**1. Limpieza de Scripts (Zephyr):**
+- Se movieron scripts temporales antiguos a `/scripts/archive/` (excepto `_deploy_now.py` y `update_agent_status.sh`).
+- Consolidación de archivos `docker-compose*.yml` en `/docker/archive/`.
+
+**2. Limpieza de Tests (Kira):**
+- Tests legacy movidos a `backend/src/controllers/__tests__/archive/`.
+- Auditoría de controladores Admin: No se requiere refactorización (todos < 600 líneas).
+
+**3. Limpieza de Brain Vault (Lina):**
+- Archivos JSON de backup movidos a `Lookitry_Brain_Vault/Cerebro/Backup/`.
+- Documentación de diseño antigua de `RunPod` movida a `archive/` (RunPod ya no es parte del stack).
+- Actualización de `PRD.md`, `TECH_STACK.md` y `REGLAS_IMPORTANTES.md` para reflejar nueva estructura de directorios.
+
+### Estado Actual
+Estructura de proyectos y documentación sincronizada. Proyecto limpio.
+
+---
+
 ## 29 de Abril 2026 — Fix Revocación de Sesiones JWT para Administradores
 
 ### Problema

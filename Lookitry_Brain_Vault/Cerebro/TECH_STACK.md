@@ -858,6 +858,22 @@ El sistema de blog automatizado está refactorizado en **3 workflows independien
 ```
 LOOKITRY/
 ├── frontend/                    # Next.js 14 (App Router)
+├── backend/                     # Express API
+├── scripts/                     # Deploy y scripts actuales
+│   └── archive/                 # Scripts temporales obsoletos
+├── docker/                      # Docker configurations
+│   └── archive/                 # Docker-compose antiguos
+├── lookitry-woocommerce/        # Plugin WordPress/WooCommerce
+├── Lookitry_Brain_Vault/        # Cerebro y Documentación
+│   ├── Cerebro/
+│   │   ├── Archive/             # Backups antiguos de Cerebro (JSON)
+│   │   └── Docs/design/         # Documentación de diseño
+│   │       └── archive/         # RunPod y docs obsoletas
+├── DATABASE_MIGRATIONS.md       # Migraciones de DB
+└── REGLAS_IMPORTANTES.md        # Reglas operativas
+```
+LOOKITRY/
+├── frontend/                    # Next.js 14 (App Router)
 │   ├── src/app/                # Páginas y API routes
 │   │   ├── (public routes)     # /, /login, /register, /planes, /blog, etc.
 │   │   ├── dashboard/          # Dashboard de marca

@@ -87,10 +87,19 @@ jest.mock('../../config/supabase', () => ({
           select: jest.fn().mockReturnValue({
             eq: jest.fn().mockReturnValue({
               single: brandSingle,
+              maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
             }),
           }),
           update: jest.fn().mockReturnValue({
             eq: jest.fn().mockResolvedValue({ error: null }),
+          }),
+        };
+      }
+
+      if (table === 'slugs') {
+        return {
+          select: jest.fn().mockReturnValue({
+            maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
           }),
         };
       }
