@@ -182,6 +182,11 @@ export default function LandingNav({
 
   const productLinks = [
     {
+      title: 'Probador',
+      desc: 'Pruébalo antes de comprar.',
+      href: 'https://lookitry.com/probador-virtual'
+    },
+    {
       title: 'Mini-Landing Pro',
       desc: 'Tu tienda online pro sin código.',
       href: '/mini-landing'

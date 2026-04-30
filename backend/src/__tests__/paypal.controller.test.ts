@@ -189,7 +189,8 @@ describe('PaypalController.getCheckoutUrl', () => {
       4000,
       expect.stringMatching(/^PAYPAL-visitor_/),
       expect.stringContaining('/onboarding-post-pago?ref='),
-      'https://lookitry.com/checkout'
+      'https://lookitry.com/checkout',
+      'BASIC'
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(next).not.toHaveBeenCalled();
