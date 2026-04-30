@@ -87,7 +87,8 @@ Cada vez que se realice cualquier cambio en el codigo, la IA DEBE documentarlo e
 ### 3.1 Modelo Default
 
 ```yaml
-modelo_default: "minimax/MiniMax-M2.7"
+modelo_default: "gemini-3.1-pro-preview-customtools"
+fallback: "minimax/MiniMax-M2.7"
 
 regla: "Todos los agentes usan este modelo por defecto"
 excepcion: "Solo usar otro modelo si AGENTS.md lo especifica explícitamente"
@@ -421,17 +422,6 @@ Los agentes ya NO necesitan notificar por Telegram cuando completan tareas. Esta
 - **VPS IP**: 31.220.18.39
 - **SSH**: root@31.220.18.39:22
 - **Contraseña**: Travis18456916#
-
-### n8n Task Runner - PROBLEMA CONOCIDO
-- **Síntoma**: n8n consume 600-800% CPU en loop infinito
-- **Error**: "Task runner connection attempt failed: invalid or expired grant token"
-- **Causa**: Task Runner embebido en n8n v2.x no se puede deshabilitar fácilmente
-- **Solución temporal**: Limitar CPU con docker update
-- **Solución permanente**: Revisar workflows que usan Code nodes
-
-### Workflows Activos Identificados (problemáticos):
-- ID: FIdLhfE1md7YYU2c - AI Marketing Report
-- ID: 7D9mWt3zJePCco3Q - Scrape Business Emails
 
 ### MCPs Configurados
 - **n8n**: https://n8n.wilkiedevs.com (API key en config)

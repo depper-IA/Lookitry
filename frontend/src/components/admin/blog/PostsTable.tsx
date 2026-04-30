@@ -141,15 +141,16 @@ export default function PostsTable({
                     >
                       <ExternalLink className="w-4 h-4" />
                     </motion.a>
-                    <motion.link
-                      variants={actionBtnVariants}
-                      whileHover="hover"
-                      whileTap="tap"
-                      href={`/admin/blog/${post.id}`}
-                      className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-zinc-500 hover:text-indigo-500 hover:bg-indigo-500/10 transition-all border border-transparent dark:hover:border-indigo-500/20 shadow-sm"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </motion.link>
+                    <Link href={`/admin/blog/${post.id}`} passHref legacyBehavior>
+                      <motion.a
+                        variants={actionBtnVariants}
+                        whileHover="hover"
+                        whileTap="tap"
+                        className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-zinc-500 hover:text-indigo-500 hover:bg-indigo-500/10 transition-all border border-transparent dark:hover:border-indigo-500/20 shadow-sm"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </motion.a>
+                    </Link>
                     <motion.button
                       variants={actionBtnVariants}
                       whileHover="hover"
