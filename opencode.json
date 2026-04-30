@@ -21,18 +21,24 @@
         "timeout": 300000
       }
     },
-    "gemini": {
-      "npm": "@ai-sdk/google",
+    "google-vertex": {
       "options": {
-        "baseURL": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "project": "gen-lang-client-0591001769",
+        "location": "global",
         "timeout": 120000
       },
       "models": {
-        "gemini-2.0-flash": {
-          "name": "gemini-2.0-flash"
+        "gemini-2.5-pro-preview-05-06": {
+          "name": "gemini-2.5-pro-preview-05-06"
         },
-        "gemini-embedding": {
-          "name": "gemini-embedding-exp"
+        "gemini-2.5-flash-preview-04-17": {
+          "name": "gemini-2.5-flash-preview-04-17"
+        },
+        "gemini-3.1-pro-preview": {
+          "name": "gemini-3.1-pro-preview"
+        },
+        "gemini-3.1-flash-lite-preview": {
+          "name": "gemini-3.1-flash-lite-preview"
         }
       }
     },
@@ -135,6 +141,21 @@
     "Lookitry_Brain_Vault/Cerebro/Agentes/Skills.md"
   ],
   "mcp": {
+    "gcp-billing": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "tsx",
+        "C:\\Users\\Matt\\.opencode\\mcp-servers\\gcp-billing-mcp\\src\\index.ts"
+      ],
+      "enabled": true,
+      "environment": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "C:\\Users\\Matt\\SamWilkiedevs\\gen-lang-client-0591001769-ae3a3fcdff91.json",
+        "GCP_PROJECT_ID": "gen-lang-client-0591001769",
+        "GCP_BILLING_ACCOUNT": "019FAA-8D59F0-78D13F"
+      }
+    },
     "TestSprite": {
       "type": "local",
       "command": [
