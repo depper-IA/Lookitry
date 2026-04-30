@@ -1,0 +1,74 @@
+# openspec config — lookitry
+schema: spec-driven
+
+context: |
+  Tech stack: Next.js 14 (frontend), Express 4.18.2 (backend), Supabase (PostgreSQL + pgvector)
+  Architecture: Monorepo (frontend/, backend/, Lookitry_Brain_Vault/), 23 backend services, 40+ frontend components
+  Testing: vitest (FE), jest (BE), @playwright/test (E2E), fast-check (property-based)
+  Style: eslint + prettier, TypeScript strict mode
+
+strict_tdd: true
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected modules/packages
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group tasks by phase (infrastructure, implementation, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing code patterns and conventions
+    - Load relevant coding skills for the project stack
+  verify:
+    - Run tests if test infrastructure exists
+    - Compare implementation against every spec scenario
+  archive:
+    - Warn before merging destructive deltas (large removals)
+
+testing:
+  strict_tdd: true
+  detected: "2026-04-30"
+
+  test_runner:
+    frontend:
+      command: "npm run test --workspace=frontend"
+      framework: vitest
+    backend:
+      command: "npm run test --workspace=backend"
+      framework: jest
+
+  test_layers:
+    frontend:
+      unit: true
+      integration: true
+      e2e: true
+    backend:
+      unit: true
+      integration: true
+      e2e: false
+
+  coverage:
+    frontend:
+      available: true
+      command: "vitest --coverage"
+    backend:
+      available: true
+      command: "jest --coverage"
+
+  quality_tools:
+    linter:
+      frontend: "next lint"
+      backend: "eslint . --ext .ts"
+    type_checker:
+      frontend: "tsc --noEmit"
+      backend: "tsc --noEmit"
+    formatter:
+      frontend: "prettier --write"
+      backend: "prettier --write"

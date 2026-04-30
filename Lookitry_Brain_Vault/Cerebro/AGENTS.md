@@ -7,7 +7,7 @@
 ## MODELO DEFAULT
 
 ```yaml
-modelo_default: "gemini-3.1-pro-preview-customtools"
+modelo_default: "gemini-3.1-pro-preview"
 fallback: "minimax/MiniMax-M2.7"
 
 regla: "Todos los agentes usan este modelo por defecto"

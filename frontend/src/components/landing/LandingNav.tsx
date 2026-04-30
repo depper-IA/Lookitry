@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, Layout, Zap, Terminal, User, LogOut, ArrowRight } from 'lucide-react';
+import { Menu, X, ChevronDown, Zap, User, LogOut, ArrowRight, Layers, ShoppingBag, Code2 } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { usePromoBanner } from '@/contexts/PromoBannerContext';
 import { usePublicSession } from '@/hooks/usePublicSession';
@@ -66,6 +66,9 @@ const staggerContainer = {
 // Precio por defecto del trial (20000 COP) — se actualiza dinámicamente si hay campaña activa
 const DEFAULT_TRIAL_PRICE_COP = 20000;
 
+// Placeholder — se actualiza desde pricing config real
+const DEFAULT_BASIC_PRICE_COP = 180000;
+
 interface LandingNavProps {
   currency?: 'COP' | 'USD';
   onCurrencyChange?: (c: 'COP' | 'USD') => void;
@@ -86,6 +89,7 @@ export default function LandingNav({
   const { session } = usePublicSession();
   const { toggleTheme, isDark } = useTheme();
   const [trialPriceCOP, setTrialPriceCOP] = useState(DEFAULT_TRIAL_PRICE_COP);
+  const [basicPriceCOP, setBasicPriceCOP] = useState(DEFAULT_BASIC_PRICE_COP);
   const [trm, setTrm] = useState(3900);
 
   const [trialDataFetched, setTrialDataFetched] = useState(false);
@@ -112,14 +116,19 @@ export default function LandingNav({
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
     Promise.all([
       fetch(`${apiUrl}/api/trial/status`).then(r => r.ok ? r.json() : null),
-      fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null)
+      fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
+      fetch(`${apiUrl}/api/pricing-config`).then(r => r.ok ? r.json() : null)
     ])
-      .then(([trialData, paySettings]) => {
+      .then(([trialData, paySettings, pricingData]) => {
         if (trialData?.priceCOP && Number(trialData.priceCOP) > 0) {
           setTrialPriceCOP(Number(trialData.priceCOP));
         }
         if (paySettings?.trm && Number(paySettings.trm) > 0) {
           setTrm(Number(paySettings.trm));
+        }
+        // Extraer precio basic desde pricing config
+        if (pricingData?.basic?.precio_mensual_cop) {
+          setBasicPriceCOP(Number(pricingData.basic.precio_mensual_cop));
         }
       })
       .catch(() => { });
@@ -278,49 +287,51 @@ export default function LandingNav({
               {megaMenuOpen && (
                 <div
                   onMouseLeave={() => setMegaMenuOpen(false)}
-                  className="absolute left-1/2 top-full mt-4 -translate-x-1/2 w-[90vw] max-w-[680px] rounded-2xl border border-black/10 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-[#111] animate-in fade-in slide-in-from-top-2 duration-200"
+                  className="absolute left-1/2 top-full mt-4 -translate-x-1/2 w-[90vw] max-w-[720px] rounded-2xl border border-black/10 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-[#111] animate-in fade-in slide-in-from-top-2 duration-200"
                   role="menu"
                   style={{ left: '50%' }}
                 >
-                  <div className="flex gap-8">
-                    {/* LEFT: Links column — max ~300px */}
-                    <div className="w-[300px] shrink-0 space-y-5">
-                      {/* Productos */}
-                      <div>
-                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999] mb-3 pb-2 border-b border-black/5 dark:border-white/5">Productos</p>
-                        <div className="space-y-0.5">
-                          {productLinks.map((prod, index) => (
+                  <div className="flex gap-6">
+                    {/* LEFT: Products grid — 2 columns, centered content */}
+                    <div className="flex-1 min-w-0 flex flex-col items-center">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999] mb-3 pb-2 border-b border-black/5 dark:border-white/5 text-center w-full">Productos</p>
+                      <div className="grid grid-cols-2 gap-2 flex-1 place-items-center w-full">
+                        {productLinks.map((prod, index) => {
+                          const icons = [Layers, Zap, ShoppingBag, Code2];
+                          const colors = [
+                            { bg: 'bg-[#FF5C3A]/10', text: 'text-[#FF5C3A]', hover: 'hover:bg-[#FF5C3A]/15' },
+                            { bg: 'bg-blue-500/10', text: 'text-blue-500', hover: 'hover:bg-blue-500/15' },
+                            { bg: 'bg-purple-500/10', text: 'text-purple-500', hover: 'hover:bg-purple-500/15' },
+                            { bg: 'bg-emerald-500/10', text: 'text-emerald-500', hover: 'hover:bg-emerald-500/15' }
+                          ];
+                          const IconComponent = icons[index];
+                          const colorScheme = colors[index];
+                          return (
                             <Link
                               key={prod.title}
                               href={prod.href}
                               onClick={() => setMegaMenuOpen(false)}
-                              className="nav-product-link group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-[#FF5C3A] focus-visible:outline-offset-1"
+                              className={`nav-product-link group flex flex-col items-center text-center gap-2 rounded-xl px-3 py-3 transition-all duration-200 ${colorScheme.bg}/30 ${colorScheme.hover} focus-visible:outline-2 focus-visible:outline-[#FF5C3A] focus-visible:outline-offset-1`}
                               role="menuitem"
                             >
-                              <div className={`nav-product-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-all duration-200 ${index === 0 ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]' :
-                                  index === 1 ? 'bg-blue-500/10 text-blue-500' :
-                                    'bg-emerald-500/10 text-emerald-500'
-                                }`}>
-                                {index === 0 ? <Layout size={15} /> :
-                                  index === 1 ? <Zap size={15} /> :
-                                    <Terminal size={15} />}
+                              <div className={`nav-product-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colorScheme.bg} ${colorScheme.text} transition-all duration-200 group-hover:scale-110`}>
+                                <IconComponent size={18} />
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <h3 className="nav-product-title text-[11px] font-semibold text-[#0a0a0a] dark:text-white transition-colors duration-200 flex items-center gap-1.5 group-hover:text-[#FF5C3A]">
+                              <div className="min-w-0">
+                                <h3 className="nav-product-title text-[11px] font-semibold text-[#0a0a0a] dark:text-white transition-colors duration-200 group-hover:text-[#FF5C3A]">
                                   {prod.title}
-                                  <ArrowRight size={10} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 text-[#FF5C3A]" />
                                 </h3>
-                                <p className="text-[9px] font-medium text-[#999] truncate">{prod.desc}</p>
+                                <p className="text-[9px] font-medium text-[#999] mt-0.5">{prod.desc}</p>
                               </div>
                             </Link>
-                          ))}
-                        </div>
+                          );
+                        })}
                       </div>
 
-                      {/* Empresa */}
-                      <div>
-                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999]/60 mb-3 pb-2 border-b border-black/5 dark:border-white/5">Empresa</p>
-                        <div className="flex gap-4 px-2.5 py-1">
+                      {/* Empresa links — below products */}
+                      <div className="mt-auto pt-4 border-t border-black/5 dark:border-white/5 w-full">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999]/60 mb-2 text-center w-full">Empresa</p>
+                        <div className="flex gap-3 justify-center">
                           {companyLinks.map((link) => (
                             <Link
                               key={link.title}
@@ -336,34 +347,55 @@ export default function LandingNav({
                       </div>
                     </div>
 
-                    {/* RIGHT: Image + CTA — ~260px */}
-                    <div className="w-[260px] shrink-0 flex flex-col">
-                      {/* Horizontal image */}
-                      <div className="nav-promo-image relative w-full aspect-[4/3] rounded-xl overflow-hidden group">
-                        <Link href="/trial-checkout" onClick={() => setMegaMenuOpen(false)} className="block absolute inset-0 z-10" aria-label="Pruébalo gratis" />
+                    {/* RIGHT: Promo card with improved CTA — ~280px */}
+                    <div className="w-[280px] shrink-0">
+                      <div className="nav-promo-image relative w-full aspect-[3/4] rounded-2xl overflow-hidden group">
                         <Image
                           src="/images/rebeca.webp"
                           alt="Lookitry - Transforma tu tienda con IA"
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                          sizes="260px"
+                          className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
+                          sizes="(max-width: 768px) 280px, 33vw"
+                          quality={90}
                         />
-                      </div>
+                        {/* Gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                      {/* CTA — small, subtle, below image */}
-                      <div className="mt-3 flex flex-col items-center text-center gap-2">
-                        <div>
-                          <p className="text-[10px] font-semibold text-[#0a0a0a] dark:text-white leading-tight">Transforma tu tienda</p>
-                          <p className="text-[9px] text-[#999]">Sin tarjeta requerida</p>
+                        {/* CTA content — overlay on image */}
+                        <div className="absolute inset-0 flex flex-col justify-end p-5">
+                          <div className="mb-3">
+                            <p className="text-[13px] font-bold text-white leading-tight">Transforma tu e-commerce</p>
+                            <p className="text-[10px] text-white/70 mt-1">con IA en 30 segundos</p>
+                          </div>
+
+                          <div className="space-y-1.5 mb-4">
+                            {['Sin tarjeta de crédito', 'Configuración en 2 min', 'Soporte en español'].map((item) => (
+                              <div key={item} className="flex items-center gap-2">
+                                <svg className="w-3.5 h-3.5 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span className="text-[9px] text-white/80 font-medium">{item}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <Link
+                            href="/trial-checkout"
+                            onClick={() => setMegaMenuOpen(false)}
+                            className="nav-cta-btn group flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] px-5 py-3 text-[11px] font-bold text-white transition-all duration-300 hover:bg-[#e54d2d] hover:shadow-lg hover:shadow-[#FF5C3A]/30 active:scale-[0.98]"
+                          >
+                            Trial 7 días
+                            <ArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-1" />
+                          </Link>
+
+                          <Link
+                            href="/planes"
+                            onClick={() => setMegaMenuOpen(false)}
+                            className="mt-2 text-center text-[9px] font-medium text-white/50 hover:text-white/70 transition-colors duration-200"
+                          >
+                            Planes desde {formatPrice(basicPriceCOP, currency, trm)}
+                          </Link>
                         </div>
-                        <Link
-                          href="/trial-checkout"
-                          onClick={() => setMegaMenuOpen(false)}
-                          className="nav-cta-btn inline-flex items-center gap-1.5 rounded-full bg-[#FF5C3A] px-4 py-2 text-[10px] font-semibold text-white transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                          Pruébalo gratis
-                          <ArrowRight size={11} />
-                        </Link>
                       </div>
                     </div>
                   </div>
