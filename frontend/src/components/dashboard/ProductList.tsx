@@ -206,7 +206,11 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(({
   return (
     <motion.div
       ref={ref}
+      layout
       variants={productVariants}
+      initial="hidden"
+      animate="visible"
+      exit="hidden"
       whileHover={{ scale: 1.02, y: -5, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)', borderColor: 'rgba(255, 92, 58, 0.4)' }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       className="group relative cursor-pointer"
@@ -614,9 +618,14 @@ interface GridViewProps extends Omit<ProductListProps, 'viewMode'> {
 }
 
 const GridView = React.forwardRef<HTMLDivElement, GridViewProps>(({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget, variant }, ref) => {
-   return (
+  const isThumbnails = variant === 'thumbnails';
+  const gridClass = isThumbnails
+    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5'
+    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
+
+  return (
     <motion.div ref={ref} variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-      className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`}>
+      className={`grid ${gridClass}`}>
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
           <ProductCard
@@ -648,9 +657,9 @@ export function ProductList({ products, viewMode = 'grid', onEdit, onDelete, wid
         </div>
       )}
       <AnimatePresence mode="popLayout">
-        {viewMode === 'list' && <ListView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} />}
-        {viewMode === 'thumbnails' && <GridView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} variant="thumbnails" />}
-        {viewMode === 'grid' && <GridView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} variant="grid" />}
+        {viewMode === 'list' && <ListView key="list" products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} />}
+        {viewMode === 'thumbnails' && <GridView key="thumbnails" products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} variant="thumbnails" />}
+        {viewMode === 'grid' && <GridView key="grid" products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} variant="grid" />}
       </AnimatePresence>
     </div>
   );
