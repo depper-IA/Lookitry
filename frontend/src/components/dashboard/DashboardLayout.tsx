@@ -97,7 +97,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
       <div className={`flex h-[80px] flex-shrink-0 items-center bg-[var(--bg-sidebar)] px-6 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
         <Link href="/dashboard" className="group flex items-center gap-3">
           <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-lg transition-all duration-500 group-hover:border-[#FF5C3A]/50">
-            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain transition-transform duration-500 group-hover:rotate-12" priority />
+                <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain transition-transform duration-500 group-hover:rotate-12" style={{ width: 'auto', height: 'auto' }} priority />
           </div>
           {!isCollapsed && (
             <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="block shrink-0 text-lg leading-none lg:hidden xl:block">
@@ -229,7 +229,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
           <div className="flex h-[80px] flex-shrink-0 items-center justify-between px-6 bg-[#0a0a0a]">
             <Link href="/dashboard" className="group flex items-center gap-3">
               <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-lg transition-all duration-500 group-hover:border-[#FF5C3A]/50">
-                <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain transition-transform duration-500 group-hover:rotate-12" priority />
+            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain transition-transform duration-500 group-hover:rotate-12" style={{ width: 'auto', height: 'auto' }} priority />
               </div>
               <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="block shrink-0 text-lg leading-none">
                 <LookitryLogoText className="text-white" />
@@ -374,7 +374,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
             </button>
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 dark:bg-black/5">
               <Image src="/Lookitry-logo-dark.svg" alt="L" width={18} height={18} className="object-contain dark:hidden" priority />
-              <Image src="/logo.svg" alt="L" width={18} height={18} className="object-contain hidden dark:block" priority />
+              <Image src="/logo.svg" alt="L" width={18} height={18} className="object-contain hidden dark:block" style={{ width: 'auto', height: 'auto' }} priority />
             </div>
           </div>
 

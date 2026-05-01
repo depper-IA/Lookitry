@@ -427,7 +427,7 @@ export default function ProductsPage() {
             <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
               {/* Mobile & Laptop Tab Switcher */}
-              <div className="xl:hidden mb-6">
+              <div className={`mb-6 ${viewMode === 'list' ? '2xl:hidden' : 'lg:hidden'}`}>
                 <div className="flex items-center bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-1 max-w-md">
                   <button
                     onClick={() => setActiveTab('catalog')}
@@ -455,10 +455,14 @@ export default function ProductsPage() {
               </div>
 
               {/* Split Layout */}
-              <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-8 xl:gap-12">
+              <div className={`grid grid-cols-1 gap-8 ${
+                viewMode === 'list'
+                  ? '2xl:grid-cols-[minmax(0,1fr)_380px] 2xl:gap-12'
+                  : 'lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_380px] lg:gap-10 xl:gap-12'
+              }`}>
 
                 {/* Left: Catalog Panel */}
-                <div className={`min-w-0 ${activeTab === 'widget' ? 'hidden xl:block' : ''}`}>
+                <div className={`min-w-0 ${activeTab === 'widget' ? (viewMode === 'list' ? 'hidden 2xl:block' : 'hidden lg:block') : ''}`}>
                   {/* Category Filter */}
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-4">
@@ -511,7 +515,7 @@ export default function ProductsPage() {
                 </div>
 
                 {/* Right: Widget Panel */}
-                <div className={`space-y-8 ${activeTab === 'catalog' ? 'hidden xl:block' : ''}`}>
+                <div className={`space-y-8 ${activeTab === 'catalog' ? (viewMode === 'list' ? 'hidden 2xl:block' : 'hidden lg:block') : ''}`}>
                   {/* Widget Playlist */}
                   <div className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-6 shadow-xl">
                     <WidgetPlaylist
