@@ -4,7 +4,11 @@ const isProd = process.env.NODE_ENV === 'production';
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  eslint: { ignoreDuringBuilds: false },
+  // Eliminado eslint config porque ya no es soportado
+  // Configuración de turbopack en la raíz
+  turbopack: {
+    root: 'C:\\Users\\Matt\\Lookitry',
+  },
   // Optimización: no transpilar para older browsers (ES6+ para navegadores modernos)
   // Elimina polyfills innecesarios como Array.prototype.at, flat, Object.fromEntries, etc.
   experimental: {

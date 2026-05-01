@@ -17,7 +17,7 @@ function normalizeOrigin(raw?: string | null): string | null {
 /**
  * middleware.ts — Protección de rutas en el Edge Runtime de Next.js
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = request.headers.get('host') || '';
   const token = request.cookies.get('token')?.value;
