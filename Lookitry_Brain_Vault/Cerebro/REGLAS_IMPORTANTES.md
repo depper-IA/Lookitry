@@ -87,7 +87,7 @@ Cada vez que se realice cualquier cambio en el codigo, la IA DEBE documentarlo e
 ### 3.1 Modelo Default
 
 ```yaml
-modelo_default: "gemini-3.1-pro-preview-customtools"
+modelo_default: "gemini-1.5-pro-customtools"
 fallback: "minimax/MiniMax-M2.7"
 
 regla: "Todos los agentes usan este modelo por defecto"

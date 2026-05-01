@@ -23,15 +23,14 @@
 
 
 import { FeedbackService, SimilarFeedback } from './feedback.service';
-
+import { vertexService } from './vertex.service';
 
 
 const feedbackService = new FeedbackService();
 
 
-
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY ?? '';
-
+const VERTEX_EMBEDDING_ENABLED = !!process.env.VERTEX_PROJECT_ID; // Use Vertex if configured
 const EMBEDDING_MODEL = 'gemini-embedding-001';
 
 const CHAT_MODEL = 'gemini-2.0-flash';
