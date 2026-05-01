@@ -14,6 +14,9 @@ import { getPricingConfig } from '@/lib/pricing';
 import { WidgetPlaylist } from '@/components/dashboard/WidgetPlaylist';
 import { WidgetPreview } from '@/components/dashboard/WidgetPreview';
 import { CategoryFilter } from '@/components/dashboard/CategoryFilter';
+import { useViewMode } from '@/hooks/useViewMode';
+import { useProductSearch } from '@/hooks/useProductSearch';
+import { useProductMutations } from '@/hooks/useProductMutations';
 import {
   Package,
   Plus,
@@ -59,56 +62,77 @@ const itemVariants = {
 };
 
 export default function ProductsPage() {
+  // View mode from hook
+  const [viewMode, handleViewMode] = useViewMode();
+
+  // Product state
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLimit, setProductsLimit] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; id?: string }>({ isOpen: false });
-  const [showExternalIdField, setShowExternalIdField] = useState(false);
   const [brandId, setBrandId] = useState<string | undefined>();
   const [brandPlan, setBrandPlan] = useState<BrandPlan>('BASIC');
 
+  // Form modal state
+  const [showForm, setShowForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [showExternalIdField, setShowExternalIdField] = useState(false);
+
   // Widget state
-  const [widgetProducts, setWidgetProducts] = useState<Product[]>([]);
   const [widgetProductIds, setWidgetProductIds] = useState<string[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string>('Todas');
-  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [isSavingWidget, setIsSavingWidget] = useState(false);
 
   // Mobile tabs
   const [activeTab, setActiveTab] = useState<'catalog' | 'widget'>('catalog');
 
-  // Pagination
-  const PRODUCTS_PER_PAGE = 6;
+  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 6;
 
-  // Get widget limit from plan
+  // Use product search hook
+  const {
+    filteredProducts,
+    paginatedProducts,
+    totalPages,
+    goToPage,
+  } = useProductSearch({
+    products,
+    categoryFilter,
+  });
+
+  // Use product mutations hook
+  const {
+    confirmDelete,
+    openDeleteConfirm,
+    closeDeleteConfirm,
+    confirmDeleteProduct,
+  } = useProductMutations({
+    onProductCreated: () => {
+      loadProducts();
+      window.dispatchEvent(new CustomEvent('onboarding:step-complete', { detail: { step: 3 } }));
+    },
+    onProductDeleted: () => {
+      loadProducts();
+    },
+    onError: (message) => setError(message),
+  });
+
+  // Widget state (kept locally for complex logic)
+  const [widgetProducts, setWidgetProducts] = useState<Product[]>([]);
+  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isSavingWidget, setIsSavingWidget] = useState(false);
+
+  // Computed
   const widgetMaxProducts = PLAN_WIDGET_LIMITS[brandPlan] ?? 5;
   const canAddToWidget = widgetProducts.length < widgetMaxProducts;
-
-  // Categories from products
   const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
 
-  // Filtered products for catalog
-  const filteredProducts = categoryFilter === 'Todas'
-    ? products
-    : products.filter((p) => p.category === categoryFilter);
-
-  // Paginated products
-  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * PRODUCTS_PER_PAGE,
-    currentPage * PRODUCTS_PER_PAGE
-  );
-
-  // Reset to page 1 when filter changes
+  // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [categoryFilter]);
 
+  // Load brand info
   useEffect(() => {
     brandsService.getCurrentBrand().then((brand) => {
       setBrandId(brand.id);
@@ -117,13 +141,13 @@ export default function ProductsPage() {
     }).catch(console.error);
   }, []);
 
+  // Load products on mount
   useEffect(() => {
-    const saved = localStorage.getItem('products-view-mode') as ViewMode | null;
-    if (saved && ['grid', 'thumbnails', 'list'].includes(saved)) setViewMode(saved);
     loadProducts();
     loadBrandIntegrationState();
   }, []);
 
+  // Load widget products
   const loadWidgetProducts = useCallback(async () => {
     try {
       const products = await productsService.getWidgetProducts();
@@ -132,19 +156,13 @@ export default function ProductsPage() {
       console.error('Error loading widget products:', err);
       setWidgetProducts([]);
     }
-  }, []); // No deps - stable callback
+  }, []);
 
-// Load widget products only on INITIAL brand load
   useEffect(() => {
     if (brandId) {
       loadWidgetProducts();
     }
   }, [brandId, loadWidgetProducts]);
-
-  const handleViewMode = (mode: ViewMode) => {
-    setViewMode(mode);
-    localStorage.setItem('products-view-mode', mode);
-  };
 
   const loadProducts = async () => {
     try {
@@ -179,13 +197,13 @@ export default function ProductsPage() {
     }
   };
 
+  // Form handlers
   const handleCreateProduct = async (data: CreateProductDto) => {
     try {
       await productsService.createProduct(data);
       await loadProducts();
       setShowForm(false);
       setError(null);
-
       window.dispatchEvent(new CustomEvent('onboarding:step-complete', { detail: { step: 3 } }));
     } catch (err: any) {
       if (err.response?.status === 403) {
@@ -211,27 +229,79 @@ export default function ProductsPage() {
     }
   };
 
+  // Delete handlers
   const handleDeleteProduct = async (productId: string) => {
-    // Remove from widget if present
     if (widgetProductIds.includes(productId)) {
       const newWidgetIds = widgetProductIds.filter((id) => id !== productId);
       setWidgetProductIds(newWidgetIds);
       await debouncedSaveWidget(newWidgetIds);
     }
-    setConfirmDelete({ isOpen: true, id: productId });
+    openDeleteConfirm(productId);
   };
 
-  const handleConfirmDelete = async () => {
-    const productId = confirmDelete.id;
-    if (!productId) return;
-    try {
-      await productsService.deleteProduct(productId);
-      await loadProducts();
-      setError(null);
-      setConfirmDelete({ isOpen: false });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al eliminar producto');
+  // Widget handlers
+  const handleAddToWidget = (productId: string) => {
+    if (widgetProductIds.length >= widgetMaxProducts) {
+      setError(`Máximo ${widgetMaxProducts} productos en widget (plan ${brandPlan})`);
+      return;
     }
+    if (widgetProductIds.includes(productId)) return;
+
+    const productToAdd = products.find(p => p.id === productId);
+    const newWidgetIds = [...widgetProductIds, productId];
+    setWidgetProductIds(newWidgetIds);
+
+    if (productToAdd) {
+      setWidgetProducts(prev => [...prev, productToAdd]);
+    }
+
+    debouncedSaveWidget(newWidgetIds);
+  };
+
+  const handleRemoveFromWidget = (productId: string) => {
+    const newWidgetIds = widgetProductIds.filter((id) => id !== productId);
+    setWidgetProductIds(newWidgetIds);
+    setWidgetProducts(prev => prev.filter(p => p.id !== productId));
+    debouncedSaveWidget(newWidgetIds);
+  };
+
+  const handleReorderWidget = (newOrder: string[]) => {
+    setWidgetProductIds(newOrder);
+    setWidgetProducts(prev => {
+      const reordered = newOrder
+        .map(id => prev.find(p => p.id === id))
+        .filter((p): p is Product => p !== undefined);
+      return reordered;
+    });
+    debouncedSaveWidget(newOrder);
+  };
+
+  const debouncedSaveWidget = useCallback((productIds: string[]) => {
+    setSaveTimeout(prev => {
+      if (prev) clearTimeout(prev);
+      return null;
+    });
+
+    const timeout = setTimeout(async () => {
+      setIsSavingWidget(true);
+      try {
+        const response = await productsService.updateWidgetProducts(productIds);
+        if (response.removedIds && response.removedIds.length > 0) {
+          setError(`${response.removedIds.length} producto(s) fueron removido(s) del widget (no pertenecían a tu marca)`);
+        }
+      } catch (err) {
+        console.error('Error saving widget:', err);
+        setError('Error al guardar widget');
+      } finally {
+        setIsSavingWidget(false);
+        setSaveTimeout(null);
+      }
+    }, 500);
+  }, []);
+
+  const handleClearWidget = async () => {
+    setWidgetProductIds([]);
+    await debouncedSaveWidget([]);
   };
 
   const handleNewProduct = () => {
@@ -243,83 +313,10 @@ export default function ProductsPage() {
     setShowForm(true);
   };
 
-  // Widget handlers
-const handleAddToWidget = (productId: string) => {
-    if (widgetProductIds.length >= widgetMaxProducts) {
-      setError(`Máximo ${widgetMaxProducts} productos en widget (plan ${brandPlan})`);
-      return;
-    }
-    if (widgetProductIds.includes(productId)) return;
-
-    // Find the product from catalog and add it directly to widget state
-    const productToAdd = products.find(p => p.id === productId);
-
-    const newWidgetIds = [...widgetProductIds, productId];
-    setWidgetProductIds(newWidgetIds);
-
-    // Add product directly to local widget state (no backend call needed)
-    if (productToAdd) {
-      setWidgetProducts(prev => [...prev, productToAdd]);
-    }
-
-    debouncedSaveWidget(newWidgetIds); // Don't await - debounced
-  };
-
-  const handleRemoveFromWidget = (productId: string) => {
-    const newWidgetIds = widgetProductIds.filter((id) => id !== productId);
-    setWidgetProductIds(newWidgetIds);
-    
-    // Remove from local state directly
-    setWidgetProducts(prev => prev.filter(p => p.id !== productId));
-    
-    debouncedSaveWidget(newWidgetIds); // Don't await - debounced
-  };
-
-  const handleReorderWidget = (newOrder: string[]) => {
-    setWidgetProductIds(newOrder);
-
-    // Reorder local products to match new order
-    setWidgetProducts(prev => {
-      const reordered = newOrder
-        .map(id => prev.find(p => p.id === id))
-        .filter((p): p is Product => p !== undefined);
-      return reordered;
-    });
-
-    debouncedSaveWidget(newOrder); // Don't await - debounced
-  };
-
-  const debouncedSaveWidget = useCallback((productIds: string[]) => {
-    // Clear any existing timeout using functional update
-    setSaveTimeout(prev => {
-      if (prev) clearTimeout(prev);
-      return null;
-    });
-
-    const timeout = setTimeout(async () => {
-      setIsSavingWidget(true);
-      try {
-        const response = await productsService.updateWidgetProducts(productIds);
-        // Si el backend removió productos (no pertenecían a la marca), mostrar aviso
-        if (response.removedIds && response.removedIds.length > 0) {
-          setError(`${response.removedIds.length} producto(s) fueron removido(s) del widget (no pertenecían a tu marca)`);
-        }
-      } catch (err) {
-        console.error('Error saving widget:', err);
-        setError('Error al guardar widget');
-      } finally {
-        setIsSavingWidget(false);
-        setSaveTimeout(null); // Clear after execution
-      }
-    }, 500);
-
-    // Note: We don't need to setSaveTimeout here because the clear inside setTimeout handles it
-  }, []); // Empty deps - stable callback
-
-  const handleClearWidget = async () => {
-    setWidgetProductIds([]);
-    await debouncedSaveWidget([]);
-  };
+  // Save view mode to localStorage
+  useEffect(() => {
+    localStorage.setItem('products-view-mode', viewMode);
+  }, [viewMode]);
 
   if (isLoading) {
     return (
@@ -446,9 +443,7 @@ const handleAddToWidget = (productId: string) => {
                   <button
                     onClick={() => setActiveTab('catalog')}
                     className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
-                      activeTab === 'catalog'
-                        ? 'bg-[#FF5C3A] text-white'
-                        : 'text-[var(--text-muted)]'
+                      activeTab === 'catalog' ? 'bg-[#FF5C3A] text-white' : 'text-[var(--text-muted)]'
                     }`}
                   >
                     Catálogo
@@ -456,9 +451,7 @@ const handleAddToWidget = (productId: string) => {
                   <button
                     onClick={() => setActiveTab('widget')}
                     className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                      activeTab === 'widget'
-                        ? 'bg-[#FF5C3A] text-white'
-                        : 'text-[var(--text-muted)]'
+                      activeTab === 'widget' ? 'bg-[#FF5C3A] text-white' : 'text-[var(--text-muted)]'
                     }`}
                   >
                     <Star size={14} />
@@ -486,7 +479,7 @@ const handleAddToWidget = (productId: string) => {
                     />
                     {categoryFilter !== 'Todas' && (
                       <button
-                        onClick={() => setCategoryFilter('Todas')}
+                        onClick={() => setCategoryFilter('Toutes')}
                         className="text-[10px] font-semibold text-[#FF5C3A] hover:underline"
                       >
                         Limpiar filtro
@@ -494,7 +487,7 @@ const handleAddToWidget = (productId: string) => {
                     )}
                   </div>
 
-<ProductList
+                  <ProductList
                     products={paginatedProducts}
                     viewMode={viewMode}
                     onEdit={(p) => { setEditingProduct(p); setShowForm(true); }}
@@ -508,7 +501,7 @@ const handleAddToWidget = (productId: string) => {
                   {totalPages > 1 && (
                     <div className="flex items-center justify-center gap-2 mt-8 py-4">
                       <button
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        onClick={() => goToPage(currentPage - 1)}
                         disabled={currentPage === 1}
                         className="p-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--card-border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[#FF5C3A]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         aria-label="Página anterior"
@@ -520,7 +513,7 @@ const handleAddToWidget = (productId: string) => {
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                           <button
                             key={page}
-                            onClick={() => setCurrentPage(page)}
+                            onClick={() => goToPage(page)}
                             className={`w-9 h-9 rounded-xl text-xs font-bold transition-all ${
                               currentPage === page
                                 ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20'
@@ -533,7 +526,7 @@ const handleAddToWidget = (productId: string) => {
                       </div>
 
                       <button
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        onClick={() => goToPage(currentPage + 1)}
                         disabled={currentPage === totalPages}
                         className="p-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--card-border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[#FF5C3A]/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         aria-label="Página siguiente"
@@ -606,8 +599,8 @@ const handleAddToWidget = (productId: string) => {
 
       <ConfirmModal
         isOpen={confirmDelete.isOpen}
-        onClose={() => setConfirmDelete({ isOpen: false })}
-        onConfirm={handleConfirmDelete}
+        onClose={closeDeleteConfirm}
+        onConfirm={confirmDeleteProduct}
         title="Eliminar Producto"
         message="¿Estás seguro de que deseas eliminar este producto de tu catálogo? Esta acción retirará el producto del probador virtual permanentemente."
       />
