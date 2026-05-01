@@ -85,15 +85,14 @@ export default function ProductsPage() {
   // Mobile tabs
   const [activeTab, setActiveTab] = useState<'catalog' | 'widget'>('catalog');
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const PRODUCTS_PER_PAGE = 6;
-
   // Use product search hook
   const {
     filteredProducts,
     paginatedProducts,
+    currentPage,
     totalPages,
+    sortBy,
+    setSortBy,
     goToPage,
   } = useProductSearch({
     products,
@@ -129,7 +128,7 @@ export default function ProductsPage() {
 
   // Reset page when filter changes
   useEffect(() => {
-    setCurrentPage(1);
+    goToPage(1);
   }, [categoryFilter]);
 
   // Load brand info
@@ -479,7 +478,7 @@ export default function ProductsPage() {
                     />
                     {categoryFilter !== 'Todas' && (
                       <button
-                        onClick={() => setCategoryFilter('Toutes')}
+                        onClick={() => setCategoryFilter('Todas')}
                         className="text-[10px] font-semibold text-[#FF5C3A] hover:underline"
                       >
                         Limpiar filtro
@@ -495,6 +494,8 @@ export default function ProductsPage() {
                     widgetProductIds={widgetProductIds}
                     onAddToWidget={handleAddToWidget}
                     canAddToWidget={canAddToWidget}
+                    sortBy={sortBy}
+                    onSortChange={setSortBy}
                   />
 
                   {/* Pagination */}

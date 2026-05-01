@@ -17,6 +17,57 @@ import {
 } from 'lucide-react';
 
 import { ImageWithFallback } from './ImageWithFallback';
+import type { SortOption } from '@/hooks/useProductSearch';
+import { ArrowUpDown, ChevronDown } from 'lucide-react';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SORT COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'name_asc', label: 'Nombre A-Z' },
+  { value: 'name_desc', label: 'Nombre Z-A' },
+  { value: 'created_desc', label: 'Más Recientes' },
+];
+
+function SortDropdown({ sortBy, onSortChange }: { sortBy: SortOption; onSortChange: (s: SortOption) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const current = SORT_OPTIONS.find(o => o.value === sortBy)?.label || 'Nombre A-Z';
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)] text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[#FF5C3A]/30 transition-all"
+      >
+        <ArrowUpDown size={12} />
+        <span>Ordenar</span>
+        <span className="text-[#FF5C3A]">{current}</span>
+        <ChevronDown size={12} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 mt-2 z-20 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-xl overflow-hidden min-w-[160px]">
+            {SORT_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => { onSortChange(option.value); setIsOpen(false); }}
+                className={`w-full text-left px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition-all ${
+                  sortBy === option.value
+                    ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--card-bg-elevated)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -116,111 +167,6 @@ export function ActiveIndicator() {
 // ═══════════════════════════════════════════════════════════════════════════════
 // HELPER COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
-
-interface ActionButtonProps {
-  icon: React.ReactNode;
-  label: string;
-  onClick: (e: React.MouseEvent) => void;
-  variant?: 'default' | 'danger' | 'accent' | 'success';
-  disabled?: boolean;
-}
-
-function ActionButton({ icon, label, onClick, variant = 'default', disabled }: ActionButtonProps) {
-  const styles = {
-    default: { bg: 'rgba(255,255,255,0.15)', border: 'rgba(255,255,255,0.2)' },
-    danger: { bg: 'rgba(239, 68, 68, 0.8)', border: 'rgba(239, 68, 68, 0.4)' },
-    accent: { bg: 'rgba(255,255,255,0.15)', border: 'rgba(255,92,58,0.3)' },
-    success: { bg: 'rgba(16, 185, 129, 0.3)', border: 'rgba(16, 185, 129, 0.3)' },
-  }[variant];
-
-  return (
-    <motion.button
-      whileHover={{ scale: variant === 'danger' ? 1.1 : 1.05, color: variant === 'danger' ? '#FF3A5C' : undefined }}
-      whileTap={{ scale: 0.95 }}
-      onClick={onClick}
-      disabled={disabled}
-      className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-wider text-white backdrop-blur-md transition-all disabled:opacity-50"
-      style={{ background: styles.bg, border: `1px solid ${styles.border}` }}
-    >
-      {icon} {label}
-    </motion.button>
-  );
-}
-
-function PriceDisplay({ price, category }: { price: number; category: string }) {
-  const unit = CATEGORY_UNITS[category.toLowerCase()] || CATEGORY_UNITS.default;
-  return (
-    <div className="text-right shrink-0 min-w-0">
-      {unit && <p className="text-[9px] mb-0.5 font-medium opacity-60" style={{ color: 'var(--text-secondary)' }}>{unit}</p>}
-      <p className="text-xl font-extrabold tracking-tight" style={{ color: DESIGN.accent }}>
-        ${price.toLocaleString('es-CO')}
-      </p>
-    </div>
-  );
-}
-
-function TechSpecs({ attributes }: { attributes: Record<string, any> }) {
-  if (!attributes || Object.keys(attributes).length === 0) return null;
-  const parts: string[] = [];
-  if (attributes.material) parts.push(attributes.material);
-  if (attributes.medida_pulgadas) parts.push(attributes.medida_pulgadas + '"');
-  if (attributes.marca) parts.push(attributes.marca);
-  if (parts.length === 0) return null;
-  return <p className="text-[10px] font-medium opacity-70 truncate" style={{ color: 'var(--text-secondary)' }}>{parts.join(' · ')}</p>;
-}
-
-function AttributePills({ attributes }: { attributes: Record<string, any> }) {
-  if (!attributes || Object.keys(attributes).length === 0) return null;
-  const pills: { label: string; color: string }[] = [];
-  if (attributes.finish) pills.push({ label: attributes.finish, color: '#8B5CF6' });
-  if (attributes.peso) pills.push({ label: attributes.peso + 'kg', color: '#06B6D4' });
-  if (attributes.tallas && Array.isArray(attributes.tallas)) pills.push({ label: attributes.tallas.slice(0, 3).join(', '), color: '#F59E0B' });
-  if (attributes.color && !attributes.material) pills.push({ label: attributes.color, color: '#EC4899' });
-  if (pills.length === 0) return null;
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {pills.map((pill, i) => (
-        <span key={i} className="px-2 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide" style={{ background: `${pill.color}15`, color: pill.color, border: `1px solid ${pill.color}30` }}>
-          {pill.label}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-interface MobileActionsProps {
-  isInWidget?: boolean;
-  canAddToWidget?: boolean;
-  onAddToWidget?: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-}
-
-function MobileActions({ isInWidget, canAddToWidget, onAddToWidget, onEdit, onDelete }: MobileActionsProps) {
-  return (
-    <div className="flex items-center gap-2 mt-3 lg:hidden">
-      {onAddToWidget && (
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => onAddToWidget()}
-          disabled={isInWidget || !canAddToWidget}
-          className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold uppercase transition-all ${
-            isInWidget ? 'bg-emerald-500/15 text-emerald-400' : canAddToWidget === false ? 'bg-gray-500/10 text-gray-400' : 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
-          }`}
-        >
-          {isInWidget ? <Check size={12} /> : <Plus size={12} />}
-          {isInWidget ? 'En Widget' : 'Agregar'}
-        </motion.button>
-      )}
-      <motion.button whileTap={{ scale: 0.95 }} onClick={onEdit} className="px-3 py-2 rounded-lg" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
-        <Edit3 size={14} style={{ color: 'var(--text-primary)' }} />
-      </motion.button>
-      <motion.button whileTap={{ scale: 0.95 }} onClick={onDelete} className="px-3 py-2 rounded-lg" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.2)' }}>
-        <Trash2 size={14} style={{ color: DESIGN.danger }} />
-      </motion.button>
-    </div>
-  );
-}
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -386,7 +332,7 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(({
       </div>
     </motion.div>
   );
-}
+});
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HELPER COMPONENTS
@@ -659,6 +605,8 @@ interface ProductListProps {
   widgetProductIds?: string[];
   onAddToWidget?: (productId: string) => void;
   canAddToWidget?: boolean;
+  sortBy?: SortOption;
+  onSortChange?: (sort: SortOption) => void;
 }
 
 interface GridViewProps extends Omit<ProductListProps, 'viewMode'> {
@@ -670,7 +618,7 @@ const GridView = React.forwardRef<HTMLDivElement, GridViewProps>(({ products, on
     <motion.div ref={ref} variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
       className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`}>
       <AnimatePresence mode="popLayout">
-        {products.map((product) => (
+        {products.map((product, idx) => (
           <ProductCard
             key={product.id}
             product={product}
@@ -687,9 +635,18 @@ const GridView = React.forwardRef<HTMLDivElement, GridViewProps>(({ products, on
   );
 });
 
-export function ProductList({ products, viewMode = 'grid', onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: ProductListProps) {
+export function ProductList({ products, viewMode = 'grid', onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget, sortBy, onSortChange }: ProductListProps) {
   return (
     <div className="pb-20">
+      {/* Always-visible action bar for thumbnail view */}
+      {viewMode === 'thumbnails' && onSortChange && (
+        <div className="flex items-center justify-between mb-6 px-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+            {products.length} producto{products.length !== 1 ? 's' : ''}
+          </span>
+          <SortDropdown sortBy={sortBy || 'name_asc'} onSortChange={onSortChange} />
+        </div>
+      )}
       <AnimatePresence mode="popLayout">
         {viewMode === 'list' && <ListView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} />}
         {viewMode === 'thumbnails' && <GridView products={products} onEdit={onEdit} onDelete={onDelete} widgetProductIds={widgetProductIds} onAddToWidget={onAddToWidget} canAddToWidget={canAddToWidget} variant="thumbnails" />}
