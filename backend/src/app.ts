@@ -37,6 +37,7 @@ import leadsPublicRoutes from './routes/leadsPublic.routes';
 import apiRouter from './routes/index';
 
 import queueRoutes from './routes/queue.routes';
+import vertexRoutes from './routes/vertex.routes';
 
 
 
@@ -196,7 +197,8 @@ app.post('/api/coupons/redeem', authRateLimiter, authMiddleware, redeemCoupon);
 
 app.post('/api/coupons/validate', validateCoupon);
 
-
+// Vertex AI Routes
+app.use('/api/vertex', vertexRoutes);
 
 // Sitemap Dinámico
 
