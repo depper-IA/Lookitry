@@ -34,11 +34,18 @@ Sistema de descripción de productos usando IA via Vertex AI (Gemini 2.5 Flash) 
 - **Strategy Pattern**: Formatters especializados por categoría (Clothing, Accessory, Footwear)
 - **Manejo de errores**: ValidationError (502), VertexError (500), errores genéricos (500)
 
+### Migración Final — Controller (1 May 2026)
+- `products.controller.ts` `describeProductWithAI` migrate from n8n proxy → `descriptorService.describeProduct()`
+- n8n code preserved as commented rollback block (lines 352–447)
+- 12 new unit tests covering all response types (CLOTHING/ACCESSORY/FOOTWEAR) and error paths
+
 ### Archivos Modificados
 | Archivo | Cambio |
 |---------|--------|
 | `backend/src/routes/ai.routes.ts` | Nueva ruta POST /api/ai/describe-product |
 | `backend/src/app.ts` | Registro de router ai.routes |
+| `backend/src/controllers/products.controller.ts` | migrate describeProductWithAI → descriptorService (n8n code preserved as rollback) |
+| `backend/src/controllers/__tests__/products.controller.test.ts` | 12 unit tests for describeProductWithAI response contract |
 
 ## 1 de Mayo 2026 — Per-Product Home Trial + UpgradeModal Fix
 
