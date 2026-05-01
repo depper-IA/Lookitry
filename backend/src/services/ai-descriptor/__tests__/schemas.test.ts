@@ -1,5 +1,6 @@
 // ai-descriptor/schemas.test.ts
 // Tests for Zod schemas: DescribeProductInputSchema and ProductDescriptionSchema
+// Updated to match new Spanish-specific field schemas
 
 import { z } from 'zod';
 import {
@@ -73,78 +74,71 @@ describe('DescribeProductInputSchema', () => {
 });
 
 describe('ClothingSchema', () => {
-  it('accepts valid clothing description', () => {
+  it('accepts valid clothing description with all Spanish fields', () => {
     const validClothing = {
       product_type: 'CLOTHING',
-      short_description: 'Elegante vestido rojo para ocasiones especiales',
-      features: ['Tela suave', 'Corte clasico', 'Color vibrante'],
-      suggested_use_cases: ['Citas', 'Eventos formales'],
+      garment_type: 'Vestido',
+      silhouette: 'Ajustado',
+      primary_color: 'Rojo',
+      secondary_colors: ['Negro', 'Dorado'],
+      patterns: ['Liso', 'Con brillo'],
+      materials: ['Seda', 'Algodón'],
+      fit: 'Ajustado',
     };
     const result = ClothingSchema.safeParse(validClothing);
     expect(result.success).toBe(true);
   });
 
-  it('rejects short_description exceeding 80 chars', () => {
-    const invalid = {
+  it('accepts minimal clothing description (no optional fields in new schema)', () => {
+    const minimalClothing = {
       product_type: 'CLOTHING',
-      short_description: 'a'.repeat(81),
-      features: ['Feature 1'],
-      suggested_use_cases: ['Use case 1'],
+      garment_type: 'Camisa',
+      silhouette: 'Regular',
+      primary_color: 'Azul',
+      secondary_colors: [],
+      patterns: [],
+      materials: ['Algodón'],
+      fit: 'Regular',
     };
-    const result = ClothingSchema.safeParse(invalid);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects features array with fewer than 3 items', () => {
-    const invalid = {
-      product_type: 'CLOTHING',
-      short_description: 'Short desc',
-      features: ['Only one'],
-      suggested_use_cases: ['Use case 1'],
-    };
-    const result = ClothingSchema.safeParse(invalid);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects features array with more than 6 items', () => {
-    const invalid = {
-      product_type: 'CLOTHING',
-      short_description: 'Short desc',
-      features: ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7'],
-      suggested_use_cases: ['Use case 1'],
-    };
-    const result = ClothingSchema.safeParse(invalid);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects suggested_use_cases with fewer than 2 items', () => {
-    const invalid = {
-      product_type: 'CLOTHING',
-      short_description: 'Short desc',
-      features: ['F1', 'F2', 'F3'],
-      suggested_use_cases: ['Only one'],
-    };
-    const result = ClothingSchema.safeParse(invalid);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects suggested_use_cases with more than 4 items', () => {
-    const invalid = {
-      product_type: 'CLOTHING',
-      short_description: 'Short desc',
-      features: ['F1', 'F2', 'F3'],
-      suggested_use_cases: ['U1', 'U2', 'U3', 'U4', 'U5'],
-    };
-    const result = ClothingSchema.safeParse(invalid);
-    expect(result.success).toBe(false);
+    const result = ClothingSchema.safeParse(minimalClothing);
+    expect(result.success).toBe(true);
   });
 
   it('rejects wrong product_type discriminant', () => {
     const invalid = {
       product_type: 'ACCESSORY',
-      short_description: 'Short desc',
-      features: ['F1', 'F2', 'F3'],
-      suggested_use_cases: ['U1', 'U2'],
+      garment_type: 'Bolso',
+      silhouette: 'Regular',
+      primary_color: 'Negro',
+      secondary_colors: [],
+      patterns: [],
+      materials: ['Cuero'],
+      fit: 'Regular',
+    };
+    const result = ClothingSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects missing required fields', () => {
+    const incomplete = {
+      product_type: 'CLOTHING',
+      garment_type: 'Vestido',
+      // missing silhouette, primary_color, etc.
+    };
+    const result = ClothingSchema.safeParse(incomplete);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects non-string garment_type', () => {
+    const invalid = {
+      product_type: 'CLOTHING',
+      garment_type: 123,
+      silhouette: 'Ajustado',
+      primary_color: 'Rojo',
+      secondary_colors: [],
+      patterns: [],
+      materials: ['Seda'],
+      fit: 'Ajustado',
     };
     const result = ClothingSchema.safeParse(invalid);
     expect(result.success).toBe(false);
@@ -152,42 +146,43 @@ describe('ClothingSchema', () => {
 });
 
 describe('AccessorySchema', () => {
-  it('accepts valid accessory description', () => {
+  it('accepts valid accessory description with all Spanish fields', () => {
     const validAccessory = {
       product_type: 'ACCESSORY',
-      short_description: 'Bolso de cuero elegante',
-      features: ['Cuero genuino', 'Costuras reforzadas'],
-      material_notes: '100% cuero vacuno',
+      accessory_type: 'Bolso',
+      placement: 'Hombro',
+      material: 'Cuero',
+      primary_color: 'Negro',
+      secondary_colors: ['Marrón'],
+      patterns: ['Liso'],
     };
     const result = AccessorySchema.safeParse(validAccessory);
     expect(result.success).toBe(true);
   });
 
-  it('accepts accessory without optional material_notes', () => {
+  it('accepts accessory without secondary_colors or patterns', () => {
     const valid = {
       product_type: 'ACCESSORY',
-      short_description: 'Bolso elegante',
-      features: ['Cuero', 'Elegante'],
+      accessory_type: 'Joya',
+      placement: 'Cuello',
+      material: 'Oro',
+      primary_color: 'Dorado',
+      secondary_colors: [],
+      patterns: [],
     };
     const result = AccessorySchema.safeParse(valid);
     expect(result.success).toBe(true);
   });
 
-  it('rejects features array with fewer than 2 items', () => {
+  it('rejects wrong product_type discriminant', () => {
     const invalid = {
-      product_type: 'ACCESSORY',
-      short_description: 'Short desc',
-      features: ['Only one'],
-    };
-    const result = AccessorySchema.safeParse(invalid);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects features array with more than 5 items', () => {
-    const invalid = {
-      product_type: 'ACCESSORY',
-      short_description: 'Short desc',
-      features: ['F1', 'F2', 'F3', 'F4', 'F5', 'F6'],
+      product_type: 'CLOTHING',
+      accessory_type: 'Vestido',
+      placement: 'Cuerpo',
+      material: 'Tela',
+      primary_color: 'Azul',
+      secondary_colors: [],
+      patterns: [],
     };
     const result = AccessorySchema.safeParse(invalid);
     expect(result.success).toBe(false);
@@ -195,46 +190,43 @@ describe('AccessorySchema', () => {
 });
 
 describe('FootwearSchema', () => {
-  it('accepts valid footwear description', () => {
+  it('accepts valid footwear description with all Spanish fields', () => {
     const validFootwear = {
       product_type: 'FOOTWEAR',
-      short_description: 'Zapatos formales negros',
-      features: ['Cuero legitimo', 'Suela de goma'],
-      style_notes: 'Diseño clásico',
-      comfort_features: ['Plantilla acolchada', 'Soporte de arco'],
+      footwear_type: 'Zapatos',
+      heel_height: 'Tacón alto',
+      material: 'Cuero',
+      primary_color: 'Negro',
+      secondary_colors: ['Marrón'],
+      patterns: ['Liso'],
     };
     const result = FootwearSchema.safeParse(validFootwear);
     expect(result.success).toBe(true);
   });
 
-  it('accepts footwear without optional style_notes', () => {
+  it('accepts footwear without secondary_colors or patterns', () => {
     const valid = {
       product_type: 'FOOTWEAR',
-      short_description: 'Zapatos formales',
-      features: ['Cuero', 'Elegante'],
-      comfort_features: ['Plantilla suave'],
+      footwear_type: 'Sandalias',
+      heel_height: 'Plano',
+      material: 'Cuero',
+      primary_color: 'Negro',
+      secondary_colors: [],
+      patterns: [],
     };
     const result = FootwearSchema.safeParse(valid);
     expect(result.success).toBe(true);
   });
 
-  it('rejects comfort_features with fewer than 1 item', () => {
+  it('rejects wrong product_type discriminant', () => {
     const invalid = {
-      product_type: 'FOOTWEAR',
-      short_description: 'Short desc',
-      features: ['F1', 'F2'],
-      comfort_features: [],
-    };
-    const result = FootwearSchema.safeParse(invalid);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects comfort_features with more than 3 items', () => {
-    const invalid = {
-      product_type: 'FOOTWEAR',
-      short_description: 'Short desc',
-      features: ['F1', 'F2'],
-      comfort_features: ['C1', 'C2', 'C3', 'C4'],
+      product_type: 'CLOTHING',
+      footwear_type: 'Vestido',
+      heel_height: 'N/A',
+      material: 'Tela',
+      primary_color: 'Azul',
+      secondary_colors: [],
+      patterns: [],
     };
     const result = FootwearSchema.safeParse(invalid);
     expect(result.success).toBe(false);
@@ -245,23 +237,30 @@ describe('ProductDescriptionSchema (discriminated union)', () => {
   it('correctly narrows to ClothingDescription', () => {
     const clothing = {
       product_type: 'CLOTHING',
-      short_description: 'Vestido elegante',
-      features: ['F1', 'F2', 'F3'],
-      suggested_use_cases: ['U1', 'U2'],
+      garment_type: 'Vestido',
+      silhouette: 'Ajustado',
+      primary_color: 'Rojo',
+      secondary_colors: [],
+      patterns: [],
+      materials: ['Seda'],
+      fit: 'Ajustado',
     };
     const result = ProductDescriptionSchema.safeParse(clothing);
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.product_type).toBe('CLOTHING');
-      expect((result.data as any).suggested_use_cases).toBeDefined();
     }
   });
 
   it('correctly narrows to AccessoryDescription', () => {
     const accessory = {
       product_type: 'ACCESSORY',
-      short_description: 'Bolso elegante',
-      features: ['F1', 'F2'],
+      accessory_type: 'Bolso',
+      placement: 'Hombro',
+      material: 'Cuero',
+      primary_color: 'Negro',
+      secondary_colors: [],
+      patterns: [],
     };
     const result = ProductDescriptionSchema.safeParse(accessory);
     expect(result.success).toBe(true);
@@ -273,22 +272,29 @@ describe('ProductDescriptionSchema (discriminated union)', () => {
   it('correctly narrows to FootwearDescription', () => {
     const footwear = {
       product_type: 'FOOTWEAR',
-      short_description: 'Zapatos formales',
-      features: ['F1', 'F2'],
-      comfort_features: ['C1'],
+      footwear_type: 'Zapatos',
+      heel_height: 'Tacón medio',
+      material: 'Cuero',
+      primary_color: 'Negro',
+      secondary_colors: [],
+      patterns: [],
     };
     const result = ProductDescriptionSchema.safeParse(footwear);
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.product_type).toBe('FOOTWEAR');
-      expect((result.data as any).comfort_features).toBeDefined();
     }
   });
 
   it('rejects object without product_type', () => {
     const noType = {
-      short_description: 'Some description',
-      features: ['F1', 'F2', 'F3'],
+      garment_type: 'Vestido',
+      silhouette: 'Ajustado',
+      primary_color: 'Rojo',
+      secondary_colors: [],
+      patterns: [],
+      materials: ['Seda'],
+      fit: 'Ajustado',
     };
     const result = ProductDescriptionSchema.safeParse(noType);
     expect(result.success).toBe(false);
@@ -297,8 +303,13 @@ describe('ProductDescriptionSchema (discriminated union)', () => {
   it('rejects invalid product_type value', () => {
     const invalid = {
       product_type: 'INVALID_TYPE',
-      short_description: 'Some description',
-      features: ['F1', 'F2', 'F3'],
+      garment_type: 'Vestido',
+      silhouette: 'Ajustado',
+      primary_color: 'Rojo',
+      secondary_colors: [],
+      patterns: [],
+      materials: ['Seda'],
+      fit: 'Ajustado',
     };
     const result = ProductDescriptionSchema.safeParse(invalid);
     expect(result.success).toBe(false);

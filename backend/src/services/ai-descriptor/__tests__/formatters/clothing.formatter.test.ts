@@ -1,5 +1,5 @@
 // ai-descriptor/formatters/clothing.formatter.test.ts
-// Tests for ClothingFormatter
+// Tests for ClothingFormatter — updated for Spanish-specific schema
 
 import { ClothingFormatter } from '../../formatters/clothing.formatter';
 
@@ -17,6 +17,11 @@ describe('ClothingFormatter', () => {
   });
 
   describe('buildPrompt', () => {
+    it('includes Spanish instruction at start of prompt', () => {
+      const prompt = formatter.buildPrompt('Vestido Rojo', 'VESTIDO');
+      expect(prompt).toContain('Responde ÚNICAMENTE en ESPAÑOL');
+    });
+
     it('includes product name in prompt', () => {
       const prompt = formatter.buildPrompt('Vestido Rojo', 'VESTIDO');
       expect(prompt).toContain('Vestido Rojo');
@@ -84,20 +89,41 @@ describe('ClothingFormatter', () => {
       const prompt = formatter.buildPrompt('Top', 'TOP');
       expect(prompt).toContain('TOP');
     });
+
+    it('includes new Spanish field schema in prompt', () => {
+      const prompt = formatter.buildPrompt('Vestido', 'VESTIDO');
+      expect(prompt).toContain('garment_type');
+      expect(prompt).toContain('silhouette');
+      expect(prompt).toContain('primary_color');
+      expect(prompt).toContain('secondary_colors');
+      expect(prompt).toContain('patterns');
+      expect(prompt).toContain('materials');
+      expect(prompt).toContain('fit');
+      // Old fields should NOT be present
+      expect(prompt).not.toContain('short_description');
+      expect(prompt).not.toContain('features');
+      expect(prompt).not.toContain('suggested_use_cases');
+    });
   });
 
   describe('parseResponse', () => {
-    it('parses valid JSON and returns typed object', () => {
+    it('parses valid JSON with new Spanish fields and returns typed object', () => {
       const rawResponse = JSON.stringify({
         product_type: 'CLOTHING',
-        short_description: 'Elegante vestido rojo',
-        features: ['Feature 1', 'Feature 2', 'Feature 3'],
-        suggested_use_cases: ['Citas', 'Eventos'],
+        garment_type: 'Vestido',
+        silhouette: 'Ajustado',
+        primary_color: 'Rojo',
+        secondary_colors: ['Negro'],
+        patterns: ['Liso'],
+        materials: ['Seda'],
+        fit: 'Ajustado',
       });
       const result = formatter.parseResponse(rawResponse);
       expect(result).toBeDefined();
       expect((result as any).product_type).toBe('CLOTHING');
-      expect((result as any).short_description).toBe('Elegante vestido rojo');
+      expect((result as any).garment_type).toBe('Vestido');
+      expect((result as any).silhouette).toBe('Ajustado');
+      expect((result as any).primary_color).toBe('Rojo');
     });
 
     it('throws error for invalid JSON', () => {

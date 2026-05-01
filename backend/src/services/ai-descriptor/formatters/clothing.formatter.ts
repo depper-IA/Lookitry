@@ -60,18 +60,23 @@ export class ClothingFormatter extends BaseFormatter {
     }
 
     const parts: string[] = [
-      `Generate a compelling product description for a CLOTHING product.`,
-      `Product name: ${name}`,
-      `Category: ${category}`,
+      `Responde ÚNICAMENTE en ESPAÑOL. Todos los valores (colores, materiales, prendas) deben estar en español.`,
+      `Genera una descripción de producto de moda para PRENDAS DE VESTIR.`,
+      `Nombre del producto: ${name}`,
+      `Categoría: ${category}`,
       categoryContext,
       rules.replace,
       rules.keep,
-      `The response MUST be valid JSON matching this schema:`,
+      `La respuesta DEBE ser JSON válido con este esquema exacto:`,
       JSON.stringify({
         product_type: 'CLOTHING',
-        short_description: 'string (max 80 characters)',
-        features: 'array of 3-6 distinctive features',
-        suggested_use_cases: 'array of 2-4 use cases',
+        garment_type: 'tipo de prenda en español (ej: Vestido, Camisa, Pantalón)',
+        silhouette: 'silueta o corte en español (ej: Ajustado, Holgado, Recto)',
+        primary_color: 'color primario en español (ej: Rojo, Azul, Negro)',
+        secondary_colors: ['colores secundarios en español'],
+        patterns: ['patrones o estampados en español'],
+        materials: ['materiales principales en español'],
+        fit: 'tipo de ajuste en español (ej: Ajustado, Regular, Holgado)',
       }),
     ];
 

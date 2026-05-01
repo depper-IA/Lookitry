@@ -26,19 +26,22 @@ export class FootwearFormatter extends BaseFormatter {
     }
 
     const parts: string[] = [
-      `Generate a compelling product description for a FOOTWEAR product.`,
-      `Product name: ${name}`,
-      `Category: ${category}`,
+      `Responde ÚNICAMENTE en ESPAÑOL. Todos los valores (colores, materiales, calzado) deben estar en español.`,
+      `Genera una descripción de producto de moda para CALZADO.`,
+      `Nombre del producto: ${name}`,
+      `Categoría: ${category}`,
       categoryContext,
       rules.replace,
       rules.keep,
-      `The response MUST be valid JSON matching this schema:`,
+      `La respuesta DEBE ser JSON válido con este esquema exacto:`,
       JSON.stringify({
         product_type: 'FOOTWEAR',
-        short_description: 'string (max 80 characters)',
-        features: 'array of 2-5 distinctive features',
-        style_notes: 'optional string describing style',
-        comfort_features: 'array of 1-3 comfort features',
+        footwear_type: 'tipo de calzado en español (ej: Zapatos, Botas, Sandalias)',
+        heel_height: 'altura del tacón en español (ej: Tacón alto, Plano, Plataforma)',
+        material: 'material principal en español',
+        primary_color: 'color primario en español',
+        secondary_colors: ['colores secundarios en español'],
+        patterns: ['patrones o estampados en español'],
       }),
     ];
 
