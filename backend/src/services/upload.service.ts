@@ -3,11 +3,6 @@ import sharp from 'sharp';
 import axios from 'axios';
 import crypto from 'crypto';
 
-
-import crypto from 'crypto';
-
-
-
 export interface UploadImageDto {
 
   image_base64: string;
@@ -87,7 +82,7 @@ export class UploadService {
   private storage: Storage;
   private gcsBucketName = 'lookitry-vertex'; // Bucket público para Vertex AI
 
-  constructor() {
+constructor() {
     if (!this.endpoint || !this.bucket || !this.accessKey || !this.secretKey || !this.publicUrl) {
       throw new Error(
         'Variables de entorno de MinIO requeridas: MINIO_ENDPOINT, MINIO_BUCKET, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_PUBLIC_URL'
@@ -99,10 +94,6 @@ export class UploadService {
       keyFilename: 'gcs-credentials.json',
     });
   }
-
-  }
-
-
 
   async uploadImage(data: UploadImageDto): Promise<UploadResponse> {
 
