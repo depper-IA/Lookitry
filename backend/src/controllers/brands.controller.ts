@@ -64,7 +64,7 @@ export class BrandsController {
 
 
 
-      // No devolver la contraseñÂÑÂ±a
+      // No devolver la contraseññ—±a
 
       const { password, ...brandWithoutPassword } = brand;
 
@@ -394,7 +394,7 @@ export class BrandsController {
 
 
 
-      // Slug personalizado Ñ¢ÂÂ solo Plan PRO
+      // Slug personalizado  solo Plan PRO
 
       if (req.body.slug !== undefined) {
 
@@ -430,7 +430,7 @@ export class BrandsController {
 
 
 
-      // Dominio personalizado ñÂ¢Ñ¢ÂÂ¬Ñ¢ÂÂ solo Plan PRO
+      // Dominio personalizado ñ— solo Plan PRO
 
       if (req.body.custom_domain !== undefined) {
 
@@ -478,7 +478,7 @@ export class BrandsController {
 
               error: 'CONFLICT',
 
-              message: 'Ese dominio ya estñÂÑÂ¡ configurado por otra marca',
+              message: 'Ese dominio ya estññ—¡ configurado por otra marca',
 
             });
 
@@ -514,13 +514,13 @@ export class BrandsController {
 
 
 
-      // Invalidar caché del probador para este slug
+      // Invalidar cach© del probador para este slug
 
       invalidateBrandConfigCache(updatedBrand.slug);
 
 
 
-      // No devolver la contraseñÂÑÂ±a
+      // No devolver la contraseññ—±a
 
       const { password, ...brandWithoutPassword } = updatedBrand;
 
@@ -734,7 +734,7 @@ export class BrandsController {
 
    * POST /api/brands/request-upgrade
 
-   * Solicitar upgrade a Plan PRO ñÂ¢Ñ¢ÂÂ¬Ñ¢ÂÂ envñÂÑÂ­a notificaciñÂÑÂ³n al admin para gestiñÂÑÂ³n manual.
+   * Solicitar upgrade a Plan PRO ñ— envññ—­a notificaciññ—³n al admin para gestiññ—³n manual.
 
    * El admin aplica el cambio desde el panel una vez confirme el pago.
 
@@ -804,7 +804,7 @@ export class BrandsController {
 
         to: adminEmail,
 
-        subject: `Solicitud de upgrade a PRO ñÂ¢Ñ¢ÂÂ¬Ñ¢ÂÂ ${brand.name}`,
+        subject: `Solicitud de upgrade a PRO ñ— ${brand.name}`,
 
         html: `
 
@@ -850,7 +850,7 @@ export class BrandsController {
 
 
 
-      // NotificaciñÂÑÂ³n persistente en el panel admin
+      // Notificaciññ—³n persistente en el panel admin
 
       createAdminNotification({
 
@@ -858,7 +858,7 @@ export class BrandsController {
 
         title: 'Solicitud de upgrade a PRO',
 
-        message: `${brand.name} (${brand.email}) solicita cambiar al Plan PRO ñÂ¢Ñ¢ÂÂ¬Ñ¢ÂÂ pendiente de pago`,
+        message: `${brand.name} (${brand.email}) solicita cambiar al Plan PRO ñ— pendiente de pago`,
 
         severity: 'warning',
 
@@ -896,7 +896,7 @@ export class BrandsController {
 
    * POST /api/brands/request-plan-change
 
-   * Solicitar cambio de plan (upgrade o downgrade) ñÂ¢Ñ¢ÂÂ¬Ñ¢ÂÂ envñÂÑÂ­a email al admin
+   * Solicitar cambio de plan (upgrade o downgrade) ñ— envññ—­a email al admin
 
    */
 
@@ -968,7 +968,7 @@ export class BrandsController {
 
       const monthsLabel = monthsCount > 1
 
-        ? `${monthsCount} meses${discountPct > 0 ? ` (${discountPct}% descuento ñÂ¢Ñ¢ÂÂ¬Ñ¢ÂÂ Total: ${totalPrice.toLocaleString('es-CO')} COP)` : ''}`
+        ? `${monthsCount} meses${discountPct > 0 ? ` (${discountPct}% descuento ñ— Total: ${totalPrice.toLocaleString('es-CO')} COP)` : ''}`
 
         : '1 mes';
 
@@ -978,7 +978,7 @@ export class BrandsController {
 
         to: adminEmail,
 
-        subject: `Solicitud de ${changeType} ñÂ¢Ñ¢ÂÂ¬Ñ¢ÂÂ ${brand.name} (${brand.plan} ñÂ¢Ñ¢ÂÂ Ñ¢ÂÂ ${targetPlan})`,
+        subject: `Solicitud de ${changeType} ñ— ${brand.name} (${brand.plan} —  ${targetPlan})`,
 
         html: `
 
@@ -1036,11 +1036,11 @@ export class BrandsController {
 
 
 
-      // NotificaciñÂÑÂ³n persistente en el panel admin
+      // Notificaciññ—³n persistente en el panel admin
 
       const notifTitle = monthsCount > 1
 
-        ? `Solicitud de ${changeType} ñÂ¢Ñ¢ÂÂ¬Ñ¢ÂÂ ${monthsCount} meses`
+        ? `Solicitud de ${changeType} ñ— ${monthsCount} meses`
 
         : `Solicitud de ${changeType} de plan`;
 
@@ -1160,7 +1160,7 @@ export class BrandsController {
 
       if (!supportedTypes.includes(type)) {
 
-        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Tipo de solicitud legal invñÂÑÂ¡lido' });
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Tipo de solicitud legal invññ—¡lido' });
 
       }
 
@@ -1450,7 +1450,7 @@ export class BrandsController {
 
       if (!supportedEvents.includes(eventName)) {
 
-        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Evento de trial invñÂÑÂ¡lido' });
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Evento de trial invññ—¡lido' });
 
       }
 

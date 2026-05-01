@@ -598,7 +598,7 @@ export class PaypalController {
 
           error: 'TRIAL_ALREADY_USED',
 
-          message: 'Ya usaste tu prueba gratuita. Â¡Upgrade a Basic o Pro para continuar!',
+          message: 'Ya usaste tu prueba gratuita. ¡Upgrade a Basic o Pro para continuar!',
 
         });
 

@@ -8,7 +8,7 @@ import { inferBillingType, inferIncludesLanding, inferPlanPurchased } from '../.
 
 /**
 
- * Stats Admin Service â Estadísticas globales del sistema.
+ * Stats Admin Service — Estadísticas globales del sistema.
 
  * Extraído de AdminService para mejorar mantenibilidad.
 

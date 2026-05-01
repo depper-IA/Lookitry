@@ -263,7 +263,7 @@ function generateArticleHTML(
           if (!dropCapApplied && !para.startsWith('<') && para.length > 0) {
             const firstLetter = para.charAt(0);
             // Only apply drop-cap if the first character is a letter (will be capitalized anyway)
-            if (/[a-zA-ZáéíóúñÑÑÑÑÑÑ]/.test(firstLetter)) {
+            if (/[a-zA-Záéíóúñññññññ]/.test(firstLetter)) {
               const rest = para.slice(1);
               para = `<span class="drop-cap" style="float: left; font-size: 4rem; line-height: 0.8; font-weight: 800; color: #FF5C3A; margin-right: 0.8rem; margin-top: 0.5rem; text-shadow: 2px 2px 0px rgba(255,92,58,0.2);">${firstLetter.toUpperCase()}</span>${rest}`;
               dropCapApplied = true;
@@ -385,7 +385,7 @@ function generateArticleHTML(
               <span style="color: #FF5C3A; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px;">Herramienta recomendada</span>
             </div>
             <div>
-              <h3 style="color: #ffffff; margin: 0 0 0.5rem 0; font-size: 1.4rem; font-weight: 700; line-height: 1.3;">Â¿Listo para reducir devoluciones en tu ecommerce?</h3>
+              <h3 style="color: #ffffff; margin: 0 0 0.5rem 0; font-size: 1.4rem; font-weight: 700; line-height: 1.3;">¿Listo para reducir devoluciones en tu ecommerce?</h3>
               <p style="color: #999999; margin: 0; font-size: 0.95rem; line-height: 1.6; max-width: 85%;">Permite que tus clientes se prueben virtualmente las prendas antes de comprar. <strong style="color: #ccc;">Hasta 35% más conversión</strong> y <strong style="color: #ccc;">devoluciones reducidas</strong> en tiendas que ya usan Lookitry.</p>
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
@@ -489,8 +489,8 @@ async function getCtaTemplates(): Promise<Record<string, CtaTemplate>> {
 
   //Defaults
   return {
-    trial: { title: 'Â¿Listo para probar Lookitry?', button_text: 'Comenzar ahora', button_url: '/planes' },
-    features: { title: 'Â¿Quieres más conversiones?', button_text: 'Ver planes', button_url: '/planes' },
+    trial: { title: '¿Listo para probar Lookitry?', button_text: 'Comenzar ahora', button_url: '/planes' },
+    features: { title: '¿Quieres más conversiones?', button_text: 'Ver planes', button_url: '/planes' },
     pricing: { title: 'Elige tu plan', button_text: 'Ver precios', button_url: '/planes' },
     lead_magnet: { title: 'Descarga la guía', button_text: 'Descargar', button_url: '/planes' },
   };

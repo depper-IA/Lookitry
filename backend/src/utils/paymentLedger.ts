@@ -108,7 +108,7 @@ export function getPaymentDisplayBrand(payment: any): {
 
   return {
     name: snapshot?.brandName || payment?.brands?.name || 'Marca archivada',
-    email: snapshot?.brandEmail || payment?.brands?.email || 'â',
+    email: snapshot?.brandEmail || payment?.brands?.email || '—',
     slug: snapshot?.brandSlug || payment?.brands?.slug || '',
     plan,
     archived: !payment?.brands?.name || Boolean(snapshot?.archivedAt),

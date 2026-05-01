@@ -601,7 +601,7 @@ export class PaypalService {
 
     if (!webhookId) {
 
-      console.error('[PayPal] PAYPAL_WEBHOOK_ID no configurado â RECHAZANDO webhook');
+      console.error('[PayPal] PAYPAL_WEBHOOK_ID no configurado — RECHAZANDO webhook');
 
       return false;
 

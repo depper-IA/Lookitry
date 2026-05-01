@@ -78,9 +78,9 @@ interface CRMLead {
 
   SITIO_WEB: string;
 
-  CAMPAÑA_ENVIADA: string;
+  CAMPAñA_ENVIADA: string;
 
-  FECHA_CAMPAÑA: string;
+  FECHA_CAMPAñA: string;
 
   ESTADO_LEAD: string;
 

@@ -284,7 +284,7 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
 
       // 5.2 Si no hay sesión, crear la cuenta (vía registerPostPayment del servicio que es más robusto)
 
-      // SECURITY: Always use the email from pending_registrations â never allow override.
+      // SECURITY: Always use the email from pending_registrations — never allow override.
 
       // The email was set durante checkout and must match the payment.
 
@@ -413,7 +413,7 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
 
         to: pending.email,
 
-        subject: 'Confirma tu correo â Lookitry',
+        subject: 'Confirma tu correo — Lookitry',
 
         html: verifyEmailTemplate({ name: result.brand.name, email: pending.email }, verifyUrl),
 

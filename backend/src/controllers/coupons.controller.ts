@@ -6,7 +6,7 @@ import { sanitizeError } from '../utils/sanitizeError';
 
 
 
-// GET /api/admin/coupons â listar todos los cupones
+// GET /api/admin/coupons — listar todos los cupones
 
 export async function listCoupons(req: Request, res: Response) {
 
@@ -36,7 +36,7 @@ export async function listCoupons(req: Request, res: Response) {
 
 
 
-// POST /api/admin/coupons â crear cupón
+// POST /api/admin/coupons — crear cupón
 
 export async function createCoupon(req: Request, res: Response) {
 
@@ -108,7 +108,7 @@ export async function createCoupon(req: Request, res: Response) {
 
 
 
-// PUT /api/admin/coupons/:id â actualizar cupón
+// PUT /api/admin/coupons/:id — actualizar cupón
 
 export async function updateCoupon(req: Request, res: Response) {
 
@@ -168,7 +168,7 @@ export async function updateCoupon(req: Request, res: Response) {
 
 
 
-// DELETE /api/admin/coupons/:id â eliminar cupón
+// DELETE /api/admin/coupons/:id — eliminar cupón
 
 export async function deleteCoupon(req: Request, res: Response) {
 
@@ -192,7 +192,7 @@ export async function deleteCoupon(req: Request, res: Response) {
 
 
 
-// POST /api/coupons/validate â validar cupón (público, sin auth)
+// POST /api/coupons/validate — validar cupón (público, sin auth)
 
 export async function validateCoupon(req: Request, res: Response) {
 

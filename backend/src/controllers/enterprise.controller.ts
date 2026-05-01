@@ -92,7 +92,7 @@ async function safeUpdateEnterpriseConfig(brandId: string, payload: Record<strin
 
 
 
-// GET /admin/enterprise â Listar todas las configs de sync Enterprise
+// GET /admin/enterprise — Listar todas las configs de sync Enterprise
 
 export const listEnterpriseSyncConfigs = async (req: Request, res: Response) => {
 
@@ -188,7 +188,7 @@ export const listEnterpriseSyncConfigs = async (req: Request, res: Response) => 
 
 
 
-// POST /admin/enterprise/:brandId/sync-config â Crear o actualizar config de sync
+// POST /admin/enterprise/:brandId/sync-config — Crear o actualizar config de sync
 
 export const upsertEnterpriseSyncConfig = async (req: Request, res: Response) => {
 
@@ -314,7 +314,7 @@ export const upsertEnterpriseSyncConfig = async (req: Request, res: Response) =>
 
 
 
-// POST /admin/enterprise/:brandId/trigger-sync â Disparo manual desde el panel
+// POST /admin/enterprise/:brandId/trigger-sync — Disparo manual desde el panel
 
 export const triggerEnterpriseSync = async (req: Request, res: Response) => {
 
@@ -452,7 +452,7 @@ export const triggerEnterpriseSync = async (req: Request, res: Response) => {
 
 
 
-// POST /api/enterprise/sync-product â Webhook interno llamado por n8n para cada producto
+// POST /api/enterprise/sync-product — Webhook interno llamado por n8n para cada producto
 
 // Protegido por ENTERPRISE_SYNC_TOKEN (Bearer token secreto compartido con n8n)
 
@@ -730,7 +730,7 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
 
 
 
-// PATCH /admin/enterprise/:brandId/sync-status â Actualizar estado del último sync (llamado por n8n al terminar)
+// PATCH /admin/enterprise/:brandId/sync-status — Actualizar estado del último sync (llamado por n8n al terminar)
 
 export const updateSyncStatus = async (req: Request, res: Response) => {
 
@@ -818,7 +818,7 @@ export const updateSyncStatus = async (req: Request, res: Response) => {
 
 
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ——————————————————————————————————————â
 
 // POST /admin/enterprise/create-client
 
@@ -826,7 +826,7 @@ export const updateSyncStatus = async (req: Request, res: Response) => {
 
 // activa la suscripción, registra el pago y genera la notificación de admin.
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ——————————————————————————————————————â
 
 export const createEnterpriseClient = async (req: Request, res: Response) => {
 
@@ -864,7 +864,7 @@ export const createEnterpriseClient = async (req: Request, res: Response) => {
 
 
 
-  // ââ Validaciones básicas ââââââââââââââââââââââââââââââââââââââââââââââââââ
+  // — Validaciones básicas —————————————————————————
 
   if (!name || !email || !password || !slug) {
 
@@ -1076,7 +1076,7 @@ export const createEnterpriseClient = async (req: Request, res: Response) => {
 
         ? `[ENTERPRISE] ${notes}`
 
-        : `Alta Enterprise â $${Number(monthly_amount).toLocaleString('es-CO')} COP/mes Ñ ${contractMonths} mes(es) + Setup $${totalSetup.toLocaleString('es-CO')} COP`,
+        : `Alta Enterprise — $${Number(monthly_amount).toLocaleString('es-CO')} COP/mes ñ ${contractMonths} mes(es) + Setup $${totalSetup.toLocaleString('es-CO')} COP`,
 
     });
 
@@ -1090,7 +1090,7 @@ export const createEnterpriseClient = async (req: Request, res: Response) => {
 
       title: 'Nuevo cliente Enterprise activado',
 
-      message: `${name} (${email}) dado de alta como cliente Enterprise â ${contractMonths} mes(es) de contrato.`,
+      message: `${name} (${email}) dado de alta como cliente Enterprise — ${contractMonths} mes(es) de contrato.`,
 
       severity: 'success',
 

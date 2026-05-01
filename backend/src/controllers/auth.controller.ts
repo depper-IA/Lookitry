@@ -342,7 +342,7 @@ export class AuthController {
 
           to: result.brand.email,
 
-          subject: 'Confirma tu correo â Lookitry',
+          subject: 'Confirma tu correo — Lookitry',
 
           html: verifyEmailTemplate({ name: result.brand.name, email: result.brand.email }, verifyUrl),
 
@@ -394,7 +394,7 @@ export class AuthController {
 
       if (error.message.includes('email') && error.message.includes('ya')) {
 
-        return res.status(409).json({ error: 'EMAIL_EXISTS', message: 'Este correo ya está registrado. Â¿Ya tienes cuenta?' });
+        return res.status(409).json({ error: 'EMAIL_EXISTS', message: 'Este correo ya está registrado. ¿Ya tienes cuenta?' });
 
       }
 
@@ -730,7 +730,7 @@ export class AuthController {
 
           to: brand.email,
 
-          subject: 'Recuperar contraseña â Lookitry',
+          subject: 'Recuperar contraseña — Lookitry',
 
           html: passwordResetTemplate({ name: brand.name, email: brand.email }, resetUrl),
 
@@ -842,7 +842,7 @@ export class AuthController {
 
           to: brand.email,
 
-          subject: 'Confirma tu correo â Lookitry',
+          subject: 'Confirma tu correo — Lookitry',
 
           html: verifyEmailTemplate({ name: brand.name, email: brand.email }, verifyUrl),
 

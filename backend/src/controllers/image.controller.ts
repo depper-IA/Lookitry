@@ -24,7 +24,7 @@ export class ImageController {
       throw new ValidationError('URL de imagen no permitida');
     }
 
-    // ââ Lógica de Caché con Redis âââââââââââââââââââââââââââââââââââââ
+    // — Lógica de Caché con Redis ——————————————————â
     const cacheKey = `img:${plan}:${crypto.createHash('md5').update(src).digest('hex')}`;
     
     try {
@@ -47,7 +47,7 @@ export class ImageController {
     } catch (e) {
       console.warn('[Redis] Fallo en lectura de caché:', e);
     }
-    // ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+    // —————————————————————————————————
 
     try {
       const processedBuffer = await imageService.processWithWatermark(src, plan);

@@ -123,7 +123,7 @@ async function procesarEliminacionDefinitiva(): Promise<void> {
 
 
 
-  // ââ Aviso a los 75 días ââââââââââââââââââââââââââââââââââââââââââââââââââ
+  // — Aviso a los 75 días —————————————————————————
 
   // Marcas con landing_suspended_at entre 75 y 76 días atrás (ventana de 1 día)
 
@@ -169,7 +169,7 @@ async function procesarEliminacionDefinitiva(): Promise<void> {
 
 
 
-  // ââ Eliminación definitiva a los 90 días âââââââââââââââââââââââââââââââââ
+  // — Eliminación definitiva a los 90 días ————————————————â
 
   const { data: marcas90, error: err90 } = await supabaseAdmin
 
@@ -433,7 +433,7 @@ export function startCleanupJob() {
     }
   });
 
-  // Procesar vencimientos de suscripciones (pasar a expiring_soon, expired o suspended) â 2:00 AM
+  // Procesar vencimientos de suscripciones (pasar a expiring_soon, expired o suspended) — 2:00 AM
 
   cron.schedule('0 2 * * *', async () => {
 
@@ -455,7 +455,7 @@ export function startCleanupJob() {
 
 
 
-  // Limpieza de imágenes â todos los días a las 3:00 AM
+  // Limpieza de imágenes — todos los días a las 3:00 AM
 
   cron.schedule('0 3 * * *', async () => {
 
@@ -477,7 +477,7 @@ export function startCleanupJob() {
 
 
 
-  // Purga de marcas suspendidas hace más de 90 días â todos los días a las 3:30 AM
+  // Purga de marcas suspendidas hace más de 90 días — todos los días a las 3:30 AM
 
   cron.schedule('30 3 * * *', async () => {
 
@@ -499,7 +499,7 @@ export function startCleanupJob() {
 
 
 
-  // Suspensión de mini-landings por falta de pago â todos los días a las 3:45 AM
+  // Suspensión de mini-landings por falta de pago — todos los días a las 3:45 AM
 
   cron.schedule('45 3 * * *', async () => {
 
@@ -519,7 +519,7 @@ export function startCleanupJob() {
 
 
 
-  // Eliminación definitiva de mini-landings (75 días aviso, 90 días eliminación) â 4:15 AM
+  // Eliminación definitiva de mini-landings (75 días aviso, 90 días eliminación) — 4:15 AM
 
   cron.schedule('15 4 * * *', async () => {
 
@@ -539,7 +539,7 @@ export function startCleanupJob() {
 
 
 
-  // Limpieza de admin_notifications con más de 30 días â todos los días a las 4:00 AM
+  // Limpieza de admin_notifications con más de 30 días — todos los días a las 4:00 AM
 
   cron.schedule('0 4 * * *', async () => {
 

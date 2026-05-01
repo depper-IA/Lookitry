@@ -26,8 +26,8 @@ interface CRMLead {
   DIRECCION: string;
   REDES_SOCIALES: string;
   SITIO_WEB: string;
-  CAMPAÑA_ENVIADA: string;
-  FECHA_CAMPAÑA: string;
+  CAMPAñA_ENVIADA: string;
+  FECHA_CAMPAñA: string;
   ESTADO_LEAD: string;
   ULTIMO_CONTACTO: string;
   NOTAS: string;
@@ -286,7 +286,7 @@ async function main() {
   
   // Print statistics
   console.log('ð CLASSIFICATION STATISTICS');
-  console.log('âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ');
+  console.log('———————————————————————————————â');
   console.log(`   Total Records:          ${stats.total.toLocaleString()}`);
   console.log(`   â Accepted (Fashion):   ${stats.accepted.toLocaleString()} (${(stats.accepted / stats.total * 100).toFixed(1)}%)`);
   console.log(`   â Rejected (No-Fashion):${stats.rejected.toLocaleString()} (${(stats.rejected / stats.total * 100).toFixed(1)}%)`);

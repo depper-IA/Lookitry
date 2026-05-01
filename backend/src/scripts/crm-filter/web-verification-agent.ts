@@ -378,7 +378,7 @@ Examples:
     // Single URL verification
     const result = await agent.verifyWebsite(args[0]);
     console.log('\nð VERIFICATION RESULT:');
-    console.log('ââââââââââââââââââââââââââââââââââââââââ');
+    console.log('————————————————————');
     console.log(`URL:       ${result.url}`);
     console.log(`Status:    ${result.isFashion === true ? 'â FASHION' : result.isFashion === false ? 'â NOT FASHION' : 'â ï¸ UNCERTAIN'}`);
     console.log(`Reason:    ${result.reason}`);

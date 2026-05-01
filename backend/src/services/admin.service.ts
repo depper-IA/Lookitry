@@ -1,5 +1,5 @@
 /**
- * AdminService â Facade de compatibilidad.
+ * AdminService — Facade de compatibilidad.
  *
  * Esta clase ya NO contiene la lógica directa de negocio.
  * Delega a los sub-servicios especializados ubicados en `./admin/`.
@@ -31,7 +31,7 @@ export class AdminService {
   private payments = new PaymentAdminService();
   private ops = new OperationalAdminService();
 
-  // ââ Auth & Admin Management ââââââââââââââââââââââââââââââââââ
+  // — Auth & Admin Management —————————————————
   getAdminByEmail(email: string) { return this.auth.getAdminByEmail(email); }
   getAdminById(adminId: string) { return this.auth.getAdminById(adminId); }
   getAdminByGoogleId(googleId: string) { return this.auth.getAdminByGoogleId(googleId); }
@@ -47,7 +47,7 @@ export class AdminService {
   requestPasswordResetGetToken(email: string) { return this.auth.requestPasswordResetGetToken(email); }
   resetPasswordWithToken(token: string, newPassword: string) { return this.auth.resetPasswordWithToken(token, newPassword); }
 
-  // ââ Brands âââââââââââââââââââââââââââââââââââââââââââââââââââ
+  // — Brands —————————————————————————â
   getAllBrandsWithStats() { return this.brands.getAllBrandsWithStats(); }
   changeBrandPlan(brandId: string, newPlan: 'BASIC' | 'PRO') { return this.brands.changeBrandPlan(brandId, newPlan); }
   deleteBrand(brandId: string) { return this.brands.deleteBrand(brandId); }
@@ -60,16 +60,16 @@ export class AdminService {
   getBrandsForDropdown(options: { limit?: number; search?: string }) { return this.brands.getBrandsForDropdown(options); }
   activateBrandPlan(brandId: string, options: Parameters<PaymentAdminService['activateBrandPlan']>[1]) { return this.payments.activateBrandPlan(brandId, options); }
 
-  // ââ Stats ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  // — Stats ——————————————————————————
   getGlobalStats() { return this.stats.getGlobalStats(); }
   getConversionStats() { return this.stats.getConversionStats(); }
   getEconomics() { return this.stats.getEconomics(); }
   getRiskData() { return this.stats.getRiskData(); }
 
-  // ââ Payments âââââââââââââââââââââââââââââââââââââââââââââââââ
+  // — Payments ————————————————————————â
   getPayments(filters: Parameters<PaymentAdminService['getPayments']>[0]) { return this.payments.getPayments(filters); }
 
-  // ââ Operations âââââââââââââââââââââââââââââââââââââââââââââââ
+  // — Operations ———————————————————————â
   getMissionControl() { return this.ops.getMissionControl(); }
   getAdminMeta() { return this.ops.getAdminMeta(); }
   getAuditLog(filters: Parameters<OperationalAdminService['getAuditLog']>[0]) { return this.ops.getAuditLog(filters); }

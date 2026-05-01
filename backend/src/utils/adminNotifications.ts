@@ -55,7 +55,7 @@ export interface CreateAdminNotificationDto {
 
  * Inserta una notificación persistente en la tabla admin_notifications.
 
- * No lanza error si falla â solo loguea para no interrumpir el flujo principal.
+ * No lanza error si falla — solo loguea para no interrumpir el flujo principal.
 
  */
 

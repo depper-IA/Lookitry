@@ -166,7 +166,7 @@ router.post('/admin/subscriptions/:brandId/payment', adminAuthMiddleware, (req: 
 
  * Reprocessa un pago de Wompi que fue cobrado pero no activó la suscripción.
 
- * Ñtil cuando el webhook falló silenciosamente. Requiere auth de admin.
+ * ñtil cuando el webhook falló silenciosamente. Requiere auth de admin.
 
  */
 

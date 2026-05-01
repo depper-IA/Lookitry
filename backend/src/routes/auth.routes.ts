@@ -22,13 +22,13 @@ const authController = new AuthController();
 
 
 
-// POST /api/auth/register â rate limit: 3 por hora por IP
+// POST /api/auth/register — rate limit: 3 por hora por IP
 
 router.post('/register', registerRateLimiter, asyncHandler((req, res) => authController.register(req, res)));
 
 
 
-// POST /api/auth/register-post-payment â sin Turnstile, sin anti-abuso, sin rate limiter estricto
+// POST /api/auth/register-post-payment — sin Turnstile, sin anti-abuso, sin rate limiter estricto
 
 router.post('/register-post-payment', optionalAuth as any, asyncHandler(registerPostPayment));
 
@@ -40,7 +40,7 @@ router.get('/pending-registration/:ref', asyncHandler(getPendingRegistration));
 
 
 
-// POST /api/auth/login â rate limit más estricto: 5 intentos por 15 min
+// POST /api/auth/login — rate limit más estricto: 5 intentos por 15 min
 
 router.post('/login', loginRateLimiter, asyncHandler((req, res) => authController.login(req, res)));
 
@@ -76,13 +76,13 @@ router.post('/change-password', authMiddleware, asyncHandler((req, res) => authC
 
 
 
-// GET /api/auth/check-email?email=xxx â verifica si el email ya existe
+// GET /api/auth/check-email?email=xxx — verifica si el email ya existe
 
 router.get('/check-email', asyncHandler((req, res) => authController.checkEmail(req, res)));
 
 
 
-// GET /api/auth/slug-check?slug=xxx â verifica si el slug está disponible
+// GET /api/auth/slug-check?slug=xxx — verifica si el slug está disponible
 
 router.get('/slug-check', publicRateLimiter, asyncHandler(async (req, res) => {
 
@@ -114,7 +114,7 @@ router.get('/slug-check', publicRateLimiter, asyncHandler(async (req, res) => {
 
     'www', 'mail', 'email', 'support', 'help', 'docs', 'documentation',
 
-    'app', 'panel', 'cms', 'manage', 'settings', 'config', 'å¯', 'çå¬å¸',
+    'app', 'panel', 'cms', 'manage', 'settings', 'config', 'å¯', 'çåå¸',
 
     'lookitry', 'wwwlookitry', 'cdn', 'static', 'assets', 'images', 'css', 'js',
 
@@ -190,13 +190,13 @@ router.get('/slug-check', publicRateLimiter, asyncHandler(async (req, res) => {
 
 
 
-// POST /api/auth/google â Login/registro con Google
+// POST /api/auth/google — Login/registro con Google
 
 router.post('/google', authRateLimiter, asyncHandler((req, res) => authController.googleLogin(req, res)));
 
 
 
-// POST /api/auth/google/onboarding â Completar setup después de registro con Google
+// POST /api/auth/google/onboarding — Completar setup después de registro con Google
 
 // NO requiere authMiddleware porque puede ser llamado con ref (sin token) o con token
 
@@ -204,7 +204,7 @@ router.post('/google/onboarding', asyncHandler((req, res) => authController.comp
 
 
 
-// POST /api/auth/logout â limpia la cookie HTTP-Only del lado del servidor
+// POST /api/auth/logout — limpia la cookie HTTP-Only del lado del servidor
 
 router.post('/logout', async (req, res) => {
   // Extraer token de la cookie para añadirlo a la blacklist
@@ -252,7 +252,7 @@ router.post('/logout', async (req, res) => {
 
 
 
-// POST /api/auth/refresh-session â renueva el JWT y la cookie
+// POST /api/auth/refresh-session — renueva el JWT y la cookie
 
 router.post('/refresh-session', authMiddleware, asyncHandler(async (req: any, res: Response) => {
 

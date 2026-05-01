@@ -129,7 +129,7 @@ export const adminForgotPassword = async (req: any, res: Response) => {
 
       await emailService.sendEmail({
         to: admin.email,
-        subject: 'Recuperar contraseña â Panel de administración Lookitry',
+        subject: 'Recuperar contraseña — Panel de administración Lookitry',
         html: `
           <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#ffffff">
             <h2 style="margin:0 0 12px;color:#0a0a0a;font-size:22px">Restablecer contraseña</h2>
@@ -403,7 +403,7 @@ export const createAdmin = async (req: any, res: Response) => {
 
     emailService.sendEmail({
       to: email,
-      subject: 'Acceso al Panel de Administración â Virtual Try-On',
+      subject: 'Acceso al Panel de Administración — Virtual Try-On',
       html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
         <h2 style="color:#FF5C3A;margin-bottom:8px">Bienvenido al Panel de Administración</h2>
         <p style="color:#6b7280;margin-bottom:24px">Hola <strong>${name}</strong>, se ha creado tu cuenta de administrador en Lookitry.</p>
@@ -462,7 +462,7 @@ export const sendAdminCredentials = async (req: any, res: Response) => {
     const { adminPasswordResetEmail } = await import('../../templates/email-templates');
     emailService.sendEmail({
       to: admin.email,
-      subject: 'Restablecimiento de contraseña â Panel de Administración',
+      subject: 'Restablecimiento de contraseña — Panel de Administración',
       html: adminPasswordResetEmail(admin.name, admin.email, newPassword),
     }).catch(err => console.error('[sendAdminCredentials] Error enviando email:', err));
 

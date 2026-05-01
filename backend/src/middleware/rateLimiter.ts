@@ -510,7 +510,7 @@ export const authRateLimiter = rateLimit({
 
  * Rate limiter MUY estricto para /login
 
- * 5 intentos por 15 minutos por IP â protección contra fuerza bruta
+ * 5 intentos por 15 minutos por IP — protección contra fuerza bruta
 
  */
 
@@ -576,7 +576,7 @@ export const loginRateLimiter = rateLimit({
 
  * Rate limiter para registro
 
- * 3 registros por hora por IP â prevenir spam de cuentas
+ * 3 registros por hora por IP — prevenir spam de cuentas
 
  */
 
@@ -642,7 +642,7 @@ export const registerRateLimiter = rateLimit({
 
  * Rate limiter para login de admin
 
- * 5 intentos por 15 minutos por IP â protección contra fuerza bruta para panel admin
+ * 5 intentos por 15 minutos por IP — protección contra fuerza bruta para panel admin
 
  */
 

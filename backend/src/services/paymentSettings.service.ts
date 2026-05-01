@@ -18,7 +18,7 @@ export interface PaymentSettings {
 
   footer_brand_url: string;
 
-  // Wompi â sandbox (pruebas)
+  // Wompi — sandbox (pruebas)
 
   wompi_enabled: boolean;
 
@@ -32,7 +32,7 @@ export interface PaymentSettings {
 
   wompi_test_mode: boolean;
 
-  // Wompi â producción
+  // Wompi — producción
 
   wompi_prod_public_key: string;
 
@@ -210,7 +210,7 @@ const DEFAULT_SETTINGS: PaymentSettings = {
 
   modal_promo_config: {},
 
-  modal_title: 'Â¡Oferta Especial!',
+  modal_title: '¡Oferta Especial!',
 
   modal_description: 'Obtén un descuento exclusivo registrándote hoy.',
 

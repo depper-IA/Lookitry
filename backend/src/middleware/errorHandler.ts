@@ -466,7 +466,7 @@ export const notFoundHandler = (req: Request, _res: Response, next: NextFunction
 
 /**
 
- * Manejador de errores no capturados â no-op, los handlers reales están en index.ts
+ * Manejador de errores no capturados — no-op, los handlers reales están en index.ts
 
  */
 

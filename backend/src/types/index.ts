@@ -220,9 +220,9 @@ export interface RegisterBrandDto {
 
   slug: string;
 
-  contact_name: string;  // Nombre completo del responsable â obligatorio
+  contact_name: string;  // Nombre completo del responsable — obligatorio
 
-  phone?: string;        // Teléfono â opcional
+  phone?: string;        // Teléfono — opcional
 
 }
 

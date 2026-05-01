@@ -86,7 +86,7 @@ const paymentMutationRateLimiter = rateLimit({
 
  * POST /api/payments/wompi/webhook
 
- * Recibe eventos de Wompi â NO requiere auth (llamado directamente por Wompi)
+ * Recibe eventos de Wompi — NO requiere auth (llamado directamente por Wompi)
 
  * Rate limited para prevenir abuse
 

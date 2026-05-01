@@ -12,7 +12,7 @@ import { Request, Response } from 'express';
 
 
 
-// âââ Mocks ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// —â Mocks ——————————————————————————————————
 
 //
 
@@ -20,7 +20,7 @@ import { Request, Response } from 'express';
 
 // Por eso usamos jest.fn() directamente en los factories y recuperamos
 
-// las referencias DESPUÑS de los imports.
+// las referencias DESPUñS de los imports.
 
 
 
@@ -174,7 +174,7 @@ jest.mock('../templates/email-templates', () => ({
 
 
 
-// Importar DESPUÑS de los mocks
+// Importar DESPUñS de los mocks
 
 import { WompiController } from '../controllers/wompi.controller';
 
@@ -184,7 +184,7 @@ import { SubscriptionService } from '../services/subscription.service';
 
 
 
-// âââ Helpers ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// —â Helpers —————————————————————————————————
 
 
 
@@ -264,7 +264,7 @@ function buildReqRes(body: unknown, headers: Record<string, string> = {}) {
 
 
 
-// âââ WompiService (instancia real, sin mocks de módulo) ââââââââââââââââââââââ
+// —â WompiService (instancia real, sin mocks de módulo) ———————————
 
 
 
@@ -482,7 +482,7 @@ describe('WompiService', () => {
 
 
 
-// âââ WompiController.handleWebhook âââââââââââââââââââââââââââââââââââââââââââ
+// —â WompiController.handleWebhook —————————————————————â
 
 
 
@@ -994,7 +994,7 @@ describe('WompiController.handleWebhook', () => {
 
 
 
-    it('SÑ llama renewSubscription cuando checkIdempotency indica no procesado', async () => {
+    it('Sñ llama renewSubscription cuando checkIdempotency indica no procesado', async () => {
 
       mockedWompi.checkIdempotency.mockResolvedValueOnce({ alreadyProcessed: false });
 
