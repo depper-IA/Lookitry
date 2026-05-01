@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 
 interface ProductSkeletonProps {
-  variant?: 'grid' | 'list' | 'thumbnail';
+  variant?: 'grid' | 'thumbnails' | 'list';
   count?: number;
 }
 
@@ -13,7 +13,7 @@ const skeletonVariants = {
     minHeight: 'min-h-[520px]',
     contentPadding: 'p-5',
   },
-  thumbnail: {
+  thumbnails: {
     container: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5',
     card: 'rounded-2xl overflow-hidden',
     imageAspect: 'aspect-[4/5]',
@@ -23,14 +23,14 @@ const skeletonVariants = {
   list: {
     container: 'rounded-2xl overflow-hidden',
     card: 'flex gap-4 p-4',
-    imageSize: 'w-20 h-20 rounded-lg',
+    imageAspect: 'w-20 h-20 rounded-lg',
     minHeight: '',
     contentPadding: '',
   },
 };
 
 function SkeletonItem({ variant }: { variant: 'grid' | 'thumbnails' | 'list' }) {
-  const style = skeletonVariants[variant === 'thumbnails' ? 'thumbnail' : variant];
+  const style = skeletonVariants[variant];
 
   if (variant === 'list') {
     return (
@@ -74,10 +74,10 @@ function SkeletonItem({ variant }: { variant: 'grid' | 'thumbnails' | 'list' }) 
 
 export function ProductSkeleton({ variant = 'grid', count = 6 }: ProductSkeletonProps) {
   // Adjust count based on variant for visual balance
-  const actualCount = variant === 'list' ? 3 : variant === 'thumbnail' ? 8 : count;
+  const actualCount = variant === 'list' ? 3 : variant === 'thumbnails' ? 8 : count;
 
   return (
-    <div className={skeletonVariants[variant === 'thumbnail' ? 'thumbnail' : variant].container}>
+    <div className={skeletonVariants[variant].container}>
       {Array.from({ length: actualCount }, (_, i) => (
         <SkeletonItem key={i} variant={variant} />
       ))}

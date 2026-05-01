@@ -31,6 +31,7 @@ import {
   ArrowRight,
   Trash2,
   Star,
+  ChevronLeft,
 } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
@@ -425,9 +426,9 @@ export default function ProductsPage() {
           ) : (
             <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
-              {/* Mobile Tab Switcher */}
-              <div className="lg:hidden mb-6">
-                <div className="flex items-center bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-1">
+              {/* Mobile & Laptop Tab Switcher */}
+              <div className="xl:hidden mb-6">
+                <div className="flex items-center bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-1 max-w-md">
                   <button
                     onClick={() => setActiveTab('catalog')}
                     className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
@@ -454,25 +455,27 @@ export default function ProductsPage() {
               </div>
 
               {/* Split Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 lg:gap-10 xl:gap-12">
+              <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-8 xl:gap-12">
 
                 {/* Left: Catalog Panel */}
-                <div className={activeTab === 'widget' ? 'hidden lg:block' : ''}>
+                <div className={`min-w-0 ${activeTab === 'widget' ? 'hidden xl:block' : ''}`}>
                   {/* Category Filter */}
-                  <div className="flex items-center justify-between mb-6">
-                    <CategoryFilter
-                      categories={categories}
-                      selectedCategory={categoryFilter}
-                      onSelectCategory={setCategoryFilter}
-                    />
-                    {categoryFilter !== 'Todas' && (
-                      <button
-                        onClick={() => setCategoryFilter('Todas')}
-                        className="text-[10px] font-semibold text-[#FF5C3A] hover:underline"
-                      >
-                        Limpiar filtro
-                      </button>
-                    )}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-4">
+                      <CategoryFilter
+                        categories={categories}
+                        selectedCategory={categoryFilter}
+                        onSelectCategory={setCategoryFilter}
+                      />
+                      {categoryFilter !== 'Todas' && (
+                        <button
+                          onClick={() => setCategoryFilter('Todas')}
+                          className="text-[10px] font-semibold text-[#FF5C3A] hover:underline"
+                        >
+                          Limpiar filtro
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <ProductList
@@ -508,7 +511,7 @@ export default function ProductsPage() {
                 </div>
 
                 {/* Right: Widget Panel */}
-                <div className={`space-y-8 ${activeTab === 'catalog' ? 'hidden lg:block' : ''}`}>
+                <div className={`space-y-8 ${activeTab === 'catalog' ? 'hidden xl:block' : ''}`}>
                   {/* Widget Playlist */}
                   <div className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-6 shadow-xl">
                     <WidgetPlaylist

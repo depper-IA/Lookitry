@@ -6,10 +6,10 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_B
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { ref: string } }
+  context: { params: Promise<{ ref: string }> }
 ) {
   try {
-    const ref = params.ref;
+    const { ref } = await context.params;
 
     if (!ref) {
       return NextResponse.json({ error: 'Reference is required' }, { status: 400 });

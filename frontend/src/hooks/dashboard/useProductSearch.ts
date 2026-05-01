@@ -1,17 +1,16 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { Product } from '@/types';
 
 const DEBOUNCE_DELAY = 300;
-const PRODUCTS_PER_PAGE = 6;
 
 export type SortOption = 'name_asc' | 'name_desc' | 'created_desc';
 
 /**
- * Manages product search/filter/pagination/sort state for the products dashboard.
- * @param products - Full product list to filter and paginate
- * @returns Search, filter, pagination, and sort state with handlers
+ * Manages product search/filter/sort state for the products dashboard.
+ * @param products - Full product list to filter
+ * @returns Search, filter, and sort state with handlers
  */
 export function useProductSearch(products: Product[]) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,14 +33,6 @@ export function useProductSearch(products: Product[]) {
 
   // Sort state
   const [sortBy, setSortBy] = useState<SortOption>('name_asc');
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Reset to page 1 when products change (e.g., after create/delete)
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [products.length]);
 
   // Filter + sort products based on search and sort preference
   const filteredProducts = useMemo(() => {
@@ -74,31 +65,15 @@ export function useProductSearch(products: Product[]) {
     return sorted;
   }, [products, debouncedQuery, sortBy]);
 
-  // Paginated products
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
-  const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
-    return filteredProducts.slice(start, start + PRODUCTS_PER_PAGE);
-  }, [filteredProducts, currentPage]);
-
-  // Navigation
-  const goToPage = useCallback((page: number) => {
-    setCurrentPage((p) => Math.max(1, Math.min(page, totalPages)));
-  }, [totalPages]);
-
   return {
     searchQuery,
     debouncedQuery,
     filteredProducts,
-    paginatedProducts,
-    currentPage,
-    totalPages,
     sortBy,
     setSortBy,
     handleSearchChange,
     clearSearch,
     hasActiveSearch: debouncedQuery.trim().length > 0,
-    goToPage,
   };
 }
 

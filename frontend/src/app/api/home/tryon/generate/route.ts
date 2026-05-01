@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
     // This ensures the real client IP reaches the backend for whitelist checking
     const realClientIP = request.headers.get('cf-connecting-ip')
       || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      || request.ip
       || '';
 
     const response = await fetch(`${apiUrl}/api/home/tryon/generate`, {
