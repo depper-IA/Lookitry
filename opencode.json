@@ -20,7 +20,7 @@
       "npm": "@ai-sdk/google-vertex",
       "options": {
         "project": "gen-lang-client-0591001769",
-        "location": "us-central1",
+        "location": "global",
         "timeout": 120000
       },
       "models": {
