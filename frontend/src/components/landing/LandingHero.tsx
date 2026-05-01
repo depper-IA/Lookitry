@@ -170,9 +170,10 @@ export default function LandingHero() {
 
   // Fetch trial status only when needed (on user interaction)
   const fetchTrialStatus = useCallback(async () => {
-    if (hasUsedTrial !== undefined) return; // Already checked
+    if (!selectedProduct) return false;
+    if (hasUsedTrial !== undefined) return hasUsedTrial;
     try {
-      const res = await fetch('/api/home/tryon/check');
+      const res = await fetch(`/api/home/tryon/check?productId=${selectedProduct.id}`);
       const data = await res.json();
       setHasUsedTrial(data.hasTrialed);
       return data.hasTrialed;
@@ -181,7 +182,7 @@ export default function LandingHero() {
       setHasUsedTrial(false);
       return false;
     }
-  }, [hasUsedTrial]);
+  }, [selectedProduct, hasUsedTrial]);
 
   const handleProductSelect = useCallback((product: Product) => {
     setSelectedProduct(product);

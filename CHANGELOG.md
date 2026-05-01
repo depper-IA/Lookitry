@@ -1,5 +1,35 @@
 # CHANGELOG — Lookitry
 
+## 1 de Mayo 2026 — Per-Product Home Trial + UpgradeModal Fix
+
+### Cambios Backend (`home.routes.ts`)
+
+**Per-Product Trial Logic:**
+- `GET /api/home/tryon/check` ahora acepta `productId` como query param y cuenta ensayos por producto específico
+- `POST /api/home/tryon/generate` ahora valida ensayo por producto específico (no global)
+- Límite: 3 ensayos gratis por producto por IP (independiente entre productos)
+- INSERT de trial solo after n8n success (no en failure)
+
+### Cambios Frontend
+
+**LandingHero.tsx:**
+- `fetchTrialStatus()` ahora pasa `productId` en la query al endpoint `/check`
+
+**UpgradeModal.tsx:**
+- Contenido envuelto en `overflow-y-auto max-h-[90vh]` para scroll en viewports pequeños
+- Botón cerrar ahora tiene `p-2` (touch target ≥44px), `aria-label="Cerrar"`
+- Añadido `useEffect` para escuchar `keydown` Escape y cerrar modal
+- Overlay tiene `onClick={onClose}` para cerrar al hacer click fuera
+
+### Archivos Modificados
+| Archivo | Cambio |
+|---------|--------|
+| `backend/src/routes/home.routes.ts` | Lógica per-product |
+| `frontend/src/components/landing/LandingHero.tsx` | Pasa productId a /check |
+| `frontend/src/components/ui/UpgradeModal.tsx` | Scroll + keyboard close |
+
+---
+
 ## 1 de Mayo 2026 — Presigned URLs para MinIO (Soporte Vertex AI)
 
 ### Problema

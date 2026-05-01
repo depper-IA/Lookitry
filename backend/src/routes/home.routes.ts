@@ -57,31 +57,44 @@ router.get('/config', asyncHandler(async (req, res) => {
   });
 }));
 
-// GET /api/home/tryon/check - Check if IP has already trialed
-router.get('/check', asyncHandler(async (req, res) => {
-  const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 'unknown';
-
-  // Whitelisted IPs (Travis & Sam's dev PCs) bypass trial limit
-  if (isWhitelistedSync(ip)) {
-    return res.json({
-      hasTrialed: false,
-      trialCount: 0,
-      isWhitelisted: true,
-    });
-  }
-
-  const { data: existingTrial } = await supabaseAdmin
-    .from('home_tryon_trials')
-    .select('id, created_at')
-    .eq('ip_address', ip)
-    .maybeSingle();
-
-  return res.json({
-    hasTrialed: !!existingTrial,
-    trialCount: existingTrial ? 1 : 0,
-    isWhitelisted: false,
-  });
-}));
+// GET /api/home/tryon/check - Check if IP has already trialed for a specific product
+router.get('/check', asyncHandler(async (req, res) => {
+  const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 'unknown';
+  const productId = req.query.productId as string;
+
+  // Whitelisted IPs (Travis & Sam's dev PCs) bypass trial limit
+  if (isWhitelistedSync(ip)) {
+    return res.json({
+      hasTrialed: false,
+      trialCount: 0,
+      isWhitelisted: true,
+    });
+  }
+
+  // If no productId provided, return neutral (frontend should always pass productId)
+  if (!productId) {
+    return res.json({
+      hasTrialed: false,
+      trialCount: 0,
+      isWhitelisted: false,
+    });
+  }
+
+  // Count trials for THIS specific product and IP (per-product trial limit of 3)
+  const { count } = await supabaseAdmin
+    .from('home_tryon_trials')
+    .select('*', { count: 'exact', head: true })
+    .eq('ip_address', ip)
+    .eq('product_id', productId);
+
+  const trialCount = count || 0;
+
+  return res.json({
+    hasTrialed: trialCount >= 3,
+    trialCount: Math.min(trialCount, 3), // cap at 3 for display
+    isWhitelisted: false,
+  });
+}));
 
 // POST /api/home/tryon/generate - Generate try-on for home demo
 // Whitelisted IPs bypass trial limit, others get 1 trial only
@@ -120,25 +133,24 @@ router.post('/generate', asyncHandler(async (req, res) => {
     return res.status(404).json({ error: 'Product not found' });
   }
 
-  // Check trial for non-whitelisted IPs only
-  if (!isTestIp) {
-    const { data: existingTrial } = await supabaseAdmin
-      .from('home_tryon_trials')
-      .select('id')
-      .eq('ip_address', ip)
-      .maybeSingle();
-
-    if (existingTrial) {
-      return res.status(429).json({
-        error: 'TRIAL_LIMIT_EXCEEDED',
-        message: 'Ya usaste tu prueba gratuita',
-        redirectTo: '/planes'
-      });
-    }
-  }
-
-  // NOTE: Trial recording disabled for easier testing
-  // TODO: Re-enable after testing is complete
+// Check trial for non-whitelisted IPs only (per-product limit of 3)
+  if (!isTestIp) {
+    const { count } = await supabaseAdmin
+      .from('home_tryon_trials')
+      .select('*', { count: 'exact', head: true })
+      .eq('ip_address', ip)
+      .eq('product_id', productId);
+
+    const trialCount = count || 0;
+
+    if (trialCount >= 3) {
+      return res.status(429).json({
+        error: 'TRIAL_LIMIT_EXCEEDED',
+        message: 'Ya usaste tu prueba gratuita',
+        redirectTo: '/planes',
+      });
+    }
+  }
 
   // 1. Convert base64 to buffer and upload to MinIO
   let selfieUrl: string;
