@@ -1,5 +1,6 @@
 // ai-descriptor/ai-descriptor.service.test.ts
 // Tests for DescriptorService — Phase 3
+// Updated to match new Spanish-specific field schemas
 
 import { ClothingFormatter } from '../formatters/clothing.formatter';
 import { AccessoryFormatter } from '../formatters/accessory.formatter';
@@ -120,16 +121,20 @@ describe('DescriptorService', () => {
   });
 
   describe('describeProduct happy path', () => {
-    it('calls vertexService.generateContent with formatted prompt', async () => {
+    it('calls vertexService.generateContent with formatted prompt and returns CLOTHING', async () => {
       mockGenerateContent.mockResolvedValue({
         candidates: [{
           content: {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'CLOTHING',
-              short_description: 'A beautiful red dress',
-              features: ['Elegant', 'Flowing', 'Comfortable'],
-              suggested_use_cases: ['Party', 'Date night'],
+              garment_type: 'Vestido',
+              silhouette: 'Ajustado',
+              primary_color: 'Rojo',
+              secondary_colors: ['Negro'],
+              patterns: ['Liso'],
+              materials: ['Seda'],
+              fit: 'Ajustado',
             }) }],
           },
           finishReason: 'STOP',
@@ -155,7 +160,8 @@ describe('DescriptorService', () => {
         })
       );
       expect(result.product_type).toBe('CLOTHING');
-      expect(result.short_description).toBe('A beautiful red dress');
+      expect((result as any).garment_type).toBe('Vestido');
+      expect((result as any).primary_color).toBe('Rojo');
     });
 
     it('returns AccessoryDescription for BOLSA category', async () => {
@@ -165,9 +171,12 @@ describe('DescriptorService', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'ACCESSORY',
-              short_description: 'Leather handbag',
-              features: ['Genuine leather', 'Spacious'],
-              material_notes: 'Full grain leather',
+              accessory_type: 'Bolso',
+              placement: 'Hombro',
+              material: 'Cuero',
+              primary_color: 'Negro',
+              secondary_colors: ['Marrón'],
+              patterns: ['Liso'],
             }) }],
           },
           finishReason: 'STOP',
@@ -180,8 +189,8 @@ describe('DescriptorService', () => {
       });
 
       expect(result.product_type).toBe('ACCESSORY');
-      expect(result.short_description).toBe('Leather handbag');
-      expect((result as any).material_notes).toBe('Full grain leather');
+      expect((result as any).accessory_type).toBe('Bolso');
+      expect((result as any).material).toBe('Cuero');
     });
 
     it('returns FootwearDescription for ZAPATOS category', async () => {
@@ -191,10 +200,12 @@ describe('DescriptorService', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'FOOTWEAR',
-              short_description: 'Formal black shoes',
-              features: ['Leather upper', 'Cushioned sole'],
-              style_notes: 'Classic design',
-              comfort_features: ['Arch support', 'Breathable'],
+              footwear_type: 'Zapatos',
+              heel_height: 'Tacón medio',
+              material: 'Cuero',
+              primary_color: 'Negro',
+              secondary_colors: [],
+              patterns: ['Liso'],
             }) }],
           },
           finishReason: 'STOP',
@@ -207,8 +218,8 @@ describe('DescriptorService', () => {
       });
 
       expect(result.product_type).toBe('FOOTWEAR');
-      expect(result.short_description).toBe('Formal black shoes');
-      expect((result as any).comfort_features).toHaveLength(2);
+      expect((result as any).footwear_type).toBe('Zapatos');
+      expect((result as any).heel_height).toBe('Tacón medio');
     });
   });
 
@@ -220,9 +231,8 @@ describe('DescriptorService', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'CLOTHING',
-              short_description: 'A dress',
-              features: ['Only one feature'], // violates min(3)
-              suggested_use_cases: ['Party'],
+              garment_type: 'Vestido',
+              // missing required fields - will fail Zod validation
             }) }],
           },
           finishReason: 'STOP',

@@ -1,5 +1,5 @@
 // ai-descriptor/formatters/footwear.formatter.test.ts
-// Tests for FootwearFormatter
+// Tests for FootwearFormatter — updated for Spanish-specific schema
 
 import { FootwearFormatter } from '../../formatters/footwear.formatter';
 
@@ -17,6 +17,11 @@ describe('FootwearFormatter', () => {
   });
 
   describe('buildPrompt', () => {
+    it('includes Spanish instruction at start of prompt', () => {
+      const prompt = formatter.buildPrompt('Zapatos Formales', 'ZAPATOS');
+      expect(prompt).toContain('Responde ÚNICAMENTE en ESPAÑOL');
+    });
+
     it('includes product name in prompt', () => {
       const prompt = formatter.buildPrompt('Zapatos Formales', 'ZAPATOS');
       expect(prompt).toContain('Zapatos Formales');
@@ -56,33 +61,39 @@ describe('FootwearFormatter', () => {
       const prompt = formatter.buildPrompt('Sandalias', 'SANDALIAS');
       expect(prompt).toContain('SANDALS');
     });
+
+    it('includes new Spanish field schema in prompt', () => {
+      const prompt = formatter.buildPrompt('Zapatos', 'ZAPATOS');
+      expect(prompt).toContain('footwear_type');
+      expect(prompt).toContain('heel_height');
+      expect(prompt).toContain('material');
+      expect(prompt).toContain('primary_color');
+      expect(prompt).toContain('secondary_colors');
+      expect(prompt).toContain('patterns');
+      // Old fields should NOT be present
+      expect(prompt).not.toContain('short_description');
+      expect(prompt).not.toContain('features');
+      expect(prompt).not.toContain('style_notes');
+      expect(prompt).not.toContain('comfort_features');
+    });
   });
 
   describe('parseResponse', () => {
-    it('parses valid JSON and returns typed object', () => {
+    it('parses valid JSON with new Spanish fields and returns typed object', () => {
       const rawResponse = JSON.stringify({
         product_type: 'FOOTWEAR',
-        short_description: 'Elegantes zapatos formales',
-        features: ['Cuero legitimo', 'Suela de goma'],
-        style_notes: 'Diseño clásico',
-        comfort_features: ['Plantilla acolchada', 'Soporte de arco'],
+        footwear_type: 'Zapatos',
+        heel_height: 'Tacón alto',
+        material: 'Cuero',
+        primary_color: 'Negro',
+        secondary_colors: ['Marrón'],
+        patterns: ['Liso'],
       });
       const result = formatter.parseResponse(rawResponse);
       expect(result).toBeDefined();
       expect((result as any).product_type).toBe('FOOTWEAR');
-      expect((result as any).comfort_features).toContain('Plantilla acolchada');
-    });
-
-    it('parses without optional style_notes', () => {
-      const rawResponse = JSON.stringify({
-        product_type: 'FOOTWEAR',
-        short_description: 'Zapatos cómodos',
-        features: ['Cuero', 'Suave'],
-        comfort_features: ['Plantilla suave'],
-      });
-      const result = formatter.parseResponse(rawResponse);
-      expect(result).toBeDefined();
-      expect((result as any).product_type).toBe('FOOTWEAR');
+      expect((result as any).footwear_type).toBe('Zapatos');
+      expect((result as any).heel_height).toBe('Tacón alto');
     });
 
     it('throws error for invalid JSON', () => {

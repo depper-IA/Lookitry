@@ -1,6 +1,6 @@
 // ai-descriptor/__tests__/e2e/integration.test.ts
 // E2E tests for AI Product Descriptor — mocks Vertex AI at transport layer
-// Tests the full request/response cycle: HTTP → Service → Vertex AI → Zod validation
+// Updated to match new Spanish-specific field schemas
 
 import request from 'supertest';
 import express from 'express';
@@ -36,16 +36,20 @@ describe('AI Product Descriptor E2E', () => {
   // ——————————————————————————————————————————————————————————————
 
   describe('POST /api/ai/describe-product — CLOTHING', () => {
-    it('returns 200 with valid CLOTHING discriminated union', async () => {
+    it('returns 200 with valid CLOTHING discriminated union (Spanish fields)', async () => {
       mockGenerateContent.mockResolvedValue({
         candidates: [{
           content: {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'CLOTHING',
-              short_description: 'Elegante vestido rojo para ocasiones especiales',
-              features: ['Tela suave de seda', 'Corte clasico con estampado', 'Color vibrante rojo'],
-              suggested_use_cases: ['Citas romanticas', 'Eventos formales', 'Cenas de gala'],
+              garment_type: 'Vestido',
+              silhouette: 'Ajustado',
+              primary_color: 'Rojo',
+              secondary_colors: ['Negro', 'Dorado'],
+              patterns: ['Liso', 'Con brillo'],
+              materials: ['Seda', 'Algodón'],
+              fit: 'Ajustado',
             }) }],
           },
           finishReason: 'STOP',
@@ -58,9 +62,12 @@ describe('AI Product Descriptor E2E', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.product_type).toBe('CLOTHING');
-      expect(res.body.short_description).toBe('Elegante vestido rojo para ocasiones especiales');
-      expect(res.body.features).toHaveLength(3);
-      expect(res.body.suggested_use_cases).toHaveLength(3);
+      expect(res.body.garment_type).toBe('Vestido');
+      expect(res.body.primary_color).toBe('Rojo');
+      expect(res.body.silhouette).toBe('Ajustado');
+      expect(res.body.secondary_colors).toHaveLength(2);
+      expect(res.body.materials).toHaveLength(2);
+      expect(res.body.fit).toBe('Ajustado');
     });
 
     it('returns 200 for CAMISA (shirt) category mapping to CLOTHING', async () => {
@@ -70,9 +77,13 @@ describe('AI Product Descriptor E2E', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'CLOTHING',
-              short_description: 'Camisa blanca de algodon puro',
-              features: ['Algodon 100%', 'Cuello italiano', 'Mangas largas'],
-              suggested_use_cases: ['Oficina', 'Reuniones de negocios'],
+              garment_type: 'Camisa',
+              silhouette: 'Regular',
+              primary_color: 'Blanco',
+              secondary_colors: ['Azul'],
+              patterns: ['Liso'],
+              materials: ['Algodón'],
+              fit: 'Regular',
             }) }],
           },
           finishReason: 'STOP',
@@ -85,7 +96,7 @@ describe('AI Product Descriptor E2E', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.product_type).toBe('CLOTHING');
-      expect((res.body as any).suggested_use_cases).toHaveLength(2);
+      expect(res.body.garment_type).toBe('Camisa');
     });
 
     it('returns 200 for PANTALON category', async () => {
@@ -95,9 +106,13 @@ describe('AI Product Descriptor E2E', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'CLOTHING',
-              short_description: 'Pantalon de mezclilla azul oscuro',
-              features: ['Mezclilla estirable', 'Corte recto', 'Bolsillos profundos'],
-              suggested_use_cases: ['Uso diario', 'Actividades al aire libre'],
+              garment_type: 'Pantalón',
+              silhouette: 'Recto',
+              primary_color: 'Azul oscuro',
+              secondary_colors: [],
+              patterns: ['Mezclilla'],
+              materials: ['Mezclilla'],
+              fit: 'Regular',
             }) }],
           },
           finishReason: 'STOP',
@@ -118,16 +133,19 @@ describe('AI Product Descriptor E2E', () => {
   // ——————————————————————————————————————————————————————————————
 
   describe('POST /api/ai/describe-product — ACCESSORY', () => {
-    it('returns 200 with valid ACCESSORY discriminated union', async () => {
+    it('returns 200 with valid ACCESSORY discriminated union (Spanish fields)', async () => {
       mockGenerateContent.mockResolvedValue({
         candidates: [{
           content: {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'ACCESSORY',
-              short_description: 'Bolso de cuero genuino para mujer',
-              features: ['Cuero vacuno 100%', 'Compartimento para laptop', 'Diseño minimalista'],
-              material_notes: 'Hecho de cuero vacuno de primera calidad',
+              accessory_type: 'Bolso',
+              placement: 'Hombro',
+              material: 'Cuero',
+              primary_color: 'Negro',
+              secondary_colors: ['Marrón'],
+              patterns: ['Liso'],
             }) }],
           },
           finishReason: 'STOP',
@@ -140,9 +158,10 @@ describe('AI Product Descriptor E2E', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.product_type).toBe('ACCESSORY');
-      expect(res.body.short_description).toBe('Bolso de cuero genuino para mujer');
-      expect(res.body.features).toHaveLength(3);
-      expect((res.body as any).material_notes).toBe('Hecho de cuero vacuno de primera calidad');
+      expect(res.body.accessory_type).toBe('Bolso');
+      expect(res.body.placement).toBe('Hombro');
+      expect(res.body.material).toBe('Cuero');
+      expect(res.body.primary_color).toBe('Negro');
     });
 
     it('returns 200 for JOYA (jewelry) category', async () => {
@@ -152,9 +171,12 @@ describe('AI Product Descriptor E2E', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'ACCESSORY',
-              short_description: 'Collar de oro 18k con pendiente',
-              features: ['Oro 18 kilates', 'Diseño elegante', 'Piedras preciosas'],
-              material_notes: '100% oro puro de 18 quilates',
+              accessory_type: 'Collar',
+              placement: 'Cuello',
+              material: 'Oro',
+              primary_color: 'Dorado',
+              secondary_colors: [],
+              patterns: ['Con piedras'],
             }) }],
           },
           finishReason: 'STOP',
@@ -167,7 +189,7 @@ describe('AI Product Descriptor E2E', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.product_type).toBe('ACCESSORY');
-      expect((res.body as any).material_notes).toContain('oro');
+      expect(res.body.accessory_type).toBe('Collar');
     });
 
     it('returns 200 for GORRA (hat) category', async () => {
@@ -177,8 +199,12 @@ describe('AI Product Descriptor E2E', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'ACCESSORY',
-              short_description: 'Gorra de beisbol algodon',
-              features: ['Algodon 100%', 'Ajustable', 'Logo bordado'],
+              accessory_type: 'Gorra',
+              placement: 'Cabeza',
+              material: 'Algodón',
+              primary_color: 'Negro',
+              secondary_colors: [],
+              patterns: ['Liso'],
             }) }],
           },
           finishReason: 'STOP',
@@ -200,8 +226,12 @@ describe('AI Product Descriptor E2E', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'ACCESSORY',
-              short_description: 'Bufanda de lana merino',
-              features: ['Lana merino 100%', 'Suave al tacto', 'Diseño reversible'],
+              accessory_type: 'Bufanda',
+              placement: 'Cuello',
+              material: 'Lana',
+              primary_color: 'Gris',
+              secondary_colors: [],
+              patterns: ['Rayas'],
             }) }],
           },
           finishReason: 'STOP',
@@ -222,17 +252,19 @@ describe('AI Product Descriptor E2E', () => {
   // ——————————————————————————————————————————————————————————————
 
   describe('POST /api/ai/describe-product — FOOTWEAR', () => {
-    it('returns 200 with valid FOOTWEAR discriminated union', async () => {
+    it('returns 200 with valid FOOTWEAR discriminated union (Spanish fields)', async () => {
       mockGenerateContent.mockResolvedValue({
         candidates: [{
           content: {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'FOOTWEAR',
-              short_description: 'Zapatos formales de cuero negro',
-              features: ['Cuero legitimo', 'Suela de goma antideslizante', 'Diseño clasico'],
-              style_notes: 'Estilo Oxford con acabado brillante',
-              comfort_features: ['Plantilla acolchada memory foam', 'Soporte de arco plantar', 'Respiracion optimizada'],
+              footwear_type: 'Zapatos',
+              heel_height: 'Tacón alto',
+              material: 'Cuero',
+              primary_color: 'Negro',
+              secondary_colors: ['Marrón'],
+              patterns: ['Liso'],
             }) }],
           },
           finishReason: 'STOP',
@@ -245,10 +277,10 @@ describe('AI Product Descriptor E2E', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.product_type).toBe('FOOTWEAR');
-      expect(res.body.short_description).toBe('Zapatos formales de cuero negro');
-      expect(res.body.features).toHaveLength(3);
-      expect((res.body as any).style_notes).toBe('Estilo Oxford con acabado brillante');
-      expect((res.body as any).comfort_features).toHaveLength(3);
+      expect(res.body.footwear_type).toBe('Zapatos');
+      expect(res.body.heel_height).toBe('Tacón alto');
+      expect(res.body.material).toBe('Cuero');
+      expect(res.body.primary_color).toBe('Negro');
     });
 
     it('returns 200 for SANDALIAS (sandals) category', async () => {
@@ -258,10 +290,12 @@ describe('AI Product Descriptor E2E', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'FOOTWEAR',
-              short_description: 'Sandalias de cuero para verano',
-              features: ['Cuero genuino', 'Suela de corcho', 'Diseño ventilado'],
-              style_notes: 'Estilo mediterraneo fresco',
-              comfort_features: ['Plantilla de memory foam', 'Suela antideslizante'],
+              footwear_type: 'Sandalias',
+              heel_height: 'Plano',
+              material: 'Cuero',
+              primary_color: 'Marrón',
+              secondary_colors: [],
+              patterns: ['Liso'],
             }) }],
           },
           finishReason: 'STOP',
@@ -283,9 +317,12 @@ describe('AI Product Descriptor E2E', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'FOOTWEAR',
-              short_description: 'Running shoes with mesh upper',
-              features: ['Mesh transpirable', 'Suela de EVA', 'Amortiguacion avanzada'],
-              comfort_features: ['Tecnologia de absorcion de impactos', 'Support for flat feet'],
+              footwear_type: 'Zapatillas',
+              heel_height: 'Plano',
+              material: 'Malla',
+              primary_color: 'Blanco',
+              secondary_colors: ['Negro'],
+              patterns: ['Liso'],
             }) }],
           },
           finishReason: 'STOP',
@@ -343,9 +380,13 @@ describe('AI Product Descriptor E2E', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'CLOTHING',
-              short_description: 'Vestido elegante',
-              features: ['Tela premium', 'Corte moderno', 'Color unico'],
-              suggested_use_cases: ['Fiesta', 'Cena'],
+              garment_type: 'Vestido',
+              silhouette: 'Ajustado',
+              primary_color: 'Rojo',
+              secondary_colors: [],
+              patterns: ['Liso'],
+              materials: ['Seda'],
+              fit: 'Ajustado',
             }) }],
           },
           finishReason: 'STOP',
@@ -415,17 +456,16 @@ describe('AI Product Descriptor E2E', () => {
       expect(res.body.error).toBe('VERTEX_ERROR');
     });
 
-    it('returns 502 when AI response fails Zod validation', async () => {
-      // Response has features array with only 1 item (violates min 3)
+    it('returns 502 when AI response fails Zod validation (missing required fields)', async () => {
+      // Response is missing required fields like silhouette, materials, fit
       mockGenerateContent.mockResolvedValue({
         candidates: [{
           content: {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'CLOTHING',
-              short_description: 'Vestido corto',
-              features: ['Solo una'],  // Violates min(3)
-              suggested_use_cases: [' playa'],
+              garment_type: 'Vestido',
+              // missing: silhouette, primary_color, secondary_colors, patterns, materials, fit
             }) }],
           },
           finishReason: 'STOP',
@@ -455,9 +495,13 @@ describe('AI Product Descriptor E2E', () => {
             role: 'model',
             parts: [{ text: JSON.stringify({
               product_type: 'CLOTHING',
-              short_description: 'Producto desconocido',
-              features: ['Generic feature 1', 'Generic feature 2', 'Generic feature 3'],
-              suggested_use_cases: ['casual', 'formal'],
+              garment_type: 'Prenda',
+              silhouette: 'Regular',
+              primary_color: 'Negro',
+              secondary_colors: [],
+              patterns: ['Liso'],
+              materials: ['Algodón'],
+              fit: 'Regular',
             }) }],
           },
           finishReason: 'STOP',

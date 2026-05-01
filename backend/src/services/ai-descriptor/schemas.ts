@@ -1,5 +1,6 @@
 // ai-descriptor/schemas.ts
 // Zod schemas for AI Product Descriptor — discriminated union for CLOTHING, ACCESSORY, FOOTWEAR
+// All field descriptions are in Spanish to guide Gemini's JSON output
 
 import { z } from 'zod';
 
@@ -22,56 +23,53 @@ export const DescribeProductInputSchema = z.object({
 export type DescribeProductInput = z.infer<typeof DescribeProductInputSchema>;
 
 // ——————————————————————————————————————————————————————————————
-// Base Description
-// ——————————————————————————————————————————————————————————————
-
-interface BaseDescription {
-  short_description: string;
-  product_type: 'CLOTHING' | 'ACCESSORY' | 'FOOTWEAR';
-}
-
-// ——————————————————————————————————————————————————————————————
-// CLOTHING Schema
+// CLOTHING Schema — Specific fashion attributes in Spanish
 // ——————————————————————————————————————————————————————————————
 
 export const ClothingSchema = z.object({
-  product_type: z.literal('CLOTHING'),
-  short_description: z.string().max(80),
-  features: z.array(z.string()).min(3).max(6),
-  suggested_use_cases: z.array(z.string()).min(2).max(4),
+  product_type: z.literal('CLOTHING').describe('Tipo de producto: CLOTHING'),
+  garment_type: z.string().describe('Tipo de prenda en español (ej: Vestido, Camisa, Pantalón)'),
+  silhouette: z.string().describe('Silueta o corte en español (ej: Ajustado, Holgado, Recto)'),
+  primary_color: z.string().describe('Color primario en español (ej: Rojo, Azul, Negro)'),
+  secondary_colors: z.array(z.string()).describe('Colores secundarios en español'),
+  patterns: z.array(z.string()).describe('Patrones o estampados en español'),
+  materials: z.array(z.string()).describe('Materiales principales en español'),
+  fit: z.string().describe('Tipo de ajuste en español (ej: Ajustado, Regular, Holgado)'),
 });
 
-export type ClothingDescription = BaseDescription &
-  (z.infer<typeof ClothingSchema> & { product_type: 'CLOTHING' });
+export type ClothingDescription = z.infer<typeof ClothingSchema>;
 
 // ——————————————————————————————————————————————————————————————
-// ACCESSORY Schema
+// ACCESSORY Schema — Specific fashion attributes in Spanish
 // ——————————————————————————————————————————————————————————————
 
 export const AccessorySchema = z.object({
-  product_type: z.literal('ACCESSORY'),
-  short_description: z.string().max(80),
-  features: z.array(z.string()).min(2).max(5),
-  material_notes: z.string().optional(),
+  product_type: z.literal('ACCESSORY').describe('Tipo de producto: ACCESSORY'),
+  accessory_type: z.string().describe('Tipo de accesorio en español (ej: Bolso, Joya, Bufanda)'),
+  placement: z.string().describe('Lugar del cuerpo donde se usa en español (ej: Muñeca, Cuello, Cabeza)'),
+  material: z.string().describe('Material principal en español'),
+  primary_color: z.string().describe('Color primario en español'),
+  secondary_colors: z.array(z.string()).describe('Colores secundarios en español'),
+  patterns: z.array(z.string()).describe('Patrones o estampados en español'),
 });
 
-export type AccessoryDescription = BaseDescription &
-  (z.infer<typeof AccessorySchema> & { product_type: 'ACCESSORY' });
+export type AccessoryDescription = z.infer<typeof AccessorySchema>;
 
 // ——————————————————————————————————————————————————————————————
-// FOOTWEAR Schema
+// FOOTWEAR Schema — Specific fashion attributes in Spanish
 // ——————————————————————————————————————————————————————————————
 
 export const FootwearSchema = z.object({
-  product_type: z.literal('FOOTWEAR'),
-  short_description: z.string().max(80),
-  features: z.array(z.string()).min(2).max(5),
-  style_notes: z.string().optional(),
-  comfort_features: z.array(z.string()).min(1).max(3),
+  product_type: z.literal('FOOTWEAR').describe('Tipo de producto: FOOTWEAR'),
+  footwear_type: z.string().describe('Tipo de calzado en español (ej: Zapatos, Botas, Sandalias)'),
+  heel_height: z.string().describe('Altura del tacón en español (ej: Tacón alto, Plano, Plataforma)'),
+  material: z.string().describe('Material principal en español'),
+  primary_color: z.string().describe('Color primario en español'),
+  secondary_colors: z.array(z.string()).describe('Colores secundarios en español'),
+  patterns: z.array(z.string()).describe('Patrones o estampados en español'),
 });
 
-export type FootwearDescription = BaseDescription &
-  (z.infer<typeof FootwearSchema> & { product_type: 'FOOTWEAR' });
+export type FootwearDescription = z.infer<typeof FootwearSchema>;
 
 // ——————————————————————————————————————————————————————————————
 // Discriminated Union

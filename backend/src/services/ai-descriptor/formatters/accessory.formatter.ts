@@ -33,18 +33,22 @@ export class AccessoryFormatter extends BaseFormatter {
     }
 
     const parts: string[] = [
-      `Generate a compelling product description for an ACCESSORY product.`,
-      `Product name: ${name}`,
-      `Category: ${category}`,
+      `Responde ÚNICAMENTE en ESPAÑOL. Todos los valores (colores, materiales, accesorios) deben estar en español.`,
+      `Genera una descripción de producto de moda para ACCESORIOS.`,
+      `Nombre del producto: ${name}`,
+      `Categoría: ${category}`,
       categoryContext,
       rules.replace,
       rules.keep,
-      `The response MUST be valid JSON matching this schema:`,
+      `La respuesta DEBE ser JSON válido con este esquema exacto:`,
       JSON.stringify({
         product_type: 'ACCESSORY',
-        short_description: 'string (max 80 characters)',
-        features: 'array of 2-5 distinctive features',
-        material_notes: 'optional string describing materials',
+        accessory_type: 'tipo de accesorio en español (ej: Bolso, Joya, Bufanda)',
+        placement: 'lugar del cuerpo donde se usa en español (ej: Muñeca, Cuello, Cabeza)',
+        material: 'material principal en español',
+        primary_color: 'color primario en español',
+        secondary_colors: ['colores secundarios en español'],
+        patterns: ['patrones o estampados en español'],
       }),
     ];
 

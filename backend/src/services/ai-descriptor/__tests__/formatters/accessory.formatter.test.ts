@@ -1,5 +1,5 @@
 // ai-descriptor/formatters/accessory.formatter.test.ts
-// Tests for AccessoryFormatter
+// Tests for AccessoryFormatter — updated for Spanish-specific schema
 
 import { AccessoryFormatter } from '../../formatters/accessory.formatter';
 
@@ -17,6 +17,11 @@ describe('AccessoryFormatter', () => {
   });
 
   describe('buildPrompt', () => {
+    it('includes Spanish instruction at start of prompt', () => {
+      const prompt = formatter.buildPrompt('Bolso de Cuero', 'BOLSA');
+      expect(prompt).toContain('Responde ÚNICAMENTE en ESPAÑOL');
+    });
+
     it('includes product name in prompt', () => {
       const prompt = formatter.buildPrompt('Bolso de Cuero', 'BOLSA');
       expect(prompt).toContain('Bolso de Cuero');
@@ -61,31 +66,38 @@ describe('AccessoryFormatter', () => {
       const prompt = formatter.buildPrompt('Gorra', 'GORRA');
       expect(prompt).toContain('HAT');
     });
+
+    it('includes new Spanish field schema in prompt', () => {
+      const prompt = formatter.buildPrompt('Bolso', 'BOLSA');
+      expect(prompt).toContain('accessory_type');
+      expect(prompt).toContain('placement');
+      expect(prompt).toContain('material');
+      expect(prompt).toContain('primary_color');
+      expect(prompt).toContain('secondary_colors');
+      expect(prompt).toContain('patterns');
+      // Old fields should NOT be present
+      expect(prompt).not.toContain('short_description');
+      expect(prompt).not.toContain('features');
+      expect(prompt).not.toContain('material_notes');
+    });
   });
 
   describe('parseResponse', () => {
-    it('parses valid JSON and returns typed object', () => {
+    it('parses valid JSON with new Spanish fields and returns typed object', () => {
       const rawResponse = JSON.stringify({
         product_type: 'ACCESSORY',
-        short_description: 'Elegante bolso de cuero',
-        features: ['Cuero genuino', 'Diseño elegante'],
-        material_notes: '100% cuero vacuno',
+        accessory_type: 'Bolso',
+        placement: 'Hombro',
+        material: 'Cuero',
+        primary_color: 'Negro',
+        secondary_colors: ['Marrón'],
+        patterns: ['Liso'],
       });
       const result = formatter.parseResponse(rawResponse);
       expect(result).toBeDefined();
       expect((result as any).product_type).toBe('ACCESSORY');
-      expect((result as any).material_notes).toBe('100% cuero vacuno');
-    });
-
-    it('parses without optional material_notes', () => {
-      const rawResponse = JSON.stringify({
-        product_type: 'ACCESSORY',
-        short_description: 'Elegante bolso',
-        features: ['Cuero', 'Elegante'],
-      });
-      const result = formatter.parseResponse(rawResponse);
-      expect(result).toBeDefined();
-      expect((result as any).product_type).toBe('ACCESSORY');
+      expect((result as any).accessory_type).toBe('Bolso');
+      expect((result as any).material).toBe('Cuero');
     });
 
     it('throws error for invalid JSON', () => {
