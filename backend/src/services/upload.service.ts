@@ -234,6 +234,7 @@ export class UploadService {
     await axios.put(url, body, {
       headers: {
         'Content-Type': contentType,
+        'Host': host,
         'x-amz-date': amzDate,
         'x-amz-content-sha256': payloadHash,
         Authorization: authorization,
@@ -254,7 +255,7 @@ export class UploadService {
     if (buffer[0] === 0xff && buffer[1] === 0xd8) return 'image/jpeg';
     if (buffer[0] === 0x89 && buffer[1] === 0x50) return 'image/png';
     if (buffer[0] === 0x47 && buffer[1] === 0x49) return 'image/gif';
-    if (buffer[0] === 0x52 && buffer[4] === 0x57) return 'image/webp';
+    if (buffer[0] === 0x52 && buffer[8] === 0x57) return 'image/webp';
     const ext = filename.split('.').pop()?.toLowerCase();
     const map: Record<string, string> = {
       jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
@@ -330,6 +331,7 @@ export class UploadService {
 
     await axios.delete(url, {
       headers: {
+        'Host': host,
         'x-amz-date': amzDate,
         'x-amz-content-sha256': payloadHash,
         Authorization: authorization,
