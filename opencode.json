@@ -147,20 +147,7 @@
         "TELEGRAM_CHAT_ID": "1049458877"
       }
     },
-    "supabase": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "tsx",
-        "C:\\Users\\Matt\\Lookitry\\.opencode\\mcp-servers\\supabase-mcp\\src\\index.ts"
-      ],
-      "enabled": true,
-      "environment": {
-        "SUPABASE_URL": "https://vkdooutklowctuudjnkl.supabase.co",
-        "SUPABASE_SERVICE_KEY": "***REMOVED-SECRET***"
-      }
-    },
+
     "n8n": {
       "type": "local",
       "command": [
@@ -215,7 +202,7 @@
         "-y",
         "@zethictech/obsidian-mcp"
       ],
-      "enabled": false,
+      "enabled": true,
       "environment": {
         "OBSIDIAN_VAULT": "Lookitry"
       }
