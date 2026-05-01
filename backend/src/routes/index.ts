@@ -29,6 +29,7 @@ import categoryAttributesRoutes from './categoryAttributes.routes';
 import landingStatsRoutes from './landingStats.routes';
 import homeRoutes from './home.routes';
 import vertexRoutes from './vertex.routes';
+import aiRoutes from './ai.routes';
 
 const router = Router();
 
@@ -59,5 +60,6 @@ router.use('/agent', agentRoutes);
 router.use('/category-attributes', categoryAttributesRoutes);
 router.use('/home/tryon', homeRoutes);
 router.use('/vertex', vertexRoutes);
+router.use('/ai', aiRoutes);
 
 export default router;
