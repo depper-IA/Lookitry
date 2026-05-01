@@ -1,5 +1,45 @@
 # CHANGELOG — Lookitry
 
+## 1 de Mayo 2026 — AI Product Descriptor Polymórfico
+
+### Descripción
+Sistema de descripción de productos usando IA via Vertex AI (Gemini 2.5 Flash) con esquemas Zod y patrón Strategy para formateo diferenciado por categoría.
+
+### Arquitectura Implementada
+
+**Ficheros nuevos en `backend/src/services/ai-descriptor/`:**
+
+| Archivo | Líneas | Descripción |
+|---------|--------|-------------|
+| `schemas.ts` | 86 | Esquemas Zod con unión discriminada: CLOTHING, ACCESSORY, FOOTWEAR |
+| `ai-descriptor.service.ts` | 167 | Servicio con Vertex AI wiring, manejo de errores (ValidationError, VertexError), estrategia de formateo |
+| `formatters/base.formatter.ts` | 28 | Clase base abstracta (Strategy Pattern) |
+| `formatters/clothing.formatter.ts` | 80 | Implementación para vestimenta |
+| `formatters/accessory.formatter.ts` | 54 | Implementación para accesorios |
+| `formatters/footwear.formatter.ts` | 48 | Implementación para calzado |
+
+**Ruta nueva en `backend/src/routes/ai.routes.ts`:**
+- `POST /api/ai/describe-product` — Endpoint para generar descripciones de producto
+
+**Tests (113 tests + 10 route tests):**
+- `ai-descriptor.service.test.ts` — 249 líneas, coverage servicio y errores
+- `schemas.test.ts` — 277 líneas, coverage todos los esquemas Zod
+- `formatters/*.test.ts` — Coverage completo de formatters
+- `integration.test.ts` — 415 líneas, tests E2E con mock de Vertex
+
+### Diseño Técnico
+
+- **Vertex AI**: Gemini 2.5 Flash via `vertexService.generateContent()`
+- **Zod**: Esquemas con unión discriminada por `product_type`
+- **Strategy Pattern**: Formatters especializados por categoría (Clothing, Accessory, Footwear)
+- **Manejo de errores**: ValidationError (502), VertexError (500), errores genéricos (500)
+
+### Archivos Modificados
+| Archivo | Cambio |
+|---------|--------|
+| `backend/src/routes/ai.routes.ts` | Nueva ruta POST /api/ai/describe-product |
+| `backend/src/app.ts` | Registro de router ai.routes |
+
 ## 1 de Mayo 2026 — Per-Product Home Trial + UpgradeModal Fix
 
 ### Cambios Backend (`home.routes.ts`)
