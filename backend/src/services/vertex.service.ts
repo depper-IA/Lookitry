@@ -105,6 +105,7 @@ class VertexService {
     const vertexAI = getVertexAI();
 
     try {
+      // First try using the Vertex AI SDK (requires ADC credentials)
       const model = vertexAI.getGenerativeModel({
         model: modelId,
         systemInstruction: options.systemInstruction ? {
@@ -144,7 +145,45 @@ class VertexService {
         } : undefined,
       };
     } catch (error: any) {
-      console.error(`[VertexService] Error generating content:`, error?.message || error);
+      console.error(`[VertexService] Error generating content with Vertex AI, falling back to REST:`, error?.message || error);
+
+      // Fallback to Gemini REST API using GOOGLE_API_KEY if Vertex fails due to missing ADC
+      const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+      if (apiKey) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
+          
+          const payload = {
+            system_instruction: options.systemInstruction,
+            contents: options.contents,
+            generationConfig: options.generationConfig,
+            safetySettings: options.safetySettings,
+          };
+
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Gemini API Error ${res.status}: ${errorText}`);
+          }
+
+          const json: any = await res.json();
+          return {
+            candidates: json.candidates?.map((c: any) => ({
+              content: c.content,
+              finishReason: c.finishReason || 'STOP',
+            })),
+            usageMetadata: json.usageMetadata,
+          };
+        } catch (restError: any) {
+          console.error(`[VertexService] REST API fallback also failed:`, restError?.message || restError);
+          return { error: restError?.message || 'REST API fallback failed' };
+        }
+      }
 
       // Parse error response
       if (error?.response?.data?.error) {
