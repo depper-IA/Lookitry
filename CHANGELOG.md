@@ -1,5 +1,40 @@
 # CHANGELOG — Lookitry
 
+## 1 de Mayo 2026 — Presigned URLs para MinIO (Soporte Vertex AI)
+
+### Problema
+Las URLs retornadas por el upload service apuntaban directamente al bucket MinIO privado. APIs externas como Vertex AI no podían acceder a las imágenes porque el bucket requiere autenticación S3.
+
+### Solución Implementada
+
+**`backend/src/services/upload.service.ts`:**
+- Modificado `uploadImageBuffer()` para retornar presigned URL en lugar de URL directa (línea 241-243)
+- Agregado nuevo método `generatePresignedUrl(key, expiry)` que genera URLs con firma HMAC-SHA256 válida por 7 días por defecto
+- Cualquiera con la presigned URL puede acceder al objeto hasta la fecha de expiración
+
+### URLs antes/después
+
+**Antes:**
+```
+https://minio.wilkiedevs.com/images/temp/1234567890abcdef.webp
+```
+
+**Después:**
+```
+https://minio.wilkiedevs.com/images/temp/1234567890abcdef.webp
+?X-Amz-Algorithm=AWS4-HMAC-SHA256
+&X-Amz-Credential=...
+&X-Amz-Date=...
+&X-Amz-Expires=604800
+&X-Amz-SignedHeaders=host
+&X-Amz-Signature=...
+```
+
+### Nota
+Requiere deploy al VPS para que tome efecto en producción.
+
+---
+
 ## 30 de Abril 2026 — Ejecución del Plan de Limpieza de Proyecto
 
 ### Acciones Realizadas
