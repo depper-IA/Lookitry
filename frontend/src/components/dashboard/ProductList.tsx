@@ -88,11 +88,15 @@ const DESIGN = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-  rines: { bg: 'rgba(30, 41, 59, 0.9)', text: '#94A3B8', icon: <Gauge className="w-3 h-3" /> },
-  tshirt: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
-  camisa: { bg: 'rgba(120, 53, 15, 0.9)', text: '#FCD34D', icon: <Star className="w-3 h-3" /> },
+  falda: { bg: 'rgba(76, 29, 149, 0.9)', text: '#C4B5FD', icon: <Sparkles className="w-3 h-3" /> },
   vestido: { bg: 'rgba(76, 29, 149, 0.9)', text: '#C4B5FD', icon: <Sparkles className="w-3 h-3" /> },
+  tops: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
+  camisa: { bg: 'rgba(120, 53, 15, 0.9)', text: '#FCD34D', icon: <Star className="w-3 h-3" /> },
+  accessories: { bg: 'rgba(30, 41, 59, 0.9)', text: '#94A3B8', icon: <Gauge className="w-3 h-3" /> },
+  rines: { bg: 'rgba(30, 41, 59, 0.9)', text: '#94A3B8', icon: <Gauge className="w-3 h-3" /> },
   zapatos: { bg: 'rgba(22, 101, 52, 0.9)', text: '#86EFAC', icon: <Star className="w-3 h-3" /> },
+  bolso: { bg: 'rgba(120, 53, 15, 0.9)', text: '#FCD34D', icon: <Star className="w-3 h-3" /> },
+  conjunto: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
   default: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Sparkles className="w-3 h-3" /> },
 };
 
@@ -201,7 +205,7 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(({
   const isThumb = variant === 'thumbnails';
   const isList = variant === 'list';
 
-  const cardMinHeight = isGrid ? 'min-h-[520px]' : isThumb ? 'min-h-[440px]' : '';
+  const cardMinHeight = isGrid ? 'min-h-[560px] lg:min-h-[620px]' : isThumb ? 'min-h-[440px] lg:min-h-[480px]' : '';
 
   return (
     <motion.div
@@ -464,8 +468,91 @@ export function ListView({ products, onEdit, onDelete, widgetProductIds, onAddTo
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: DESIGN.shadowCard }}>
       <div className="h-1" style={{ background: `linear-gradient(to right, ${DESIGN.accent}, transparent)` }} />
-      <div className="hidden lg:block">
-        <table className="w-full">
+      <div className="hidden xl:block overflow-x-auto no-scrollbar">
+        <table className="w-full min-w-[750px]">
+          <thead>
+            <tr style={{ background: 'var(--table-header-bg)' }}>
+              <th className="pl-8 pr-6 py-5 text-left text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--text-muted)' }}>Producto</th>
+              <th className="px-6 py-5 text-left text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--text-muted)' }}>Categoría</th>
+              <th className="px-6 py-5 text-left text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--text-muted)' }}>Specs</th>
+              <th className="px-6 py-5 text-right text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--text-muted)' }}>Precio</th>
+              <th className="pr-8 pl-6 py-5 text-right text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--text-muted)' }}>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <AnimatePresence mode="popLayout">
+              {products.map((product, idx) => (
+                <motion.tr
+                  key={product.id}
+                  layout
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: idx * 0.03 }}
+                  className="group cursor-pointer"
+                  style={{ borderBottom: '1px solid var(--card-border)' }}
+                >
+                  <td className="pl-8 pr-6 py-6">
+                    <div className="flex items-center gap-5">
+                      <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0" style={{ border: '1px solid var(--card-border)' }}>
+                        <ImageWithFallback src={product.imageUrl} alt={product.name} className="w-full h-full" />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-bold uppercase tracking-tight text-base" style={{ color: 'var(--text-primary)' }}>{product.name}</h4>
+                        {(product.shortDescription || product.description) && (
+                          <p className="text-[11px] mt-1 line-clamp-1" style={{ color: 'var(--text-muted)' }}>{product.shortDescription || product.description}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ background: DESIGN.success, boxShadow: `0 0 6px ${DESIGN.success}` }} />
+                          <span className="text-[9px] font-semibold uppercase" style={{ color: DESIGN.success }}>Activo</span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-6">
+                    <div className="flex flex-col gap-2">
+                      <CategoryBadge category={product.category} />
+                      {product.badge && <ProductBadge type={product.badge} />}
+                    </div>
+                  </td>
+                  <td className="px-6 py-6">
+                    <TechSpecs attributes={product.attributes || {}} />
+                    <div className="mt-2"><AttributePills attributes={product.attributes || {}} /></div>
+                  </td>
+                  <td className="px-6 py-6 text-right"><PriceDisplay price={product.price ?? 0} category={product.category} /></td>
+                  <td className="pr-8 pl-6 py-6 text-right">
+                    <div className="flex justify-end gap-3">
+                      {onAddToWidget && (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => onAddToWidget(product.id)}
+                          disabled={widgetProductIds?.includes(product.id) || !canAddToWidget}
+                          className="p-3 rounded-xl transition-all"
+                          style={{
+                            background: widgetProductIds?.includes(product.id) ? 'rgba(16,185,129,0.15)' : 'var(--btn-bg)',
+                            border: widgetProductIds?.includes(product.id) ? '1px solid rgba(16,185,129,0.25)' : '1px solid var(--card-border)',
+                          }}
+                        >
+                          {widgetProductIds?.includes(product.id) ? <Check size={18} className="text-emerald-500" /> : <Plus size={18} className={canAddToWidget === false ? 'text-gray-500' : 'text-[#FF5C3A]'} />}
+                        </motion.button>
+                      )}
+                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)} className="p-3 rounded-xl" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
+                        <Edit3 size={18} style={{ color: 'var(--text-primary)' }} />
+                      </motion.button>
+                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)} className="p-3 rounded-xl" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                        <Trash2 size={18} style={{ color: DESIGN.danger }} />
+                      </motion.button>
+                    </div>
+                  </td>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </tbody>
+        </table>
+      </div>
+      <div className="hidden lg:block xl:hidden overflow-x-auto no-scrollbar">
+        <table className="w-full min-w-[650px]">
           <thead>
             <tr style={{ background: 'var(--table-header-bg)' }}>
               <th className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'var(--text-muted)' }}>Producto</th>
@@ -619,13 +706,28 @@ interface GridViewProps extends Omit<ProductListProps, 'viewMode'> {
 
 const GridView = React.forwardRef<HTMLDivElement, GridViewProps>(({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget, variant }, ref) => {
   const isThumbnails = variant === 'thumbnails';
+
+  // Grid columns: fewer on laptops for better density, more on huge screens
+  // Thumbnails: more but smaller cards | Grid: fewer but larger cards
   const gridClass = isThumbnails
-    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5'
-    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
+    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4'
+    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6';
 
   return (
-    <motion.div ref={ref} variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-      className={`grid ${gridClass}`}>
+    <motion.div
+      ref={ref}
+      variants={staggerContainer}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-50px' }}
+      className={`grid ${gridClass}`}
+      style={{
+        // Wide laptop: expand to edges, tighter columns in center
+        gridTemplateColumns: isThumbnails
+          ? 'repeat(auto-fill, minmax(180px, 1fr))'
+          : 'repeat(auto-fill, minmax(280px, 1fr))',
+      }}
+    >
       <AnimatePresence mode="popLayout">
         {products.map((product, idx) => (
           <ProductCard
@@ -647,8 +749,8 @@ const GridView = React.forwardRef<HTMLDivElement, GridViewProps>(({ products, on
 export function ProductList({ products, viewMode = 'grid', onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget, sortBy, onSortChange }: ProductListProps) {
   return (
     <div className="pb-20">
-      {/* Always-visible action bar for thumbnail view */}
-      {viewMode === 'thumbnails' && onSortChange && (
+      {/* Product count and Sort control - Visible in all views */}
+      {onSortChange && (
         <div className="flex items-center justify-between mb-6 px-1">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
             {products.length} producto{products.length !== 1 ? 's' : ''}

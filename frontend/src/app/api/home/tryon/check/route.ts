@@ -5,7 +5,6 @@ export async function GET(request: NextRequest) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
     const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
       || request.headers.get('cf-connecting-ip')
-      || request.ip
       || '';
     const response = await fetch(`${apiUrl}/api/home/tryon/check`, {
       headers: {

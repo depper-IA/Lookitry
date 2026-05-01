@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY!;
@@ -66,7 +66,8 @@ export async function PUT(req: NextRequest) {
   }
 
   // Invalidar caché ISR para que la landing refleje el cambio
-  revalidateTag('pricing');
+  revalidatePath('/planes');
+  revalidatePath('/');
 
   return NextResponse.json({ ok: true });
 }
