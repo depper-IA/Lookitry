@@ -224,9 +224,14 @@ export async function GET(req: NextRequest) {
         break; 
       }
 
-      const buffer = await res.arrayBuffer();
+const buffer = await res.arrayBuffer();
 
-      return new NextResponse(buffer, {
+      // Cache headers strategy for proxied images:
+      // - public: allows caching by CDNs and browsers
+      // - max-age=86400 (24h): browser/CDN caches the image for 24 hours
+      // - stale-while-revalidate=3600: if cache is stale within 1h, serve stale content while fetching fresh
+      // This balances freshness with performance, reducing origin requests while staying reasonably current
+      const proxyResponse = new NextResponse(buffer, {
         headers: {
           'Content-Type': contentType,
           'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600',
@@ -234,11 +239,28 @@ export async function GET(req: NextRequest) {
           'X-Proxy-Origin': parsedUrl.hostname,
         },
       });
+
+      return proxyResponse;
     } catch (err: any) {
       console.warn(`[Img Proxy] Error:`, err.message);
       continue;
     }
   }
+
+  // ════════════════════════════════════════════════════════════════════════════════
+  // FALLBACK BEHAVIOR EXPLANATION
+  // ════════════════════════════════════════════════════════════════════════════════
+  // When all attempts to fetch the image fail (e.g., server timeout, network error,
+  // or blocked by security policies), the proxy falls back to a 302 redirect.
+  // This allows the browser to attempt fetching the original URL directly,
+  // which may succeed if the origin allows direct access or has no CORS restrictions.
+  // The redirect preserves the original URL so that any existing bookmarks or
+  // cached links remain functional.
+  //
+  // Alternative considered: returning a placeholder image or error response.
+  // Tradeoff: Redirect keeps the experience seamless for users with access while
+  // preserving original URLs, but may expose the original URL to network logs.
+  // ════════════════════════════════════════════════════════════════════════════════
 
   // Todos los intentos fallaron
   console.log(`[Img Proxy] Fallback final: Redirect a ${parsedUrl.toString()}`);
