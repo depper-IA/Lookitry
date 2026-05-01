@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/services/api';
 import { downloadImage } from '@/utils/download';
@@ -14,6 +14,8 @@ import {
   Trash2,
   Download,
   Maximize2,
+  ZoomIn,
+  ZoomOut,
   X,
   CheckCircle2,
   Clock,
@@ -75,8 +77,10 @@ const itemVariants = {
 };
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
-function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: string; productName: string; onClose: () => void; brandPlan?: string }) {
+function Lightbox({ imageUrl, productName, onClose, brandPlan, onDelete, onReportError, hasFeedback }: { imageUrl: string; productName: string; onClose: () => void; brandPlan?: string; onDelete: () => void; onReportError: () => void; hasFeedback?: boolean }) {
   const [downloading, setDownloading] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const isDragging = useRef(false);
 
   const handleDownload = () => {
     // Forzamos descarga mediante el proxy con header Content-Disposition
@@ -84,31 +88,79 @@ function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: str
     window.location.href = downloadUrl;
   };
 
+  const toggleZoom = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isDragging.current) return; // Ignore click if it came from dragging
+    setZoom(prev => prev === 1 ? 1.5 : prev === 1.5 ? 2 : 1);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 backdrop-blur-xl"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 p-4 md:p-8 backdrop-blur-xl"
       onClick={onClose}
     >
-      <button className="absolute top-6 right-6 w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all border border-white/10 active:scale-90" onClick={onClose}>
+      <button className="absolute top-6 right-6 w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all border border-white/10 active:scale-90 z-20" onClick={onClose}>
         <X className="w-6 h-6 text-white" />
       </button>
 
-      <motion.div
-        initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
-        className="relative max-w-full max-h-[85vh] group shadow-[0_0_100px_rgba(255,92,58,0.2)]"
-        onClick={e => e.stopPropagation()}
-      >
-        <img src={imageUrl} alt={productName} className="w-auto h-full max-h-[80vh] object-contain rounded-3xl" />
-      </motion.div>
+      <div className="flex-1 min-h-0 w-full flex items-center justify-center relative">
+        <motion.div
+          initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
+          className={`relative group shadow-[0_0_100px_rgba(255,92,58,0.2)] rounded-3xl overflow-hidden z-10 flex items-center justify-center ${zoom > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'}`}
+        >
+          <motion.img 
+            src={imageUrl} 
+            alt={productName} 
+            className="w-auto h-auto max-w-full max-h-[75vh] object-contain rounded-3xl"
+            animate={zoom === 1 ? { scale: 1, x: 0, y: 0 } : { scale: zoom }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            drag={zoom > 1}
+            dragConstraints={{ left: -100 * zoom, right: 100 * zoom, top: -100 * zoom, bottom: 100 * zoom }}
+            onDragStart={(e) => { e.stopPropagation(); isDragging.current = true; }}
+            onDragEnd={() => { setTimeout(() => { isDragging.current = false; }, 100); }}
+            onClick={toggleZoom}
+          />
+          
+          {/* Lupa Helper Indicator */}
+          <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md rounded-full p-3 text-white pointer-events-none transition-opacity opacity-0 group-hover:opacity-100 z-20">
+            {zoom === 1 ? <ZoomIn size={24} /> : <ZoomOut size={24} />}
+          </div>
+        </motion.div>
+      </div>
 
-      <button
-        onClick={handleDownload} disabled={downloading}
-        className="absolute bottom-10 px-10 py-4 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center gap-3 shadow-2xl hover:brightness-110 active:scale-95 transition-all"
-      >
-        {downloading ? <Spinner size="sm" /> : <Download size={18} />}
-        {downloading ? 'Codificando...' : 'Descargar Imagen'}
-      </button>
+      <div className="mt-6 flex flex-wrap gap-4 items-center justify-center shrink-0 z-20" onClick={(e) => e.stopPropagation()}>
+        {!hasFeedback ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); onReportError(); }}
+            className="px-6 py-4 bg-white/10 border border-white/20 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center gap-3 shadow-2xl hover:bg-white/20 active:scale-95 transition-all"
+          >
+            <Flag size={18} />
+            Reportar Fallo
+          </button>
+        ) : (
+          <span className="px-6 py-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center gap-3">
+            <CheckCircle size={18} />
+            Reporte Enviado
+          </span>
+        )}
+
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          className="px-6 py-4 bg-[#1a1a1a] border border-white/10 text-white/80 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center gap-3 shadow-2xl hover:bg-rose-500 hover:text-white hover:border-rose-500 active:scale-95 transition-all"
+        >
+          <Trash2 size={18} />
+          Borrar
+        </button>
+
+        <button
+          onClick={handleDownload} disabled={downloading}
+          className="px-10 py-4 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center gap-3 shadow-2xl hover:brightness-110 active:scale-95 transition-all"
+        >
+          {downloading ? <Spinner size="sm" /> : <Download size={18} />}
+          {downloading ? 'Codificando...' : 'Descargar'}
+        </button>
+      </div>
     </motion.div>
   );
 }
@@ -143,7 +195,7 @@ function FeedbackModal({
         credentials: 'include',
         body: JSON.stringify({
           error_type: feedbackType,
-          description: feedbackType === OTHER_VALUE ? feedbackDesc.trim() : undefined,
+          description: feedbackDesc.trim() || undefined,
         }),
       });
 
@@ -169,36 +221,36 @@ function FeedbackModal({
       <div
         role="dialog"
         aria-modal="true"
-        className="rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)]"
+        className="rounded-3xl w-full max-w-sm p-5 sm:p-6 shadow-2xl overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)] max-h-[90vh] flex flex-col"
         onClick={e => e.stopPropagation()}
       >
         {!sent ? (
           <>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-xl text-[var(--text-primary)]">¿Algo no salió bien?</h3>
+            <div className="flex items-center justify-between mb-4 shrink-0">
+              <h3 className="font-bold text-lg sm:text-xl text-[var(--text-primary)]">¿Algo no salió bien?</h3>
               <button onClick={onClose} className="w-8 h-8 rounded-xl hover:bg-[var(--bg-hover)] flex items-center justify-center transition-colors">
                 <X size={18} className="text-[var(--text-muted)]" />
               </button>
             </div>
-            <p className="text-sm text-[var(--text-secondary)] mb-5">Cuéntanos qué falló para que nuestra IA aprenda a hacerlo mejor.</p>
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-4 shrink-0">Cuéntanos qué falló para que nuestra IA aprenda a hacerlo mejor.</p>
 
             {generation.error_message && (
-              <div className="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20">
-                <p className="text-xs font-medium text-rose-400 uppercase tracking-wider mb-1">Error original</p>
-                <p className="text-sm text-[var(--text-secondary)]">{generation.error_message}</p>
+              <div className="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 shrink-0">
+                <p className="text-[10px] sm:text-xs font-medium text-rose-400 uppercase tracking-wider mb-1">Error original</p>
+                <p className="text-xs sm:text-sm text-[var(--text-secondary)]">{generation.error_message}</p>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="overflow-y-auto no-scrollbar shrink">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 max-h-[40vh] sm:max-h-[50vh] overflow-y-auto no-scrollbar pb-2">
               {ERROR_TYPES.map(et => (
                 <button
                   key={et.value}
                   onClick={() => setFeedbackType(et.value)}
-                  className={`p-3 rounded-2xl border text-sm font-medium transition-all text-left ${
-                    feedbackType === et.value
-                      ? 'ring-2 ring-[#FF5C3A] shadow-sm'
-                      : ''
-                  }`}
+                  className={`p-3 rounded-2xl border text-xs sm:text-sm font-medium transition-all text-left ${
+                    feedbackType === et.value ? 'ring-2 ring-[#FF5C3A] shadow-sm' : ''
+                  } ${et.value === OTHER_VALUE ? 'sm:col-span-2' : ''}`}
                   style={
                     feedbackType === et.value
                       ? { backgroundColor: 'rgba(255,92,58,0.1)', borderColor: '#FF5C3A', color: 'var(--text-primary)' }
@@ -208,45 +260,38 @@ function FeedbackModal({
                   {et.label}
                 </button>
               ))}
-              <button
-                onClick={() => setFeedbackType(OTHER_VALUE)}
-                className={`col-span-2 p-3 rounded-2xl border text-sm font-medium transition-all text-left ${
-                  feedbackType === OTHER_VALUE ? 'ring-2 ring-[#FF5C3A] shadow-sm' : ''
-                }`}
-                style={
-                  feedbackType === OTHER_VALUE
-                    ? { backgroundColor: 'rgba(255,92,58,0.1)', borderColor: '#FF5C3A', color: 'var(--text-primary)' }
-                    : { backgroundColor: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }
-                }
-              >
-                Otro
-              </button>
             </div>
 
-            {feedbackType === OTHER_VALUE && (
-              <textarea
-                value={feedbackDesc}
-                onChange={e => setFeedbackDesc(e.target.value)}
-                placeholder="Dinos qué viste mal..."
-                className="w-full p-4 rounded-2xl mb-4 h-28 text-sm outline-none transition-all border bg-[var(--bg-hover)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
-              />
-            )}
+            <AnimatePresence>
+              {feedbackType && (
+                <motion.textarea
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: '6rem' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  value={feedbackDesc}
+                  onChange={e => setFeedbackDesc(e.target.value)}
+                  placeholder={feedbackType === OTHER_VALUE ? "Dinos qué viste mal..." : "Detalles adicionales (opcional)..."}
+                  className="w-full p-4 rounded-2xl mb-4 text-xs sm:text-sm outline-none transition-all border bg-[var(--bg-hover)] border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none"
+                />
+              )}
+            </AnimatePresence>
+            </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 shrink-0 mt-4">
               <button
                 onClick={handleSubmit}
                 disabled={sending || (!feedbackType) || (feedbackType === OTHER_VALUE && !feedbackDesc.trim())}
-                className="w-full py-4 text-white rounded-2xl font-bold shadow-lg disabled:opacity-50 active:scale-95 transition-all bg-[#FF5C3A]"
+                className="w-full py-3.5 sm:py-4 text-white rounded-2xl font-bold shadow-lg disabled:opacity-50 active:scale-95 transition-all bg-[#FF5C3A] text-sm"
               >
                 {sending ? 'Enviando...' : 'Enviar reporte'}
               </button>
-              <button onClick={onClose} className="w-full py-3 text-sm font-medium transition-colors text-[var(--text-muted)]">
+              <button onClick={onClose} className="w-full py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors text-[var(--text-muted)]">
                 Cancelar
               </button>
             </div>
           </>
         ) : (
-          <div className="py-8 text-center animate-in fade-in zoom-in duration-300">
+          <div className="py-8 text-center animate-in fade-in zoom-in duration-300 my-auto">
             <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 bg-emerald-500/10 border-emerald-500">
               <CheckCircle size={40} className="text-emerald-500" />
             </div>
@@ -389,8 +434,13 @@ function GenerationCard({
                 {viewMode !== 'thumbnails' && (
                   <div className="flex items-center justify-between mt-1">
                     <p className="text-[8px] font-bold text-white/40 uppercase tracking-[0.2em]">{dateStr} · {timeStr}</p>
-                    <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-[#FF5C3A] transition-colors">
-                      <Maximize2 size={12} className="text-white" />
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-rose-500 transition-colors" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+                        <Trash2 size={12} className="text-white" />
+                      </div>
+                      <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-[#FF5C3A] transition-colors" onClick={(e) => { e.stopPropagation(); onOpen(); }}>
+                        <Maximize2 size={12} className="text-white" />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -425,7 +475,6 @@ export default function GenerationsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; id?: string; bulk?: boolean }>({ isOpen: false });
-  const [statusFilter, setStatusFilter] = useState<'SUCCESS' | 'PENDING' | 'FAILED'>('SUCCESS');
   const [reportingError, setReportingError] = useState<Generation | null>(null);
 
   useEffect(() => {
@@ -436,16 +485,15 @@ export default function GenerationsPage() {
 
   useEffect(() => {
     const filtered = generations.filter(gen =>
-      gen.productName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      gen.status === statusFilter
+      gen.productName.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredGenerations(filtered);
-  }, [searchTerm, generations, statusFilter]);
+  }, [searchTerm, generations]);
 
   const loadGenerations = async () => {
     try {
       setLoading(true);
-      const res = await api.get<{ generations: Generation[]; total: number }>(`/generations?status=${statusFilter}`);
+      const res = await api.get<{ generations: Generation[]; total: number }>(`/generations`);
       setGenerations(res.data.generations);
     } catch (err: any) {
       setError(err.message || 'Error al cargar el historial');
@@ -453,12 +501,6 @@ export default function GenerationsPage() {
       setLoading(false);
     }
   };
-
-  // Reload when status filter changes
-  useEffect(() => {
-    loadGenerations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
 
   const toggleSelect = (id: string) => {
     setSelected(prev => {
@@ -571,30 +613,6 @@ export default function GenerationsPage() {
             />
           </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Status:</span>
-            <div className="flex bg-[var(--bg-card)] rounded-xl p-1 border border-[var(--border-color)] shadow-lg">
-              {(['SUCCESS', 'PENDING', 'FAILED'] as const).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  className={`px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                    statusFilter === status
-                      ? status === 'SUCCESS'
-                        ? 'bg-emerald-500 text-white shadow-sm'
-                        : status === 'PENDING'
-                        ? 'bg-[#FF5C3A] text-white shadow-sm'
-                        : 'bg-rose-500 text-white shadow-sm'
-                      : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
-                  }`}
-                >
-                  {status === 'SUCCESS' ? 'Exitosas' : status === 'PENDING' ? 'Pendientes' : 'Fallidas'}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <AnimatePresence>
             {selecting && selected.size > 0 && (
               <motion.div
@@ -665,7 +683,21 @@ export default function GenerationsPage() {
       {/* ══ MODALS ══ */}
       <AnimatePresence>
         {lightbox && lightbox.resultImageUrl && (
-          <Lightbox imageUrl={lightbox.resultImageUrl} productName={lightbox.productName} onClose={() => setLightbox(null)} brandPlan={brand?.plan} />
+          <Lightbox 
+            imageUrl={lightbox.resultImageUrl} 
+            productName={lightbox.productName} 
+            onClose={() => setLightbox(null)} 
+            brandPlan={brand?.plan} 
+            onDelete={() => {
+              setLightbox(null);
+              setConfirmDelete({ isOpen: true, id: lightbox.id });
+            }}
+            onReportError={() => {
+              setLightbox(null);
+              setReportingError(lightbox);
+            }}
+            hasFeedback={lightbox.has_feedback}
+          />
         )}
       </AnimatePresence>
 

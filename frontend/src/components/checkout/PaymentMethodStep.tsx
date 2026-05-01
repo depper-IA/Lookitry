@@ -74,7 +74,7 @@ export default function PaymentMethodStep({
           }}
         >
           <div className="flex justify-between items-start">
-            <Image src="/wompi-logo.svg" alt="Wompi" width={100} height={30} className="invert brightness-150 h-10 w-auto" />
+            <Image src="/wompi-logo.svg" alt="Wompi" width={100} height={30} className="invert brightness-150 h-10 w-auto" style={{ width: 'auto', height: 'auto' }} />
             <motion.div
               animate={{ 
                 scale: paymentMethod === 'wompi' ? 1 : 0,

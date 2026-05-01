@@ -133,7 +133,7 @@ export default function PaymentSuccessScreen() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" priority />
+            <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" style={{ width: 'auto', height: 'auto' }} priority />
             <span className="font-jakarta font-extrabold text-2xl text-white tracking-tighter">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
@@ -279,7 +279,7 @@ export default function PaymentSuccessScreen() {
 
         {/* Footer */}
         <div className="mt-8 flex justify-center items-center gap-4 opacity-40">
-          <Image src="/logo.svg" alt="SSL" width={16} height={16} className="invert brightness-0" />
+          <Image src="/logo.svg" alt="SSL" width={16} height={16} className="invert brightness-0" style={{ width: 'auto', height: 'auto' }} />
           <p className="text-[10px] font-black text-[#999] uppercase tracking-widest">
             Pago seguro
           </p>
