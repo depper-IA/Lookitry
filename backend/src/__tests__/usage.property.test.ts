@@ -32,7 +32,7 @@ import { PLANS } from '../config/plans';
 
 
 
-// âââ Modelo en memoria que replica la lógica de ProductsService âââââââââââââââ
+// —â Modelo en memoria que replica la lógica de ProductsService ———————â
 
 
 
@@ -120,7 +120,7 @@ function createProductsUpToLimit(brand: InMemoryBrand, count: number): number {
 
 
 
-// âââ Tests de propiedades ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// —â Tests de propiedades ———————————————————————————
 
 
 

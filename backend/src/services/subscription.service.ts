@@ -262,7 +262,7 @@ export class SubscriptionService {
   }
 
   private isEligibleReferralConversion(planPurchased: string, isUpgrade: boolean): boolean {
-    // TRIAL purchases do NOT trigger referral rewards â only paid plans (BASIC, PRO, ENTERPRISE)
+    // TRIAL purchases do NOT trigger referral rewards — only paid plans (BASIC, PRO, ENTERPRISE)
     if (planPurchased === 'TRIAL') return false;
     return referralService.isEligiblePlan(planPurchased);
   }
@@ -333,7 +333,7 @@ export class SubscriptionService {
         console.log(`[Proration] Usando monto de lastPayment en COP: ${currentPlanPriceTotal}`);
       }
     } else {
-      // No hay pago real anterior (trial, pago $0, etc) â calcular precio de plan actual desde config
+      // No hay pago real anterior (trial, pago $0, etc) — calcular precio de plan actual desde config
       const currentPlanKey = String(brand.plan || 'BASIC').toUpperCase();
       currentPlanPriceTotal = currentPlanPriceTotalFallback > 0
         ? currentPlanPriceTotalFallback

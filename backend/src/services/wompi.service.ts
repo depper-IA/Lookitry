@@ -112,7 +112,7 @@ export class WompiService {
 
       // Fallback a variables de entorno si falla la BD
 
-      // CRÑTICO: Si detectamos entorno de producción, usamos variables PROD_ correspondientes
+      // CRñTICO: Si detectamos entorno de producción, usamos variables PROD_ correspondientes
 
       const isActuallyProd = isProdEnv && process.env.WOMPI_PROD_PUBLIC_KEY;
 
@@ -216,7 +216,7 @@ export class WompiService {
 
     if (!eventsSecret) {
 
-      console.warn('[Wompi] events_secret no configurado â firma no verificable');
+      console.warn('[Wompi] events_secret no configurado — firma no verificable');
 
       return false;
 

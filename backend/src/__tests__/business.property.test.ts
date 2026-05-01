@@ -10,7 +10,7 @@ import * as fc from 'fast-check';
 
 
 
-// âââ Constantes del modelo ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// —â Constantes del modelo ——————————————————————————
 
 
 
@@ -54,7 +54,7 @@ function calculateProration(
 
 
 
-// âââ Tests ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// —â Tests ——————————————————————————————————
 
 
 
@@ -232,7 +232,7 @@ describe('Property-Based: Prorrateo de upgrade', () => {
 
           const { creditAmount } = calculateProration(totalPaid, totalDays, totalDays, totalPaid * 2);
 
-          // Con todos los días restantes, el crédito debe ser ~totalPaid (margen de redondeo Â±1)
+          // Con todos los días restantes, el crédito debe ser ~totalPaid (margen de redondeo ±1)
 
           expect(Math.abs(creditAmount - totalPaid)).toBeLessThanOrEqual(1);
 

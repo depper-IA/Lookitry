@@ -191,7 +191,7 @@ function generateArticleHTML(
 
           if (!dropCapApplied && !para.startsWith('<') && para.length > 0) {
             const firstLetter = para.charAt(0);
-            if (/[a-zA-ZáéíóúñÑ]/.test(firstLetter)) {
+            if (/[a-zA-Záéíóúññ]/.test(firstLetter)) {
               const rest = para.slice(1);
               para = `<span class="drop-cap" style="float: left; font-size: 4rem; line-height: 0.8; font-weight: 800; color: #FF5C3A; margin-right: 0.8rem; margin-top: 0.5rem; text-shadow: 2px 2px 0px rgba(255,92,58,0.2);">${firstLetter.toUpperCase()}</span>${rest}`;
               dropCapApplied = true;

@@ -20,7 +20,7 @@ import { redis } from '../config/redis';
 
 
 
-// ââ Constants para lockout ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// — Constants para lockout ——————————————————————————
 
 const MAX_FAILED_ATTEMPTS = 5;
 
@@ -32,7 +32,7 @@ const FAILED_KEY_PREFIX = 'auth:failed:';
 
 
 
-// ââ Helpers de campaña de trial âââââââââââââââââââââââââââââââââââââââââââââââ
+// — Helpers de campaña de trial ———————————————————————â
 
 
 
@@ -624,7 +624,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
   }  async register(data: RegisterBrandDto & { ip?: string; fingerprint?: string }): Promise<AuthResponse> {
 
-    // Validar que el email no exista â supabaseAdmin para bypassear RLS
+    // Validar que el email no exista — supabaseAdmin para bypassear RLS
 
     const { data: existingBrand } = await supabaseAdmin
 
@@ -692,7 +692,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
 
 
-    // Crear marca â supabaseAdmin para bypassear RLS en INSERT
+    // Crear marca — supabaseAdmin para bypassear RLS en INSERT
 
     const { data: newBrand, error } = await supabaseAdmin
 
@@ -808,7 +808,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
 
 
-  // ââ Lockout helpers (Redis con fallback a DB) âââââââââââââââââââââââââââââ
+  // — Lockout helpers (Redis con fallback a DB) ——————————————â
 
 
 
@@ -1050,7 +1050,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
 
 
-  // ââ Login ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  // — Login —————————————————————————————————
 
 
 
@@ -1062,7 +1062,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
 
 
-    // Buscar marca por email â usar supabaseAdmin para bypassear RLS
+    // Buscar marca por email — usar supabaseAdmin para bypassear RLS
 
     const { data: brand, error } = await supabaseAdmin
 

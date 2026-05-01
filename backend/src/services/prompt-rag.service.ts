@@ -16,7 +16,7 @@
 
  *
 
- * Costo: $0 â usa únicamente APIs gratuitas de Google.
+ * Costo: $0 — usa únicamente APIs gratuitas de Google.
 
  */
 
@@ -39,7 +39,7 @@ const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
 
 
-/** Timeout máximo para el RAG completo â no debe bloquear la generación */
+/** Timeout máximo para el RAG completo — no debe bloquear la generación */
 
 const RAG_TIMEOUT_MS = 4000;
 
@@ -65,7 +65,7 @@ export class PromptRagService {
 
     if (!GEMINI_API_KEY) {
 
-      console.warn('[PromptRAG] GEMINI_API_KEY no configurada â usando prompt base');
+      console.warn('[PromptRAG] GEMINI_API_KEY no configurada — usando prompt base');
 
       return basePrompt;
 
@@ -87,7 +87,7 @@ export class PromptRagService {
 
     } catch (err: any) {
 
-      console.warn('[PromptRAG] Timeout o error en RAG â usando prompt base:', err.message);
+      console.warn('[PromptRAG] Timeout o error en RAG — usando prompt base:', err.message);
 
       return basePrompt;
 
@@ -237,7 +237,7 @@ export class PromptRagService {
 
       const label = errorLabels[f.error_type] ?? f.error_type;
 
-      const desc = f.description ? ` â "${f.description}"` : '';
+      const desc = f.description ? ` — "${f.description}"` : '';
 
       const cat = f.product_category ? ` [${f.product_category}]` : '';
 
@@ -257,7 +257,7 @@ export class PromptRagService {
 
    * Reescribe el prompt usando Gemini 2.0 flash incorporando las reglas aprendidas.
 
-   * Modelo gratuito â no genera costos.
+   * Modelo gratuito — no genera costos.
 
    */
 
@@ -289,7 +289,7 @@ Rules:
 
 - Only add/strengthen instructions to AVOID the reported errors
 
-- Keep the prompt concise â do not add unnecessary text
+- Keep the prompt concise — do not add unnecessary text
 
 - Return ONLY the improved prompt, no explanations`;
 

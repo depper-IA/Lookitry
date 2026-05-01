@@ -198,7 +198,7 @@ describe('NotificationService', () => {
 
           to: mockBrand.email,
 
-          subject: 'Â¡Bienvenido a Lookitry!',
+          subject: '¡Bienvenido a Lookitry!',
 
           html: expect.stringContaining(mockBrand.name),
 

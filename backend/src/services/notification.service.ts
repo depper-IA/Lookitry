@@ -272,7 +272,7 @@ export class NotificationService {
 
         to: brand.email,
 
-        subject: 'Â¡Bienvenido a Lookitry!',
+        subject: '¡Bienvenido a Lookitry!',
 
         html,
 
@@ -284,7 +284,7 @@ export class NotificationService {
 
     } catch (error) {
 
-      // No relanzar â el email de bienvenida nunca debe bloquear el flujo de registro
+      // No relanzar — el email de bienvenida nunca debe bloquear el flujo de registro
 
       console.error(`â Error al enviar email de bienvenida a ${brand.email}:`, error);
 
@@ -1030,7 +1030,7 @@ export class NotificationService {
 
         to: brand.email,
 
-        subject: 'Bienvenido a Lookitry â Tus datos de acceso',
+        subject: 'Bienvenido a Lookitry — Tus datos de acceso',
 
         html,
 
@@ -1082,7 +1082,7 @@ export class NotificationService {
 
         to: brand.email,
 
-        subject: 'ð Â¡Tu mini-landing está activa! â Lookitry',
+        subject: 'ð ¡Tu mini-landing está activa! — Lookitry',
 
         html,
 
@@ -1094,7 +1094,7 @@ export class NotificationService {
 
       console.error(`[Notification] Error enviando email de activación de landing a ${brand.email}:`, error);
 
-      // No relanzar â no debe bloquear el flujo de pago
+      // No relanzar — no debe bloquear el flujo de pago
 
     }
 
@@ -1216,7 +1216,7 @@ export class NotificationService {
 
         to: brand.email,
 
-        subject: 'ð Â¡Tu bonus de referido ha sido aplicado!',
+        subject: 'ð ¡Tu bonus de referido ha sido aplicado!',
 
         html,
 
@@ -1256,7 +1256,7 @@ export class NotificationService {
 
         to: referrer.email,
 
-        subject: 'ð Â¡Uno de tus referidos se convirtió!',
+        subject: 'ð ¡Uno de tus referidos se convirtió!',
 
         html,
 
@@ -1348,7 +1348,7 @@ export class NotificationService {
 
         to: brand.email,
 
-        subject: `â¡ Tu trial está por terminar â Â¡Sube tu primer producto!`,
+        subject: `â¡ Tu trial está por terminar — ¡Sube tu primer producto!`,
 
         html,
 
@@ -1394,7 +1394,7 @@ export class NotificationService {
 
         to: brand.email,
 
-        subject: 'ð¯ Bienvenido(a) â Sube tu primer producto y activa tu probador',
+        subject: 'ð¯ Bienvenido(a) — Sube tu primer producto y activa tu probador',
 
         html,
 

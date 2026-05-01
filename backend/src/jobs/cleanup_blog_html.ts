@@ -5,7 +5,7 @@
  * - Drop-caps duplicados en múltiples secciones
  * - CTAs fragmentados/huerfanos después de blog-cta-inline
  * 
- * SOLUCIÑN: Limpiar el HTML eliminando elementos duplicados yä¿®å¾© fragmentos.
+ * SOLUCIñN: Limpiar el HTML eliminando elementos duplicados yä¿®å¾© fragmentos.
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -59,7 +59,7 @@ async function cleanupBlog(blogId: string, slug: string): Promise<void> {
         const spanEnd = endPos + endTag.length;
         // Extraer: <span class="drop-cap"...>X</span> -> solo dejar X (la letra)
         const spanContent = html.substring(pos, spanEnd);
-        const letterMatch = spanContent.match(/<span[^>]*>([A-ZÑÑÑÑÑÑ])<\/span>/i);
+        const letterMatch = spanContent.match(/<span[^>]*>([A-Zññññññ])<\/span>/i);
         if (letterMatch) {
           const letter = letterMatch[1];
           // Reemplazar el span completo con solo la letra
@@ -86,7 +86,7 @@ async function cleanupBlog(blogId: string, slug: string): Promise<void> {
   
   // 4. Verificar que no haya más elementos problemáticos
   const remainingDropCaps = (html.match(/<span class="drop-cap"/g) || []).length;
-  const remainingOrphanCtas = (html.match(/<h3 style="color: #fff; margin-top: 0; margin-bottom: 1rem; font-size: 1\.6rem; font-weight: 700;">Â¿Cansado[^<]*<\/h3>\s*<p style="color: #bbb;[^<]*<\/p>\s*<a href="\/register"/g) || []).length;
+  const remainingOrphanCtas = (html.match(/<h3 style="color: #fff; margin-top: 0; margin-bottom: 1rem; font-size: 1\.6rem; font-weight: 700;">¿Cansado[^<]*<\/h3>\s*<p style="color: #bbb;[^<]*<\/p>\s*<a href="\/register"/g) || []).length;
   
   console.log(`  - Drop-caps restantes: ${remainingDropCaps}`);
   console.log(`  - CTAs huérfanos restantes: ${remainingOrphanCtas}`);

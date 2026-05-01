@@ -518,7 +518,7 @@ export async function runDailySubscriptionCheck() {
 
     // 2. Enviar notificaciones según el estado
 
-    console.log('\nð¬ Iniciando envío de notificaciones...');
+    console.log('\nð Iniciando envío de notificaciones...');
 
     
 

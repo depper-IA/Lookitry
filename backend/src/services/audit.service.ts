@@ -80,7 +80,7 @@ class AuditService {
 
    * Registra una acción administrativa.
 
-   * No lanza errores â falla silenciosamente para no interrumpir el flujo principal.
+   * No lanza errores — falla silenciosamente para no interrumpir el flujo principal.
 
    */
 

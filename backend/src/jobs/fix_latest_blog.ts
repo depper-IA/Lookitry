@@ -1,9 +1,9 @@
 /**
  * â ï¸ DEPRECATED/OBSOLETE SCRIPT â ï¸
  * 
- * ESTE SCRIPT NO DEBE EJECUTARSE SOBRE ARTÑCULOS GENERADOS POR generateArticleHTML().
+ * ESTE SCRIPT NO DEBE EJECUTARSE SOBRE ARTñCULOS GENERADOS POR generateArticleHTML().
  * 
- * RAZÑN: Este script fue diseñado para modernizar artículos HTML antiguos (pre-2026).
+ * RAZñN: Este script fue diseñado para modernizar artículos HTML antiguos (pre-2026).
  * Los artículos nuevos generados por blog.controller.ts â generateArticleHTML() YA tienen:
  *   - Drop-caps correctos (solo en el primer párrafo del artículo)
  *   - CTAs inline en las posiciones correctas
@@ -14,7 +14,7 @@
  *   - CTAs fragmentados/huerfanos (por conflicto de inserciones)
  *   - HTML inválido con elementos huérfanos
  * 
- * ÑNICO USO VÑLIDO: Ejecutar UNA SOLA VEZ sobre artículos muy antiguos que NO fueron
+ * ñNICO USO VñLIDO: Ejecutar UNA SOLA VEZ sobre artículos muy antiguos que NO fueron
  * generados por generateArticleHTML() y que necesitan modernización de estilos.
  * 
  * Para limpiar artículos duplicados en producción, usar script de cleanup específico.
@@ -76,7 +76,7 @@ async function main() {
   html = html.replace(/<p>/g, '<p style="text-align: justify; line-height: 1.8; margin-bottom: 1.5rem;">');
 
   // 3. Apply Drop Cap to the very first section's first paragraph
-  const dropCapRegex = /(<section[^>]*>\s*<h2>[^<]+<\/h2>\s*<p style="[^"]+">)([A-ZÑÑÑÑÑÑ])/i;
+  const dropCapRegex = /(<section[^>]*>\s*<h2>[^<]+<\/h2>\s*<p style="[^"]+">)([A-Zññññññ])/i;
   html = html.replace(dropCapRegex, (match: string, prefix: string, firstLetter: string) => {
     return `${prefix}<span class="drop-cap" style="float: left; font-size: 4rem; line-height: 0.8; font-weight: 800; color: #FF5C3A; margin-right: 0.8rem; margin-top: 0.5rem; text-shadow: 2px 2px 0px rgba(255,92,58,0.2);">${firstLetter.toUpperCase()}</span>`;
   });
@@ -101,7 +101,7 @@ async function main() {
     <a href="/register" style="display: inline-block; background: linear-gradient(to right, #FF5C3A, #ff7e63); color: #fff; padding: 1rem 2.5rem; border-radius: 9999px; font-weight: 700; font-size: 1.1rem; text-decoration: none;">Comenzar Ahora</a>
   </div>`;
 
-  const cta1 = getCta("Â¿Quieres reducir las devoluciones?", "El probador virtual de Lookitry ayuda a tus clientes a elegir la talla correcta.", "Probar Gratis");
+  const cta1 = getCta("¿Quieres reducir las devoluciones?", "El probador virtual de Lookitry ayuda a tus clientes a elegir la talla correcta.", "Probar Gratis");
   const cta2 = getCta("Lleva la experiencia VIP a tu web", "Personaliza el widget con los colores de tu marca y ofrece una experiencia única.", "Registrar Marca");
 
   // 6. Inject elements into specific section breaks

@@ -61,13 +61,13 @@ export const adminAuthMiddleware = async (
 
   try {
 
-    // ââ Prioridad: Cookie HTTP-Only (P1 Hallazgo Auditoría) âââââââââââââââââ
+    // — Prioridad: Cookie HTTP-Only (P1 Hallazgo Auditoría) ————————â
 
     let token = req.cookies?.admin_token;
 
 
 
-    // ââ Fallback: Header Authorization (Bearer Token) âââââââââââââââââââââââ
+    // — Fallback: Header Authorization (Bearer Token) ———————————â
 
     if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
 

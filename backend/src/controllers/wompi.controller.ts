@@ -248,7 +248,7 @@ export class WompiController {
 
 
 
-      // ââ VALIDACIÑN DE MONTO CONTRA BD ââââââââââââââââââââââââââââââââââââââââââ
+      // — VALIDACIñN DE MONTO CONTRA BD —————————————————————
 
       // Verificar que el monto pagado coincida con el monto esperado (tolerancia 2%)
 
@@ -408,7 +408,7 @@ export class WompiController {
 
 
 
-      // ââ BLOQUE DE IDEMPOTENCIA ââââââââââââââââââââââââââââââââââââââââââââââ
+      // — BLOQUE DE IDEMPOTENCIA ———————————————————————
 
       // Check temprano: si ya procesamos este pago, responder 200 sin re-procesar.
 
@@ -446,7 +446,7 @@ export class WompiController {
 
       }
 
-      // ââ FIN BLOQUE IDEMPOTENCIA ââââââââââââââââââââââââââââââââââââââââââââââ
+      // — FIN BLOQUE IDEMPOTENCIA ———————————————————————
 
 
 
@@ -666,7 +666,7 @@ export class WompiController {
 
               to: updatedBrand.email,
 
-              subject: 'Confirma tu correo â Lookitry',
+              subject: 'Confirma tu correo — Lookitry',
 
               html: verifyEmailTemplate({ name: updatedBrand.name, email: updatedBrand.email }, verifyUrl),
 
@@ -1454,7 +1454,7 @@ export class WompiController {
 
             error: 'TRIAL_ALREADY_USED',
 
-            message: 'Ya usaste tu prueba gratuita. Â¡Upgrade a Basic o Pro para continuar!',
+            message: 'Ya usaste tu prueba gratuita. ¡Upgrade a Basic o Pro para continuar!',
 
           });
 

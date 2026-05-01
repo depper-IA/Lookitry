@@ -48,7 +48,7 @@ const subscriptionService = new SubscriptionService();
 
 
 
-// POST /api/brands/check-availability â verifica disponibilidad de nombre y slug
+// POST /api/brands/check-availability — verifica disponibilidad de nombre y slug
 
 router.post('/check-availability', publicRateLimiter, asyncHandler(async (req, res) => {
 
@@ -96,7 +96,7 @@ router.post('/check-availability', publicRateLimiter, asyncHandler(async (req, r
 
     'www', 'mail', 'email', 'support', 'help', 'docs', 'documentation',
 
-    'app', 'panel', 'cms', 'manage', 'settings', 'config', 'å¯', 'çå¬å¸',
+    'app', 'panel', 'cms', 'manage', 'settings', 'config', 'å¯', 'çåå¸',
 
     'lookitry', 'wwwlookitry', 'cdn', 'static', 'assets', 'images', 'css', 'js',
 

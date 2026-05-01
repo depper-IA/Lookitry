@@ -501,7 +501,7 @@ export class SubscriptionController {
 
    * POST /api/admin/subscriptions/:brandId/payment
 
-   * Registrar pago manual â soporta 1, 3 o 6 meses con descuento automático.
+   * Registrar pago manual — soporta 1, 3 o 6 meses con descuento automático.
 
    * 3 meses = 5% descuento, 6 meses = 10% descuento.
 
@@ -665,7 +665,7 @@ export class SubscriptionController {
 
    * Consulta la tabla subscription_payments con esa referencia y pending_registrations.
 
-   * Ñtil cuando el webhook falló silenciosamente y el usuario pagó pero no tiene plan activo.
+   * ñtil cuando el webhook falló silenciosamente y el usuario pagó pero no tiene plan activo.
 
    */
 

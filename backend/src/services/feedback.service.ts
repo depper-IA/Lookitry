@@ -246,7 +246,7 @@ export class FeedbackService {
 
    * Llama al webhook de n8n para generar el embedding del feedback.
 
-   * Se ejecuta de forma asíncrona â no bloquea la respuesta al cliente.
+   * Se ejecuta de forma asíncrona — no bloquea la respuesta al cliente.
 
    */
 

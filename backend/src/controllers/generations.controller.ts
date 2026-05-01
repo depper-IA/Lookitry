@@ -92,7 +92,7 @@ export class GenerationsController {
 
 
 
-  /** DELETE /api/generations/:id â borrar una generación */
+  /** DELETE /api/generations/:id — borrar una generación */
 
   deleteGeneration = asyncHandler(async (req: Request, res: Response) => {
 
@@ -110,7 +110,7 @@ export class GenerationsController {
 
 
 
-  /** DELETE /api/generations â borrado masivo por IDs */
+  /** DELETE /api/generations — borrado masivo por IDs */
 
   deleteGenerations = asyncHandler(async (req: Request, res: Response) => {
 

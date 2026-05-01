@@ -40,7 +40,7 @@ export async function runOnboardingReminder() {
     if (!brands || brands.length === 0) {
       console.log('â¹ï¸  No hay marcas verificadas en ventana de 24h para notificar');
       console.log('\n=================================================');
-      console.log('Job completado â no había marcas para procesar');
+      console.log('Job completado — no había marcas para procesar');
       console.log('=================================================');
       return { processed: 0, sent: 0 };
     }
@@ -69,7 +69,7 @@ export async function runOnboardingReminder() {
           console.error(`   â Error enviando onboarding reminder a ${brand.email}:`, err);
         }
       } else {
-        console.log(`   â­ï¸  ${brand.email} ya tiene productos â omitido`);
+        console.log(`   â­ï¸  ${brand.email} ya tiene productos — omitido`);
       }
     }
 

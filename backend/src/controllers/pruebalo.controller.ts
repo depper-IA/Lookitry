@@ -27,6 +27,7 @@ import { FeedbackService, GenerationErrorType } from '../services/feedback.servi
 import { PromptRagService } from '../services/prompt-rag.service';
 
 import { UploadService } from '../services/upload.service';
+import { compressImagesForN8N } from '../services/image-compression.service';
 
 import { buildCategoryRulesBlock, getPromptRules } from '../config/prompt-rules';
 
@@ -152,7 +153,7 @@ export class PruebaloController {
 
 
 
-    // Intentar obtener del caché
+    // Intentar obtener del cach©
 
     const cached = getCachedBrandConfig(brandSlug);
 
@@ -172,7 +173,7 @@ export class PruebaloController {
 
       }
 
-      // Caché contaminado Ñ¢â¬â invalidar y reconstruir
+      // Cach© contaminado — invalidar y reconstruir
 
       invalidateBrandConfigCache(brandSlug);
 
@@ -356,7 +357,7 @@ export class PruebaloController {
 
 
 
-    // Guardar en caché antes de responder
+    // Guardar en cach© antes de responder
 
     setCachedBrandConfig(brandSlug, response);
 
@@ -464,7 +465,7 @@ export class PruebaloController {
 
       throw new ValidationError(
 
-        'Debes confirmar el correo de esta cuenta para habilitar los créditos y usar el probador virtual.'
+        'Debes confirmar el correo de esta cuenta para habilitar los cr©ditos y usar el probador virtual.'
 
       );
 
@@ -650,7 +651,7 @@ export class PruebaloController {
 
 
 
-    // 5. Reservar un crédito real antes de generar (Bypass para IPs en whitelist)
+    // 5. Reservar un cr©dito real antes de generar (Bypass para IPs en whitelist)
 
     let creditReservation: { source: 'monthly' | 'extra' } | null = null;
 
@@ -670,7 +671,7 @@ export class PruebaloController {
 
           throw new LimitExceededError(
 
-            'Créditos insuficientes',
+            'Cr©ditos insuficientes',
 
             {
 
@@ -690,7 +691,7 @@ export class PruebaloController {
 
     } else {
 
-      console.log(`[pruebalo] IP Whitelisted (${ip}): Saltando reserva de créditos.`);
+      console.log(`[pruebalo] IP Whitelisted (${ip}): Saltando reserva de cr©ditos.`);
 
     }
 
@@ -796,7 +797,7 @@ export class PruebaloController {
 
       if (sanitized.safeMaster) {
 
-        finalPrompt += `\n\n[ADMIN MASTER RULES Ñ¢â¬â HIGHEST PRIORITY]\n- ${sanitized.safeMaster}`;
+        finalPrompt += `\n\n[ADMIN MASTER RULES — HIGHEST PRIORITY]\n- ${sanitized.safeMaster}`;
 
       }
 
@@ -806,7 +807,7 @@ export class PruebaloController {
 
       if (sanitized.safeNegative) {
 
-        finalPrompt += `\n\n[NEGATIVE PROMPT Ñ¢â¬â DO NOT GENERATE]\n${sanitized.safeNegative}`;
+        finalPrompt += `\n\n[NEGATIVE PROMPT — DO NOT GENERATE]\n${sanitized.safeNegative}`;
 
       }
 
@@ -818,34 +819,32 @@ export class PruebaloController {
 
 
 
-      // 7.8 Enrich with RAG (learning from previous errors) Ñ¢â¬â timeout 4s, non-blocking
+      // 7.8 Enrich with RAG (learning from previous errors) — timeout 4s, non-blocking
 
       const prompt = await promptRagService.enrichPrompt(finalPrompt, product.category ?? null);
 
 
 
-      // 7.9 Direct processing (no Redis) Ñ¢â¬â call n8n directly and wait for result
+// 7.9 Compress images before sending to n8n (reduce size for faster Vertex AI processing)
+      console.log(`[pruebalo] Comprimiendo imágenes para generación ${generation.id}...`);
 
+      const { selfie_url: compressedSelfieUrl, product_image_url: compressedProductUrl, compressionStats } =
+        await compressImagesForN8N(uploadResult.url, product.imageUrl || '');
+
+      console.log(`[pruebalo] Compresión completada. Selfie: ${compressionStats.selfie.success ? `${compressionStats.selfie.originalSize}→${compressionStats.selfie.compressedSize}` : 'fallback'}, Producto: ${compressionStats.product.success ? `${compressionStats.product.originalSize}→${compressionStats.product.compressedSize}` : 'fallback'}`);
+
+      // 7.9.1 Direct processing (no Redis) — call n8n directly and wait for result
       console.log(`[pruebalo] Llamando n8n directamente para generación ${generation.id}`);
-
-
 
       let n8nResult: { success: boolean; imageUrl?: string; error?: string } = { success: false };
 
       try {
-
         n8nResult = await n8nClient.callTryOnWebhook({
-
           brand_id: brand.id,
-
           product_id: product.id,
-
-          selfie_url: uploadResult.url,
-
-          product_image_url: product.imageUrl || '',
-
+          selfie_url: compressedSelfieUrl,
+          product_image_url: compressedProductUrl,
           prompt,
-
         });
 
       } catch (n8nCallError: any) {
@@ -858,7 +857,7 @@ export class PruebaloController {
 
 
 
-      // 7.10 Polling until generation is ready (max 90s) Ñ¢â¬â in case worker updates the record
+      // 7.10 Polling until generation is ready (max 90s) — in case worker updates the record
 
       const maxPolls = 45;
 
@@ -922,13 +921,13 @@ export class PruebaloController {
 
 
 
-      // Si después del polling aún no tenemos resultado y n8n dio error, lanzar error de n8n
+      // Si despu©s del polling aún no tenemos resultado y n8n dio error, lanzar error de n8n
 
       if (finalGeneration.status !== 'SUCCESS' || !finalGeneration.result_image_url) {
 
         if (n8nResult.success && n8nResult.imageUrl) {
 
-          // n8n tuvo éxito pero el polling no vio el resultado - usar resultado directo
+          // n8n tuvo ©xito pero el polling no vio el resultado - usar resultado directo
 
           finalGeneration.result_image_url = n8nResult.imageUrl;
 
@@ -960,7 +959,7 @@ export class PruebaloController {
 
 
 
-      // 8. Actualizar registro con resultado (SUCCESS/FAILED) Ñ¢â¬â guardar prompt para trazabilidad RAG
+      // 8. Actualizar registro con resultado (SUCCESS/FAILED) — guardar prompt para trazabilidad RAG
 
       await generationsService.updateGeneration(finalGeneration.id, {
 
@@ -1026,7 +1025,7 @@ export class PruebaloController {
 
         await usageService.refundReservedExtraCredit(brand.id).catch((refundError) => {
 
-          console.error('[pruebalo] No se pudo devolver el crédito extra reservado', refundError);
+          console.error('[pruebalo] No se pudo devolver el cr©dito extra reservado', refundError);
 
         });
 
@@ -1080,7 +1079,7 @@ export class PruebaloController {
 
 
 
-      // —â¬—â¬ Debugging detallado para trazabilidad —â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬—â¬
+      // ———— Debugging detallado para trazabilidad ————————————————————————————————————————————————————————————
 
       const errorText = [
 
@@ -1186,9 +1185,9 @@ export class PruebaloController {
 
             severity: 'error',
 
-            title: 'Créditos agotados en prueba virtual',
+            title: 'Cr©ditos agotados en prueba virtual',
 
-            message: `${brand.name} se quedó sin créditos de generación. Los clientes finales verán un mensaje temporal de indisponibilidad hasta que se recargue capacidad.`,
+            message: `${brand.name} se quedó sin cr©ditos de generación. Los clientes finales verán un mensaje temporal de indisponibilidad hasta que se recargue capacidad.`,
 
             brandId: brand.id,
 
@@ -1244,7 +1243,7 @@ export class PruebaloController {
 
    * Endpoint público para reportar un error en una generación.
 
-   * No requiere autenticación Ñ¢â¬â el cliente del widget puede reportar directamente.
+   * No requiere autenticación — el cliente del widget puede reportar directamente.
 
    */
 
@@ -1338,7 +1337,7 @@ export class PruebaloController {
 
 
 
-    // Verificar si hay errores frecuentes del mismo tipo Ñ¢â â notificar admin
+    // Verificar si hay errores frecuentes del mismo tipo —  notificar admin
 
     feedbackService.countRecentByType(error_type, productCategory ?? null, 24)
 
@@ -1388,7 +1387,7 @@ export class PruebaloController {
 
    * Endpoint público para consultar el estado de una generación (polling del widget).
 
-   * No requiere autenticación Ñ¢â¬â el generationId actúa como token de acceso.
+   * No requiere autenticación — el generationId actúa como token de acceso.
 
    */
 
@@ -1412,7 +1411,7 @@ export class PruebaloController {
 
     if (!generation) {
 
-      // 404 si no existe Ñ¢â¬â frontend treat as PENDING
+      // 404 si no existe — frontend treat as PENDING
 
       return res.status(404).json({ error: 'Generación no encontrada' });
 
@@ -1798,7 +1797,7 @@ export class PruebaloController {
 
 
 
-    // Invalidar caché tras sincronización
+    // Invalidar cach© tras sincronización
 
     invalidateBrandConfigCache(brand.slug);
 
@@ -2568,11 +2567,11 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
 
   lines.push(
 
-    `ABSOLUTE RULES Ñ¢â¬â follow all of them without exception:`,
+    `ABSOLUTE RULES — follow all of them without exception:`,
 
 
 
-    `[CLOTHING REPLACEMENT Ñ¢â¬â MANDATORY]`,
+    `[CLOTHING REPLACEMENT — MANDATORY]`,
 
     categoryRulesBlock,
 
@@ -2594,7 +2593,7 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
 
     lines.push(
 
-      `[DRESS OVERRIDE Ñ¢â¬â HIGHEST PRIORITY]`,
+      `[DRESS OVERRIDE — HIGHEST PRIORITY]`,
 
       `- The person may be wearing a jacket, denim jacket, cardigan, or coat in the original photo. REMOVE IT COMPLETELY.`,
 
@@ -2622,7 +2621,7 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
 
     `- Maintain the exact same pose, body position, background, and spatial composition as the original photo.`,
 
-    `- Fill every pixel of the frame with the scene Ñ¢â¬â no empty space, no unused canvas area.`,
+    `- Fill every pixel of the frame with the scene — no empty space, no unused canvas area.`,
 
 
 
@@ -2660,7 +2659,7 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
 
     `- The product must fit naturally on the body with correct perspective, lighting, and shadows.`,
 
-    `- Photorealistic quality only Ñ¢â¬â no illustrations, no stylization.`,
+    `- Photorealistic quality only — no illustrations, no stylization.`,
 
 
 

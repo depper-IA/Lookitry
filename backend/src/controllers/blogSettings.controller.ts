@@ -116,7 +116,7 @@ export const blogSettingsController = {
 
         if (elapsedMs > RUNNING_TIMEOUT_MS) {
 
-          // La ejecución lleva más de 3 horas sin novedades â se marca como expirada
+          // La ejecución lleva más de 3 horas sin novedades — se marca como expirada
 
           effectiveExecution = null;
 

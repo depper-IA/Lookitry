@@ -66,7 +66,7 @@ jest.mock('../../config/supabase', () => ({
 
 
 
-// Importar DESPUÑS de los mocks
+// Importar DESPUñS de los mocks
 
 import { runDailySubscriptionCheck } from '../daily-subscription-check';
 
@@ -244,7 +244,7 @@ describe('daily-subscription-check', () => {
 
 
 
-      // No debe lanzar error â el proceso continúa aunque falle la notificación
+      // No debe lanzar error — el proceso continúa aunque falle la notificación
 
       const result = await runDailySubscriptionCheck();
 

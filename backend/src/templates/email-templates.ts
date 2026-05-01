@@ -20,7 +20,7 @@ interface BrandInfo {
 
 /**
 
- * Template base con estilos comunes â paleta corporativa LOOKITRY (negro y acento naranja)
+ * Template base con estilos comunes — paleta corporativa LOOKITRY (negro y acento naranja)
 
  */
 
@@ -100,13 +100,13 @@ const baseTemplate = (content: string) => `
 
               <p style="margin: 0; color: #888; font-size: 12px;">
 
-                Â© ${new Date().getFullYear()} LOOKITRY. Todos los derechos reservados.
+                © ${new Date().getFullYear()} LOOKITRY. Todos los derechos reservados.
 
               </p>
 
               <p style="margin: 8px 0 0 0; color: #888; font-size: 12px;">
 
-                Â¿Tienes preguntas? Escríbenos a
+                ¿Tienes preguntas? Escríbenos a
 
                 <a href="mailto:info@lookitry.com" style="color: ${ACCENT_COLOR}; text-decoration: none;">info@lookitry.com</a>
 
@@ -552,7 +552,7 @@ export const suspensionEmail = (brand: BrandInfo, amount: string): string => {
 
     <div style="background-color: #fff5f5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #c0392b;">
 
-      <h3 style="color: #c0392b; margin-top: 0; font-size: 15px;">Â¿Qué significa esto?</h3>
+      <h3 style="color: #c0392b; margin-top: 0; font-size: 15px;">¿Qué significa esto?</h3>
 
       <ul style="color: #c0392b; margin: 10px 0; padding-left: 20px; font-size: 14px;">
 
@@ -664,7 +664,7 @@ export const usageAlert80Email = (brand: BrandInfo, used: number, limit: number,
 
   const content = `
 
-    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Alerta de Uso â 80%</h2>
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Alerta de Uso — 80%</h2>
 
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
 
@@ -1028,7 +1028,7 @@ export const landingActivatedEmail = (
 
   const content = `
 
-    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Â¡Tu mini-landing está activa!</h2>
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">¡Tu mini-landing está activa!</h2>
 
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
 
@@ -1064,7 +1064,7 @@ export const landingActivatedEmail = (
 
       <p style="color: #555; margin: 0; font-size: 14px; line-height: 1.6;">
 
-        <strong>Â¿Qué puedes hacer ahora?</strong><br/>
+        <strong>¿Qué puedes hacer ahora?</strong><br/>
 
         Personaliza los colores, logo y plantilla de tu página desde el dashboard.
 
@@ -1154,7 +1154,7 @@ export const paymentFailedEmail = (
 
     <div style="background-color: #fff8f6; padding: 16px 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${ACCENT_COLOR};">
 
-      <h3 style="color: #0a0a0a; margin-top: 0; font-size: 15px;">Â¿Qué puedes hacer?</h3>
+      <h3 style="color: #0a0a0a; margin-top: 0; font-size: 15px;">¿Qué puedes hacer?</h3>
 
       <ul style="color: #555; margin: 10px 0 0 0; padding-left: 20px; font-size: 14px;">
 
@@ -1184,7 +1184,7 @@ export const paymentFailedEmail = (
 
     <p style="color: #888; font-size: 13px; text-align: center;">
 
-      Â¿Necesitas ayuda? Escríbenos a 
+      ¿Necesitas ayuda? Escríbenos a 
 
       <a href="mailto:info@lookitry.com" style="color: ${ACCENT_COLOR};">info@lookitry.com</a>
 
@@ -1226,7 +1226,7 @@ export const purchaseConfirmationEmail = (
 
     <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">
 
-      ${isTrial ? 'Â¡Tu prueba está activa!' : 'Â¡Tu plan está activo!'}
+      ${isTrial ? '¡Tu prueba está activa!' : '¡Tu plan está activo!'}
 
     </h2>
 
@@ -1268,7 +1268,7 @@ export const purchaseConfirmationEmail = (
 
       <p style="color: #555; margin: 0; font-size: 14px; line-height: 1.6;">
 
-        <strong>Â¿Qué sigue?</strong><br/>
+        <strong>¿Qué sigue?</strong><br/>
 
         Configura tu marca, sube tu primer producto y personaliza tu probador virtual desde el dashboard.
 
@@ -1340,11 +1340,11 @@ export const referralBonusCreditedEmail = (brand: BrandInfo, credits: number): s
 
     </div>
 
-    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 22px; text-align: center;">Â¡Tu bonus de referido ya está disponible!</h2>
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 22px; text-align: center;">¡Tu bonus de referido ya está disponible!</h2>
 
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
 
-      Â¡Tenemos buenas noticias! Tu bonus de referido de <strong>${credits} créditos extra</strong> fue aplicado exitosamente a tu cuenta.
+      ¡Tenemos buenas noticias! Tu bonus de referido de <strong>${credits} créditos extra</strong> fue aplicado exitosamente a tu cuenta.
 
     </p>
 
@@ -1358,7 +1358,7 @@ export const referralBonusCreditedEmail = (brand: BrandInfo, credits: number): s
 
       <p style="margin: 0; color: #0a0a0a; font-size: 14px;">
 
-        <strong>Â¡Sigue compartiendo tu código de referido para ganar más créditos extra!</strong>
+        <strong>¡Sigue compartiendo tu código de referido para ganar más créditos extra!</strong>
 
       </p>
 
@@ -1406,7 +1406,7 @@ export const trialEndingSoonEmail = (brand: BrandInfo, daysRemaining: number): s
 
     <div style="background-color: #fff5f5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #c0392b;">
 
-      <h3 style="color: #c0392b; margin-top: 0; font-size: 15px;">Â¿Qué hacer ahora?</h3>
+      <h3 style="color: #c0392b; margin-top: 0; font-size: 15px;">¿Qué hacer ahora?</h3>
 
       <ul style="color: #555; margin: 10px 0 0 0; padding-left: 20px; font-size: 14px;">
 
@@ -1458,7 +1458,7 @@ export const trialNudgeSetupEmail = (brand: BrandInfo, daysRemaining: number): s
 
   const content = `
 
-    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Casi termina tu trial â Â¡No te quedes sin verlo!</h2>
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Casi termina tu trial — ¡No te quedes sin verlo!</h2>
 
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
 
@@ -1470,7 +1470,7 @@ export const trialNudgeSetupEmail = (brand: BrandInfo, daysRemaining: number): s
 
       Tu trial en LOOKITRY termina en <strong style="color: #c0392b;">${daysRemaining} día${daysRemaining > 1 ? 's' : ''}</strong>.
 
-      Â¿Ya conociste lo que puedes hacer con tu probador virtual?
+      ¿Ya conociste lo que puedes hacer con tu probador virtual?
 
     </p>
 
@@ -1528,7 +1528,7 @@ export const onboardingProductReminderEmail = (brand: BrandInfo): string => {
 
   const content = `
 
-    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Bienvenido(a) â El siguiente paso es clave</h2>
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Bienvenido(a) — El siguiente paso es clave</h2>
 
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
 
@@ -1546,7 +1546,7 @@ export const onboardingProductReminderEmail = (brand: BrandInfo): string => {
 
     <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
 
-      <h3 style="color: #065f46; margin-top: 0; font-size: 15px;">Â¿Qué sube un producto?</h3>
+      <h3 style="color: #065f46; margin-top: 0; font-size: 15px;">¿Qué sube un producto?</h3>
 
       <p style="color: #065f46; margin: 6px 0; font-size: 14px;">
 
@@ -1560,7 +1560,7 @@ export const onboardingProductReminderEmail = (brand: BrandInfo): string => {
 
       <p style="color: #555; margin: 0; font-size: 14px; line-height: 1.6;">
 
-        <strong>Â¿Qué incluye tu mini-landing?</strong><br/>
+        <strong>¿Qué incluye tu mini-landing?</strong><br/>
 
         Tu página personalizada con tu logo, colores y los productos que subas. Comienza con uno y ve cómo se ve.
 
@@ -1598,11 +1598,11 @@ export const referralConvertedNotifierEmail = (referrer: BrandInfo, referredName
 
     </div>
 
-    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 22px; text-align: center;">Â¡Uno de tus referidos se convirtió a plan pago!</h2>
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 22px; text-align: center;">¡Uno de tus referidos se convirtió a plan pago!</h2>
 
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
 
-      Â¡Excelentes noticias! <strong>${referredName}</strong> acaba de activar un plan pago. Esto significa que has ganado <strong>500 créditos extra</strong> en LOOKITRY.
+      ¡Excelentes noticias! <strong>${referredName}</strong> acaba de activar un plan pago. Esto significa que has ganado <strong>500 créditos extra</strong> en LOOKITRY.
 
     </p>
 
@@ -1616,7 +1616,7 @@ export const referralConvertedNotifierEmail = (referrer: BrandInfo, referredName
 
       <p style="margin: 0; color: #0a0a0a; font-size: 14px;">
 
-        <strong>Â¡Sigue refiriendo más tiendas para ganar más créditos extra!</strong>
+        <strong>¡Sigue refiriendo más tiendas para ganar más créditos extra!</strong>
 
       </p>
 
