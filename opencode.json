@@ -23,17 +23,7 @@
         "location": "us-central1",
         "timeout": 120000
       },
-      "models": {
-        "gemini-1.5-pro-customtools": {
-          "name": "gemini-1.5-pro"
-        },
-        "gemini-1.5-pro": {
-          "name": "gemini-1.5-pro"
-        },
-        "gemini-1.5-flash": {
-          "name": "gemini-1.5-flash"
-        }
-      }
+      "models": {}
     },
     "groq": {
       "options": {
