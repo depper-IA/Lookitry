@@ -1,6 +1,8 @@
+import { Storage } from '@google-cloud/storage';
 import sharp from 'sharp';
-
 import axios from 'axios';
+import crypto from 'crypto';
+
 
 import crypto from 'crypto';
 
@@ -82,19 +84,21 @@ export class UploadService {
 
   private readonly publicUrl = process.env.MINIO_PUBLIC_URL;
 
-
+  private storage: Storage;
+  private gcsBucketName = 'lookitry-vertex'; // Bucket público para Vertex AI
 
   constructor() {
-
     if (!this.endpoint || !this.bucket || !this.accessKey || !this.secretKey || !this.publicUrl) {
-
       throw new Error(
-
         'Variables de entorno de MinIO requeridas: MINIO_ENDPOINT, MINIO_BUCKET, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_PUBLIC_URL'
-
       );
-
     }
+
+    // Inicializar Google Cloud Storage
+    this.storage = new Storage({
+      keyFilename: 'gcs-credentials.json',
+    });
+  }
 
   }
 
@@ -234,27 +238,48 @@ export class UploadService {
 
 
 
+      // 1. Subir a MinIO como respaldo interno
       await this.putObject(uniqueName, buffer, contentType);
+      console.log(`[Upload Service] Imagen subida a MinIO (respaldo): ${uniqueName}`);
 
+      // 2. Subir a GCS para acceso público de Vertex AI
+      const gcsUrl = await this.uploadToGCS(buffer, uniqueName, contentType);
+      console.log(`[Upload Service] Imagen subida a GCS (público): ${gcsUrl}`);
 
-
-      const url = `${this.publicUrl}/${this.bucket}/${uniqueName}`;
-
-      console.log('[Upload Service] Imagen subida a MinIO:', url);
-
-      return { success: true, url, path: uniqueName };
-
+      // 3. Retornar la URL pública de GCS
+      return { success: true, url: gcsUrl, path: uniqueName };
     } catch (error: any) {
-
-      console.error('[Upload Service] Error subiendo a MinIO:', error.message);
-
+      console.error('[Upload Service] Error en el proceso de subida:', error.message);
       throw new Error(error.message || 'Error al subir imagen');
-
     }
-
   }
 
+  /**
+   * Sube un buffer a Google Cloud Storage y retorna su URL pública.
+   */
+  private async uploadToGCS(buffer: Buffer, destination: string, contentType: string): Promise<string> {
+    const bucket = this.storage.bucket(this.gcsBucketName);
+    const file = bucket.file(destination);
 
+    try {
+      await file.save(buffer, {
+        public: true,
+        contentType: contentType,
+        // Opcional: metadata para debug
+        metadata: {
+          cacheControl: 'public, max-age=3600',
+          metadata: {
+            source: 'lookitry-backend',
+            timestamp: new Date().toISOString(),
+          }
+        }
+      });
+      return file.publicUrl();
+    } catch (error: any) {
+      console.error(`[Upload Service] Error subiendo a GCS bucket "${this.gcsBucketName}":`, error);
+      throw new Error(`Fallo al subir a Google Cloud Storage: ${error.message}`);
+    }
+  }
 
   private async putObject(key: string, body: Buffer, contentType: string): Promise<void> {
 
@@ -408,25 +433,15 @@ this.accessKey}/${credentialScope}, ` +
 
 
 
-  private getExtension(filename: string, contentType: string): string {
-
+private getExtension(filename: string, contentType: string): string {
     const fromFile = filename.includes('.') ? `.${filename.split('.').pop()?.toLowerCase()}` : '';
-
     if (fromFile) return fromFile;
-
     const map: Record<string, string> = {
-
       'image/jpeg': '.jpg', 'image/png': '.png',
-
       'image/gif': '.gif', 'image/webp': '.webp', 'image/svg+xml': '.svg',
-
     };
-
     return map[contentType] || '.jpg';
-
   }
-
-
 
   async cleanupTempFiles(paths: string[]): Promise<{ deleted: number; errors: number }> {
 
