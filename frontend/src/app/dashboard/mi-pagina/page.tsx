@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
-import { brandsService } from '@/services/brands.service';
 import { api } from '@/services/api';
-import { 
-  Globe, 
+import {
+  Globe,
   ExternalLink,
   Check,
   Save,
@@ -16,16 +15,17 @@ import {
   ShieldCheck,
   Zap,
 } from 'lucide-react';
-import { LandingPreview } from './components/LandingPreview';
 import { Spinner } from '@/components/ui/Spinner';
 import { DesignTab } from './components/DesignTab';
 import { DomainTab } from './components/DomainTab';
+import { useLandingEditor } from './hooks/useLandingEditor';
+import type { Brand } from '@/types';
 
 const FRONTEND_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || '');
 
 function TemplateWireframe({ type, active }: { type: string; active: boolean }) {
   const accent = active ? '#FF5C3A' : '#444';
-  
+
   return (
     <div className="w-full h-full p-6 flex flex-col gap-3 relative overflow-hidden group">
       {type === 'classic' && (
@@ -74,16 +74,16 @@ function TemplateWireframe({ type, active }: { type: string; active: boolean }) 
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     transition: { duration: 0.5, staggerChildren: 0.08 }
   }
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: { type: "spring" as const, stiffness: 100 }
   }
@@ -112,160 +112,153 @@ const landingTemplates = [
 
 export default function MiPaginaPage() {
   const { brand: authBrand } = useAuth();
-  const [brand, setBrand] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
+  const [brand, setBrand] = useState<Brand | null>(null);
+  const [products, setProducts] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'design' | 'domain'>('design');
-
   const [landingTemplate, setLandingTemplate] = useState<'classic' | 'editorial' | 'moderno'>('classic');
-  const [landingFont, setLandingFont] = useState('font-jakarta');
-  const [slogan, setSlogan] = useState('');
-  const [description, setDescription] = useState('');
-  const [primaryColor, setPrimaryColor] = useState('#FF5C3A');
-  const [secondaryColor, setSecondaryColor] = useState('#FF5C3A');
-  const [widgetBgColor, setWidgetBgColor] = useState('#0a0a0a');
-  const [headerColor, setHeaderColor] = useState('');
-  const [coverBgColor, setCoverBgColor] = useState('');
-  const [coverOverlayOpacity, setCoverOverlayOpacity] = useState(0.55);
-  const [logoUrl, setLogoUrl] = useState('');
-  const [logoLightUrl, setLogoLightUrl] = useState('');
-  const [logoDarkUrl, setLogoDarkUrl] = useState('');
-  const [coverImageUrl, setCoverImageUrl] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [whatsappMessage, setWhatsappMessage] = useState('');
-  const [ctaButtonText, setCtaButtonText] = useState('Probarme esto');
-  const [instagram, setInstagram] = useState('');
-  const [facebook, setFacebook] = useState('');
-  const [tiktok, setTiktok] = useState('');
-  const [youtube, setYoutube] = useState('');
-  const [x, setX] = useState('');
-  const [cityDisplay, setCityDisplay] = useState('');
-  const [nationalShipping, setNationalShipping] = useState(false);
-  const [showBrandName, setShowBrandName] = useState(true);
-  const [rating, setRating] = useState('');
-  const [totalReviews, setTotalReviews] = useState('');
-  const [schedule, setSchedule] = useState<any>({});
   const [customDomain, setCustomDomain] = useState('');
 
-  // ✅ ALL HOOKS CALLED BEFORE ANY EARLY RETURNS
-  // Memoize previewProps so LandingPreview only re-renders when data actually changes
-  const previewProps = useMemo(() => {
-    const brandSlug = brand?.slug || authBrand?.slug || '';
-    return {
-      brand: {
-        ...brand,
-        name: brand?.name || authBrand?.name,
-        slug: brandSlug,
-        landing_template: landingTemplate,
-        landing_font: landingFont,
-        widget_bg_color: widgetBgColor,
-        slogan,
-        brand_description: description,
-        header_color: headerColor,
-        cover_bg_color: coverBgColor,
-        cover_overlay_opacity: coverOverlayOpacity,
-        logo: logoUrl,
-        logo_light: logoLightUrl,
-        logo_dark: logoDarkUrl,
-        cover_image_url: coverImageUrl,
-        whatsapp_contact: whatsapp,
-        whatsapp_message: whatsappMessage,
-        cta_button_text: ctaButtonText,
-        social_links: {
-          instagram,
-          facebook,
-          tiktok,
-          youtube,
-          x,
-          _landing_primary: primaryColor,
-          _landing_secondary: secondaryColor,
-        },
-        city_display: cityDisplay,
-        national_shipping: nationalShipping,
-        show_brand_name: showBrandName,
-        rating: rating ? parseFloat(rating) : null,
-        total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
-        schedule,
-        primary_color: primaryColor,
-        secondary_color: secondaryColor
-      },
-      products
-    };
-  }, [
-    brand, authBrand, landingTemplate, landingFont, widgetBgColor, slogan, description,
-    headerColor, coverBgColor, coverOverlayOpacity, logoUrl, logoLightUrl, logoDarkUrl,
-    coverImageUrl, whatsapp, whatsappMessage, ctaButtonText, instagram, facebook,
-    tiktok, youtube, x, primaryColor, secondaryColor, cityDisplay, nationalShipping,
-    showBrandName, rating, totalReviews, schedule, products
-  ]);
+  // ─── Landing Editor Hook ──────────────────────────────────────────────────
+  const editor = useLandingEditor();
+  const [editorState, editorActions] = editor;
 
-  const brandSlug = brand?.slug || authBrand?.slug || '';
+  const brandSlug = (brand?.slug as string) || (authBrand?.slug as string) || '';
+  const brandName = (brand?.name as string) || (authBrand?.name as string) || '';
   const pageUrl = `${FRONTEND_URL}/sitio/${brandSlug}`;
+
+  // Load brand data and populate the editor state
+  useEffect(() => {
+    async function loadBrand() {
+      if (!authBrand?.id) return;
+      setLoading(true);
+      try {
+        const [brandRes, productsRes] = await Promise.all([
+          api.get<Record<string, unknown>>(`/brands/me`),
+          api.get<unknown[]>('/products'),
+        ]);
+        // Cast API response to Brand type (API uses snake_case, frontend uses camelCase)
+        setBrand(brandRes.data as unknown as Brand);
+        setProducts(productsRes.data || []);
+
+        // Populate editor state from brand data
+        const b = brandRes.data;
+        const sl = (b.social_links as Record<string, unknown>) || {};
+
+        editorActions.updateField('logoUrl', (b.logo as string) || '');
+        editorActions.updateField('logoLightUrl', (b.logo_light as string) || '');
+        editorActions.updateField('logoDarkUrl', (b.logo_dark as string) || '');
+        editorActions.updateField('landingFont', (b.landing_font as string) || 'font-jakarta');
+        editorActions.updateField('showBrandName', (b.show_brand_name as boolean) ?? true);
+        editorActions.updateField('primaryColor', (b.primary_color as string) || '#FF5C3A');
+        editorActions.updateField('secondaryColor', (b.secondary_color as string) || '#FF5C3A');
+        editorActions.updateField('widgetBgColor', (b.widget_bg_color as string) || '#0a0a0a');
+        editorActions.updateField('coverBgColor', (b.cover_bg_color as string) || '');
+        editorActions.updateField('coverOverlayOpacity', (b.cover_overlay_opacity as number) ?? 0.55);
+        editorActions.updateField('headerColor', (b.header_color as string) || '');
+        editorActions.updateField('coverImageUrl', (b.cover_image_url as string) || '');
+        editorActions.updateField('description', (b.brand_description as string) || '');
+        editorActions.updateField('slogan', (b.slogan as string) || '');
+        editorActions.updateField('ctaButtonText', (b.cta_button_text as string) || 'Pruébalo ahora');
+        editorActions.updateField('whatsapp', (b.whatsapp_contact as string) || '');
+        editorActions.updateField('whatsappMessage', (b.whatsapp_message as string) || '');
+        editorActions.updateField('instagram', (sl.instagram as string) || '');
+        editorActions.updateField('facebook', (sl.facebook as string) || '');
+        editorActions.updateField('tiktok', (sl.tiktok as string) || '');
+        editorActions.updateField('youtube', (sl.youtube as string) || '');
+        editorActions.updateField('x', (sl.x as string) || '');
+        editorActions.updateField('cityDisplay', (b.city_display as string) || '');
+        editorActions.updateField('nationalShipping', (b.national_shipping as boolean) ?? false);
+        editorActions.updateField('rating', String(b.rating ?? ''));
+        editorActions.updateField('totalReviews', String(b.total_reviews ?? ''));
+        editorActions.updateSchedule((b.schedule as Record<string, string>) || {});
+        setLandingTemplate((b.landing_template as 'classic' | 'editorial' | 'moderno') || 'classic');
+        setCustomDomain((b.custom_domain as string) || '');
+      } catch {
+        setError('Error al cargar los datos');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadBrand();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authBrand?.id]);
 
   const handleSave = async () => {
     setSaving(true);
     setError('');
     try {
-      const social_links = {
-        instagram: instagram.trim(),
-        facebook: facebook.trim(),
-        tiktok: tiktok.trim(),
-        youtube: youtube.trim(),
-        x: x.trim(),
-        _landing_secondary: secondaryColor,
-        _landing_primary: primaryColor,
+      const sl = {
+        instagram: (editorState.instagram || '').trim(),
+        facebook: (editorState.facebook || '').trim(),
+        tiktok: (editorState.tiktok || '').trim(),
+        youtube: (editorState.youtube || '').trim(),
+        x: (editorState.x || '').trim(),
+        _landing_secondary: editorState.secondaryColor,
+        _landing_primary: editorState.primaryColor,
       };
 
-      const payload: any = {
+      const payload = {
         name: brand?.name,
-        slogan: slogan.trim(),
-        brand_description: description.trim(),
-        whatsapp_contact: whatsapp.trim(),
-        whatsapp_message: whatsappMessage.trim(),
-        cta_button_text: ctaButtonText.trim(),
-        logo: logoUrl || null,
-        logo_light: logoLightUrl || null,
-        logo_dark: logoDarkUrl || null,
-        cover_bg_color: coverBgColor || null,
-        cover_image_url: coverImageUrl || null,
-        cover_overlay_opacity: coverOverlayOpacity,
-        social_links,
-        city_display: cityDisplay || null,
-        national_shipping: nationalShipping,
-        show_brand_name: showBrandName,
+        slogan: editorState.slogan.trim(),
+        brand_description: editorState.description.trim(),
+        whatsapp_contact: editorState.whatsapp.trim(),
+        whatsapp_message: editorState.whatsappMessage.trim(),
+        cta_button_text: editorState.ctaButtonText.trim(),
+        logo: editorState.logoUrl || null,
+        logo_light: editorState.logoLightUrl || null,
+        logo_dark: editorState.logoDarkUrl || null,
+        cover_bg_color: editorState.coverBgColor || null,
+        cover_image_url: editorState.coverImageUrl || null,
+        cover_overlay_opacity: editorState.coverOverlayOpacity,
+        social_links: sl,
+        city_display: editorState.cityDisplay || null,
+        national_shipping: editorState.nationalShipping,
+        show_brand_name: editorState.showBrandName,
         landing_template: landingTemplate,
-        landing_font: landingFont,
-        widget_bg_color: widgetBgColor,
-        rating: rating ? parseFloat(rating) : null,
-        total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
-        header_color: headerColor || null,
-        schedule: Object.fromEntries(Object.entries(schedule).filter(([, v]) => (v as string).trim())),
+        landing_font: editorState.landingFont,
+        widget_bg_color: editorState.widgetBgColor,
+        rating: editorState.rating ? parseFloat(editorState.rating) : null,
+        total_reviews: editorState.totalReviews ? parseInt(editorState.totalReviews, 10) : null,
+        header_color: editorState.headerColor || null,
+        schedule: Object.fromEntries(
+          Object.entries(editorState.schedule).filter(([, v]) => (v as string).trim())
+        ),
       };
 
       if (brand?.plan === 'PRO') {
-        payload.custom_domain = customDomain || null;
+        // eslint-disable-next-line
+        (payload as any).custom_domain = customDomain || null;
       }
 
       await api.patch('/brands/me', payload);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
+    } catch {
       setError('Error al guardar los cambios');
     } finally {
       setSaving(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
   return (
-    <motion.div 
+    <motion.div
       initial="hidden" animate="visible" variants={containerVariants}
       className="max-w-[1600px] mx-auto px-4 sm:px-6 xl:px-8 py-6 xl:py-8 pb-24"
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 xl:gap-8 items-start min-h-[800px]">
-        
+
         {/* PANEL DE EDICIÓN */}
         <div className="space-y-6 xl:space-y-8 min-w-0">
           <motion.header variants={itemVariants} className="glass-panel-dark p-6 xl:p-8 rounded-3xl flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -273,7 +266,7 @@ export default function MiPaginaPage() {
               <h1 className="text-4xl font-bold text-[var(--text-primary)] tracking-tight font-jakarta">Editor de página</h1>
               <p className="text-sm text-[var(--text-secondary)] font-bold tracking-wider opacity-60 uppercase">Personaliza tu mini-landing premium</p>
             </div>
-            
+
             <div className="flex items-center gap-4">
                <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl text-xs font-bold uppercase tracking-widest text-[var(--text-primary)] hover:border-[#FF5C3A] hover:text-[#FF5C3A] transition-all shadow-xl group/link">
                  Ver mi sitio <ExternalLink size={14} className="group-hover:rotate-12 transition-transform" />
@@ -281,7 +274,7 @@ export default function MiPaginaPage() {
             </div>
           </motion.header>
 
-          {/* ══ BONUS MARKETING ══ */}
+          {/* BONUS MARKETING */}
           <motion.div variants={itemVariants} className="p-5 xl:p-6 rounded-3xl glass-panel-dark relative overflow-hidden group/bonus">
              <div className="absolute top-0 right-0 p-6 opacity-[0.04] group-hover:scale-110 transition-transform duration-1000">
                 <ShieldCheck size={82} />
@@ -294,7 +287,7 @@ export default function MiPaginaPage() {
                    </p>
                 </div>
 
-                <Link 
+                <Link
                   href="/dashboard/tienda-profesional"
                   className="px-5 py-3 bg-white text-black rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
                 >
@@ -304,9 +297,9 @@ export default function MiPaginaPage() {
           </motion.div>
 
           <AnimatePresence>
-            {!brand?.has_landing_page && (
-              <motion.div 
-                variants={itemVariants} 
+            {!(brand?.has_landing_page) && (
+              <motion.div
+                variants={itemVariants}
                 className="p-8 rounded-3xl border-2 border-dashed border-[#FF5C3A]/20 bg-[#FF5C3A]/5 flex flex-col lg:flex-row items-center justify-between gap-8 relative overflow-hidden group/unlock"
               >
                 <div className="flex items-center gap-6 relative z-10 text-center md:text-left">
@@ -328,14 +321,15 @@ export default function MiPaginaPage() {
             )}
           </AnimatePresence>
 
+          {/* Tab Switcher */}
           <motion.div variants={itemVariants} className="flex flex-wrap gap-2 p-1.5 glass-panel-dark rounded-[1.75rem] w-full md:w-fit shadow-xl">
-            {( [
+            {([
               { id: 'design', label: 'Diseño y estilo', icon: <Layout size={18} /> },
               { id: 'domain', label: 'Dominio y enlace', icon: <Globe size={18} /> },
             ] as const).map(tab => (
-              <button 
+              <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)} 
+                onClick={() => setActiveTab(tab.id as 'design' | 'domain')}
                 className={`flex flex-1 md:flex-none items-center justify-center gap-3 px-5 xl:px-6 py-3 text-[11px] font-bold uppercase tracking-widest transition-all rounded-[1.3rem] relative overflow-hidden group/tab ${activeTab === tab.id ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/10' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}
               >
                 <span className="relative z-10 flex items-center gap-3">
@@ -351,7 +345,7 @@ export default function MiPaginaPage() {
 
           <div className={activeTab === 'design' ? 'block' : 'hidden'}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 xl:space-y-10">
-                
+
                 {/* 1. SELECCIÓN DE PLANTILLA */}
                 <section className="glass-panel-dark p-5 md:p-6 rounded-3xl relative overflow-hidden group/templates">
                   <div className="flex flex-col gap-5 border-b border-[var(--border-color)] pb-5 mb-5 xl:flex-row xl:items-end xl:justify-between">
@@ -373,7 +367,7 @@ export default function MiPaginaPage() {
                     {landingTemplates.map(t => (
                       <button
                         key={t.id}
-                        onClick={() => setLandingTemplate(t.id as any)}
+                        onClick={() => setLandingTemplate(t.id as 'classic' | 'editorial' | 'moderno')}
                         className={`relative rounded-[1.75rem] border text-left transition-all group/card active:scale-[0.98] ${landingTemplate === t.id ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-lg shadow-[#FF5C3A]/10' : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[#FF5C3A]/30 hover:bg-white'}`}
                       >
                          <div className="flex h-full flex-col gap-4 p-4">
@@ -402,24 +396,13 @@ export default function MiPaginaPage() {
                   </div>
                 </section>
 
-                {/* 2. CONFIGURACIÓN DETALLADA (DesignTab) */}
+                {/* 2. CONFIGURACIÓN DETALLADA */}
                 <div className="relative">
                   <DesignTab
-                    {...{
-                      description, setDescription, slogan, setSlogan,
-                      whatsapp, setWhatsapp, whatsappMessage, setWhatsappMessage,
-                      ctaButtonText, setCtaButtonText, coverImageUrl, setCoverImageUrl,
-                      logoUrl, setLogoUrl, logoLightUrl, setLogoLightUrl,
-                      logoDarkUrl, setLogoDarkUrl, coverBgColor, setCoverBgColor,
-                      coverOverlayOpacity, setCoverOverlayOpacity, headerColor, setHeaderColor,
-                      instagram, setInstagram, facebook, setFacebook, tiktok, setTiktok,
-                      youtube, setYoutube, x, setX,
-                      cityDisplay, setCityDisplay, nationalShipping, setNationalShipping,
-                      showBrandName, setShowBrandName,
-                      primaryColor, setPrimaryColor, secondaryColor, setSecondaryColor, widgetBgColor, setWidgetBgColor, landingFont, setLandingFont,
-                      rating, setRating, totalReviews, setTotalReviews,
-                      schedule, setSchedule,
-                    }}
+                    editor={editor}
+                    brandSlug={brandSlug}
+                    brandName={brandName}
+                    products={products}
                   />
                 </div>
             </motion.div>
@@ -442,48 +425,14 @@ export default function MiPaginaPage() {
             <AnimatePresence>
                {success && (
                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl mt-6 flex items-center justify-center gap-3">
-                   <Check className="text-emerald-500 font-bold" size={16} /> 
-                   <span className="text-emerald-500 text-[10px] font-bold uppercase tracking-widest leading-none">Cambios guardados correctamente</span>
+                    <Check className="text-emerald-500 font-bold" size={16} />
+                    <span className="text-emerald-500 text-[10px] font-bold uppercase tracking-widest leading-none">Cambios guardados correctamente</span>
                  </motion.div>
                )}
             </AnimatePresence>
           </footer>
         </div>
-
-        {/* PREVIEW STICKY - Split pane right side */}
-        <div className="hidden lg:flex sticky top-8 z-40 h-[700px] items-start justify-center">
-           <div className="h-full w-full glass-panel rounded-3xl overflow-hidden shadow-2xl shadow-black/10 flex flex-col group/preview relative border border-white/20">
-              
-              {/* Browser Bar (Full Width) */}
-              <div className="h-16 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-8 gap-6">
-                 <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[#ff5f57] border border-black/5" />
-                    <div className="w-3 h-3 rounded-full bg-[#febc2e] border border-black/5" />
-                    <div className="w-3 h-3 rounded-full bg-[#28c840] border border-black/5" />
-                 </div>
-                 <div className="flex-1 bg-[var(--bg-input)] h-10 rounded-2xl border border-[var(--border-color)] flex items-center px-6 overflow-hidden">
-                    <Globe size={14} className="text-[var(--text-muted)] mr-3 shrink-0" />
-                    <span className="text-[11px] text-[var(--text-muted)] truncate font-mono tracking-tight">{brandSlug}.lookitry.com</span>
-                 </div>
-              </div>
-
-               {/* Main Preview Area - Cubriendo todo de izquierda a derecha */}
-               <div className="flex-1 bg-white overflow-y-auto custom-scrollbar relative">
-                  <LandingPreview {...previewProps} brandSlug={brandSlug} isPreview={true} />
-               </div>
-
-               {/* Status Bar */}
-               <div className="p-6 bg-[var(--bg-card)] border-t border-[var(--border-color)] flex items-center justify-center">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest leading-none">Vista previa en vivo</span>
-                  </div>
-               </div>
-            </div>
-         </div>
-        </div>
-      </motion.div>
+      </div>
+    </motion.div>
   );
 }
-
-

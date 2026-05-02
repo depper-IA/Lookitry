@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Palette } from 'lucide-react';
 import { PremiumColorPicker } from '../preview';
+import type { LandingEditorState, LandingEditorActions } from '../../hooks/useLandingEditor';
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
@@ -11,18 +12,14 @@ const itemVariants = {
 };
 
 interface ColorsSectionProps {
-  primaryColor: string; setPrimaryColor: (v: string) => void;
-  secondaryColor: string; setSecondaryColor: (v: string) => void;
-  widgetBgColor: string; setWidgetBgColor: (v: string) => void;
-  coverBgColor: string; setCoverBgColor: (v: string) => void;
+  state: Pick<LandingEditorState, 'primaryColor' | 'secondaryColor' | 'widgetBgColor' | 'coverBgColor'>;
+  actions: Pick<LandingEditorActions, 'updateField'>;
 }
 
-export function ColorsSection({
-  primaryColor, setPrimaryColor,
-  secondaryColor, setSecondaryColor,
-  widgetBgColor, setWidgetBgColor,
-  coverBgColor, setCoverBgColor,
-}: ColorsSectionProps) {
+export function ColorsSection({ state, actions }: ColorsSectionProps) {
+  const { primaryColor, secondaryColor, widgetBgColor, coverBgColor } = state;
+  const { updateField } = actions;
+
   const sectionStyle = "p-6 md:p-8 xl:p-10 space-y-6 relative overflow-hidden group";
 
   return (
@@ -44,28 +41,28 @@ export function ColorsSection({
         <PremiumColorPicker
           label="Primario"
           value={primaryColor}
-          onChange={setPrimaryColor}
+          onChange={(v) => updateField('primaryColor', v)}
           tooltip="Botones y destacados."
           className="w-full"
         />
         <PremiumColorPicker
           label="Secundario"
           value={secondaryColor}
-          onChange={setSecondaryColor}
+          onChange={(v) => updateField('secondaryColor', v)}
           tooltip="Bordes y sombras."
           className="w-full"
         />
         <PremiumColorPicker
           label="Probador"
           value={widgetBgColor || '#0a0a0a'}
-          onChange={setWidgetBgColor}
+          onChange={(v) => updateField('widgetBgColor', v)}
           tooltip="Fondo del probador virtual."
           className="w-full"
         />
         <PremiumColorPicker
           label="Respaldo"
           value={coverBgColor || '#0a0a0a'}
-          onChange={setCoverBgColor}
+          onChange={(v) => updateField('coverBgColor', v)}
           tooltip="Fondo de secciones."
           className="w-full"
         />
