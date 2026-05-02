@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -150,55 +150,60 @@ export default function MiPaginaPage() {
   const [schedule, setSchedule] = useState<any>({});
   const [customDomain, setCustomDomain] = useState('');
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [brandData, productsData] = await Promise.all([
-          brandsService.getCurrentBrand(),
-          api.get('/products').then(r => (Array.isArray(r.data) ? r.data : [])).catch(() => [])
-        ]);
-        
-        setBrand(brandData);
-        setProducts(productsData);
-        
-        const b = brandData as any;
-        setLandingTemplate(['classic', 'editorial', 'moderno'].includes(b.landing_template) ? b.landing_template : 'classic');
-        setLandingFont(b.landing_font || 'font-jakarta');
-        setSlogan(b.slogan || '');
-        setDescription(b.brand_description || '');
-        setPrimaryColor(b.primary_color || '#FF5C3A');
-        setSecondaryColor(b.secondary_color || '#FF5C3A');
-        setWidgetBgColor(b.widget_bg_color || '#0a0a0a');
-        setHeaderColor(b.header_color || '');
-        setCoverBgColor(b.cover_bg_color || '');
-        setCoverOverlayOpacity(b.cover_overlay_opacity ?? 0.55);
-        setLogoUrl(b.logo || '');
-        setLogoLightUrl(b.logo_light || '');
-        setLogoDarkUrl(b.logo_dark || '');
-        setCoverImageUrl(b.cover_image_url || '');
-        setWhatsapp(b.whatsapp_contact || '');
-        setWhatsappMessage(b.whatsapp_message || '');
-        setCtaButtonText(b.cta_button_text || 'Probarme esto');
-        setInstagram(b.social_links?.instagram || '');
-        setFacebook(b.social_links?.facebook || '');
-        setTiktok(b.social_links?.tiktok || '');
-        setYoutube(b.social_links?.youtube || '');
-        setX(b.social_links?.x || '');
-        setCityDisplay(b.city_display || '');
-        setNationalShipping(b.national_shipping || false);
-        setShowBrandName(b.show_brand_name ?? true);
-        setRating(b.rating?.toString() || '');
-        setTotalReviews(b.total_reviews?.toString() || '');
-        setSchedule(b.schedule || {});
-        setCustomDomain(b.custom_domain || '');
-      } catch (err) {
-        setError('No se pudo cargar la información');
-      } finally {
-        setLoading(false);
-      }
+  // ✅ ALL HOOKS CALLED BEFORE ANY EARLY RETURNS
+  // Memoize previewProps so LandingPreview only re-renders when data actually changes
+  const previewProps = useMemo(() => {
+    const brandSlug = brand?.slug || authBrand?.slug || '';
+    return {
+      brand: {
+        ...brand,
+        name: brand?.name || authBrand?.name,
+        slug: brandSlug,
+        landing_template: landingTemplate,
+        landing_font: landingFont,
+        widget_bg_color: widgetBgColor,
+        slogan,
+        brand_description: description,
+        header_color: headerColor,
+        cover_bg_color: coverBgColor,
+        cover_overlay_opacity: coverOverlayOpacity,
+        logo: logoUrl,
+        logo_light: logoLightUrl,
+        logo_dark: logoDarkUrl,
+        cover_image_url: coverImageUrl,
+        whatsapp_contact: whatsapp,
+        whatsapp_message: whatsappMessage,
+        cta_button_text: ctaButtonText,
+        social_links: {
+          instagram,
+          facebook,
+          tiktok,
+          youtube,
+          x,
+          _landing_primary: primaryColor,
+          _landing_secondary: secondaryColor,
+        },
+        city_display: cityDisplay,
+        national_shipping: nationalShipping,
+        show_brand_name: showBrandName,
+        rating: rating ? parseFloat(rating) : null,
+        total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
+        schedule,
+        primary_color: primaryColor,
+        secondary_color: secondaryColor
+      },
+      products
     };
-    loadData();
-  }, []);
+  }, [
+    brand, authBrand, landingTemplate, landingFont, widgetBgColor, slogan, description,
+    headerColor, coverBgColor, coverOverlayOpacity, logoUrl, logoLightUrl, logoDarkUrl,
+    coverImageUrl, whatsapp, whatsappMessage, ctaButtonText, instagram, facebook,
+    tiktok, youtube, x, primaryColor, secondaryColor, cityDisplay, nationalShipping,
+    showBrandName, rating, totalReviews, schedule, products
+  ]);
+
+  const brandSlug = brand?.slug || authBrand?.slug || '';
+  const pageUrl = `${FRONTEND_URL}/sitio/${brandSlug}`;
 
   const handleSave = async () => {
     setSaving(true);
@@ -252,54 +257,6 @@ export default function MiPaginaPage() {
     } finally {
       setSaving(false);
     }
-  };
-
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Spinner size="lg" /></div>;
-
-  const brandSlug = brand?.slug || authBrand?.slug || '';
-  const pageUrl = `${FRONTEND_URL}/sitio/${brandSlug}`;
-  
-  const tempBrand = {
-    ...brand,
-    name: brand?.name || authBrand?.name,
-    slug: brandSlug,
-    landing_template: landingTemplate,
-    landing_font: landingFont,
-    widget_bg_color: widgetBgColor,
-    slogan,
-    brand_description: description,
-    header_color: headerColor,
-    cover_bg_color: coverBgColor,
-    cover_overlay_opacity: coverOverlayOpacity,
-    logo: logoUrl,
-    logo_light: logoLightUrl,
-    logo_dark: logoDarkUrl,
-    cover_image_url: coverImageUrl,
-    whatsapp_contact: whatsapp,
-    whatsapp_message: whatsappMessage,
-    cta_button_text: ctaButtonText,
-    social_links: {
-      instagram,
-      facebook,
-      tiktok,
-      youtube,
-      x,
-      _landing_primary: primaryColor,
-      _landing_secondary: secondaryColor,
-    },
-    city_display: cityDisplay,
-    national_shipping: nationalShipping,
-    show_brand_name: showBrandName,
-    rating: rating ? parseFloat(rating) : null,
-    total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
-    schedule,
-    primary_color: primaryColor,
-    secondary_color: secondaryColor
-  };
-
-  const previewProps = {
-    brand: tempBrand,
-    products
   };
 
   return (
