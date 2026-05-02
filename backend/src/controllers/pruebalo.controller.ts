@@ -2438,25 +2438,27 @@ export class PruebaloController {
         'Sec-Fetch-Site': 'same-origin',
       };
 
-      if (imageUrl.includes('wilkiedevs.com')) {
-        let shouldTryFallback = false;
-        let initialError: any = null;
-
+      // For MinIO URLs, bypass the public URL and use internal Docker hostname directly
+      // since the backend container has direct network access to MinIO via Docker DNS
+      // The public minio.wilkiedevs.com URL may have CDN/hotlink protection that blocks server-side requests
+      if (imageUrl.includes('minio.wilkiedevs.com')) {
+        const parsed = new URL(imageUrl);
+        fetchUrl = `http://minio:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
+        console.log(`[imgProxy] MinIO URL detected, using internal Docker hostname: ${fetchUrl}`);
+      } else if (imageUrl.includes('wilkiedevs.com')) {
+        // For other wilkiedevs.com URLs, try direct fetch first with fallback
         try {
-          const testResponse = await fetch(imageUrl, {
-            headers: fetchHeaders,
-          });
+          const testResponse = await fetch(imageUrl, { headers: fetchHeaders });
           if (!testResponse.ok) {
-            // Treat 5xx and 403/404 as retryable
             if (testResponse.status >= 500 || testResponse.status === 403 || testResponse.status === 404) {
-              shouldTryFallback = true;
-              initialError = new Error(`Initial fetch returned ${testResponse.status}: ${testResponse.statusText}`);
+              const parsed = new URL(imageUrl);
+              fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
+              fetchHeaders['Host'] = parsed.host;
             } else {
               throw new Error(`Initial fetch failed: ${testResponse.statusText}`);
             }
           }
         } catch (err: any) {
-          initialError = err;
           const isConnectionError =
             err?.cause?.code === 'ECONNREFUSED' ||
             err?.message?.includes('ECONNREFUSED') ||
@@ -2465,42 +2467,11 @@ export class PruebaloController {
             err?.message?.includes('ETIMEDOUT');
 
           if (isConnectionError) {
-            shouldTryFallback = true;
-          } else {
-            throw err;
-          }
-        }
-
-        if (shouldTryFallback) {
-          console.log(`[imgProxy] shouldTryFallback=true, error: ${initialError?.message}`);
-          const parsed = new URL(imageUrl);
-          const isMinioUrl = imageUrl.includes('minio.wilkiedevs.com');
-
-          if (isMinioUrl) {
-            console.log(`[imgProxy] MinIO URL blocked, attempting fallbacks`);
-            // Fallback 1: Docker hostname internal
-            let success = false;
-            try {
-              const internalUrl = `http://minio:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
-              console.log(`[imgProxy] Trying internal MinIO: ${internalUrl}`);
-              const internalResponse = await fetch(internalUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(5000) });
-              if (internalResponse.ok) {
-                fetchUrl = internalUrl;
-                success = true;
-                console.log(`[imgProxy] Internal MinIO fallback succeeded`);
-              }
-            } catch { /* continue to next fallback */ }
-
-            // Fallback 2: IP public with Host header (only if fallback 1 failed)
-            if (!success) {
-              console.log(`[imgProxy] Trying public IP fallback for MinIO`);
-              fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
-              fetchHeaders['Host'] = parsed.host;
-            }
-          } else {
-            console.log(`[imgProxy] Non-MinIO wilkiedevs.com URL blocked, using public IP fallback`);
+            const parsed = new URL(imageUrl);
             fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
             fetchHeaders['Host'] = parsed.host;
+          } else {
+            throw err;
           }
         }
       }
