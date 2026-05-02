@@ -307,11 +307,11 @@ export default function MiPaginaPage() {
       initial="hidden" animate="visible" variants={containerVariants}
       className="max-w-[1600px] mx-auto px-4 sm:px-6 xl:px-8 py-6 xl:py-8 pb-24"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 xl:gap-8 items-start min-h-[800px]">
         
         {/* PANEL DE EDICIÓN */}
-        <div className="lg:col-span-8 xl:col-span-7 space-y-6 xl:space-y-8 min-w-0">
-          <motion.header variants={itemVariants} className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="space-y-6 xl:space-y-8 min-w-0">
+          <motion.header variants={itemVariants} className="glass-panel-dark p-6 xl:p-8 rounded-3xl flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div className="space-y-2">
               <h1 className="text-4xl font-bold text-[var(--text-primary)] tracking-tight font-jakarta">Editor de página</h1>
               <p className="text-sm text-[var(--text-secondary)] font-bold tracking-wider opacity-60 uppercase">Personaliza tu mini-landing premium</p>
@@ -325,7 +325,7 @@ export default function MiPaginaPage() {
           </motion.header>
 
           {/* ══ BONUS MARKETING ══ */}
-          <motion.div variants={itemVariants} className="p-5 xl:p-6 rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl shadow-black/5 relative overflow-hidden group/bonus">
+          <motion.div variants={itemVariants} className="p-5 xl:p-6 rounded-3xl glass-panel-dark relative overflow-hidden group/bonus">
              <div className="absolute top-0 right-0 p-6 opacity-[0.04] group-hover:scale-110 transition-transform duration-1000">
                 <ShieldCheck size={82} />
              </div>
@@ -371,7 +371,7 @@ export default function MiPaginaPage() {
             )}
           </AnimatePresence>
 
-          <motion.div variants={itemVariants} className="flex flex-wrap gap-2 p-1.5 bg-[var(--bg-card)] rounded-[1.75rem] border border-[var(--border-color)] w-full md:w-fit shadow-xl">
+          <motion.div variants={itemVariants} className="flex flex-wrap gap-2 p-1.5 glass-panel-dark rounded-[1.75rem] w-full md:w-fit shadow-xl">
             {( [
               { id: 'design', label: 'Diseño y estilo', icon: <Layout size={18} /> },
               { id: 'domain', label: 'Dominio y enlace', icon: <Globe size={18} /> },
@@ -396,7 +396,7 @@ export default function MiPaginaPage() {
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 xl:space-y-10">
                 
                 {/* 1. SELECCIÓN DE PLANTILLA */}
-                <section className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-5 md:p-6 shadow-xl shadow-black/5 relative overflow-hidden group/templates">
+                <section className="glass-panel-dark p-5 md:p-6 rounded-3xl relative overflow-hidden group/templates">
                   <div className="flex flex-col gap-5 border-b border-[var(--border-color)] pb-5 mb-5 xl:flex-row xl:items-end xl:justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center">
@@ -493,9 +493,9 @@ export default function MiPaginaPage() {
           </footer>
         </div>
 
-        {/* PREVIEW STICKY (Visualización Full-Width v2) */}
-        <div className="hidden lg:flex lg:col-span-4 xl:col-span-5 sticky top-8 z-40 h-[640px] items-start justify-center">
-           <div className="h-full w-full bg-white rounded-3xl border border-[var(--border-color)] overflow-hidden shadow-2xl shadow-black/5 flex flex-col group/preview relative">
+        {/* PREVIEW STICKY - Split pane right side */}
+        <div className="hidden lg:flex sticky top-8 z-40 h-[700px] items-start justify-center">
+           <div className="h-full w-full glass-panel rounded-3xl overflow-hidden shadow-2xl shadow-black/10 flex flex-col group/preview relative border border-white/20">
               
               {/* Browser Bar (Full Width) */}
               <div className="h-16 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-8 gap-6">

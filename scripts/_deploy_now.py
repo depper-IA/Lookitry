@@ -252,7 +252,7 @@ if do_frontend:
         f"docker compose -f docker-compose.frontend.yml build {build_flag} > docker_build_frontend.log 2>&1 || "
         f"{{ tail -20 docker_build_frontend.log; exit 1; }}"
     )
-    run(ssh, build_cmd, timeout=600)
+    run(ssh, build_cmd, timeout=1800)
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml up -d")
 
 run(ssh, "docker ps --format 'table {{.Names}}\\t{{.Status}}'")
