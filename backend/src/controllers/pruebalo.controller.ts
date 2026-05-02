@@ -2476,6 +2476,7 @@ export class PruebaloController {
         }
       }
 
+      console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
       const response = await fetch(fetchUrl, {
         headers: fetchHeaders,
       });
