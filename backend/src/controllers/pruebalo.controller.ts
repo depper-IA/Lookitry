@@ -2441,6 +2441,7 @@ export class PruebaloController {
       // For MinIO URLs, bypass the public URL and use internal Docker hostname directly
       // since the backend container has direct network access to MinIO via Docker DNS
       // The public minio.wilkiedevs.com URL may have CDN/hotlink protection that blocks server-side requests
+      console.log(`[imgProxy] Checking MinIO condition: imageUrl.includes('minio.wilkiedevs.com') = ${imageUrl.includes('minio.wilkiedevs.com')}`);
       if (imageUrl.includes('minio.wilkiedevs.com')) {
         const parsed = new URL(imageUrl);
         fetchUrl = `http://minio:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
@@ -2511,10 +2512,9 @@ export class PruebaloController {
 
       return res.send(Buffer.from(buffer));
 
-    } catch (error: any) {
-
+} catch (error: any) {
+      console.error(`[imgProxy] CATCH block reached. Error message: ${error.message}, stack: ${error.stack?.substring(0, 300)}`);
       const cause = error?.cause?.message || error?.cause?.code || 'unknown';
-
       const detail = `${error.message} | cause: ${cause}`;
 
       const logObj = { message: detail };
