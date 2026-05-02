@@ -2482,10 +2482,10 @@ export class PruebaloController {
 
             if (isMinioUrl) {
               console.log(`[imgProxy] MinIO URL blocked (403/404), attempting internal hostname fallback`);
-              // Fallback 1 para MinIO: intentar Docker hostname interno
+              // Fallback 1 para MinIO: intentar Docker hostname interno (usado en health check)
               let minioFallbackSuccess = false;
               try {
-                const internalUrl = `http://lookitry-minio-server:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
+                const internalUrl = `http://minio:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
                 const internalResponse = await fetch(internalUrl, { headers: fetchHeaders });
                 if (internalResponse.ok) {
                   fetchUrl = internalUrl;
