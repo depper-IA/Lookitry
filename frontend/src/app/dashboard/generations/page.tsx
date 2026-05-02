@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/services/api';
 import { downloadImage } from '@/utils/download';
@@ -305,13 +305,13 @@ function FeedbackModal({
 }
 
 // ── Tarjeta de Generación ─────────────────────────────────────────────────────
-function GenerationCard({
-  gen, selected, selecting, viewMode, onOpen, onToggle, onDelete, onReportError, brandPlan, hasFeedback
-}: {
+const GenerationCard = React.forwardRef<HTMLDivElement, {
   gen: Generation; selected: boolean; selecting: boolean; viewMode: ViewMode;
   onOpen: () => void; onToggle: () => void; onDelete: () => void; onReportError: () => void;
   brandPlan?: string; hasFeedback?: boolean;
-}) {
+}>(function GenerationCard({
+  gen, selected, selecting, viewMode, onOpen, onToggle, onDelete, onReportError, brandPlan, hasFeedback
+}, ref) {
   const date = new Date(gen.generatedAt);
   const dateStr = date.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
   const timeStr = date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
@@ -322,6 +322,7 @@ function GenerationCard({
   if (viewMode === 'list') {
     return (
       <motion.div
+        ref={ref}
         variants={itemVariants}
         className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer group ${selected ? 'bg-[#FF5C3A]/10 border-[#FF5C3A] shadow-[0_0_20px_rgba(255,92,58,0.1)]' : 'bg-[var(--bg-card)] border-[var(--border-color)] hover:border-[var(--text-muted)]/50'}`}
         onClick={selecting ? onToggle : (isFailed || isPending ? undefined : onOpen)}
@@ -388,6 +389,7 @@ function GenerationCard({
 
   return (
     <motion.div
+      ref={ref}
       variants={itemVariants}
       className={`relative group rounded-2xl overflow-hidden border transition-all cursor-pointer ${selected ? 'border-[#FF5C3A] ring-[6px] ring-[#FF5C3A]/10 shadow-[0_20px_50px_rgba(255,92,58,0.2)]' : 'border-[var(--border-color)] hover:border-[#FF5C3A]/40'} bg-[var(--bg-card)] shadow-xl hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]`}
       onClick={selecting ? onToggle : (isFailed || isPending ? undefined : onOpen)}
@@ -459,7 +461,7 @@ function GenerationCard({
       </div>
     </motion.div>
   );
-}
+});
 
 export default function GenerationsPage() {
   const { brand } = useAuth();
