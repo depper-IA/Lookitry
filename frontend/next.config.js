@@ -4,22 +4,11 @@ const isProd = process.env.NODE_ENV === 'production';
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  // Eliminado eslint config porque ya no es soportado
-  // Optimización: no transpilar para older browsers (ES6+ para navegadores modernos)
-  // Elimina polyfills innecesarios como Array.prototype.at, flat, Object.fromEntries, etc.
-  experimental: {
-    optimizePackageImports: ['framer-motion', 'lucide-react', 'gsap'],
-    // Inline critical CSS, load rest async - improves LCP/FCP significantly
-    optimizeCss: true,
-  },
-  // No transpilar para browsers antiguos - solo targets modernos
   compiler: isProd ? {
     removeConsole: false,
   } : undefined,
   async redirects() {
-    return [
-      // Las rutas de producto se eliminaron porque bloqueaban el acceso a las páginas reales
-    ];
+    return [];
   },
   images: {
     dangerouslyAllowSVG: true,

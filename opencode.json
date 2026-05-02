@@ -147,7 +147,6 @@
         "TELEGRAM_CHAT_ID": "1049458877"
       }
     },
-
     "n8n": {
       "type": "local",
       "command": [
