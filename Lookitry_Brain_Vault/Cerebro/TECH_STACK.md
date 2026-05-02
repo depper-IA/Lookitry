@@ -8,7 +8,7 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 
 | Capa | Tecnología | Versión | Uso |
 |------|------------|---------|-----|
-| **Frontend** | Next.js (App Router) | 14.0.4 | UI y renderizado |
+| **Frontend** | Next.js (App Router) | 16.2.4 | UI y renderizado |
 | **Backend** | Node.js + Express | 4.18.2 | API de Negocio |
 | **Base de datos** | Supabase (PostgreSQL + pgvector) | — | Persistencia de datos + RAG embeddings |
 | **Autenticación** | JWT propio (HTTP-only cookies) | — | Seguridad de sesión |
