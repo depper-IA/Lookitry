@@ -2424,26 +2424,49 @@ export class PruebaloController {
 
 
 
-      const response = await fetch(imageUrl, {
+      // WORKAROUND: Si imageUrl apunta a wilkiedevs.com y falla con ECONNREFUSED (Docker local
+      // host resolution), reescribir la URL para usar la IP pública del VPS con el header Host
+      // original para preservar el virtual host en Traefik.
+      let fetchUrl = imageUrl;
+      let fetchHeaders: Record<string, string> = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': new URL(imageUrl).origin + '/',
+        'Sec-Fetch-Dest': 'image',
+        'Sec-Fetch-Mode': 'no-cors',
+        'Sec-Fetch-Site': 'same-origin',
+      };
 
-        headers: {
+      if (imageUrl.includes('wilkiedevs.com')) {
+        try {
+          const testResponse = await fetch(imageUrl, {
+            headers: fetchHeaders,
+          });
+          if (!testResponse.ok) {
+            throw new Error(`Initial fetch failed: ${testResponse.statusText}`);
+          }
+        } catch (initialError: any) {
+          // Detectar ECONNREFUSED u otros errores de conexión que indican problema de DNS/resolución local
+          const isConnectionError = initialError?.cause?.code === 'ECONNREFUSED' ||
+            initialError?.message?.includes('ECONNREFUSED') ||
+            initialError?.message?.includes('fetch failed');
 
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          if (isConnectionError) {
+            // Reescribir: https://wilkiedevs.com/path → http://31.220.18.39/path
+            const parsed = new URL(imageUrl);
+            fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
+            // Añadir Host header para que Traefik pueda rutear al vhost correcto
+            fetchHeaders['Host'] = parsed.host;
+          } else {
+            // Otro tipo de error, propagar
+            throw initialError;
+          }
+        }
+      }
 
-          'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
-
-          'Accept-Language': 'en-US,en;q=0.9',
-
-          'Referer': new URL(imageUrl).origin + '/',
-
-          'Sec-Fetch-Dest': 'image',
-
-          'Sec-Fetch-Mode': 'no-cors',
-
-          'Sec-Fetch-Site': 'same-origin',
-
-        },
-
+      const response = await fetch(fetchUrl, {
+        headers: fetchHeaders,
       });
 
 
