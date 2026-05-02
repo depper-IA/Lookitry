@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo, memo } from 'react';
 import { TemplateClassic } from '@/components/mini-landing/TemplateClassic';
 import { TemplateEditorial } from '@/components/mini-landing/TemplateEditorial';
 import { TemplateModerno } from '@/components/mini-landing/TemplateModerno';
@@ -18,8 +18,13 @@ const PREVIEW_CANVAS_WIDTHS: Record<string, number> = {
   moderno: 860,
 };
 
+// Memoized template components to prevent unnecessary re-renders
+const MemoizedTemplateClassic = memo(TemplateClassic);
+const MemoizedTemplateEditorial = memo(TemplateEditorial);
+const MemoizedTemplateModerno = memo(TemplateModerno);
+
 export function LandingPreview({ brandSlug, brand, products, isPreview = false }: LandingPreviewProps) {
-  const template = brand.landing_template || 'classic';
+  const template = brand?.landing_template || 'classic';
   const previewCanvasWidth = PREVIEW_CANVAS_WIDTHS[template] || 860;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
@@ -40,23 +45,26 @@ export function LandingPreview({ brandSlug, brand, products, isPreview = false }
     return () => observer.disconnect();
   }, [isPreview]);
 
-  const previewScale = !isPreview || !containerWidth
-    ? 1
-    : Math.min(1, (containerWidth - 24) / previewCanvasWidth);
+  // Memoize scale calculation to prevent recalc on every render
+  const previewScale = useMemo(() => {
+    if (!isPreview || !containerWidth) return 1;
+    return Math.min(1, (containerWidth - 24) / previewCanvasWidth);
+  }, [isPreview, containerWidth, previewCanvasWidth]);
 
-  const previewStyle = isPreview
-    ? {
-        width: `${previewCanvasWidth}px`,
-        zoom: previewScale,
-      }
-    : undefined;
+  const previewStyle = useMemo(() => {
+    if (!isPreview) return undefined;
+    return {
+      width: `${previewCanvasWidth}px`,
+      zoom: previewScale,
+    };
+  }, [isPreview, previewCanvasWidth, previewScale]);
 
   return (
     <div ref={containerRef} className="w-full min-h-full bg-white overflow-x-hidden">
       <div className={`flex min-h-full ${isPreview ? 'items-start justify-center px-3 py-4' : ''}`}>
         <div className="origin-top transition-all duration-500" style={previewStyle}>
           {template === 'classic' && (
-            <TemplateClassic
+            <MemoizedTemplateClassic
               brandSlug={brandSlug}
               brand={brand}
               products={products}
@@ -64,7 +72,7 @@ export function LandingPreview({ brandSlug, brand, products, isPreview = false }
             />
           )}
           {template === 'editorial' && (
-            <TemplateEditorial
+            <MemoizedTemplateEditorial
               brandSlug={brandSlug}
               brand={brand}
               products={products}
@@ -72,7 +80,7 @@ export function LandingPreview({ brandSlug, brand, products, isPreview = false }
             />
           )}
           {template === 'moderno' && (
-            <TemplateModerno
+            <MemoizedTemplateModerno
               brandSlug={brandSlug}
               brand={brand}
               products={products}
