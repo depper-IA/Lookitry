@@ -18,6 +18,7 @@ export const DescribeProductInputSchema = z.object({
     .transform((v) => v.trim())
     .refine((v) => v.length > 0, { message: 'category cannot be empty' }),
   brand_description: z.string().max(500).optional(),
+  image_url: z.string().url().optional(),
 });
 
 export type DescribeProductInput = z.infer<typeof DescribeProductInputSchema>;
@@ -35,6 +36,7 @@ export const ClothingSchema = z.object({
   patterns: z.array(z.string()).describe('Patrones o estampados en español'),
   materials: z.array(z.string()).describe('Materiales principales en español'),
   fit: z.string().describe('Tipo de ajuste en español (ej: Ajustado, Regular, Holgado)'),
+  extra_attributes: z.record(z.string(), z.string()).optional().describe('Cualquier otro atributo específico de esta prenda en español (ej: "Estilo de cuello", "Tipo de manga")'),
 });
 
 export type ClothingDescription = z.infer<typeof ClothingSchema>;
@@ -45,12 +47,13 @@ export type ClothingDescription = z.infer<typeof ClothingSchema>;
 
 export const AccessorySchema = z.object({
   product_type: z.literal('ACCESSORY').describe('Tipo de producto: ACCESSORY'),
-  accessory_type: z.string().describe('Tipo de accesorio en español (ej: Bolso, Joya, Bufanda)'),
-  placement: z.string().describe('Lugar del cuerpo donde se usa en español (ej: Muñeca, Cuello, Cabeza)'),
+  accessory_type: z.string().describe('Tipo de accesorio en español (ej: Bolso, Joya, Bufanda, Casco, Lentes)'),
+  placement: z.string().describe('Lugar del cuerpo donde se usa en español (ej: Muñeca, Cuello, Cabeza, Ojos)'),
   material: z.string().describe('Material principal en español'),
   primary_color: z.string().describe('Color primario en español'),
   secondary_colors: z.array(z.string()).describe('Colores secundarios en español'),
   patterns: z.array(z.string()).describe('Patrones o estampados en español'),
+  extra_attributes: z.record(z.string(), z.string()).optional().describe('Cualquier otro atributo específico de este accesorio en español (ej: "Protección UV" para lentes, "Certificación" para cascos)'),
 });
 
 export type AccessoryDescription = z.infer<typeof AccessorySchema>;
@@ -67,6 +70,7 @@ export const FootwearSchema = z.object({
   primary_color: z.string().describe('Color primario en español'),
   secondary_colors: z.array(z.string()).describe('Colores secundarios en español'),
   patterns: z.array(z.string()).describe('Patrones o estampados en español'),
+  extra_attributes: z.record(z.string(), z.string()).optional().describe('Cualquier otro atributo específico de este calzado en español (ej: "Tipo de suela", "Tipo de cierre")'),
 });
 
 export type FootwearDescription = z.infer<typeof FootwearSchema>;

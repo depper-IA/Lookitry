@@ -16,8 +16,8 @@ const DESIGN = {
   accent: '#FF5C3A',
   accentGlow: 'rgba(255, 92, 58, 0.15)',
   accentSubtle: 'rgba(255, 92, 58, 0.08)',
-  success: '#10B981',
-  successGlow: 'rgba(16, 185, 129, 0.2)',
+  success: '#18181B', // Dark zinc for corporate "Active" look
+  successGlow: 'rgba(24, 24, 27, 0.2)',
   danger: '#EF4444',
   shadowCard: '0 4px 24px rgba(0, 0, 0, 0.2)',
   shadowHover: '0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 92, 58, 0.15)',
@@ -79,16 +79,16 @@ function ActiveIndicator() {
       <span className="relative flex h-2 w-2">
         <span
           className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-          style={{ background: DESIGN.success }}
+          style={{ background: '#71717A' }}
         />
         <span
           className="relative inline-flex rounded-full h-2 w-2"
-          style={{ background: DESIGN.success }}
+          style={{ background: '#71717A' }}
         />
       </span>
       <span
         className="text-[10px] font-semibold uppercase tracking-wider"
-        style={{ color: DESIGN.success }}
+        style={{ color: '#71717A' }}
       >
         Activo
       </span>
@@ -123,9 +123,22 @@ function TechSpecs({ attributes }: { attributes: Record<string, any> }) {
   if (!attributes || Object.keys(attributes).length === 0) return null;
   
   const parts: string[] = [];
-  if (attributes.material) parts.push(attributes.material);
-  if (attributes.medida_pulgadas) parts.push(`${attributes.medida_pulgadas}"`);
-  if (attributes.marca) parts.push(attributes.marca);
+  const specKeys = ['material', 'material_marco', 'marca', 'certificacion', 'medida_pulgadas', 'tipo_visor', 'forma_marco'];
+  
+  for (const key of specKeys) {
+    if (attributes[key]) {
+      parts.push(key === 'medida_pulgadas' ? attributes[key] + '"' : attributes[key]);
+    }
+  }
+
+  // Fallback: if no recognized spec keys, show up to 2 other string values
+  if (parts.length === 0) {
+    const otherValues = Object.entries(attributes)
+      .filter(([k, v]) => typeof v === 'string' && !['color', 'talla', 'tallas'].includes(k))
+      .map(([_, v]) => v);
+    parts.push(...otherValues.slice(0, 2));
+  }
+
   if (parts.length === 0) return null;
   
   return (
@@ -138,8 +151,39 @@ function TechSpecs({ attributes }: { attributes: Record<string, any> }) {
   );
 }
 
+function AttributePills({ attributes }: { attributes: Record<string, any> }) {
+  if (!attributes || Object.keys(attributes).length === 0) return null;
+  const pills: { label: string; color: string }[] = [];
+  
+  if (attributes.finish) pills.push({ label: attributes.finish, color: '#8B5CF6' });
+  if (attributes.peso) pills.push({ label: attributes.peso + 'kg', color: '#06B6D4' });
+  
+  let tallaVal = attributes.tallas || attributes.talla;
+  if (tallaVal) {
+    if (Array.isArray(tallaVal)) {
+      pills.push({ label: tallaVal.slice(0, 3).join(', '), color: '#F59E0B' });
+    } else if (typeof tallaVal === 'string') {
+      pills.push({ label: tallaVal, color: '#F59E0B' });
+    }
+  }
+
+  if (attributes.color) pills.push({ label: attributes.color, color: '#EC4899' });
+  if (attributes.proteccion_uv) pills.push({ label: attributes.proteccion_uv, color: '#10B981' });
+
+  if (pills.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {pills.map((pill, i) => (
+        <span key={i} className="px-2 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide" style={{ background: `${pill.color}15`, color: pill.color, border: `1px solid ${pill.color}30` }}>
+          {pill.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
-// PRODUCT CARD COMPONENT
+// MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function ProductCard({
@@ -275,6 +319,7 @@ export function ProductCard({
 
           {/* Tech Specs */}
           <TechSpecs attributes={product.attributes || {}} />
+          <AttributePills attributes={product.attributes || {}} />
 
           {/* Price & Status Row */}
           {product.price != null && (

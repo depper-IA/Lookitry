@@ -42,6 +42,10 @@ export class FootwearFormatter extends BaseFormatter {
         primary_color: 'color primario en español',
         secondary_colors: ['colores secundarios en español'],
         patterns: ['patrones o estampados en español'],
+        extra_attributes: {
+          "Atributo Dinámico 1": "Valor (ej: Tipo de suela, Tipo de cierre)",
+          "Atributo Dinámico 2": "Valor"
+        }
       }),
     ];
 

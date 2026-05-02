@@ -24,28 +24,28 @@ const DANGER = '#EF4444';
 // CATEGORY STYLES — Color-coded by category type
 // ═══════════════════════════════════════════════════════════════════════════════
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-  rines: { bg: 'rgba(30, 41, 59, 0.85)', text: '#94A3B8', icon: <Gauge className="w-3 h-3" /> },
-  tshirt: { bg: 'rgba(63, 63, 70, 0.85)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
-  camisa: { bg: 'rgba(120, 53, 15, 0.85)', text: '#FCD34D', icon: <Star className="w-3 h-3" /> },
-  vestido: { bg: 'rgba(76, 29, 149, 0.85)', text: '#C4B5FD', icon: <Sparkles className="w-3 h-3" /> },
-  zapatos: { bg: 'rgba(22, 101, 52, 0.85)', text: '#86EFAC', icon: <Star className="w-3 h-3" /> },
-  default: { bg: 'rgba(63, 63, 70, 0.85)', text: '#A1A1AA', icon: <Sparkles className="w-3 h-3" /> },
+  rines: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
+  tshirt: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  camisa: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  vestido: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
+  zapatos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
+  default: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PROMO/SALE BADGE STYLES
 // ═══════════════════════════════════════════════════════════════════════════════
 const PROMO_STYLES: Record<string, { bg: string; text: string; dot: string; shadow: string }> = {
-  nuevo: { bg: 'rgba(16, 185, 129, 0.15)', text: '#10B981', dot: '#34D399', shadow: 'rgba(16, 185, 129, 0.3)' },
-  top: { bg: 'rgba(245, 158, 11, 0.15)', text: '#F59E0B', dot: '#FCD34D', shadow: 'rgba(245, 158, 11, 0.3)' },
-  oferta: { bg: 'rgba(239, 68, 68, 0.15)', text: '#EF4444', dot: '#FCA5A5', shadow: 'rgba(239, 68, 68, 0.3)' },
+  nuevo: { bg: '#FF5C3A', text: '#FFFFFF', dot: '#FFFFFF', shadow: '0 2px 8px rgba(255, 92, 58, 0.3)' },
+  top: { bg: '#FF5C3A', text: '#FFFFFF', dot: '#FFFFFF', shadow: '0 2px 8px rgba(255, 92, 58, 0.3)' },
+  oferta: { bg: '#FF5C3A', text: '#FFFFFF', dot: '#FFFFFF', shadow: '0 2px 8px rgba(255, 92, 58, 0.3)' },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // STATUS BADGE STYLES
 // ═══════════════════════════════════════════════════════════════════════════════
 const STATUS_STYLES: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-  active: { bg: 'rgba(16, 185, 129, 0.15)', text: '#10B981', icon: <CheckCircle className="w-3 h-3" /> },
+  active: { bg: 'rgba(24, 24, 27, 0.15)', text: '#71717A', icon: <CheckCircle className="w-3 h-3" /> },
   inactive: { bg: 'rgba(239, 68, 68, 0.15)', text: '#EF4444', icon: <XCircle className="w-3 h-3" /> },
 };
 

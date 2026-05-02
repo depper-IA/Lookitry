@@ -49,6 +49,10 @@ export class AccessoryFormatter extends BaseFormatter {
         primary_color: 'color primario en español',
         secondary_colors: ['colores secundarios en español'],
         patterns: ['patrones o estampados en español'],
+        extra_attributes: {
+          "Atributo Dinámico 1": "Valor (ej: Protección UV para lentes, Certificación para cascos)",
+          "Atributo Dinámico 2": "Valor"
+        }
       }),
     ];
 

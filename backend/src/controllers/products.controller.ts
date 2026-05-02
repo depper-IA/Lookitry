@@ -321,6 +321,7 @@ export class ProductsController {
         name: product_name,
         category,
         brand_description,
+        image_url: req.body.image_url,
       });
 
       // 4. Return the discriminated union response directly

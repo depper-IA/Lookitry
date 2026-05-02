@@ -76,8 +76,8 @@ function SortDropdown({ sortBy, onSortChange }: { sortBy: SortOption; onSortChan
 const DESIGN = {
   accent: '#FF5C3A',
   accentGlow: 'rgba(255, 92, 58, 0.15)',
-  success: '#10B981',
-  successGlow: 'rgba(16, 185, 129, 0.2)',
+  success: '#18181B', // Dark zinc for corporate "Active" look
+  successGlow: 'rgba(24, 24, 27, 0.2)',
   danger: '#EF4444',
   shadowCard: '0 4px 24px rgba(0, 0, 0, 0.2)',
   shadowHover: '0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 92, 58, 0.15)',
@@ -88,22 +88,22 @@ const DESIGN = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-  falda: { bg: 'rgba(76, 29, 149, 0.9)', text: '#C4B5FD', icon: <Sparkles className="w-3 h-3" /> },
-  vestido: { bg: 'rgba(76, 29, 149, 0.9)', text: '#C4B5FD', icon: <Sparkles className="w-3 h-3" /> },
-  tops: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
-  camisa: { bg: 'rgba(120, 53, 15, 0.9)', text: '#FCD34D', icon: <Star className="w-3 h-3" /> },
-  accessories: { bg: 'rgba(30, 41, 59, 0.9)', text: '#94A3B8', icon: <Gauge className="w-3 h-3" /> },
-  rines: { bg: 'rgba(30, 41, 59, 0.9)', text: '#94A3B8', icon: <Gauge className="w-3 h-3" /> },
-  zapatos: { bg: 'rgba(22, 101, 52, 0.9)', text: '#86EFAC', icon: <Star className="w-3 h-3" /> },
-  bolso: { bg: 'rgba(120, 53, 15, 0.9)', text: '#FCD34D', icon: <Star className="w-3 h-3" /> },
-  conjunto: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
-  default: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Sparkles className="w-3 h-3" /> },
+  falda: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
+  vestido: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
+  tops: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  camisa: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  accessories: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
+  rines: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
+  zapatos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
+  bolso: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
+  conjunto: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  default: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
 };
 
 const BADGE_STYLES: Record<string, { bg: string; text: string; dot: string; shadow: string }> = {
-  nuevo: { bg: 'rgba(16, 185, 129, 0.15)', text: '#10B981', dot: '#34D399', shadow: 'rgba(16, 185, 129, 0.3)' },
-  top: { bg: 'rgba(245, 158, 11, 0.15)', text: '#F59E0B', dot: '#FCD34D', shadow: 'rgba(245, 158, 11, 0.3)' },
-  oferta: { bg: 'rgba(239, 68, 68, 0.15)', text: '#EF4444', dot: '#FCA5A5', shadow: 'rgba(239, 68, 68, 0.3)' },
+  nuevo: { bg: '#FF5C3A', text: '#FFFFFF', dot: '#FFFFFF', shadow: '0 2px 8px rgba(255, 92, 58, 0.3)' },
+  top: { bg: '#FF5C3A', text: '#FFFFFF', dot: '#FFFFFF', shadow: '0 2px 8px rgba(255, 92, 58, 0.3)' },
+  oferta: { bg: '#FF5C3A', text: '#FFFFFF', dot: '#FFFFFF', shadow: '0 2px 8px rgba(255, 92, 58, 0.3)' },
 };
 
 const CATEGORY_UNITS: Record<string, string> = {
@@ -261,9 +261,10 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(({
             <div
               className="w-7 h-7 rounded-full flex items-center justify-center backdrop-blur-md transition-transform duration-200"
               style={{
-                background: 'rgba(16, 185, 129, 0.9)',
+                background: 'rgba(24, 24, 27, 0.9)',
                 boxShadow: `0 4px 12px ${DESIGN.successGlow}`,
                 transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+                border: '1px solid rgba(255,255,255,0.1)'
               }}
             >
               <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
@@ -391,9 +392,24 @@ function PriceDisplay({ price, category }: { price: number; category: string }) 
 function TechSpecs({ attributes }: { attributes: Record<string, any> }) {
   if (!attributes || Object.keys(attributes).length === 0) return null;
   const parts: string[] = [];
-  if (attributes.material) parts.push(attributes.material);
-  if (attributes.medida_pulgadas) parts.push(attributes.medida_pulgadas + '"');
-  if (attributes.marca) parts.push(attributes.marca);
+  
+  // Spec keys that are good for the subtitle line
+  const specKeys = ['material', 'material_marco', 'marca', 'certificacion', 'medida_pulgadas', 'tipo_visor', 'forma_marco'];
+  
+  for (const key of specKeys) {
+    if (attributes[key]) {
+      parts.push(key === 'medida_pulgadas' ? attributes[key] + '"' : attributes[key]);
+    }
+  }
+
+  // Fallback: if no recognized spec keys, show up to 2 other string values
+  if (parts.length === 0) {
+    const otherValues = Object.entries(attributes)
+      .filter(([k, v]) => typeof v === 'string' && !['color', 'talla', 'tallas'].includes(k))
+      .map(([_, v]) => v);
+    parts.push(...otherValues.slice(0, 2));
+  }
+
   if (parts.length === 0) return null;
   return <p className="text-[10px] font-medium opacity-70 truncate" style={{ color: 'var(--text-secondary)' }}>{parts.join(' · ')}</p>;
 }
@@ -401,10 +417,24 @@ function TechSpecs({ attributes }: { attributes: Record<string, any> }) {
 function AttributePills({ attributes }: { attributes: Record<string, any> }) {
   if (!attributes || Object.keys(attributes).length === 0) return null;
   const pills: { label: string; color: string }[] = [];
+  
+  // Hardcoded colorful pills
   if (attributes.finish) pills.push({ label: attributes.finish, color: '#8B5CF6' });
   if (attributes.peso) pills.push({ label: attributes.peso + 'kg', color: '#06B6D4' });
-  if (attributes.tallas && Array.isArray(attributes.tallas)) pills.push({ label: attributes.tallas.slice(0, 3).join(', '), color: '#F59E0B' });
-  if (attributes.color && !attributes.material) pills.push({ label: attributes.color, color: '#EC4899' });
+  
+  // Handle different variations of "talla" (tallas array or talla string/array)
+  let tallaVal = attributes.tallas || attributes.talla;
+  if (tallaVal) {
+    if (Array.isArray(tallaVal)) {
+      pills.push({ label: tallaVal.slice(0, 3).join(', '), color: '#F59E0B' });
+    } else if (typeof tallaVal === 'string') {
+      pills.push({ label: tallaVal, color: '#F59E0B' });
+    }
+  }
+
+  if (attributes.color) pills.push({ label: attributes.color, color: '#EC4899' });
+  if (attributes.proteccion_uv) pills.push({ label: attributes.proteccion_uv, color: '#10B981' });
+
   if (pills.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -464,9 +494,9 @@ interface ListViewProps {
   canAddToWidget?: boolean;
 }
 
-export function ListView({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }: ListViewProps) {
+export const ListView = React.forwardRef<HTMLDivElement, ListViewProps>(({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }, ref) => {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: DESIGN.shadowCard }}>
+    <div ref={ref} className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: DESIGN.shadowCard }}>
       <div className="h-1" style={{ background: `linear-gradient(to right, ${DESIGN.accent}, transparent)` }} />
       <div className="hidden xl:block overflow-x-auto no-scrollbar">
         <table className="w-full min-w-[750px]">
@@ -503,8 +533,8 @@ export function ListView({ products, onEdit, onDelete, widgetProductIds, onAddTo
                           <p className="text-[11px] mt-1 line-clamp-1" style={{ color: 'var(--text-muted)' }}>{product.shortDescription || product.description}</p>
                         )}
                         <div className="flex items-center gap-2 mt-2">
-                          <div className="w-1.5 h-1.5 rounded-full" style={{ background: DESIGN.success, boxShadow: `0 0 6px ${DESIGN.success}` }} />
-                          <span className="text-[9px] font-semibold uppercase" style={{ color: DESIGN.success }}>Activo</span>
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#71717A', boxShadow: `0 0 6px rgba(113, 113, 122, 0.4)` }} />
+                          <span className="text-[9px] font-semibold uppercase" style={{ color: '#71717A' }}>Activo</span>
                         </div>
                       </div>
                     </div>
@@ -530,11 +560,11 @@ export function ListView({ products, onEdit, onDelete, widgetProductIds, onAddTo
                           disabled={widgetProductIds?.includes(product.id) || !canAddToWidget}
                           className="p-3 rounded-xl transition-all"
                           style={{
-                            background: widgetProductIds?.includes(product.id) ? 'rgba(16,185,129,0.15)' : 'var(--btn-bg)',
-                            border: widgetProductIds?.includes(product.id) ? '1px solid rgba(16,185,129,0.25)' : '1px solid var(--card-border)',
+                            background: widgetProductIds?.includes(product.id) ? 'var(--btn-bg)' : 'var(--btn-bg)',
+                            border: widgetProductIds?.includes(product.id) ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid var(--card-border)',
                           }}
                         >
-                          {widgetProductIds?.includes(product.id) ? <Check size={18} className="text-emerald-500" /> : <Plus size={18} className={canAddToWidget === false ? 'text-gray-500' : 'text-[#FF5C3A]'} />}
+                          {widgetProductIds?.includes(product.id) ? <Check size={18} className="text-[#FF5C3A]" /> : <Plus size={18} className={canAddToWidget === false ? 'text-gray-500' : 'text-[#FF5C3A]'} />}
                         </motion.button>
                       )}
                       <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)} className="p-3 rounded-xl" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
@@ -680,13 +710,10 @@ export function ListView({ products, onEdit, onDelete, widgetProductIds, onAddTo
       </div>
     </div>
   );
-}
+});
 
 ProductCard.displayName = 'ProductCard';
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MAIN EXPORT
-// ═══════════════════════════════════════════════════════════════════════════════
+ListView.displayName = 'ListView';
 
 export type ViewMode = 'grid' | 'thumbnails' | 'list';
 

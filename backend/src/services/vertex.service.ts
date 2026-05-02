@@ -31,9 +31,12 @@ let vertexAIInstance: VertexAI | null = null;
 
 function getVertexAI(): VertexAI {
   if (!vertexAIInstance) {
+    const rawLocation = process.env.VERTEX_LOCATION || 'us-central1';
+    const location = rawLocation === 'global' ? 'us-central1' : rawLocation;
+    
     vertexAIInstance = new VertexAI({
-      project: VERTEX_PROJECT_ID,
-      location: VERTEX_LOCATION,
+      project: process.env.VERTEX_PROJECT_ID || 'gen-lang-client-0591001769',
+      location: location,
     });
   }
   return vertexAIInstance;
@@ -64,6 +67,7 @@ export interface VertexGenerateOptions {
     topK?: number;
     maxOutputTokens?: number;
     stopSequences?: string[];
+    responseMimeType?: string;
   };
   safetySettings?: {
     category: string;
@@ -106,19 +110,25 @@ class VertexService {
 
     try {
       // First try using the Vertex AI SDK (requires ADC credentials)
+      // Clean up config to avoid sending undefined values that might cause API errors
+      const cleanConfig = options.generationConfig ? Object.fromEntries(
+        Object.entries({
+          temperature: options.generationConfig.temperature,
+          topP: options.generationConfig.topP,
+          topK: options.generationConfig.topK,
+          maxOutputTokens: options.generationConfig.maxOutputTokens,
+          stopSequences: options.generationConfig.stopSequences,
+          responseMimeType: options.generationConfig.responseMimeType,
+        }).filter(([_, v]) => v !== undefined)
+      ) : undefined;
+
       const model = vertexAI.getGenerativeModel({
         model: modelId,
         systemInstruction: options.systemInstruction ? {
           role: 'system',
           parts: options.systemInstruction.parts,
         } : undefined,
-        generationConfig: options.generationConfig ? {
-          temperature: options.generationConfig.temperature,
-          topP: options.generationConfig.topP,
-          topK: options.generationConfig.topK,
-          maxOutputTokens: options.generationConfig.maxOutputTokens,
-          stopSequences: options.generationConfig.stopSequences,
-        } : undefined,
+        generationConfig: cleanConfig && Object.keys(cleanConfig).length > 0 ? cleanConfig : undefined,
         safetySettings: options.safetySettings as SafetySetting[] || undefined,
       });
 
