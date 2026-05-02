@@ -142,9 +142,7 @@ export default function MiPaginaPage() {
         ]);
         // Cast API response to Brand type (API uses snake_case, frontend uses camelCase)
         setBrand(brandRes.data as unknown as Brand);
-        // Ensure products is always an array
-        const rawProducts = productsRes.data;
-        setProducts(Array.isArray(rawProducts) ? rawProducts : []);
+        setProducts(productsRes.data || []);
 
         // Populate editor state from brand data
         const b = brandRes.data;
