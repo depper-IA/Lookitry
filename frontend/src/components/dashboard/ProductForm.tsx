@@ -221,11 +221,13 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
   const autoTriggeredRef = useRef(false);
   useEffect(() => {
     if (!formData.imageUrl || !formData.name.trim()) { autoTriggeredRef.current = false; return; }
+    // Skip if we are editing an existing product and the image hasn't changed
+    if (product && product.imageUrl === formData.imageUrl) { autoTriggeredRef.current = true; return; }
     // Trigger AI even for existing products (if image changes)
     if (autoTriggeredRef.current || aiGenerated || describingWithAI) return;
     autoTriggeredRef.current = true;
     triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category);
-  }, [formData.imageUrl, formData.name]);
+  }, [formData.imageUrl, formData.name, product]);
 
   useEffect(() => {
     if (product) {
