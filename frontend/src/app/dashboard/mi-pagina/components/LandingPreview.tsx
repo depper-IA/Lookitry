@@ -24,6 +24,8 @@ const MemoizedTemplateEditorial = memo(TemplateEditorial);
 const MemoizedTemplateModerno = memo(TemplateModerno);
 
 export function LandingPreview({ brandSlug, brand, products, isPreview = false }: LandingPreviewProps) {
+  // Defensive: ensure products is always an array
+  const safeProducts = Array.isArray(products) ? products : [];
   const template = brand?.landing_template || 'classic';
   const previewCanvasWidth = PREVIEW_CANVAS_WIDTHS[template] || 860;
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -67,7 +69,7 @@ export function LandingPreview({ brandSlug, brand, products, isPreview = false }
             <MemoizedTemplateClassic
               brandSlug={brandSlug}
               brand={brand}
-              products={products}
+              products={safeProducts}
               isPreview={isPreview}
             />
           )}
@@ -75,7 +77,7 @@ export function LandingPreview({ brandSlug, brand, products, isPreview = false }
             <MemoizedTemplateEditorial
               brandSlug={brandSlug}
               brand={brand}
-              products={products}
+              products={safeProducts}
               isPreview={isPreview}
             />
           )}
@@ -83,7 +85,7 @@ export function LandingPreview({ brandSlug, brand, products, isPreview = false }
             <MemoizedTemplateModerno
               brandSlug={brandSlug}
               brand={brand}
-              products={products}
+              products={safeProducts}
               isPreview={isPreview}
             />
           )}
