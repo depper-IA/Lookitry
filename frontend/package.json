@@ -10,6 +10,7 @@
     "start": "next start",
     "start:prod": "cross-env NODE_ENV=production next start",
     "lint": "next lint",
+    "test": "vitest --run",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "clean": "rimraf .next",
     "prebuild": "npm run clean"
