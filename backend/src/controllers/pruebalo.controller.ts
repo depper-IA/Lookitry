@@ -2439,46 +2439,66 @@ export class PruebaloController {
       };
 
       if (imageUrl.includes('wilkiedevs.com')) {
+        let shouldTryFallback = false;
+        let initialError: any = null;
+
         try {
           const testResponse = await fetch(imageUrl, {
             headers: fetchHeaders,
           });
           if (!testResponse.ok) {
-            throw new Error(`Initial fetch failed: ${testResponse.statusText}`);
+            // Treat 5xx and 4xx (except 4xx client errors which are permanent) as retryable
+            if (testResponse.status >= 500 || testResponse.status === 403 || testResponse.status === 404) {
+              shouldTryFallback = true;
+              initialError = new Error(`Initial fetch returned ${testResponse.status}: ${testResponse.statusText}`);
+            } else {
+              throw new Error(`Initial fetch failed: ${testResponse.statusText}`);
+            }
           }
-        } catch (initialError: any) {
+        } catch (err: any) {
+          initialError = err;
           // Detectar ECONNREFUSED u otros errores de conexión que indican problema de DNS/resolución local
-          const isConnectionError = initialError?.cause?.code === 'ECONNREFUSED' ||
-            initialError?.message?.includes('ECONNREFUSED') ||
-            initialError?.message?.includes('fetch failed');
+          const isConnectionError =
+            err?.cause?.code === 'ECONNREFUSED' ||
+            err?.message?.includes('ECONNREFUSED') ||
+            err?.message?.includes('fetch failed') ||
+            err?.message?.includes('ECONNREFUSED') ||
+            err?.message?.includes('getaddrinfo') ||
+            err?.message?.includes('ETIMEDOUT');
 
           if (isConnectionError) {
-            const parsed = new URL(imageUrl);
-            const isMinioUrl = imageUrl.includes('minio.wilkiedevs.com');
+            shouldTryFallback = true;
+          } else {
+            // Otro tipo de error, propagar
+            throw err;
+          }
+        }
 
-            if (isMinioUrl) {
-              // Fallback 1 para MinIO: intentar Docker hostname interno
-              try {
-                const internalUrl = `http://lookitry-minio-server:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
-                const internalResponse = await fetch(internalUrl, { headers: fetchHeaders });
-                if (internalResponse.ok) {
-                  fetchUrl = internalUrl;
-                } else {
-                  throw new Error(`Internal MinIO fallback failed: ${internalResponse.statusText}`);
-                }
-              } catch {
-                // Fallback 2 para MinIO: IP pública del VPS con Host header
-                fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
-                fetchHeaders['Host'] = parsed.host;
+        if (shouldTryFallback) {
+          const parsed = new URL(imageUrl);
+          const isMinioUrl = imageUrl.includes('minio.wilkiedevs.com');
+
+          if (isMinioUrl) {
+            // Fallback 1 para MinIO: intentar Docker hostname interno
+            let minioFallbackSuccess = false;
+            try {
+              const internalUrl = `http://lookitry-minio-server:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
+              const internalResponse = await fetch(internalUrl, { headers: fetchHeaders });
+              if (internalResponse.ok) {
+                fetchUrl = internalUrl;
+                minioFallbackSuccess = true;
               }
-            } else {
-              // Fallback genérico para otros dominios wilkiedevs.com
+            } catch { /* try next fallback */ }
+
+            if (!minioFallbackSuccess) {
+              // Fallback 2 para MinIO: IP pública del VPS con Host header
               fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
               fetchHeaders['Host'] = parsed.host;
             }
           } else {
-            // Otro tipo de error, propagar
-            throw initialError;
+            // Fallback genérico para otros dominios wilkiedevs.com: IP pública del VPS con Host header
+            fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
+            fetchHeaders['Host'] = parsed.host;
           }
         }
       }
