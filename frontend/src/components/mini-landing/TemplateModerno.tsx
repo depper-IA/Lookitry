@@ -374,7 +374,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl, isPrevi
   };
 
   return (
-    <div className={`min-h-screen flex flex-col // TODO: landing_font from brand config - pending API support
+    <div className={`min-h-screen flex flex-col
       ${brand.landing_font || 'font-jakarta'} overflow-x-hidden ${isPreview ? 'p-0 h-auto' : ''}`} style={{ backgroundColor: theme.cardBg, '--primary': primary, '--secondary': secondary, '--secondary-10': secondary + "1a", '--secondary-20': secondary + "33", '--secondary-05': secondary + "0d" } as React.CSSProperties}>
       <ProbadorHero brand={brand} onScrollDown={() => document.getElementById('probador-products')?.scrollIntoView({ behavior: 'smooth' })} isPreview={isPreview} />
       <ProbadorTrustBar brand={brand} />

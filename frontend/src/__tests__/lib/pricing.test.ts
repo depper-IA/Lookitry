@@ -28,8 +28,11 @@ describe('pricing helpers', () => {
   });
 
   it('usa TRM fallback si recibe 0 o negativo', () => {
-    expect(precioEnUSD(390000, 0)).toBe(100);
-    expect(precioEnUSD(390000, -10)).toBe(100);
+    // Fórmula: Math.ceil((precioCOP + 10000) / safeTrm) con safeTrm = 3900 cuando trm <= 0
+    expect(precioEnUSD(390000, 0)).toBe(103); // (390000 + 10000) / 3900 = 102.56 → ceil 103
+    expect(precioEnUSD(390000, -10)).toBe(103);
+    // Con TRM positivo normal
+    expect(precioEnUSD(390000, 4000)).toBe(100); // 400000 / 4000 = 100
   });
 });
 
