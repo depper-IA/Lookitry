@@ -2458,13 +2458,14 @@ export class PruebaloController {
         } catch (err: any) {
           initialError = err;
           // Detectar ECONNREFUSED u otros errores de conexión que indican problema de DNS/resolución local
-          const isConnectionError =
+        const isConnectionError =
             err?.cause?.code === 'ECONNREFUSED' ||
             err?.message?.includes('ECONNREFUSED') ||
             err?.message?.includes('fetch failed') ||
-            err?.message?.includes('ECONNREFUSED') ||
             err?.message?.includes('getaddrinfo') ||
             err?.message?.includes('ETIMEDOUT');
+
+          console.log(`[imgProxy] Connection error detected: ${err?.message}, code: ${err?.cause?.code}, trying fallback`);
 
           if (isConnectionError) {
             shouldTryFallback = true;
@@ -2475,31 +2476,36 @@ export class PruebaloController {
         }
 
         if (shouldTryFallback) {
+          console.log(`[imgProxy] shouldTryFallback=true, error: ${initialError?.message}`);
           const parsed = new URL(imageUrl);
           const isMinioUrl = imageUrl.includes('minio.wilkiedevs.com');
 
-          if (isMinioUrl) {
-            // Fallback 1 para MinIO: intentar Docker hostname interno
-            let minioFallbackSuccess = false;
-            try {
-              const internalUrl = `http://lookitry-minio-server:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
-              const internalResponse = await fetch(internalUrl, { headers: fetchHeaders });
-              if (internalResponse.ok) {
-                fetchUrl = internalUrl;
-                minioFallbackSuccess = true;
-              }
-            } catch { /* try next fallback */ }
+            if (isMinioUrl) {
+              console.log(`[imgProxy] MinIO URL blocked (403/404), attempting internal hostname fallback`);
+              // Fallback 1 para MinIO: intentar Docker hostname interno
+              let minioFallbackSuccess = false;
+              try {
+                const internalUrl = `http://lookitry-minio-server:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
+                const internalResponse = await fetch(internalUrl, { headers: fetchHeaders });
+                if (internalResponse.ok) {
+                  fetchUrl = internalUrl;
+                  minioFallbackSuccess = true;
+                  console.log(`[imgProxy] Internal MinIO hostname fallback succeeded`);
+                }
+              } catch { /* try next fallback */ }
 
-            if (!minioFallbackSuccess) {
-              // Fallback 2 para MinIO: IP pública del VPS con Host header
+              if (!minioFallbackSuccess) {
+                // Fallback 2 para MinIO: IP pública del VPS con Host header
+                console.log(`[imgProxy] Internal hostname failed, trying public IP fallback`);
+                fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
+                fetchHeaders['Host'] = parsed.host;
+              }
+            } else {
+              console.log(`[imgProxy] Non-MinIO wilkiedevs.com URL blocked (${initialError?.message}), using public IP fallback`);
+              // Fallback genérico para otros dominios wilkiedevs.com: IP pública del VPS con Host header
               fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
               fetchHeaders['Host'] = parsed.host;
             }
-          } else {
-            // Fallback genérico para otros dominios wilkiedevs.com: IP pública del VPS con Host header
-            fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
-            fetchHeaders['Host'] = parsed.host;
-          }
         }
       }
 
