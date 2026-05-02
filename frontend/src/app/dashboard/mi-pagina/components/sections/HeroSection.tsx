@@ -4,7 +4,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ImageIcon, Plus, Trash2 } from 'lucide-react';
 import { CoverImageUpload } from '../Uploaders';
-import type { LandingEditorState, LandingEditorActions } from '../../hooks/useLandingEditor';
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
@@ -12,14 +11,16 @@ const itemVariants = {
 };
 
 interface HeroSectionProps {
-  state: Pick<LandingEditorState, 'coverImageUrl' | 'coverBgColor' | 'coverOverlayOpacity'>;
-  actions: Pick<LandingEditorActions, 'updateField'>;
+  coverImageUrl: string; setCoverImageUrl: (v: string) => void;
+  coverBgColor: string; setCoverBgColor: (v: string) => void;
+  coverOverlayOpacity: number; setCoverOverlayOpacity: (v: number) => void;
 }
 
-export function HeroSection({ state, actions }: HeroSectionProps) {
-  const { coverImageUrl, coverBgColor, coverOverlayOpacity } = state;
-  const { updateField } = actions;
-
+export function HeroSection({
+  coverImageUrl, setCoverImageUrl,
+  coverBgColor, setCoverBgColor,
+  coverOverlayOpacity, setCoverOverlayOpacity,
+}: HeroSectionProps) {
   const sectionStyle = "p-6 md:p-8 xl:p-10 space-y-6 relative overflow-hidden group";
   const labelStyle = "text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] mb-4 block leading-none opacity-80";
 
@@ -41,10 +42,10 @@ export function HeroSection({ state, actions }: HeroSectionProps) {
       <div className="space-y-6 relative z-10">
         <label className={labelStyle}>Imagen de Portada</label>
         <div className="p-2 bg-[var(--bg-input)] rounded-[2.5rem] border border-[var(--border-color)] shadow-inner overflow-hidden">
-          <CoverImageUpload currentUrl={coverImageUrl} onUpload={(v) => updateField('coverImageUrl', v)} />
+          <CoverImageUpload currentUrl={coverImageUrl} onUpload={setCoverImageUrl} />
         </div>
         {coverImageUrl && (
-          <button onClick={() => updateField('coverImageUrl', '')} className="flex items-center gap-3 px-6 py-2 bg-red-500/10 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all w-fit shadow-lg">
+          <button onClick={() => setCoverImageUrl('')} className="flex items-center gap-3 px-6 py-2 bg-red-500/10 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all w-fit shadow-lg">
             <Trash2 size={12} /> Eliminar
           </button>
         )}
@@ -58,13 +59,13 @@ export function HeroSection({ state, actions }: HeroSectionProps) {
               <input
                 type="color"
                 value={coverBgColor || '#0a0a0a'}
-                onChange={e => updateField('coverBgColor', e.target.value)}
+                onChange={e => setCoverBgColor(e.target.value)}
                 className="w-10 h-10 rounded-2xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0 shadow-lg"
               />
               <input
                 type="text"
                 value={coverBgColor || '#0a0a0a'}
-                onChange={e => updateField('coverBgColor', e.target.value)}
+                onChange={e => setCoverBgColor(e.target.value)}
                 className="flex-1 min-w-0 bg-transparent border-0 text-xs font-black font-mono text-[var(--text-primary)] outline-none uppercase tracking-widest"
               />
             </div>
@@ -79,7 +80,7 @@ export function HeroSection({ state, actions }: HeroSectionProps) {
           <input
             type="range" min={0} max={1} step={0.05}
             value={coverOverlayOpacity}
-            onChange={e => updateField('coverOverlayOpacity', parseFloat(e.target.value))}
+            onChange={e => setCoverOverlayOpacity(parseFloat(e.target.value))}
             className="w-full h-2 rounded-full cursor-pointer accent-[#FF5C3A] appearance-none bg-[var(--border-color)] border-0"
           />
           <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
