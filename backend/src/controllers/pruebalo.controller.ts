@@ -2486,13 +2486,17 @@ export class PruebaloController {
               let minioFallbackSuccess = false;
               try {
                 const internalUrl = `http://minio:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
-                const internalResponse = await fetch(internalUrl, { headers: fetchHeaders });
+                console.log(`[imgProxy] Trying internal MinIO: ${internalUrl}`);
+                const internalResponse = await fetch(internalUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(5000) });
+                console.log(`[imgProxy] Internal MinIO response: ${internalResponse.status} ${internalResponse.statusText}`);
                 if (internalResponse.ok) {
                   fetchUrl = internalUrl;
                   minioFallbackSuccess = true;
                   console.log(`[imgProxy] Internal MinIO hostname fallback succeeded`);
                 }
-              } catch { /* try next fallback */ }
+              } catch (err: any) {
+                console.log(`[imgProxy] Internal MinIO failed: ${err?.message}`);
+              }
 
               if (!minioFallbackSuccess) {
                 // Fallback 2 para MinIO: IP pública del VPS con Host header
@@ -2500,6 +2504,7 @@ export class PruebaloController {
                 fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
                 fetchHeaders['Host'] = parsed.host;
               }
+              console.log(`[imgProxy] Final fetchUrl for MinIO: ${fetchUrl}`);
             } else {
               console.log(`[imgProxy] Non-MinIO wilkiedevs.com URL blocked (${initialError?.message}), using public IP fallback`);
               // Fallback genérico para otros dominios wilkiedevs.com: IP pública del VPS con Host header
