@@ -2484,6 +2484,7 @@ export class PruebaloController {
               console.log(`[imgProxy] MinIO URL blocked (403/404), attempting internal hostname fallback`);
               // Fallback 1 para MinIO: intentar Docker hostname interno (usado en health check)
               let minioFallbackSuccess = false;
+              let minioFallbackError: any = null;
               try {
                 const internalUrl = `http://minio:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
                 console.log(`[imgProxy] Trying internal MinIO: ${internalUrl}`);
@@ -2493,12 +2494,15 @@ export class PruebaloController {
                   fetchUrl = internalUrl;
                   minioFallbackSuccess = true;
                   console.log(`[imgProxy] Internal MinIO hostname fallback succeeded`);
+                } else {
+                  minioFallbackError = new Error(`Internal MinIO returned ${internalResponse.status}`);
                 }
               } catch (err: any) {
-                console.log(`[imgProxy] Internal MinIO failed: ${err?.message}`);
+                minioFallbackError = err;
+                console.log(`[imgProxy] Internal MinIO failed: ${err?.message}, code: ${err?.cause?.code}`);
               }
 
-              if (!minioFallbackSuccess) {
+              if (!minioFallbackSuccess && minioFallbackError) {
                 // Fallback 2 para MinIO: IP pública del VPS con Host header
                 console.log(`[imgProxy] Internal hostname failed, trying public IP fallback`);
                 fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
