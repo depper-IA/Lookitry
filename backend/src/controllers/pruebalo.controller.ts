@@ -2453,11 +2453,29 @@ export class PruebaloController {
             initialError?.message?.includes('fetch failed');
 
           if (isConnectionError) {
-            // Reescribir: https://wilkiedevs.com/path → http://31.220.18.39/path
             const parsed = new URL(imageUrl);
-            fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
-            // Añadir Host header para que Traefik pueda rutear al vhost correcto
-            fetchHeaders['Host'] = parsed.host;
+            const isMinioUrl = imageUrl.includes('minio.wilkiedevs.com');
+
+            if (isMinioUrl) {
+              // Fallback 1 para MinIO: intentar Docker hostname interno
+              try {
+                const internalUrl = `http://lookitry-minio-server:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
+                const internalResponse = await fetch(internalUrl, { headers: fetchHeaders });
+                if (internalResponse.ok) {
+                  fetchUrl = internalUrl;
+                } else {
+                  throw new Error(`Internal MinIO fallback failed: ${internalResponse.statusText}`);
+                }
+              } catch {
+                // Fallback 2 para MinIO: IP pública del VPS con Host header
+                fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
+                fetchHeaders['Host'] = parsed.host;
+              }
+            } else {
+              // Fallback genérico para otros dominios wilkiedevs.com
+              fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
+              fetchHeaders['Host'] = parsed.host;
+            }
           } else {
             // Otro tipo de error, propagar
             throw initialError;
