@@ -682,6 +682,8 @@ export function ListView({ products, onEdit, onDelete, widgetProductIds, onAddTo
   );
 }
 
+ProductCard.displayName = 'ProductCard';
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN EXPORT
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -745,6 +747,8 @@ const GridView = React.forwardRef<HTMLDivElement, GridViewProps>(({ products, on
     </motion.div>
   );
 });
+
+GridView.displayName = 'GridView';
 
 export function ProductList({ products, viewMode = 'grid', onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget, sortBy, onSortChange }: ProductListProps) {
   return (
