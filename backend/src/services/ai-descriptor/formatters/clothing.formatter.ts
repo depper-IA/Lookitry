@@ -77,6 +77,10 @@ export class ClothingFormatter extends BaseFormatter {
         patterns: ['patrones o estampados en español'],
         materials: ['materiales principales en español'],
         fit: 'tipo de ajuste en español (ej: Ajustado, Regular, Holgado)',
+        extra_attributes: {
+          "Atributo Dinámico 1": "Valor (ej: Estilo de cuello, Tipo de manga)",
+          "Atributo Dinámico 2": "Valor"
+        }
       }),
     ];
 

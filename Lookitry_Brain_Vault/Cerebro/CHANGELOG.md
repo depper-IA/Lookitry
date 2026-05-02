@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-05-02
+
+### refactor(ai): Reemplazo de n8n por Vertex AI directo para el Descriptor IA
+
+**Resumen:** Se refactorizó la arquitectura del descriptor de productos, eliminando la dependencia del webhook de n8n e integrando directamente Vertex AI.
+
+**Cambios clave:**
+1. Nuevo endpoint `/api/ai/describe-product` que reemplaza el webhook `/webhook/descriptor` de n8n.
+2. Implementación de **Strategy Pattern** usando `BaseFormatter` y clases concretas (`ClothingFormatter`, `AccessoryFormatter`, `FootwearFormatter`).
+3. Uso de **Zod discriminated union** (`product_type` = CLOTHING | ACCESSORY | FOOTWEAR) para validar el output de la IA de forma estricta.
+4. El controlador de productos (`products.controller.ts`) ahora llama directamente a `ai-descriptor.service.ts` en lugar de usar n8n.
+
+---
+
 ## 2026-04-28
 
 ### fix(landing): Replace megamenu promo image with rebeca.webp

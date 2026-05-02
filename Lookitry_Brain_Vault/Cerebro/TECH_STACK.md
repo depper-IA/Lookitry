@@ -592,7 +592,7 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | Función | Webhook Path | ID Workflow | Variable de entorno |
 |---------|--------------|-------------|---------------------|
 | **Try-On Principal** | `/webhook/tryon` | `wPLypk7KhBcFLicX` | `N8N_WEBHOOK_URL` |
-| **Descriptor IA (productos)** | `/webhook/descriptor` | `ZjVTV3QxoPEi60GX` | `N8N_DESCRIPTOR_URL` |
+| **Descriptor IA (productos)** | `/api/ai/describe-product` | Vertex AI (Sin n8n) | — |
 | **Error Handling** | (Automático como errorWorkflow) | `PNri7NdZYkZhpPnm` | — |
 | **Enterprise Sync** | `/webhook/enterprise-sync` | — | `N8N_ENTERPRISE_SYNC_WEBHOOK_URL` |
 | **Blog Topic Generator** | `/webhook/trigger-topic-generator` | `ryoA7wq7WhXYUckC` | — |

@@ -23,7 +23,7 @@ interface ProductFormProps {
 }
 
 // Categorías públicas para todos
-const PUBLIC_CATEGORIES = ['tshirt', 'vestido', 'zapatos', 'camisa', 'hoodie', 'chaqueta', 'pantalones', 'accesorios'];
+const PUBLIC_CATEGORIES = ['tshirt', 'vestido', 'zapatos', 'camisa', 'hoodie', 'chaqueta', 'pantalones', 'accesorios', 'lentes', 'cascos', 'bolsos'];
 
 // Categorías internas (solo para marcas específicas)
 const INTERNAL_CATEGORIES: Record<string, string[]> = {
@@ -41,7 +41,7 @@ function getAvailableCategories(brandId?: string): string[] {
 const CATEGORY_LABELS: Record<string, string> = {
   tshirt: 'Camiseta', hoodie: 'Hoodie', chaqueta: 'Chaqueta', pantalones: 'Pantalones',
   zapatos: 'Zapatos', accesorios: 'Accesorios', vestido: 'Vestido', rines: 'Rines',
-  camisa: 'Camisa', other: 'Otros',
+  camisa: 'Camisa', lentes: 'Lentes', cascos: 'Cascos', bolsos: 'Bolsos y Carteras', other: 'Otros',
 };
 
 const AI_CATEGORY_MAP: Record<string, string> = {
@@ -49,7 +49,9 @@ const AI_CATEGORY_MAP: Record<string, string> = {
   PANTALON: 'pants', PANTS: 'pants', JEANS: 'pants', FALDA: 'pants',
   ZAPATOS: 'shoes', SHOES: 'shoes', SNEAKERS: 'shoes', BOTAS: 'shoes',
   HOODIE: 'hoodie', SUDADERA: 'hoodie', CHAQUETA: 'jacket', JACKET: 'jacket',
-  ACCESORIOS: 'accessories', CASCO: 'accessories', GORRA: 'accessories',
+  ACCESORIOS: 'accessories', CASCO: 'cascos', HELMET: 'cascos', GORRA: 'accessories',
+  LENTES: 'lentes', GAFAS: 'lentes', GLASSES: 'lentes',
+  BOLSO: 'bolsos', BOLSA: 'bolsos', CARTERA: 'bolsos', BAG: 'bolsos', HANDBAG: 'bolsos',
   VESTIDO: 'vestido', DRESS: 'vestido', RINES: 'rines',
 };
 
@@ -137,31 +139,49 @@ function DynamicAttributes({ category, attributes, onChange }: DynamicAttributes
         </span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {categoryAttrs.attributes.map((attr: AttributeDefinition) => (
-          <div key={attr.key} className="space-y-1.5">
+        {categoryAttrs.attributes.map((attr: AttributeDefinition & { name?: string }, idx) => {
+          const uniqueKey = attr.key || attr.name || `attr-${idx}`;
+          return (
+          <div key={uniqueKey} className="space-y-1.5">
             <label className="block text-xs font-medium text-[var(--text-secondary)]">{attr.label}</label>
             {attr.type === 'text' && (
-              <input type="text" value={attributes[attr.key] || ''} onChange={(e) => handleChange(attr.key, e.target.value)}
+              <input type="text" value={attributes[uniqueKey] || ''} onChange={(e) => handleChange(uniqueKey, e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors"
                 placeholder={`Ej: ${attr.options?.[0] || 'Valor'}`} />
             )}
             {attr.type === 'number' && (
-              <input type="number" value={attributes[attr.key] || ''} onChange={(e) => handleChange(attr.key, e.target.value ? Number(e.target.value) : undefined)}
+              <input type="number" value={attributes[uniqueKey] || ''} onChange={(e) => handleChange(uniqueKey, e.target.value ? Number(e.target.value) : undefined)}
                 className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors" />
             )}
             {attr.type === 'select' && attr.options && (
-              <select value={attributes[attr.key] || ''} onChange={(e) => handleChange(attr.key, e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors">
-                <option value="">Seleccionar...</option>
-                {attr.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
+              <div className="space-y-2">
+                <select 
+                  value={attributes[uniqueKey] && !attr.options.includes(attributes[uniqueKey]) ? 'Otro' : (attributes[uniqueKey] || '')} 
+                  onChange={(e) => handleChange(uniqueKey, e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                >
+                  <option value="">Seleccionar...</option>
+                  {attr.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+                
+                {(attributes[uniqueKey] === 'Otro' || (attributes[uniqueKey] && !attr.options.includes(attributes[uniqueKey]))) && attr.options.includes('Otro') && (
+                  <input 
+                    type="text" 
+                    value={attributes[uniqueKey] === 'Otro' ? '' : attributes[uniqueKey]} 
+                    onChange={(e) => handleChange(uniqueKey, e.target.value || 'Otro')}
+                    className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                    placeholder="Especificar valor personalizado..." 
+                    autoFocus
+                  />
+                )}
+              </div>
             )}
             {attr.type === 'tags' && attr.options && (
               <div className="flex flex-wrap gap-2">
                 {attr.options.map((opt) => {
-                  const isSelected = (attributes[attr.key] || []).includes(opt);
+                  const isSelected = (attributes[uniqueKey] || []).includes(opt);
                   return (
-                    <button key={opt} type="button" onClick={() => handleTagToggle(attr.key, opt)}
+                    <button key={opt} type="button" onClick={() => handleTagToggle(uniqueKey, opt)}
                       className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${isSelected ? 'bg-[#FF5C3A] text-white border-[#FF5C3A]' : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border-[var(--border-color)] hover:border-[#FF5C3A]'}`}>
                       {opt}
                     </button>
@@ -170,7 +190,7 @@ function DynamicAttributes({ category, attributes, onChange }: DynamicAttributes
               </div>
             )}
           </div>
-        ))}
+        )})}
       </div>
     </div>
   );

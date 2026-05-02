@@ -98,7 +98,10 @@ import { AuthController } from '../auth.controller';
 function buildReq(body: Record<string, unknown>, options: { ip?: string; authorization?: string } = {}) {
   return {
     body,
-    headers: options.authorization ? { authorization: options.authorization } : {},
+    headers: {
+      'x-forwarded-for': '127.0.0.1',
+      ...(options.authorization ? { authorization: options.authorization } : {}),
+    },
     ip: options.ip || '127.0.0.1',
     cookies: {},
   } as unknown as Request;
@@ -412,22 +415,24 @@ describe('AuthController', () => {
 
   describe('login', () => {
 
-    it('rechaza login sin credenciales', async () => {
-
-      const req = { body: { email: '' } } as Request;
-
+  it('rechaza login sin credenciales', async () => {
+      const req = { body: { email: '' }, headers: { 'x-forwarded-for': '127.0.0.1' }, ip: '127.0.0.1' } as unknown as Request;
       const res = buildRes();
-
-
 
       await controller.login(req, res);
 
-
-
       expect(res.status).toHaveBeenCalledWith(400);
-
       expect(mockLogin).not.toHaveBeenCalled();
+    });
 
+    it('mapea credenciales inválidas a 401', async () => {
+      mockLogin.mockRejectedValue(new Error('Credenciales inválidas'));
+      const req = { body: { email: 'qa@lookitry.com', password: 'mal' }, headers: { 'x-forwarded-for': '127.0.0.1' }, ip: '127.0.0.1' } as unknown as Request;
+      const res = buildRes();
+
+      await controller.login(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(401);
     });
 
 

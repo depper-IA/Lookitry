@@ -2,6 +2,7 @@
 // DescriptorService — Phase 3: Service layer with Vertex wiring and error handling
 
 import { vertexService } from '../vertex.service';
+import axios from 'axios';
 import { BaseFormatter, ProductType } from './formatters/base.formatter';
 import { ClothingFormatter } from './formatters/clothing.formatter';
 import { AccessoryFormatter } from './formatters/accessory.formatter';
@@ -112,16 +113,37 @@ export class DescriptorService {
       input.brand_description
     );
 
+    const parts: any[] = [{ text: prompt }];
+
+    // If an image URL is provided, fetch it and pass it to Vertex AI
+    if (input.image_url) {
+      try {
+        const imageRes = await axios.get(input.image_url, { responseType: 'arraybuffer' });
+        const mimeType = imageRes.headers['content-type'] || 'image/jpeg';
+        const base64Data = Buffer.from(imageRes.data).toString('base64');
+        parts.push({
+          inlineData: {
+            mimeType: mimeType,
+            data: base64Data,
+          },
+        });
+      } catch (err) {
+        console.error(`[DescriptorService] Failed to fetch image from ${input.image_url}:`, err);
+        // We continue with text-only if image fetching fails
+      }
+    }
+
     // Call Vertex AI
     const result = await vertexService.generateContent({
       model: 'gemini-2.5-flash',
       contents: [{
         role: 'user',
-        parts: [{ text: prompt }],
+        parts: parts,
       }],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 8192,
+        responseMimeType: "application/json",
       },
     });
 
@@ -144,9 +166,11 @@ export class DescriptorService {
     // Parse JSON (before Zod validation)
     let parsed: unknown;
     try {
-      parsed = JSON.parse(text);
-    } catch {
-      console.error('[DescriptorService] Failed to parse JSON from Vertex:', text.slice(0, 200));
+      const cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+      parsed = JSON.parse(cleanText);
+    } catch (parseError) {
+      console.error('[DescriptorService] Failed to parse JSON from Vertex. Error:', parseError);
+      console.error('[DescriptorService] Raw text received:', text);
       throw new VertexError('AI response was not valid JSON');
     }
 
