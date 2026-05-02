@@ -134,6 +134,7 @@ export function TryOnWidget({
   }, [generatedProducts, brandSlug, selfieHash]);
 
   const loadConfig = useCallback(async () => {
+    if (!brandSlug) return;
     try {
       setLoading(true);
       const data = await tryonService.getConfig(brandSlug);
@@ -170,7 +171,11 @@ export function TryOnWidget({
     }
   }, [brandSlug, initialProductId, externalId]);
 
-  useEffect(() => { loadConfig(); }, [loadConfig]);
+  useEffect(() => {
+    // Don't call API with empty slug
+    if (!brandSlug) return;
+    loadConfig();
+  }, [loadConfig, brandSlug]);
 
   useEffect(() => {
     return () => {
