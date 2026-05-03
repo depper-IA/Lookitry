@@ -8,7 +8,7 @@ import { supabaseAdmin } from '../config/supabase';
 
 import { RegisterBrandDto, LoginDto, AuthResponse, Brand } from '../types';
 
-import { generateToken } from '../utils/jwt';
+import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 
 import { pricingService } from './pricing.service';
 
@@ -592,13 +592,12 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
 
 
-  const token = generateToken({ brandId: finalBrand.id, email: finalBrand.email });
-
-
+  const token = generateAccessToken({ brandId: finalBrand.id, email: finalBrand.email });
+  const refreshToken = generateRefreshToken({ brandId: finalBrand.id, email: finalBrand.email });
 
   return {
-
     token,
+    refreshToken,
 
     brand: {
 
@@ -762,23 +761,20 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
     // Generar token
 
-    const token = generateToken({
-
+    const token = generateAccessToken({
       brandId: newBrand.id,
-
       email: newBrand.email,
-
     });
-
-
+    const refreshToken = generateRefreshToken({
+      brandId: newBrand.id,
+      email: newBrand.email,
+    });
 
     const requiresTrialPayment = campaignRequiresTrialPayment(campaign);
 
-
-
     return {
-
       token,
+      refreshToken,
 
       brand: {
 
@@ -1128,19 +1124,18 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
     // Generar token
 
-    const token = generateToken({
-
+    const token = generateAccessToken({
       brandId: brand.id,
-
       email: brand.email,
-
+    });
+    const refreshToken = generateRefreshToken({
+      brandId: brand.id,
+      email: brand.email,
     });
 
-
-
     return {
-
       token,
+      refreshToken,
 
       brand: {
 

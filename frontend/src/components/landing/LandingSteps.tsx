@@ -33,9 +33,9 @@ const staggerContainer = {
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-6 sm:mb-8 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] border shadow-sm ${light
       ? 'bg-white/5 border-white/10 text-white/60 dark:bg-gray-100 dark:border-gray-200 dark:text-gray-600'
-      : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
+      : 'bg-accent/5 border-accent/20 text-accent'
     }`}>
-    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-white/40 dark:bg-gray-400' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
+    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-white/40 dark:bg-gray-400' : 'bg-accent'}`} aria-hidden="true" />
     {text}
   </div>
 );
@@ -86,12 +86,12 @@ export default function LandingSteps() {
             custom={1}
             className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6 md:mb-8"
           >
-            Tus clientes lo aman,<br /><span className="text-[#FF5C3A]">tu vendes más.</span>
+            Tus clientes lo aman,<br /><span className="text-accent">tu vendes más.</span>
           </motion.h2>
           <motion.p
             variants={cardVariants}
             custom={2}
-            className="font-dm-sans text-base sm:text-lg text-[#666] dark:text-white/60 max-w-2xl mx-auto font-light leading-relaxed"
+            className="font-dm-sans text-base sm:text-lg text-text-muted dark:text-white/60 max-w-2xl mx-auto font-light leading-relaxed"
           >
             Una experiencia de 3 pasos diseñada para eliminar la fricción técnica y maximizar el deleite del cliente final.
           </motion.p>
@@ -113,7 +113,7 @@ export default function LandingSteps() {
               className="step-card group relative"
             >
               {/* Card image container */}
-              <div className="relative aspect-[3/4] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] overflow-hidden mb-6 sm:mb-8 border border-[#e8e4df] dark:border-[#2a2a2a] bg-[#f0ece8] dark:bg-[#1a1a1a] shadow-sm transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-[#FF5C3A]/10 group-hover:-translate-y-2 group-hover:border-[#FF5C3A]/30">
+              <div className="relative aspect-[3/4] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] overflow-hidden mb-6 sm:mb-8 border border-gray-200 dark:border-border-active bg-gray-100 dark:bg-dark-input shadow-sm transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-accent/10 group-hover:-translate-y-2 group-hover:border-accent/30">
                 <Image
                   src={step.img}
                   alt={step.alt}
@@ -125,7 +125,7 @@ export default function LandingSteps() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                 {/* Step number badge */}
-                <div className="absolute top-4 sm:top-6 md:top-8 left-4 sm:left-6 md:left-8 w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 bg-[#FF5C3A] text-white rounded-xl sm:rounded-2xl flex items-center justify-center font-jakarta font-bold text-lg sm:text-xl shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <div className="absolute top-4 sm:top-6 md:top-8 left-4 sm:left-6 md:left-8 w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 bg-accent text-white rounded-xl sm:rounded-2xl flex items-center justify-center font-jakarta font-bold text-lg sm:text-xl shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                   {step.n}
                 </div>
 
@@ -135,7 +135,7 @@ export default function LandingSteps() {
                     <motion.svg
                       viewBox="0 0 48 48"
                       fill="none"
-                      className="w-full h-full text-[#FF5C3A]"
+                      className="w-full h-full text-accent"
                       animate={{ x: [0, 5, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                     >
@@ -152,17 +152,17 @@ export default function LandingSteps() {
               </div>
 
               {/* Step title */}
-              <h3 className="font-jakarta text-xl sm:text-2xl font-bold text-black dark:text-white mb-3 sm:mb-4 transition-colors duration-300 group-hover:text-[#FF5C3A]">
+              <h3 className="font-jakarta text-xl sm:text-2xl font-bold text-black dark:text-white mb-3 sm:mb-4 transition-colors duration-300 group-hover:text-accent">
                 {step.title}
               </h3>
 
               {/* Step description */}
-              <p className="font-dm-sans text-[#666] dark:text-white/60 leading-relaxed text-sm font-light transition-colors duration-300 group-hover:text-[#555] dark:group-hover:text-white/80">
+              <p className="font-dm-sans text-text-muted dark:text-white/60 leading-relaxed text-sm font-light transition-colors duration-300 group-hover:text-text-muted dark:group-hover:text-white/80">
                 {step.desc}
               </p>
 
               {/* Decorative line */}
-              <div className="mt-4 sm:mt-6 h-[2px] w-0 group-hover:w-16 bg-gradient-to-r from-[#FF5C3A] to-transparent transition-all duration-500 rounded-full" />
+              <div className="mt-4 sm:mt-6 h-[2px] w-0 group-hover:w-16 bg-gradient-to-r from-accent to-transparent transition-all duration-500 rounded-full" />
             </motion.div>
           ))}
         </motion.div>
@@ -177,7 +177,7 @@ export default function LandingSteps() {
         >
           <Link
             href="/trial-checkout"
-            className="bg-[#FF5C3A] text-white px-6 sm:px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold hover:!bg-[#e54a2e] hover:scale-105 active:scale-[0.98] transition-all duration-200 shadow-xl shadow-[#FF5C3A]/20 text-sm sm:text-base inline-flex items-center gap-2"
+            className="bg-accent text-white px-6 sm:px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold hover:!bg-accent-bright hover:scale-105 active:scale-[0.98] transition-all duration-200 shadow-xl shadow-accent/20 text-sm sm:text-base inline-flex items-center gap-2"
           >
             <span>Comenzar mi transformación ahora</span>
             <motion.svg

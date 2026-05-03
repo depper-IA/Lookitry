@@ -21,7 +21,7 @@ export function Breadcrumbs({ items, className = '', light = false }: Breadcrumb
             className={`transition-colors ${
               light 
                 ? 'text-gray-400 hover:text-white' 
-                : 'text-gray-500 hover:text-[#0a0a0a]'
+                : 'text-gray-500 hover:text-black'
             }`}
           >
             Inicio
@@ -46,13 +46,13 @@ export function Breadcrumbs({ items, className = '', light = false }: Breadcrumb
                 className={`transition-colors ${
                   light 
                     ? 'text-gray-400 hover:text-white' 
-                    : 'text-gray-500 hover:text-[#0a0a0a]'
+                    : 'text-gray-500 hover:text-black'
                 }`}
               >
                 {item.label}
               </Link>
             ) : (
-              <span className={light ? 'text-[#FF5C3A]' : 'text-[#FF5C3A]'}>
+              <span className={light ? 'text-accent' : 'text-accent'}>
                 {item.label}
               </span>
             )}

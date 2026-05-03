@@ -75,7 +75,7 @@ export default function LandingPayments() {
   return (
     <section className="bg-white dark:bg-black py-20 sm:py-24 md:py-28 lg:py-32 px-4 sm:px-6 relative overflow-hidden" aria-label="Medios de pago">
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#FF5C3A]/3 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-accent/3 via-transparent to-transparent" />
 
       <div className="max-w-6xl mx-auto relative">
         {/* Header */}
@@ -89,7 +89,7 @@ export default function LandingPayments() {
           <motion.div
             custom={0}
             variants={fadeInUp}
-            className="flex items-center justify-center gap-2 mb-3 sm:mb-4 text-[#10b981]"
+            className="flex items-center justify-center gap-2 mb-3 sm:mb-4 text-emerald-500"
           >
             <ShieldCheck size={18} aria-hidden="true" />
             <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[.2em] sm:tracking-[.25em]">Transacciones Protegidas</span>
@@ -104,7 +104,7 @@ export default function LandingPayments() {
           <motion.p
             custom={2}
             variants={fadeInUp}
-            className="text-sm text-[#666] dark:text-white/70 max-w-md mx-auto font-dm-sans font-light"
+            className="text-sm text-text-muted dark:text-white/70 max-w-md mx-auto font-dm-sans font-light"
           >
             Utilizamos pasarelas certificadas Wompi y PayPal para garantizar que tus datos estén siempre seguros.
           </motion.p>
@@ -127,7 +127,7 @@ export default function LandingPayments() {
             >
               {/* Glow effect on hover */}
               <motion.div
-                className="absolute inset-0 rounded-lg bg-[#FF5C3A]/10 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                className="absolute inset-0 rounded-lg bg-accent/10 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 style={{ scale: 1.5 }}
               />
               <Image
@@ -155,12 +155,12 @@ export default function LandingPayments() {
               key={badge.text}
               custom={i}
               variants={badgeVariants}
-              className="group flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-[#f8f6f4] dark:bg-white/5 border border-[#e8e4df] dark:border-white/10 hover:border-[#FF5C3A]/40 hover:bg-[#FF5C3A]/5 transition-all duration-300 cursor-default"
+              className="group flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-warm dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-accent/40 hover:bg-accent/5 transition-all duration-300 cursor-default"
             >
-              <span className="text-[#FF5C3A] shrink-0 group-hover:scale-110 transition-transform duration-300">
+              <span className="text-accent shrink-0 group-hover:scale-110 transition-transform duration-300">
                 {badge.icon}
               </span>
-              <span className="text-[9px] sm:text-[10px] text-black dark:text-white font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] group-hover:text-[#FF5C3A] transition-colors duration-300">
+              <span className="text-[9px] sm:text-[10px] text-black dark:text-white font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] group-hover:text-accent transition-colors duration-300">
                 {badge.text}
               </span>
             </motion.div>

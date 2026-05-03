@@ -21,6 +21,29 @@ function getFullUrl(path: string): string {
   return `${base}${cleanPath}`;
 }
 
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
+async function executeRefresh(): Promise<boolean> {
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+  isRefreshing = true;
+  refreshPromise = fetch(getFullUrl('/auth/refresh'), {
+    method: 'POST',
+    credentials: 'include'
+  }).then(res => {
+    isRefreshing = false;
+    refreshPromise = null;
+    return res.ok;
+  }).catch(() => {
+    isRefreshing = false;
+    refreshPromise = null;
+    return false;
+  });
+  return refreshPromise;
+}
+
 // Wrapper que imita la interfaz de axios ({ data, status })
 // Las credenciales se envian exclusivamente via cookies HTTP-Only.
 async function apiFetch<T>(
@@ -40,25 +63,51 @@ async function apiFetch<T>(
 
   const url = getFullUrl(path);
 
-  const res = await fetch(url, {
+  let res = await fetch(url, {
     method,
     headers,
     credentials: 'include',
     body: isFormData ? (body as any) : (body !== undefined ? JSON.stringify(body) : undefined),
   });
 
+  if (res.status === 401 && !url.includes('/auth/refresh') && !url.includes('/auth/login') && !url.includes('/auth/logout')) {
+    const refreshSuccess = await executeRefresh();
+    if (refreshSuccess) {
+      const storedTokenAfterRefresh = typeof window !== 'undefined' ? authService.getToken() : null;
+      if (storedTokenAfterRefresh && !(extraHeaders || {})['Authorization']) {
+        headers['Authorization'] = `Bearer ${storedTokenAfterRefresh}`;
+      }
+      res = await fetch(url, {
+        method,
+        headers,
+        credentials: 'include',
+        body: isFormData ? (body as any) : (body !== undefined ? JSON.stringify(body) : undefined),
+      });
+    } else {
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      if (!isAuthRoute(currentPath) && typeof window !== 'undefined') {
+        authService.clearSession();
+        window.location.href = '/login';
+      }
+    }
+  }
+
   const data = await res.json().catch(() => ({}));
 
-  if (res.status === 401) {
-    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-    const hasLocalSession = !!authService.getBrand() || !!authService.getToken();
-    const isBrandNotFound = data?.message?.includes('Marca no encontrada');
-
-    if (!isAuthRoute(currentPath) && typeof window !== 'undefined') {
-      if (hasLocalSession || isBrandNotFound) {
+  if (res.status === 401 && url.includes('/auth/refresh')) {
+     // Ya lo maneja arriba, pero si llega aca por peticiones asincronas:
+     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+     if (!isAuthRoute(currentPath) && typeof window !== 'undefined') {
         authService.clearSession();
-        authService.logout().catch(() => {});
-        window.location.href = '/';
+        window.location.href = '/login';
+     }
+  } else if (res.status === 401) {
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+    const isBrandNotFound = data?.message?.includes('Marca no encontrada');
+    if (!isAuthRoute(currentPath) && typeof window !== 'undefined') {
+      if (isBrandNotFound) {
+        authService.clearSession();
+        window.location.href = '/login';
       }
     }
   }

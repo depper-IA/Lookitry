@@ -29,13 +29,13 @@ export default function LandingPlugin() {
     <section id="plugin" className="bg-white dark:bg-black py-20 sm:py-24 md:py-32 px-4 sm:px-6 overflow-hidden relative" aria-label="Plugin WooCommerce">
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         <div className="text-center lg:text-left mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#FF5C3A]/10 border border-[#FF5C3A]/20 text-[#FF5C3A] text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-4 sm:mb-6">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent/10 border border-accent/20 text-accent text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-4 sm:mb-6">
             Plugin Oficial WordPress
           </div>
           <h3 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold text-black dark:text-white mb-4 sm:mb-6 tracking-tight">
-            Potencia tu tienda <span className="text-[#FF5C3A]">WooCommerce</span>
+            Potencia tu tienda <span className="text-accent">WooCommerce</span>
           </h3>
-          <p className="text-[#666] dark:text-white/60 text-base sm:text-lg font-dm-sans max-w-2xl leading-relaxed">
+          <p className="text-text-muted dark:text-white/60 text-base sm:text-lg font-dm-sans max-w-2xl leading-relaxed">
             Integra el probador virtual líder de Latinoamérica en tu E-commerce sin tocar una sola línea de código.
             Instalación profesional en menos de 5 minutos.
           </p>
@@ -47,28 +47,28 @@ export default function LandingPlugin() {
               key={i}
               whileHover={{ y: -10 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="group p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] dark:bg-[#141414] bg-[#fcfaf8] border border-[#eeebe7] dark:border-white/5 hover:bg-[#1a1a1a] dark:hover:bg-[#1a1a1a] hover:shadow-2xl hover:shadow-[#FF5C3A]/5 transition-all duration-500"
+              className="group p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] dark:bg-dark-surface bg-neutral-50 border border-gray-200 dark:border-white/5 hover:bg-dark-input dark:hover:bg-dark-input hover:shadow-2xl hover:shadow-accent/5 transition-all duration-500"
             >
               <motion.div
                 whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mb-4 sm:mb-6 group-hover:bg-[#FF5C3A] group-hover:text-white transition-all duration-500"
+                className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-accent/10 flex items-center justify-center text-accent mb-4 sm:mb-6 group-hover:bg-accent group-hover:text-white transition-all duration-500"
               >
                 {item.icon}
               </motion.div>
               <h4 className="font-jakarta font-bold text-lg sm:text-xl text-black dark:text-white mb-3 sm:mb-4"> {item.title}</h4>
-              <p className="text-[#666] dark:text-white/60 text-sm leading-relaxed font-dm-sans">{item.desc}</p>
+              <p className="text-text-muted dark:text-white/60 text-sm leading-relaxed font-dm-sans">{item.desc}</p>
             </motion.div>
           ))}
         </div>
 
         <div className="flex flex-col lg:flex-row items-center justify-between pt-8 sm:pt-10 md:pt-12 gap-6 sm:gap-8 md:gap-10">
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-            <Link href="#" className="flex items-center gap-2 sm:gap-3 bg-[#FF5C3A] px-6 sm:px-10 py-4 sm:py-5 rounded-full text-white hover:bg-white hover:text-[#FF5C3A] dark:hover:bg-[#FF5C3A] dark:hover:text-white transition-all shadow-xl shadow-[#FF5C3A]/20 active:scale-95 group text-sm">
+            <Link href="#" className="flex items-center gap-2 sm:gap-3 bg-accent px-6 sm:px-10 py-4 sm:py-5 rounded-full text-white hover:bg-white hover:text-accent dark:hover:bg-accent dark:hover:text-white transition-all shadow-xl shadow-accent/20 active:scale-95 group text-sm">
               <Download size={20} className="group-hover:translate-y-1 transition-transform" aria-hidden="true" />
               <span className="font-bold">Descargar Plugin (.zip)</span>
             </Link>
             <div className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl dark:bg-white/5 bg-black/5 border dark:border-white/10 border-black/10">
-              <div className="w-2 h-2 rounded-full bg-[#FF5C3A] animate-pulse" aria-hidden="true" />
+              <div className="w-2 h-2 rounded-full bg-accent animate-pulse" aria-hidden="true" />
               <span className="text-[9px] sm:text-[10px] font-bold text-black dark:text-white uppercase tracking-widest">Exclusivo Plan PRO</span>
             </div>
           </div>

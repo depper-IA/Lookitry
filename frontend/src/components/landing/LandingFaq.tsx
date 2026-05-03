@@ -97,9 +97,9 @@ const fadeInUp = {
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-6 sm:mb-8 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] border shadow-sm transition-all ${light
       ? 'bg-black/5 border-black/10 text-black/40 dark:bg-white/5 dark:border-white/10 dark:text-white/60'
-      : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
+      : 'bg-accent/5 border-accent/20 text-accent'
     }`}>
-    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-black/20 dark:bg-white/40' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
+    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-black/20 dark:bg-white/40' : 'bg-accent'}`} aria-hidden="true" />
     {text}
   </div>
 );
@@ -111,7 +111,7 @@ export default function LandingFaq() {
   return (
     <section className="bg-white dark:bg-black py-20 sm:py-24 md:py-28 lg:py-40 px-4 sm:px-6 md:px-12 relative overflow-hidden" aria-label="Preguntas frecuentes">
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#FF5C3A]/3 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-accent/3 via-transparent to-transparent" />
 
       <div className="max-w-4xl mx-auto relative">
         {/* Header */}
@@ -130,7 +130,7 @@ export default function LandingFaq() {
             variants={fadeInUp}
             className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white tracking-tight mb-6 sm:mb-8"
           >
-            Preguntas <span className="text-[#FF5C3A]">frecuentes.</span>
+            Preguntas <span className="text-accent">frecuentes.</span>
           </motion.h2>
         </motion.div>
 
@@ -156,8 +156,8 @@ export default function LandingFaq() {
                 aria-selected={active}
                 aria-controls={`faq-panel-${tab.id}`}
                 className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl sm:rounded-[1.2rem] text-[10px] sm:text-[11px] font-bold uppercase tracking-widest transition-all duration-300 border whitespace-nowrap ${active
-                    ? 'bg-[#FF5C3A] border-[#FF5C3A] text-white shadow-2xl shadow-[#FF5C3A]/30 scale-105'
-                    : 'bg-[#f8f6f4] dark:bg-white/5 border-[#e8e4df] dark:border-white/5 text-[#555] dark:text-white/40 hover:bg-[#eeebe7] dark:hover:bg-white/10 hover:text-[#0a0a0a] dark:hover:text-white/60 hover:scale-105'
+                    ? 'bg-accent border-accent text-white shadow-2xl shadow-accent/30 scale-105'
+                    : 'bg-warm dark:bg-white/5 border-gray-200 dark:border-white/5 text-text-muted dark:text-white/40 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-dark dark:hover:text-white/60 hover:scale-105'
                   }`}
               >
                 <span className={`transition-transform duration-300 ${active ? 'scale-110' : ''}`}>
@@ -176,7 +176,7 @@ export default function LandingFaq() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="bg-[#f8f6f4] dark:bg-[#111] border border-[#e8e4df] dark:border-white/5 rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-8 lg:p-10 shadow-sm dark:shadow-2xl overflow-hidden"
+          className="bg-warm dark:bg-dark-card border border-gray-200 dark:border-white/5 rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-8 lg:p-10 shadow-sm dark:shadow-2xl overflow-hidden"
           role="tabpanel"
         >
           {FAQ_TABS.find(t => t.id === activeTab)?.items.map((item, idx) => {
@@ -187,21 +187,21 @@ export default function LandingFaq() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05, duration: 0.3 }}
-                className="border-b border-[#e8e4df] dark:border-white/5 last:border-0 font-dm-sans"
+                className="border-b border-gray-200 dark:border-white/5 last:border-0 font-dm-sans"
               >
                 <button
                   onClick={() => setOpenFaqIndex(open ? null : idx)}
                   aria-expanded={open}
                   className="w-full py-5 sm:py-6 md:py-7 flex items-center justify-between text-left group"
                 >
-                  <span className={`font-jakarta text-base sm:text-lg font-bold pr-4 transition-all duration-300 ${open ? 'text-[#FF5C3A]' : 'text-[#0a0a0a] dark:text-white/70 group-hover:text-[#0a0a0a] dark:group-hover:text-white'
+                  <span className={`font-jakarta text-base sm:text-lg font-bold pr-4 transition-all duration-300 ${open ? 'text-accent' : 'text-dark dark:text-white/70 group-hover:text-dark dark:group-hover:text-white'
                     }`}>
                     {item.q}
                   </span>
                   <motion.div
                     animate={{ rotate: open ? 180 : 0 }}
                     transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center shrink-0 transition-all duration-500 ${open ? 'bg-[#FF5C3A] border-[#FF5C3A] text-white' : 'border-[#e8e4df] dark:border-white/10 text-[#555] dark:text-white/20 group-hover:border-[#FF5C3A]/50 group-hover:text-[#FF5C3A]'
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center shrink-0 transition-all duration-500 ${open ? 'bg-accent border-accent text-white' : 'border-gray-200 dark:border-white/10 text-text-muted dark:text-white/20 group-hover:border-accent/50 group-hover:text-accent'
                       }`}
                     aria-hidden="true"
                   >
@@ -214,7 +214,7 @@ export default function LandingFaq() {
                     animate={{ opacity: 1, height: 'auto', marginTop: 0 }}
                     exit={{ opacity: 0, height: 0, marginTop: 0 }}
                     transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className="pb-6 sm:pb-8 text-[#555] dark:text-white/50 text-sm leading-relaxed max-w-3xl overflow-hidden"
+                    className="pb-6 sm:pb-8 text-text-muted dark:text-white/50 text-sm leading-relaxed max-w-3xl overflow-hidden"
                   >
                     {item.a}
                   </motion.div>
@@ -230,14 +230,14 @@ export default function LandingFaq() {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-12 sm:mt-16 relative overflow-hidden rounded-3xl bg-[#0a0a0a] border border-[#333] dark:border-white/10 p-8 sm:p-10 md:p-12 text-center"
+          className="mt-12 sm:mt-16 relative overflow-hidden rounded-3xl bg-dark border border-border-active dark:border-white/10 p-8 sm:p-10 md:p-12 text-center"
         >
           {/* Decorative elements */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[1px] bg-gradient-to-r from-transparent via-[#FF5C3A]/50 to-transparent" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[150px] h-[1px] bg-gradient-to-r from-transparent via-[#FF5C3A]/30 to-transparent" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[1px] bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[150px] h-[1px] bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
 
           {/* Glow effect */}
-          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#FF5C3A]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-accent/10 rounded-full blur-[100px] pointer-events-none" />
 
           {/* Content */}
           <div className="relative z-10">
@@ -246,9 +246,9 @@ export default function LandingFaq() {
               whileInView={{ scale: 1, opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#FF5C3A]/10 border border-[#FF5C3A]/20 mb-6 transition-transform duration-300 hover:scale-110 hover:rotate-6"
+              className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent/10 border border-accent/20 mb-6 transition-transform duration-300 hover:scale-110 hover:rotate-6"
             >
-              <Sparkles size={28} className="text-[#FF5C3A]" />
+              <Sparkles size={28} className="text-accent" />
             </motion.div>
 
             <motion.h3
@@ -258,7 +258,7 @@ export default function LandingFaq() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="font-jakarta text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight"
             >
-              ¿Listo para <span className="text-[#FF5C3A]">transformar</span> tu tienda?
+              ¿Listo para <span className="text-accent">transformar</span> tu tienda?
             </motion.h3>
 
             <motion.p
@@ -280,7 +280,7 @@ export default function LandingFaq() {
             >
               <Link
                 href="/trial-checkout"
-                className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full bg-[#FF5C3A] text-white font-bold text-sm uppercase tracking-wider overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#FF5C3A]/30"
+                className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full bg-accent text-white font-bold text-sm uppercase tracking-wider overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-accent/30"
               >
                 <span className="relative z-10">Comenzar trial</span>
                 <motion.span

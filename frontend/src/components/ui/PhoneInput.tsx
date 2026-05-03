@@ -166,7 +166,7 @@ export function PhoneInput({
             type="button"
             onClick={() => setIsOpen(!isOpen)}
             onKeyDown={handleKeyDown}
-            className="w-full rounded-2xl border px-3 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A] cursor-pointer flex items-center gap-2 transition-all"
+            className="w-full rounded-2xl border px-3 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent cursor-pointer flex items-center gap-2 transition-all"
             style={{
               backgroundColor: 'var(--bg-input)',
               borderColor: error ? '#ef4444' : 'var(--border-color)',
@@ -206,7 +206,7 @@ export function PhoneInput({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Buscar país..."
-                  className="w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
+                  className="w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-accent/40"
                   style={{
                     backgroundColor: 'var(--bg-input)',
                     borderColor: 'var(--border-color)',
@@ -235,7 +235,7 @@ export function PhoneInput({
                       type="button"
                       onClick={() => handlePrefixChange(country.prefix)}
                       className={`w-full px-3 py-2 text-sm flex items-center gap-2 hover:opacity-80 transition-colors ${
-                        country.prefix === selectedPrefix ? 'bg-[#FF5C3A]/10' : ''
+                        country.prefix === selectedPrefix ? 'bg-accent/10' : ''
                       }`}
                       style={{
                         color: 'var(--text-primary)',
@@ -260,7 +260,7 @@ export function PhoneInput({
           value={localNumber}
           onChange={handleLocalChange}
           placeholder={placeholder}
-          className="flex-1 min-w-0 rounded-2xl border bg-[var(--bg-input)] px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A]"
+          className="flex-1 min-w-0 rounded-2xl border bg-[var(--bg-input)] px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent"
           style={{
             borderColor: error ? '#ef4444' : 'var(--border-color)',
             color: 'var(--text-primary)',

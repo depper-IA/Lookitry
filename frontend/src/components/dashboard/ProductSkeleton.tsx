@@ -8,19 +8,6 @@ interface ProductSkeletonProps {
   variant?: SkeletonVariant;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// DESIGN TOKENS — Premium dark skeleton matching the brand aesthetic
-// ═══════════════════════════════════════════════════════════════════════════════
-const DESIGN = {
-  accent: '#FF5C3A',
-  surface: 'rgba(255, 255, 255, 0.04)',
-  surfaceElevated: 'rgba(255, 255, 255, 0.06)',
-  border: 'rgba(255, 255, 255, 0.06)',
-  shimmer: 'rgba(255, 255, 255, 0.08)',
-  shimmerHighlight: 'rgba(255, 255, 255, 0.15)',
-  textMuted: 'rgba(255, 255, 255, 0.3)',
-};
-
 // Shared shimmer animation (reuse across variants)
 const shimmerClass =
   'animate-pulse rounded-xl';
@@ -30,8 +17,8 @@ function ShimmerBlock({ className = '', style = {} }: { className?: string; styl
     <div
       className={`${shimmerClass} relative overflow-hidden`}
       style={{
-        background: DESIGN.surface,
-        border: `1px solid ${DESIGN.border}`,
+        background: 'rgba(255, 255, 255, 0.04)',
+        border: '1px solid rgba(255, 255, 255, 0.06)',
         ...style,
       }}
     >
@@ -39,7 +26,7 @@ function ShimmerBlock({ className = '', style = {} }: { className?: string; styl
       <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(90deg, transparent 0%, ${DESIGN.shimmerHighlight} 50%, transparent 100%)`,
+          background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%)',
           animation: 'shimmer 1.5s ease-in-out infinite',
         }}
       />
@@ -176,7 +163,7 @@ function ListSkeleton() {
       <div
         className="h-1 w-full"
         style={{
-          background: `linear-gradient(to right, ${DESIGN.accent}, transparent)`,
+          background: 'linear-gradient(to right, #FF5C3A, transparent)',
         }}
       />
 

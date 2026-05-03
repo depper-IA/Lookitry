@@ -38,7 +38,7 @@ export function ProductActions({
                 ? 'bg-emerald-500/15 text-emerald-400'
                 : canAddToWidget === false
                 ? 'bg-gray-500/10 text-gray-400'
-                : 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                : 'bg-accent/15 text-accent'
             }`}
           >
             {isInWidget ? <Check size={12} /> : <Plus size={12} />}
@@ -112,7 +112,7 @@ export function ProductActions({
                 ? 'bg-emerald-500/30 text-emerald-300 cursor-default'
                 : canAddToWidget === false
                 ? 'bg-gray-500/20 text-gray-400 cursor-not-allowed'
-                : 'bg-[#FF5C3A]/80 text-white hover:bg-[#FF5C3A]'
+                : 'bg-accent/80 text-white hover:bg-accent'
             }`}
             style={{
               border: isInWidget

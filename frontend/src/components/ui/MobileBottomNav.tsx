@@ -33,12 +33,12 @@ export function MobileBottomNav({ pathname }: { pathname: string }) {
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
     >
       <div className="mx-auto max-w-sm">
-        <div className="flex items-center justify-center gap-0.5 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0a] px-1.5 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+        <div className="flex items-center justify-center gap-0.5 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-dark px-1.5 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
           <Link
             href="/"
             aria-current={isActive('/') ? 'page' : undefined}
             className={`${itemClass} ${
-              isActive('/') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
+              isActive('/') ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
             }`}
           >
             <Home size={20} />
@@ -49,7 +49,7 @@ export function MobileBottomNav({ pathname }: { pathname: string }) {
             href="/#hero"
             aria-current={isActive('/') ? 'page' : undefined}
             className={`${itemClass} ${
-              isActive('/') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
+              isActive('/') ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
             }`}
           >
             <Sparkles size={20} />
@@ -60,7 +60,7 @@ export function MobileBottomNav({ pathname }: { pathname: string }) {
             href="/contacto"
             aria-current={isActive('/contacto') ? 'page' : undefined}
             className={`${itemClass} ${
-              isActive('/contacto') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
+              isActive('/contacto') ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
             }`}
           >
             <Mail size={20} />
@@ -69,7 +69,7 @@ export function MobileBottomNav({ pathname }: { pathname: string }) {
 
           <Link
             href={getHref()}
-            className={`${itemClass} ${isActive(getHref()) ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'}`}
+            className={`${itemClass} ${isActive(getHref()) ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'}`}
           >
             {getIcon()}
             <span className={labelClass}>{getLabel()}</span>

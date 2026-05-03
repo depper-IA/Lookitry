@@ -19,6 +19,9 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { registerStorageTools } from "./tools/storage.js";
 import { registerComputeTools } from "./tools/compute.js";
 import { registerGenericTools } from "./tools/generic.js";
+import { registerBillingTools } from "./tools/billing.js";
+import { registerNotificationTools } from "./tools/notification.js";
+import { registerAiTools } from "./tools/ai.js";
 import { validateGcpAuth, cleanupClients } from "./services/gcp-client.js";
 
 /**
@@ -27,13 +30,16 @@ import { validateGcpAuth, cleanupClients } from "./services/gcp-client.js";
 function createServer(): McpServer {
   const server = new McpServer({
     name: "gcp-mcp-server",
-    version: "1.0.0"
+    version: "1.2.0"
   });
 
   // Register all tool categories
   registerStorageTools(server);
   registerComputeTools(server);
   registerGenericTools(server);
+  registerBillingTools(server);
+  registerNotificationTools(server);
+  registerAiTools(server);
 
   return server;
 }

@@ -38,11 +38,11 @@ function SortDropdown({ sortBy, onSortChange }: { sortBy: SortOption; onSortChan
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)] text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[#FF5C3A]/30 transition-all"
+        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)] text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-accent/30 transition-all"
       >
         <ArrowUpDown size={12} />
         <span>Ordenar</span>
-        <span className="text-[#FF5C3A]">{current}</span>
+        <span className="text-accent">{current}</span>
         <ChevronDown size={12} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
@@ -55,7 +55,7 @@ function SortDropdown({ sortBy, onSortChange }: { sortBy: SortOption; onSortChan
                 onClick={() => { onSortChange(option.value); setIsOpen(false); }}
                 className={`w-full text-left px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition-all ${
                   sortBy === option.value
-                    ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]'
+                    ? 'bg-accent/10 text-accent'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--card-bg-elevated)] hover:text-[var(--text-primary)]'
                 }`}
               >
@@ -70,45 +70,31 @@ function SortDropdown({ sortBy, onSortChange }: { sortBy: SortOption; onSortChan
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// DESIGN TOKENS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const DESIGN = {
-  accent: '#FF5C3A',
-  accentGlow: 'rgba(255, 92, 58, 0.15)',
-  success: '#18181B', // Dark zinc for corporate "Active" look
-  successGlow: 'rgba(24, 24, 27, 0.2)',
-  danger: '#EF4444',
-  shadowCard: '0 4px 24px rgba(0, 0, 0, 0.2)',
-  shadowHover: '0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 92, 58, 0.15)',
-};
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // BADGE COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const CATEGORY_STYLES: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-  Falda: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
-  Vestido: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
-  Tops: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
-  Camisa: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
-  Accesorios: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
-  Rines: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
-  Zapatos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
-  Bolsos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
-  Conjunto: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
-  Pantalones: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
-  Chaqueta: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
-  Hoodie: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
-  Cascos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
-  Lentes: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
-  default: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  Falda: <Sparkles className="w-3 h-3" />,
+  Vestido: <Sparkles className="w-3 h-3" />,
+  Tops: <Layers className="w-3 h-3" />,
+  Camisa: <Layers className="w-3 h-3" />,
+  Accesorios: <Gauge className="w-3 h-3" />,
+  Rines: <Gauge className="w-3 h-3" />,
+  Zapatos: <Star className="w-3 h-3" />,
+  Bolsos: <Star className="w-3 h-3" />,
+  Conjunto: <Layers className="w-3 h-3" />,
+  Pantalones: <Layers className="w-3 h-3" />,
+  Chaqueta: <Layers className="w-3 h-3" />,
+  Hoodie: <Layers className="w-3 h-3" />,
+  Cascos: <Star className="w-3 h-3" />,
+  Lentes: <Star className="w-3 h-3" />,
+  default: <Sparkles className="w-3 h-3" />,
 };
 
 const BADGE_STYLES: Record<string, { bg: string; text: string; dot: string; shadow: string }> = {
-  nuevo: { bg: '#FF5C3A', text: '#FFFFFF', dot: '#FFFFFF', shadow: '0 2px 8px rgba(255, 92, 58, 0.3)' },
-  top: { bg: '#FF5C3A', text: '#FFFFFF', dot: '#FFFFFF', shadow: '0 2px 8px rgba(255, 92, 58, 0.3)' },
-  oferta: { bg: '#FF5C3A', text: '#FFFFFF', dot: '#FFFFFF', shadow: '0 2px 8px rgba(255, 92, 58, 0.3)' },
+  nuevo: { bg: 'bg-accent', text: 'text-white', dot: 'bg-white', shadow: 'shadow-[0_2px_8px_rgba(255,92,58,0.3)]' },
+  top: { bg: 'bg-accent', text: 'text-white', dot: 'bg-white', shadow: 'shadow-[0_2px_8px_rgba(255,92,58,0.3)]' },
+  oferta: { bg: 'bg-accent', text: 'text-white', dot: 'bg-white', shadow: 'shadow-[0_2px_8px_rgba(255,92,58,0.3)]' },
 };
 
 const CATEGORY_UNITS: Record<string, string> = {
@@ -118,18 +104,12 @@ const CATEGORY_UNITS: Record<string, string> = {
 };
 
 export function CategoryBadge({ category }: { category: string }) {
-  const style = CATEGORY_STYLES[category.toLowerCase()] || CATEGORY_STYLES.default;
+  const icon = CATEGORY_ICONS[category.toLowerCase()] || CATEGORY_ICONS.default;
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-medium uppercase tracking-wide backdrop-blur-sm"
-      style={{
-        background: `${style.bg.replace('0.9', '0.6')}`,
-        color: style.text,
-        border: '1px solid rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(8px)',
-      }}
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-medium uppercase tracking-wide backdrop-blur-sm bg-zinc-900/60 text-white border border-white/5"
     >
-      {style.icon}
+      {icon}
       {category}
     </span>
   );
@@ -139,22 +119,10 @@ export function ProductBadge({ type }: { type: string }) {
   const style = BADGE_STYLES[type.toLowerCase()] || BADGE_STYLES.nuevo;
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide backdrop-blur-sm"
-      style={{
-        background: style.bg,
-        color: style.text,
-        border: `1px solid ${style.dot}25`,
-        backdropFilter: 'blur(8px)',
-        boxShadow: `0 2px 8px ${style.shadow}20`,
-      }}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide backdrop-blur-sm ${style.bg} ${style.text} ${style.shadow} border border-white/25`}
     >
       <span
-        className="w-1.5 h-1.5 rounded-full"
-        style={{
-          background: style.dot,
-          boxShadow: `0 0 4px ${style.dot}`,
-          opacity: 0.9,
-        }}
+        className={`w-1.5 h-1.5 rounded-full shadow-[0_0_4px_white] opacity-90 ${style.dot}`}
       />
       {type}
     </span>
@@ -165,10 +133,10 @@ export function ActiveIndicator() {
   return (
     <div className="flex items-center gap-1.5">
       <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: DESIGN.success }} />
-        <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: DESIGN.success }} />
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-zinc-900" />
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-zinc-900" />
       </span>
-      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: DESIGN.success }}>Activo</span>
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-900">Activo</span>
     </div>
   );
 }
@@ -232,7 +200,7 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(({
         style={{
           background: 'var(--card-bg)',
           border: '1px solid var(--card-border)',
-          boxShadow: isHovered ? DESIGN.shadowHover : DESIGN.shadowCard,
+          boxShadow: isHovered ? '0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 92, 58, 0.15)' : '0 4px 24px rgba(0, 0, 0, 0.2)',
           transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
         }}
       >
@@ -267,7 +235,7 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(({
               className="w-7 h-7 rounded-full flex items-center justify-center backdrop-blur-md transition-transform duration-200"
               style={{
                 background: 'rgba(24, 24, 27, 0.9)',
-                boxShadow: `0 4px 12px ${DESIGN.successGlow}`,
+                boxShadow: '0 4px 12px rgba(24, 24, 27, 0.2)',
                 transform: isHovered ? 'scale(1.1)' : 'scale(1)',
                 border: '1px solid rgba(255,255,255,0.1)'
               }}
@@ -312,7 +280,7 @@ export const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(({
                 onClick={(e) => { e.stopPropagation(); onAddToWidget(); }}
                 disabled={isInWidget || !canAddToWidget}
                 className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all ${
-                  isInWidget ? 'bg-emerald-500/25 text-emerald-300 cursor-default' : canAddToWidget === false ? 'bg-gray-500/15 text-gray-400 cursor-not-allowed' : 'bg-[#FF5C3A] text-white hover:bg-[#FF5C3A]/90'
+                  isInWidget ? 'bg-emerald-500/25 text-emerald-300 cursor-default' : canAddToWidget === false ? 'bg-gray-500/15 text-gray-400 cursor-not-allowed' : 'bg-accent text-white hover:bg-accent/90'
                 }`}
               >
                 {isInWidget ? <Check size={12} /> : <Plus size={12} />}
@@ -370,7 +338,7 @@ function ActionButton({ icon, label, onClick, variant = 'default', disabled }: A
 
   return (
     <motion.button
-      whileHover={{ scale: variant === 'danger' ? 1.1 : 1.05, color: variant === 'danger' ? '#FF3A5C' : undefined }}
+      whileHover={{ scale: variant === 'danger' ? 1.1 : 1.05, color: variant === 'danger' ? 'rgb(239, 68, 68)' : undefined }}
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
       disabled={disabled}
@@ -387,7 +355,7 @@ function PriceDisplay({ price, category }: { price: number; category: string }) 
   return (
     <div className="text-right shrink-0 min-w-0">
       {unit && <p className="text-[9px] mb-0.5 font-medium opacity-60" style={{ color: 'var(--text-secondary)' }}>{unit}</p>}
-      <p className="text-xl font-extrabold tracking-tight" style={{ color: DESIGN.accent }}>
+      <p className="text-xl font-extrabold tracking-tight text-accent">
         ${price.toLocaleString('es-CO')}
       </p>
     </div>
@@ -419,32 +387,40 @@ function TechSpecs({ attributes }: { attributes: Record<string, any> }) {
   return <p className="text-[10px] font-medium opacity-70 truncate" style={{ color: 'var(--text-secondary)' }}>{parts.join(' · ')}</p>;
 }
 
+const PILL_COLOR_MAP: Record<string, string> = {
+  violet: 'bg-violet-500/15 text-violet-500 border-violet-500/30',
+  cyan: 'bg-cyan-500/15 text-cyan-500 border-cyan-500/30',
+  amber: 'bg-amber-500/15 text-amber-500 border-amber-500/30',
+  pink: 'bg-pink-500/15 text-pink-500 border-pink-500/30',
+  emerald: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30',
+};
+
 function AttributePills({ attributes }: { attributes: Record<string, any> }) {
   if (!attributes || Object.keys(attributes).length === 0) return null;
   const pills: { label: string; color: string }[] = [];
   
   // Hardcoded colorful pills
-  if (attributes.finish) pills.push({ label: attributes.finish, color: '#8B5CF6' });
-  if (attributes.peso) pills.push({ label: attributes.peso + 'kg', color: '#06B6D4' });
+  if (attributes.finish) pills.push({ label: attributes.finish, color: 'violet' });
+  if (attributes.peso) pills.push({ label: attributes.peso + 'kg', color: 'cyan' });
   
   // Handle different variations of "talla" (tallas array or talla string/array)
   let tallaVal = attributes.tallas || attributes.talla;
   if (tallaVal) {
     if (Array.isArray(tallaVal)) {
-      pills.push({ label: tallaVal.slice(0, 3).join(', '), color: '#F59E0B' });
+      pills.push({ label: tallaVal.slice(0, 3).join(', '), color: 'amber' });
     } else if (typeof tallaVal === 'string') {
-      pills.push({ label: tallaVal, color: '#F59E0B' });
+      pills.push({ label: tallaVal, color: 'amber' });
     }
   }
 
-  if (attributes.color) pills.push({ label: attributes.color, color: '#EC4899' });
-  if (attributes.proteccion_uv) pills.push({ label: attributes.proteccion_uv, color: '#10B981' });
+  if (attributes.color) pills.push({ label: attributes.color, color: 'pink' });
+  if (attributes.proteccion_uv) pills.push({ label: attributes.proteccion_uv, color: 'emerald' });
 
   if (pills.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1.5">
       {pills.map((pill, i) => (
-        <span key={i} className="px-2 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide" style={{ background: `${pill.color}15`, color: pill.color, border: `1px solid ${pill.color}30` }}>
+        <span key={i} className={`px-2 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide border ${PILL_COLOR_MAP[pill.color] || ''}`}>
           {pill.label}
         </span>
       ))}
@@ -469,7 +445,7 @@ function MobileActions({ isInWidget, canAddToWidget, onAddToWidget, onEdit, onDe
           onClick={() => onAddToWidget()}
           disabled={isInWidget || !canAddToWidget}
           className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold uppercase transition-all ${
-            isInWidget ? 'bg-emerald-500/15 text-emerald-400' : canAddToWidget === false ? 'bg-gray-500/10 text-gray-400' : 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+            isInWidget ? 'bg-emerald-500/15 text-emerald-400' : canAddToWidget === false ? 'bg-gray-500/10 text-gray-400' : 'bg-accent/15 text-accent'
           }`}
         >
           {isInWidget ? <Check size={12} /> : <Plus size={12} />}
@@ -479,8 +455,8 @@ function MobileActions({ isInWidget, canAddToWidget, onAddToWidget, onEdit, onDe
       <motion.button whileTap={{ scale: 0.95 }} onClick={onEdit} className="px-3 py-2 rounded-lg" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
         <Edit3 size={14} style={{ color: 'var(--text-primary)' }} />
       </motion.button>
-      <motion.button whileTap={{ scale: 0.95 }} onClick={onDelete} className="px-3 py-2 rounded-lg" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.2)' }}>
-        <Trash2 size={14} style={{ color: DESIGN.danger }} />
+      <motion.button whileTap={{ scale: 0.95 }} onClick={onDelete} className="px-3 py-2 rounded-lg bg-red-500/15 border border-red-500/20">
+        <Trash2 size={14} className="text-red-500" />
       </motion.button>
     </div>
   );
@@ -501,8 +477,8 @@ interface ListViewProps {
 
 export const ListView = React.forwardRef<HTMLDivElement, ListViewProps>(({ products, onEdit, onDelete, widgetProductIds, onAddToWidget, canAddToWidget }, ref) => {
   return (
-    <div ref={ref} className="rounded-2xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: DESIGN.shadowCard }}>
-      <div className="h-1" style={{ background: `linear-gradient(to right, ${DESIGN.accent}, transparent)` }} />
+    <div ref={ref} className="rounded-2xl overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.2)]" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+      <div className="h-1 bg-gradient-to-r from-accent to-transparent" />
       <div className="hidden xl:block overflow-x-auto no-scrollbar">
         <table className="w-full min-w-[750px]">
           <thead>
@@ -538,8 +514,8 @@ export const ListView = React.forwardRef<HTMLDivElement, ListViewProps>(({ produ
                           <p className="text-[11px] mt-1 line-clamp-1" style={{ color: 'var(--text-muted)' }}>{product.shortDescription || product.description}</p>
                         )}
                         <div className="flex items-center gap-2 mt-2">
-                          <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#71717A', boxShadow: `0 0 6px rgba(113, 113, 122, 0.4)` }} />
-                          <span className="text-[9px] font-semibold uppercase" style={{ color: '#71717A' }}>Activo</span>
+                          <div className="w-1.5 h-1.5 rounded-full bg-zinc-500 shadow-[0_0_6px_rgba(113,113,122,0.4)]" />
+                          <span className="text-[9px] font-semibold uppercase text-zinc-500">Activo</span>
                         </div>
                       </div>
                     </div>
@@ -569,14 +545,14 @@ export const ListView = React.forwardRef<HTMLDivElement, ListViewProps>(({ produ
                             border: widgetProductIds?.includes(product.id) ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid var(--card-border)',
                           }}
                         >
-                          {widgetProductIds?.includes(product.id) ? <Check size={18} className="text-[#FF5C3A]" /> : <Plus size={18} className={canAddToWidget === false ? 'text-gray-500' : 'text-[#FF5C3A]'} />}
+                          {widgetProductIds?.includes(product.id) ? <Check size={18} className="text-accent" /> : <Plus size={18} className={canAddToWidget === false ? 'text-gray-500' : 'text-accent'} />}
                         </motion.button>
                       )}
                       <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)} className="p-3 rounded-xl" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
                         <Edit3 size={18} style={{ color: 'var(--text-primary)' }} />
                       </motion.button>
-                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)} className="p-3 rounded-xl" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)' }}>
-                        <Trash2 size={18} style={{ color: DESIGN.danger }} />
+                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)} className="p-3 rounded-xl bg-red-500/15 border border-red-500/25">
+                        <Trash2 size={18} className="text-red-500" />
                       </motion.button>
                     </div>
                   </td>
@@ -621,8 +597,8 @@ export const ListView = React.forwardRef<HTMLDivElement, ListViewProps>(({ produ
                           <p className="text-[10px] mt-0.5 line-clamp-1" style={{ color: 'var(--text-muted)' }}>{product.shortDescription || product.description}</p>
                         )}
                         <div className="flex items-center gap-2 mt-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full" style={{ background: DESIGN.success, boxShadow: `0 0 6px ${DESIGN.success}` }} />
-                          <span className="text-[9px] font-semibold uppercase" style={{ color: DESIGN.success }}>Activo</span>
+                          <div className="w-1.5 h-1.5 rounded-full bg-zinc-900 shadow-[0_0_6px_rgba(24,24,27,1)]" />
+                          <span className="text-[9px] font-semibold uppercase text-zinc-900">Activo</span>
                         </div>
                       </div>
                     </div>
@@ -652,14 +628,14 @@ export const ListView = React.forwardRef<HTMLDivElement, ListViewProps>(({ produ
                             border: widgetProductIds?.includes(product.id) ? '1px solid rgba(16,185,129,0.25)' : '1px solid var(--card-border)',
                           }}
                         >
-                          {widgetProductIds?.includes(product.id) ? <Check size={16} className="text-emerald-500" /> : <Plus size={16} className={canAddToWidget === false ? 'text-gray-500' : 'text-[#FF5C3A]'} />}
+                          {widgetProductIds?.includes(product.id) ? <Check size={16} className="text-emerald-500" /> : <Plus size={16} className={canAddToWidget === false ? 'text-gray-500' : 'text-accent'} />}
                         </motion.button>
                       )}
                       <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)} className="p-2.5 rounded-lg" style={{ background: 'var(--btn-bg)', border: '1px solid var(--card-border)' }}>
                         <Edit3 size={16} style={{ color: 'var(--text-primary)' }} />
                       </motion.button>
-                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)} className="p-2.5 rounded-lg" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)' }}>
-                        <Trash2 size={16} style={{ color: DESIGN.danger }} />
+                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)} className="p-2.5 rounded-lg bg-red-500/15 border border-red-500/25">
+                        <Trash2 size={16} className="text-red-500" />
                       </motion.button>
                     </div>
                   </td>
@@ -691,7 +667,7 @@ export const ListView = React.forwardRef<HTMLDivElement, ListViewProps>(({ produ
                     <p className="text-[9px] mt-0.5 line-clamp-1" style={{ color: 'var(--text-muted)' }}>{product.shortDescription || product.description}</p>
                   )}
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: DESIGN.success }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
                     <CategoryBadge category={product.category} />
                   </div>
                   <TechSpecs attributes={product.attributes || {}} />
@@ -703,7 +679,7 @@ export const ListView = React.forwardRef<HTMLDivElement, ListViewProps>(({ produ
                     <motion.button whileTap={{ scale: 0.95 }} onClick={() => onEdit(product)} className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase" style={{ background: 'var(--btn-bg)' }}>
                       <Edit3 size={12} className="inline mr-1" />Editar
                     </motion.button>
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)} className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase" style={{ background: 'rgba(239,68,68,0.15)', color: DESIGN.danger }}>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => onDelete(product.id)} className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase bg-red-500/15 text-red-500">
                       <Trash2 size={12} className="inline mr-1" />Eliminar
                     </motion.button>
                   </div>

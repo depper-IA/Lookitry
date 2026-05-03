@@ -445,10 +445,14 @@ export function ErrorBanner({
         className="mb-4 overflow-hidden"
       >
         <div 
-          className="p-3 md:p-4 rounded-2xl flex items-start gap-2 md:gap-3 border"
+          className={`p-3 md:p-4 rounded-2xl flex items-start gap-2 md:gap-3 border ${
+            isServiceError 
+              ? (cardBg ? '' : 'bg-gray-100') + ' ' + (cardBorder ? '' : 'border-gray-200')
+              : 'bg-red-50 border-red-200'
+          }`}
           style={{ 
-            backgroundColor: isServiceError ? (cardBg || '#f3f4f6') : '#fef2f2',
-            borderColor: isServiceError ? (cardBorder || '#e5e5e5') : '#fecaca',
+            ...(isServiceError && cardBg ? { backgroundColor: cardBg } : {}),
+            ...(isServiceError && cardBorder ? { borderColor: cardBorder } : {})
           }}
         >
           <motion.div
@@ -456,13 +460,23 @@ export function ErrorBanner({
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           >
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: isServiceError ? (mutedColor || '#666') : '#ef4444' }} strokeWidth={2} />
+            <AlertCircle 
+              className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isServiceError && !mutedColor ? 'text-gray-500' : (!isServiceError ? 'text-red-500' : '')}`} 
+              style={isServiceError && mutedColor ? { color: mutedColor } : {}} 
+              strokeWidth={2} 
+            />
           </motion.div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold" style={{ color: isServiceError ? (textColor || '#1a1a1a') : '#dc2626' }}>
+            <p 
+              className={`text-sm font-semibold ${isServiceError && !textColor ? 'text-gray-900' : (!isServiceError ? 'text-red-600' : '')}`} 
+              style={isServiceError && textColor ? { color: textColor } : {}}
+            >
               {isServiceError ? 'La prueba virtual está temporalmente no disponible' : 'Algo salió mal'}
             </p>
-            <p className="text-xs mt-0.5" style={{ color: isServiceError ? (mutedColor || '#666') : '#991b1b' }}>
+            <p 
+              className={`text-xs mt-0.5 ${isServiceError && !mutedColor ? 'text-gray-500' : (!isServiceError ? 'text-red-800' : '')}`} 
+              style={isServiceError && mutedColor ? { color: mutedColor } : {}}
+            >
               {isServiceError 
                 ? 'El servicio de generación se quedó sin capacidad temporalmente. Intenta de nuevo en unos minutos.'
                 : error
@@ -477,7 +491,10 @@ export function ErrorBanner({
               whileTap={{ scale: 0.9 }}
               aria-label="Cerrar notificación"
             >
-              <X className="w-4 h-4" style={{ color: mutedColor || (isServiceError ? '#666' : '#991b1b') }} />
+              <X 
+                className={`w-4 h-4 ${isServiceError && !mutedColor ? 'text-gray-500' : (!isServiceError ? 'text-red-800' : '')}`} 
+                style={isServiceError && mutedColor ? { color: mutedColor } : {}} 
+              />
             </motion.button>
           )}
         </div>
@@ -577,30 +594,30 @@ const INFO_STYLES = {
   info: {
     bg: 'bg-blue-50',
     border: 'border-blue-200',
-    iconColor: '#3b82f6',
-    titleColor: '#1d4ed8',
-    textColor: '#1e40af',
+    iconClass: 'text-blue-500',
+    titleClass: 'text-blue-700',
+    textClass: 'text-blue-800',
   },
   warning: {
     bg: 'bg-amber-50',
     border: 'border-amber-200',
-    iconColor: '#f59e0b',
-    titleColor: '#b45309',
-    textColor: '#92400e',
+    iconClass: 'text-amber-500',
+    titleClass: 'text-amber-700',
+    textClass: 'text-amber-800',
   },
   error: {
     bg: 'bg-red-50',
     border: 'border-red-200',
-    iconColor: '#ef4444',
-    titleColor: '#dc2626',
-    textColor: '#991b1b',
+    iconClass: 'text-red-500',
+    titleClass: 'text-red-600',
+    textClass: 'text-red-800',
   },
   success: {
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',
-    iconColor: '#10b981',
-    titleColor: '#047857',
-    textColor: '#065f46',
+    iconClass: 'text-emerald-500',
+    titleClass: 'text-emerald-700',
+    textClass: 'text-emerald-800',
   },
 };
 
@@ -637,9 +654,9 @@ export function InfoBanner({
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           >
-            <Icon className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: styles.iconColor }} strokeWidth={2} />
+            <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${styles.iconClass}`} strokeWidth={2} />
           </motion.div>
-          <p className="text-sm font-medium flex-1" style={{ color: styles.textColor }}>{message}</p>
+          <p className={`text-sm font-medium flex-1 ${styles.textClass}`}>{message}</p>
           {onDismiss && (
             <motion.button
               onClick={onDismiss}
@@ -648,7 +665,7 @@ export function InfoBanner({
               whileTap={{ scale: 0.9 }}
               aria-label="Cerrar notificación"
             >
-              <X className="w-4 h-4" style={{ color: styles.iconColor }} />
+              <X className={`w-4 h-4 ${styles.iconClass}`} />
             </motion.button>
           )}
         </div>

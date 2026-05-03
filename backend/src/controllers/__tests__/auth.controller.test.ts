@@ -78,6 +78,12 @@ jest.mock('../../utils/jwt', () => ({
 
   generateToken: (...args: unknown[]) => mockGenerateToken(...args),
 
+  generateAccessToken: (...args: unknown[]) => mockGenerateToken(...args),
+
+  generateRefreshToken: (...args: unknown[]) => mockGenerateToken(...args),
+
+  verifyToken: jest.fn().mockReturnValue({ brandId: 'test' }),
+
 }));
 
 
@@ -185,7 +191,7 @@ describe('AuthController', () => {
 
           email: 'temp@mailinator.com',
 
-          password: '123456',
+          password: 'StrongPass1!',
 
           name: 'Marca QA',
 
@@ -225,7 +231,7 @@ describe('AuthController', () => {
 
           email: 'qa@lookitry.com',
 
-          password: '123456',
+          password: 'StrongPass1!',
 
           name: 'Marca QA',
 
@@ -317,7 +323,7 @@ describe('AuthController', () => {
 
           email: 'qa@lookitry.com',
 
-          password: '123456',
+          password: 'StrongPass1!',
 
           name: 'Marca QA',
 
@@ -383,7 +389,7 @@ describe('AuthController', () => {
 
           email: 'qa@lookitry.com',
 
-          password: '123456',
+          password: 'StrongPass1!',
 
           name: 'Marca QA',
 
@@ -485,7 +491,7 @@ describe('AuthController', () => {
 
       mockResetPassword.mockRejectedValue(new Error('TOKEN_EXPIRED'));
 
-      const req = { body: { token: 'abc', password: '123456' } } as Request;
+      const req = { body: { token: 'abc', password: 'StrongPass1!' } } as Request;
 
       const res = buildRes();
 

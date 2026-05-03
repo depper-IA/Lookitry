@@ -223,17 +223,17 @@ export function PromoModal() {
 
           {/* Countdown */}
           {remaining && (
-            <div className="flex items-center justify-center gap-4 mb-8 bg-[#1a1a1a] py-4 rounded-2xl border border-[#222]">
+            <div className="flex items-center justify-center gap-4 mb-8 bg-dark-input py-4 rounded-2xl border border-border-subtle">
               {remaining.d > 0 && (
                 <>
                   <CountdownUnit value={remaining.d} label="días" />
-                  <span className="font-bold text-lg pb-4 text-[#333]">:</span>
+                  <span className="font-bold text-lg pb-4 text-text-muted">:</span>
                 </>
               )}
               <CountdownUnit value={remaining.h} label="horas" />
-              <span className="font-bold text-lg pb-4 text-[#333]">:</span>
+              <span className="font-bold text-lg pb-4 text-text-muted">:</span>
               <CountdownUnit value={remaining.m} label="min" />
-              <span className="font-bold text-lg pb-4 text-[#333]">:</span>
+              <span className="font-bold text-lg pb-4 text-text-muted">:</span>
               <CountdownUnit value={remaining.s} label="seg" />
             </div>
           )}

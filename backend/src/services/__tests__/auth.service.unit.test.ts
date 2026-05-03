@@ -30,6 +30,10 @@ jest.mock('../../utils/jwt', () => ({
 
   generateToken: jest.fn().mockReturnValue('mock-jwt-token'),
 
+  generateAccessToken: jest.fn().mockReturnValue('mock-jwt-token'),
+
+  generateRefreshToken: jest.fn().mockReturnValue('mock-refresh-token'),
+
 }));
 
 

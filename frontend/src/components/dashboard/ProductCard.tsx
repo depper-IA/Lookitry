@@ -9,20 +9,6 @@ import { ImageWithFallback } from './ImageWithFallback';
 import { ProductBadge } from './ProductBadge';
 import { ProductActions } from './ProductActions';
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// BRAND DESIGN TOKENS
-// ═══════════════════════════════════════════════════════════════════════════════
-const DESIGN = {
-  accent: '#FF5C3A',
-  accentGlow: 'rgba(255, 92, 58, 0.15)',
-  accentSubtle: 'rgba(255, 92, 58, 0.08)',
-  success: '#18181B', // Dark zinc for corporate "Active" look
-  successGlow: 'rgba(24, 24, 27, 0.2)',
-  danger: '#EF4444',
-  shadowCard: '0 4px 24px rgba(0, 0, 0, 0.2)',
-  shadowHover: '0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 92, 58, 0.15)',
-};
-
 const CATEGORY_UNITS: Record<string, string> = {
   rines: 'set de 4',
   camisas: 'por unidad',
@@ -78,18 +64,13 @@ function ActiveIndicator() {
     <div className="flex items-center gap-1.5">
       <span className="relative flex h-2 w-2">
         <span
-          className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-          style={{ background: '#71717A' }}
+          className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-zinc-500"
         />
         <span
-          className="relative inline-flex rounded-full h-2 w-2"
-          style={{ background: '#71717A' }}
+          className="relative inline-flex rounded-full h-2 w-2 bg-zinc-500"
         />
       </span>
-      <span
-        className="text-[10px] font-semibold uppercase tracking-wider"
-        style={{ color: '#71717A' }}
-      >
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
         Activo
       </span>
     </div>
@@ -111,7 +92,7 @@ function PriceDisplay({ price, category }: { price: number; category: string }) 
       )}
       <p
         className="text-xl font-extrabold tracking-tight"
-        style={{ color: DESIGN.accent }}
+        style={{ color: '#FF5C3A' }}
       >
         ${price.toLocaleString('es-CO')}
       </p>
@@ -211,7 +192,7 @@ export function ProductCard({
       whileHover={{
         scale: isList ? 1.02 : 1.02,
         y: isList ? 0 : -5,
-        boxShadow: isList ? DESIGN.shadowCard : DESIGN.shadowHover,
+        boxShadow: isList ? '0 4px 24px rgba(0, 0, 0, 0.2)' : '0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 92, 58, 0.15)',
         borderColor: isList ? 'var(--card-border)' : 'rgba(255, 92, 58, 0.4)',
       }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -226,7 +207,7 @@ export function ProductCard({
         style={{
           background: 'var(--card-bg)',
           border: '1px solid var(--card-border)',
-          boxShadow: isHovered && !isList ? DESIGN.shadowHover : DESIGN.shadowCard,
+          boxShadow: isHovered && !isList ? '0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 92, 58, 0.15)' : '0 4px 24px rgba(0, 0, 0, 0.2)',
           transform: isHovered && !isList ? 'translateY(-4px)' : 'translateY(0)',
         }}
       >
@@ -260,7 +241,7 @@ export function ProductCard({
               className="w-7 h-7 rounded-full flex items-center justify-center backdrop-blur-md transition-transform duration-200"
               style={{
                 background: 'rgba(16, 185, 129, 0.9)',
-                boxShadow: `0 4px 12px ${DESIGN.successGlow}`,
+                boxShadow: '0 4px 12px rgba(24, 24, 27, 0.2)',
                 transform: isHovered ? 'scale(1.1)' : 'scale(1)',
               }}
             >

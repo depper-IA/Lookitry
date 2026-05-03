@@ -74,8 +74,8 @@ function PricingCard({
         transition-all duration-500 ease-out
         hover:-translate-y-2 hover:shadow-2xl
         ${isDark
-          ? 'bg-[#1c1c1c] border border-[#FF5C3A]/40 shadow-[0_30px_80px_rgba(255,92,58,0.12)]'
-          : 'bg-[#f8f6f4] dark:bg-[#1a1a1a] border border-[#e8e4df] dark:border-white/10 shadow-sm'
+          ? 'bg-neutral-900 border border-accent/40 shadow-[0_30px_80px_rgba(255,92,58,0.12)]'
+          : 'bg-warm dark:bg-dark-input border border-gray-200 dark:border-white/10 shadow-sm'
         }
         ${isPro ? 'z-10' : ''}
       `}
@@ -94,7 +94,7 @@ function PricingCard({
       )}
 
       {/* Category */}
-      <div className={`font-bold text-[9px] sm:text-[10px] uppercase tracking-[.25em] mb-3 sm:mb-4 ${isDark ? 'text-[#FF5C3A]/80' : 'text-[#FF5C3A]'}`}>
+      <div className={`font-bold text-[9px] sm:text-[10px] uppercase tracking-[.25em] mb-3 sm:mb-4 ${isDark ? 'text-accent/80' : 'text-accent'}`}>
         {category}
       </div>
 
@@ -172,13 +172,13 @@ function PricingCard({
         {features.map((feature: string, idx: number) => (
           <li
             key={idx}
-            className={`flex items-center gap-3 text-[13px] sm:text-[14px] font-medium ${isDark ? 'text-white/80' : 'text-[#333] dark:text-white/80'}`}
+            className={`flex items-center gap-3 text-[13px] sm:text-[14px] font-medium ${isDark ? 'text-white/80' : 'text-text-muted dark:text-white/80'}`}
           >
             <div
-              className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isDark ? 'bg-[#FF5C3A]/20' : 'bg-[#FF5C3A]/10'}`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isDark ? 'bg-accent/20' : 'bg-accent/10'}`}
               aria-hidden="true"
             >
-              <Check size={12} className="text-[#FF5C3A]" />
+              <Check size={12} className="text-accent" />
             </div>
             {feature}
           </li>
@@ -208,9 +208,9 @@ function PricingCard({
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 sm:mb-8 font-medium text-[10px] uppercase tracking-[.2em] border shadow-sm ${light
       ? 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60'
-      : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
+      : 'bg-accent/5 border-accent/20 text-accent'
     }`}>
-    <span className={`w-1.5 h-1.5 rounded-full ${light ? 'bg-black/30 dark:bg-white/40' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
+    <span className={`w-1.5 h-1.5 rounded-full ${light ? 'bg-black/30 dark:bg-white/40' : 'bg-accent'}`} aria-hidden="true" />
     {text}
   </div>
 );
@@ -246,9 +246,9 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
         >
           <SectionTag text="Planes de Crecimiento" light />
           <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6">
-            Precios claros, <span className="text-[#FF5C3A]">sin sorpresas.</span>
+            Precios claros, <span className="text-accent">sin sorpresas.</span>
           </h2>
-          <p className="font-dm-sans text-base sm:text-lg text-[#555] dark:text-white/70 max-w-xl mx-auto">
+          <p className="font-dm-sans text-base sm:text-lg text-text-muted dark:text-white/70 max-w-xl mx-auto">
             Activa tu plan en minutos con pasarelas 100% seguras y soporte en español.
           </p>
         </motion.div>
@@ -335,7 +335,7 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
         >
           <p className="text-[11px] sm:text-sm text-black/40 dark:text-white/40 mb-4">
             ¿No sabes qué plan elegir?{' '}
-            <Link href="/planes" className="text-[#FF5C3A] hover:underline font-medium">
+            <Link href="/planes" className="text-accent hover:underline font-medium">
               Compara todos los features →
             </Link>
           </p>

@@ -36,11 +36,11 @@ const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) 
   <div
     className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[9px] font-medium uppercase tracking-[0.15em] shadow-sm transition-all sm:mb-8 sm:px-4 sm:py-2 sm:text-[10px] sm:tracking-[0.2em] ${light
       ? 'bg-black/5 border-black/10 text-black/40 dark:bg-white/5 dark:border-white/10 dark:text-white/60'
-      : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
+      : 'bg-accent/5 border-accent/20 text-accent'
       } mb-6`}
   >
     <span
-      className={`h-1.5 w-1.5 rounded-full animate-pulse ${light ? 'bg-black/20 dark:bg-white/40' : 'bg-[#FF5C3A]'}`}
+      className={`h-1.5 w-1.5 rounded-full animate-pulse ${light ? 'bg-black/20 dark:bg-white/40' : 'bg-accent'}`}
       aria-hidden="true"
     />
     {text}
@@ -67,14 +67,14 @@ const ProductItem = React.memo(({ prod, selectedProduct, onSelect }: {
     <div
       onClick={() => onSelect(prod)}
       className={`group/item flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all duration-200 sm:gap-3 sm:rounded-xl sm:p-3 ${isSelected
-        ? 'border-[#FF5C3A] bg-[#FF5C3A]/10 shadow-lg shadow-[#FF5C3A]/5'
+        ? 'border-accent bg-accent/10 shadow-lg shadow-accent/5'
         : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
         }`}
       role="button"
       tabIndex={0}
       aria-label={`Seleccionar ${prod.name}`}
     >
-      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a] sm:h-14 sm:w-14">
+      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-border-active sm:h-14 sm:w-14">
         <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -83,7 +83,7 @@ const ProductItem = React.memo(({ prod, selectedProduct, onSelect }: {
         </span>
         <span className="text-[7px] capitalize text-white/30 sm:text-[8px] truncate">{prod.category}</span>
         {prod.price && (
-          <span className="text-[7px] font-bold text-[#FF5C3A] sm:text-[9px]">
+          <span className="text-[7px] font-bold text-accent sm:text-[9px]">
             ${prod.price.toLocaleString('es-CO')}
           </span>
         )}
@@ -92,7 +92,7 @@ const ProductItem = React.memo(({ prod, selectedProduct, onSelect }: {
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] sm:h-5 sm:w-5"
+          className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-accent sm:h-5 sm:w-5"
           aria-hidden="true"
         >
           <Check size={8} className="text-white sm:text-xs" />
@@ -304,13 +304,13 @@ export default function LandingHero() {
       <button
         onClick={handleCTA}
         disabled={!hasUsedTrial && !selectedProduct}
-        className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+        className="flex items-center justify-center gap-2 rounded-xl bg-accent py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
       >
         <Sparkles size={16} />
         {selfie ? 'Generar Prueba' : 'Ver Probador IA'}
       </button>
       {!hasUsedTrial && (
-        <span className="flex items-center gap-1 rounded-full bg-[#ABABAB]/10 px-3 py-1 text-[9px] font-semibold text-[#FFFFFF]">
+        <span className="flex items-center gap-1 rounded-full bg-text-muted/10 px-3 py-1 text-[9px] font-semibold text-text-primary">
           <Sparkles size={10} />
           1 generación gratis
         </span>
@@ -359,17 +359,17 @@ export default function LandingHero() {
             variants={fadeInUp}
             className="mb-6 font-jakarta text-3xl font-black leading-[1.1] tracking-[-0.03em] sm:mb-8 sm:text-[44px] sm:tracking-[-0.04em] md:text-[56px] lg:text-[64px]"
           >
-            <span className="block text-[#0a0a0a] dark:text-white">Vende más con el</span>
-            <span className="block text-[#FF5C3A]">Probador Virtual</span>
-            <span className="block text-[#0a0a0a] dark:text-white">N.1 de Latinoamerica.</span>
+            <span className="block text-dark dark:text-white">Vende más con el</span>
+            <span className="block text-accent">Probador Virtual</span>
+            <span className="block text-dark dark:text-white">N.1 de Latinoamerica.</span>
           </motion.h1>
 
           <motion.p
             custom={2}
             variants={fadeInUp}
-            className="mx-auto mb-8 max-w-xl font-dm-sans text-base font-light leading-[1.6] text-[#555] dark:text-white/80 sm:mb-12 sm:text-lg lg:mx-0"
+            className="mx-auto mb-8 max-w-xl font-dm-sans text-base font-light leading-[1.6] text-text-muted dark:text-white/80 sm:mb-12 sm:text-lg lg:mx-0"
           >
-            Tu tienda online, <span className="font-bold text-[#FF5C3A]">sin pagar un diseñador.</span> Permite que tus clientes se prueben tu catálogo en segundos con IA.
+            Tu tienda online, <span className="font-bold text-accent">sin pagar un diseñador.</span> Permite que tus clientes se prueben tu catálogo en segundos con IA.
           </motion.p>
 
           <motion.div
@@ -379,7 +379,7 @@ export default function LandingHero() {
           >
             <Link
               href="/trial-checkout"
-              className="group relative flex items-center gap-2 rounded-xl bg-[#FF5C3A] px-6 py-4 text-sm font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-[1.03] hover:-translate-y-0.5 hover:bg-[#ff7b5e] active:scale-[0.97] sm:gap-3 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base overflow-hidden duration-200"
+              className="group relative flex items-center gap-2 rounded-xl bg-accent px-6 py-4 text-sm font-bold text-white shadow-xl shadow-accent/20 transition-all hover:scale-[1.03] hover:-translate-y-0.5 hover:bg-accent-bright active:scale-[0.97] sm:gap-3 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base overflow-hidden duration-200"
             >
               <span className="relative z-10">Obtén Acceso Premium</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -388,7 +388,7 @@ export default function LandingHero() {
 
             <Link
               href="#como-funciona"
-              className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-6 py-4 text-sm font-bold text-[#0a0a0a] transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:bg-black/10 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base duration-200"
+              className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-6 py-4 text-sm font-bold text-dark transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:bg-black/10 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base duration-200"
             >
               Ver cómo funciona
             </Link>
@@ -397,16 +397,16 @@ export default function LandingHero() {
           <motion.div
             custom={4}
             variants={fadeInUp}
-            className="mt-12 flex flex-wrap items-center justify-center gap-6 font-bold uppercase tracking-[0.2em] text-[#555] dark:text-white/80 sm:mt-16 sm:gap-10 sm:text-[10px] sm:tracking-[0.25em] lg:justify-start"
+            className="mt-12 flex flex-wrap items-center justify-center gap-6 font-bold uppercase tracking-[0.2em] text-text-muted dark:text-white/80 sm:mt-16 sm:gap-10 sm:text-[10px] sm:tracking-[0.25em] lg:justify-start"
           >
-            <div className="flex items-center gap-2 transition-colors duration-200 hover:text-[#FF5C3A] sm:gap-2.5">
-              <ShieldCheck size={14} className="shrink-0 text-[#FF5C3A]" aria-hidden="true" /> 100% Seguro
+            <div className="flex items-center gap-2 transition-colors duration-200 hover:text-accent sm:gap-2.5">
+              <ShieldCheck size={14} className="shrink-0 text-accent" aria-hidden="true" /> 100% Seguro
             </div>
-            <div className="flex items-center gap-2 transition-colors duration-200 hover:text-[#FF5C3A] sm:gap-2.5">
-              <Clock size={14} className="shrink-0 text-[#FF5C3A]" aria-hidden="true" /> Activación 10min
+            <div className="flex items-center gap-2 transition-colors duration-200 hover:text-accent sm:gap-2.5">
+              <Clock size={14} className="shrink-0 text-accent" aria-hidden="true" /> Activación 10min
             </div>
-            <div className="flex items-center gap-2 transition-colors duration-200 hover:text-[#FF5C3A] sm:gap-2.5">
-              <Sparkles size={14} className="shrink-0 text-[#FF5C3A]" aria-hidden="true" /> IA Generativa
+            <div className="flex items-center gap-2 transition-colors duration-200 hover:text-accent sm:gap-2.5">
+              <Sparkles size={14} className="shrink-0 text-accent" aria-hidden="true" /> IA Generativa
             </div>
           </motion.div>
         </motion.div>
@@ -421,26 +421,26 @@ export default function LandingHero() {
           transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="flex w-full items-center justify-center lg:justify-end"
         >
-          <div className="group/widget relative z-10 w-full max-w-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#141414] p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] transition-all duration-300 hover:shadow-[0_50px_120px_rgba(0,0,0,0.9)] sm:max-w-[500px] sm:rounded-[2rem] sm:p-4 lg:max-w-[620px]">
+          <div className="group/widget relative z-10 w-full max-w-[400px] overflow-hidden rounded-2xl border border-white/10 bg-dark-surface p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] transition-all duration-300 hover:shadow-[0_50px_120px_rgba(0,0,0,0.9)] sm:max-w-[500px] sm:rounded-[2rem] sm:p-4 lg:max-w-[620px]">
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.5, duration: 0.5 }}
-              className="mb-3 flex items-center justify-center gap-2 rounded-full bg-[#ABABAB]/10 px-4 py-2 text-center transition-all duration-300 group-hover/widget:bg-[#FF5C3A]/10 sm:mb-6 sm:gap-3"
+              className="mb-3 flex items-center justify-center gap-2 rounded-full bg-text-muted/10 px-4 py-2 text-center transition-all duration-300 group-hover/widget:bg-accent/10 sm:mb-6 sm:gap-3"
             >
-              <Sparkles size={15} className="text-[#FF5C3A] transition-colors duration-300 group-hover/widget:text-[#FF5C3A]" aria-hidden="true" />
-              <span className="text-[15px] font-bold uppercase tracking-wider text-[#FF5C3A] transition-colors duration-300 group-hover/widget:text-[#FF5C3A]">Pruébalo ahora mismo</span>
+              <Sparkles size={15} className="text-accent transition-colors duration-300 group-hover/widget:text-accent" aria-hidden="true" />
+              <span className="text-[15px] font-bold uppercase tracking-wider text-accent transition-colors duration-300 group-hover/widget:text-accent">Pruébalo ahora mismo</span>
             </motion.div>
 
             {/* Browser Chrome */}
             <div className="mb-4 flex items-center gap-2 sm:mb-6 sm:gap-3" aria-hidden="true">
               <div className="flex gap-1 sm:gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#ff5c5c] sm:h-2 sm:w-2"></span>
-                <span className="h-1.5 w-1.5 rounded-full bg-[#ffbd2e] sm:h-2 sm:w-2"></span>
-                <span className="h-1.5 w-1.5 rounded-full bg-[#FF5C3A] sm:h-2 sm:w-2"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500 sm:h-2 sm:w-2"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-yellow-500 sm:h-2 sm:w-2"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-accent sm:h-2 sm:w-2"></span>
               </div>
-              <div className="flex-1 truncate rounded-md border border-white/5 bg-[#1c1c1c] px-2 py-1 text-center font-dm-sans text-[7px] uppercase tracking-widest text-[#C7C7C7] sm:px-4 sm:text-[9px]">
+              <div className="flex-1 truncate rounded-md border border-white/5 bg-dark-card px-2 py-1 text-center font-dm-sans text-[7px] uppercase tracking-widest text-text-muted sm:px-4 sm:text-[9px]">
                 lookitry.com/marca/tu-marca
               </div>
             </div>
@@ -453,7 +453,7 @@ export default function LandingHero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.5 }}
-                  className="relative flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-[#1c1c1c] p-4 text-center transition-all duration-300 hover:border-white/20 sm:p-6"
+                  className="relative flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-dark-card p-4 text-center transition-all duration-300 hover:border-white/20 sm:p-6"
                 >
                   <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-white/20 sm:top-3 sm:left-6 sm:text-[8px]">
                     Tu Foto
@@ -467,7 +467,7 @@ export default function LandingHero() {
                   </div>
 
                   <div className="mt-3 flex gap-2">
-                    <label className="cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
+                    <label className="cursor-pointer rounded-lg bg-accent/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-accent transition-all hover:bg-accent/30 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
                       <Camera size={14} strokeWidth={2} aria-hidden="true" />
                       <input
                         type="file"
@@ -521,7 +521,7 @@ export default function LandingHero() {
                 className="flex flex-col gap-3 sm:gap-4"
               >
                 {/* Left: Selfie Preview */}
-                <div className="flex flex-col items-center rounded-xl border border-white/10 bg-[#1c1c1c] p-4 text-center transition-all duration-300 hover:border-white/20 sm:p-6">
+                <div className="flex flex-col items-center rounded-xl border border-white/10 bg-dark-card p-4 text-center transition-all duration-300 hover:border-white/20 sm:p-6">
                   <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-white/20 sm:top-3 sm:left-6 sm:text-[8px]">
                     Tu Foto
                   </div>
@@ -541,7 +541,7 @@ export default function LandingHero() {
                     </div>
                   )}
                   <div className="flex gap-2">
-                    <label className="cursor-pointer rounded-lg bg-[#FF5C3A]/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/30 min-h-11 flex items-center justify-center gap-2">
+                    <label className="cursor-pointer rounded-lg bg-accent/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-accent transition-all hover:bg-accent/30 min-h-11 flex items-center justify-center gap-2">
                       <Camera size={14} strokeWidth={2} aria-hidden="true" />
                       <input
                         type="file"
@@ -566,8 +566,8 @@ export default function LandingHero() {
                 </div>
 
                 {/* Right: Selected Product */}
-                <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#1c1c1c] p-3 transition-all duration-300 hover:border-white/20">
-                  <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-[#2a2a2a]">
+                <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-dark-card p-3 transition-all duration-300 hover:border-white/20">
+                  <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-border-active">
                     <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" />
                   </div>
                   <div className="flex min-w-0 flex-1">
@@ -578,7 +578,7 @@ export default function LandingHero() {
                         <p className="mt-1 text-[8px] text-white/30 line-clamp-2 hidden sm:block">{selectedProduct.short_description}</p>
                       )}
                       {selectedProduct.price && (
-                        <p className="mt-1 text-[10px] font-bold text-[#FF5C3A]">${selectedProduct.price.toLocaleString('es-CO')}</p>
+                        <p className="mt-1 text-[10px] font-bold text-accent">${selectedProduct.price.toLocaleString('es-CO')}</p>
                       )}
                     </div>
                   </div>
@@ -591,7 +591,7 @@ export default function LandingHero() {
                 <button
                   onClick={handleGenerate}
                   disabled={!selfie || isGenerating}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-3.5 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-accent py-3.5 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
                 >
                   {generateButtonContent}
                 </button>
@@ -610,7 +610,7 @@ export default function LandingHero() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/5 py-12"
               >
-                <div className="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-[#FF5C3A]/20 border-t-[#FF5C3A]" />
+                <div className="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-accent/20 border-t-accent" />
                 <p className="text-[11px] font-bold uppercase tracking-widest text-white/60">
                   Generando tu prueba...
                 </p>
@@ -629,9 +629,9 @@ export default function LandingHero() {
                 className="flex flex-col gap-3 sm:gap-4"
               >
                 {/* Solo imagen generada - sin selfie original */}
-                <div className="relative overflow-hidden rounded-xl border border-[#FF5C3A]/30 shadow-lg shadow-[#FF5C3A]/10 aspect-square transition-all duration-300 hover:shadow-[#FF5C3A]/20">
+                <div className="relative overflow-hidden rounded-xl border border-accent/30 shadow-lg shadow-accent/10 aspect-square transition-all duration-300 hover:shadow-accent/20">
                   <img src={resultImage} alt="Resultado del probador" className="h-full w-full object-cover" loading="lazy" decoding="async" />
-                  <div className="absolute top-2 left-2 rounded-full bg-[#FF5C3A] px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white shadow-xl sm:text-[8px]">
+                  <div className="absolute top-2 left-2 rounded-full bg-accent px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white shadow-xl sm:text-[8px]">
                     IA
                   </div>
                   <button
@@ -653,7 +653,7 @@ export default function LandingHero() {
                   </Link>
                   <Link
                     href="/trial-checkout"
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] py-2.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[#FF5C3A]/10 transition-all duration-200 hover:brightness-110"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent py-2.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-xl shadow-accent/10 transition-all duration-200 hover:brightness-110"
                   >
                     <Sparkles size={12} />
                     Obtén Trial

@@ -28,7 +28,7 @@ export function ViewModeToggle({ viewMode, onChange }: ViewModeToggleProps) {
           onClick={() => onChange(id)}
           className={`p-2.5 md:p-3 rounded-full transition-all duration-500 ${
             viewMode === id
-              ? 'bg-[#FF5C3A] text-white shadow-2xl shadow-[#FF5C3A]/30 scale-[1.1]'
+              ? 'bg-accent text-white shadow-2xl shadow-accent/30 scale-[1.1]'
               : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
           }`}
           aria-label={`Ver en modo ${id}`}

@@ -243,9 +243,8 @@ export interface LoginDto {
 
 
 export interface AuthResponse {
-
   token: string;
-
+  refreshToken?: string;
   brand: {
 
     id: string;

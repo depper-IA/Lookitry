@@ -239,8 +239,8 @@ export default function LandingNav({
                 <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
                 <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
               </div>
-              <span className="font-jakarta text-xl font-bold tracking-tighter text-black dark:text-white sm:text-2xl transition-colors duration-300 group-hover:text-[#0a0a0a] dark:group-hover:text-white">
-                Look<span className="text-[#FF5C3A]">itry</span>
+              <span className="font-jakarta text-xl font-bold tracking-tighter text-black dark:text-white sm:text-2xl transition-colors duration-300 group-hover:text-dark dark:group-hover:text-white">
+                Look<span className="text-accent">itry</span>
               </span>
             </Link>
 
@@ -252,7 +252,7 @@ export default function LandingNav({
               <button
                 onClick={() => onCurrencyChange('COP')}
                 aria-pressed={currency === 'COP'}
-                className={`nav-currency-btn cursor-pointer text-[9px] font-bold uppercase transition-all duration-200 sm:text-[8px] ${currency === 'COP' ? 'text-[#FF5C3A] scale-110' : 'text-black/45 hover:text-[#0a0a0a] dark:text-white/50 dark:hover:text-white'
+                className={`nav-currency-btn cursor-pointer text-[9px] font-bold uppercase transition-all duration-200 sm:text-[8px] ${currency === 'COP' ? 'text-accent scale-110' : 'text-black/45 hover:text-dark dark:text-white/50 dark:hover:text-white'
                   }`}
               >
                 COP
@@ -261,7 +261,7 @@ export default function LandingNav({
               <button
                 onClick={() => onCurrencyChange('USD')}
                 aria-pressed={currency === 'USD'}
-                className={`nav-currency-btn cursor-pointer text-[9px] font-bold uppercase transition-all duration-200 sm:text-[8px] ${currency === 'USD' ? 'text-[#FF5C3A] scale-110' : 'text-black/45 hover:text-[#0a0a0a] dark:text-white/50 dark:hover:text-white'
+                className={`nav-currency-btn cursor-pointer text-[9px] font-bold uppercase transition-all duration-200 sm:text-[8px] ${currency === 'USD' ? 'text-accent scale-110' : 'text-black/45 hover:text-dark dark:text-white/50 dark:hover:text-white'
                   }`}
               >
                 USD
@@ -277,7 +277,7 @@ export default function LandingNav({
                 onClick={() => setMegaMenuOpen(!megaMenuOpen)}
                 aria-expanded={megaMenuOpen}
                 aria-haspopup="true"
-                className={`nav-products-btn flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${megaMenuOpen ? 'text-[#FF5C3A]' : 'text-black/60 hover:text-[#0a0a0a] dark:text-white/60 dark:hover:text-white'
+                className={`nav-products-btn flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${megaMenuOpen ? 'text-accent' : 'text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white'
                   }`}
               >
                 Productos Pro
@@ -287,19 +287,19 @@ export default function LandingNav({
               {megaMenuOpen && (
                 <div
                   onMouseLeave={() => setMegaMenuOpen(false)}
-                  className="absolute left-1/2 top-full mt-4 -translate-x-1/2 w-[90vw] max-w-[720px] rounded-2xl border border-black/10 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-[#111] animate-in fade-in slide-in-from-top-2 duration-200"
+                  className="absolute left-1/2 top-full mt-4 -translate-x-1/2 w-[90vw] max-w-[720px] rounded-2xl border border-black/10 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-dark-card animate-in fade-in slide-in-from-top-2 duration-200"
                   role="menu"
                   style={{ left: '50%' }}
                 >
                   <div className="flex gap-6">
                     {/* LEFT: Products grid — 2 columns, centered content */}
                     <div className="flex-1 min-w-0 flex flex-col items-center">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999] mb-3 pb-2 border-b border-black/5 dark:border-white/5 text-center w-full">Productos</p>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-text-secondary mb-3 pb-2 border-b border-black/5 dark:border-white/5 text-center w-full">Productos</p>
                       <div className="grid grid-cols-2 gap-2 flex-1 place-items-center w-full">
                         {productLinks.map((prod, index) => {
                           const icons = [Layers, Zap, ShoppingBag, Code2];
                           const colors = [
-                            { bg: 'bg-[#FF5C3A]/10', text: 'text-[#FF5C3A]', hover: 'hover:bg-[#FF5C3A]/15' },
+                            { bg: 'bg-accent/10', text: 'text-accent', hover: 'hover:bg-accent/15' },
                             { bg: 'bg-blue-500/10', text: 'text-blue-500', hover: 'hover:bg-blue-500/15' },
                             { bg: 'bg-purple-500/10', text: 'text-purple-500', hover: 'hover:bg-purple-500/15' },
                             { bg: 'bg-emerald-500/10', text: 'text-emerald-500', hover: 'hover:bg-emerald-500/15' }
@@ -311,17 +311,17 @@ export default function LandingNav({
                               key={prod.title}
                               href={prod.href}
                               onClick={() => setMegaMenuOpen(false)}
-                              className={`nav-product-link group flex flex-col items-center text-center gap-2 rounded-xl px-3 py-3 transition-all duration-200 ${colorScheme.bg}/30 ${colorScheme.hover} focus-visible:outline-2 focus-visible:outline-[#FF5C3A] focus-visible:outline-offset-1`}
+                              className={`nav-product-link group flex flex-col items-center text-center gap-2 rounded-xl px-3 py-3 transition-all duration-200 ${colorScheme.bg}/30 ${colorScheme.hover} focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-1`}
                               role="menuitem"
                             >
                               <div className={`nav-product-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colorScheme.bg} ${colorScheme.text} transition-all duration-200 group-hover:scale-110`}>
                                 <IconComponent size={18} />
                               </div>
                               <div className="min-w-0">
-                                <h3 className="nav-product-title text-[11px] font-semibold text-[#0a0a0a] dark:text-white transition-colors duration-200 group-hover:text-[#FF5C3A]">
+                                <h3 className="nav-product-title text-[11px] font-semibold text-dark dark:text-white transition-colors duration-200 group-hover:text-accent">
                                   {prod.title}
                                 </h3>
-                                <p className="text-[9px] font-medium text-[#999] mt-0.5">{prod.desc}</p>
+                                <p className="text-[9px] font-medium text-text-secondary mt-0.5">{prod.desc}</p>
                               </div>
                             </Link>
                           );
@@ -330,14 +330,14 @@ export default function LandingNav({
 
                       {/* Empresa links — below products */}
                       <div className="mt-auto pt-4 border-t border-black/5 dark:border-white/5 w-full">
-                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999]/60 mb-2 text-center w-full">Empresa</p>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-text-secondary/60 mb-2 text-center w-full">Empresa</p>
                         <div className="flex gap-3 justify-center">
                           {companyLinks.map((link) => (
                             <Link
                               key={link.title}
                               href={link.href}
                               onClick={() => setMegaMenuOpen(false)}
-                              className="nav-company-link text-[10px] font-medium text-[#999] hover:text-[#0a0a0a] dark:hover:text-white transition-colors duration-200"
+                              className="nav-company-link text-[10px] font-medium text-text-secondary hover:text-dark dark:hover:text-white transition-colors duration-200"
                               role="menuitem"
                             >
                               {link.title}
@@ -371,7 +371,7 @@ export default function LandingNav({
                           <div className="space-y-1.5 mb-4">
                             {['Sin tarjeta de crédito', 'Configuración en 2 min', 'Soporte en español'].map((item) => (
                               <div key={item} className="flex items-center gap-2">
-                                <svg className="w-3.5 h-3.5 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <svg className="w-3.5 h-3.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
                                 <span className="text-[9px] text-white/80 font-medium">{item}</span>
@@ -382,7 +382,7 @@ export default function LandingNav({
                           <Link
                             href="/trial-checkout"
                             onClick={() => setMegaMenuOpen(false)}
-                            className="nav-cta-btn group flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] px-5 py-3 text-[11px] font-bold text-white transition-all duration-300 hover:bg-[#e54d2d] hover:shadow-lg hover:shadow-[#FF5C3A]/30 active:scale-[0.98]"
+                            className="nav-cta-btn group flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 text-[11px] font-bold text-white transition-all duration-300 hover:bg-accent-bright hover:shadow-lg hover:shadow-accent/30 active:scale-[0.98]"
                           >
                             Trial 7 días
                             <ArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-1" />
@@ -407,10 +407,10 @@ export default function LandingNav({
               <Link
                 key={item.label}
                 href={item.href}
-                className="nav-link group relative text-[11px] font-bold uppercase tracking-[0.15em] text-black/60 transition-all duration-300 hover:text-[#0a0a0a] dark:text-white/60 dark:hover:text-white"
+                className="nav-link group relative text-[11px] font-bold uppercase tracking-[0.15em] text-black/60 transition-all duration-300 hover:text-dark dark:text-white/60 dark:hover:text-white"
               >
                 {item.label}
-                <span className="nav-link-underline absolute bottom-0 left-0 right-0 h-[1px] origin-center scale-x-0 bg-[#FF5C3A] transition-transform duration-300 group-hover:scale-x-100" />
+                <span className="nav-link-underline absolute bottom-0 left-0 right-0 h-[1px] origin-center scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" />
               </Link>
             ))}
           </div>
@@ -422,25 +422,25 @@ export default function LandingNav({
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="nav-user-btn group flex items-center gap-2 rounded-full border border-black/10 bg-black/5 p-1 pr-3 transition-all duration-300 hover:bg-black/10 hover:border-black/15 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:border-white/15"
                 >
-                  <div className="nav-user-avatar flex h-7 w-7 items-center justify-center rounded-full bg-[#FF5C3A] text-xs font-bold text-white transition-transform duration-300 sm:h-8 sm:w-8 group-hover:scale-105">
+                  <div className="nav-user-avatar flex h-7 w-7 items-center justify-center rounded-full bg-accent text-xs font-bold text-white transition-transform duration-300 sm:h-8 sm:w-8 group-hover:scale-105">
                     {initials}
                   </div>
                   <div className="mr-1 hidden flex-col items-start sm:flex">
-                    <span className="max-w-[100px] truncate text-[10px] font-bold text-[#0a0a0a] dark:text-white">{session.name}</span>
+                    <span className="max-w-[100px] truncate text-[10px] font-bold text-dark dark:text-white">{session.name}</span>
                     <span className="text-[8px] uppercase tracking-widest leading-none text-black/30 dark:text-white/30">Mi Panel</span>
                   </div>
                   <ChevronDown size={14} className={`text-black/20 transition-transform duration-300 dark:text-white/20 ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {dropdownOpen && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-200 absolute right-0 top-full mt-3 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white py-2 shadow-2xl dark:border-white/10 dark:bg-[#111]">
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-200 absolute right-0 top-full mt-3 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white py-2 shadow-2xl dark:border-white/10 dark:bg-dark-card">
                     <Link
                       href="/dashboard"
                       onClick={() => setDropdownOpen(false)}
                       className="nav-dropdown-link group flex items-center gap-3 px-4 py-3 transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
                     >
-                      <User size={16} className="text-black/30 transition-colors duration-200 group-hover:text-[#FF5C3A] dark:text-white/30" />
-                      <span className="text-[12px] font-bold text-black/80 transition-colors duration-200 group-hover:text-[#0a0a0a] dark:text-white/80 dark:group-hover:text-white">
+                      <User size={16} className="text-black/30 transition-colors duration-200 group-hover:text-accent dark:text-white/30" />
+                      <span className="text-[12px] font-bold text-black/80 transition-colors duration-200 group-hover:text-dark dark:text-white/80 dark:group-hover:text-white">
                         Dashboard General
                       </span>
                     </Link>
@@ -459,7 +459,7 @@ export default function LandingNav({
             ) : (
               <Link
                 href="/login"
-                className="nav-login-link hidden text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 transition-all duration-300 hover:text-[#0a0a0a] hover:scale-105 sm:block dark:text-white/60 dark:hover:text-white"
+                className="nav-login-link hidden text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 transition-all duration-300 hover:text-dark hover:scale-105 sm:block dark:text-white/60 dark:hover:text-white"
               >
                 Ingresar
               </Link>
@@ -469,7 +469,7 @@ export default function LandingNav({
               href="/trial-checkout"
               onMouseEnter={fetchTrialDataIfNeeded}
               onFocus={fetchTrialDataIfNeeded}
-              className="nav-trial-btn group relative hidden overflow-hidden rounded-full bg-[#FF5C3A] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#FF5C3A]/30 active:scale-95 sm:px-8 sm:py-3.5 md:inline-flex"
+              className="nav-trial-btn group relative hidden overflow-hidden rounded-full bg-accent px-6 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-accent/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-accent/30 active:scale-95 sm:px-8 sm:py-3.5 md:inline-flex"
             >
               <span className="relative z-10">
                 Trial 7 días por {formatPrice(trialPriceCOP, currency, trm)}
@@ -478,7 +478,7 @@ export default function LandingNav({
             </Link>
 
             <button
-              className="nav-mobile-menu-btn p-2 text-[#0a0a0a]/80 transition-all duration-300 hover:text-[#0a0a0a] hover:scale-110 lg:hidden dark:text-white/80 dark:hover:text-white"
+              className="nav-mobile-menu-btn p-2 text-dark/80 transition-all duration-300 hover:text-dark hover:scale-110 lg:hidden dark:text-white/80 dark:hover:text-white"
               onClick={() => {
                 setMobileMenuOpen(!mobileMenuOpen);
                 if (!mobileMenuOpen) fetchTrialDataIfNeeded();
@@ -538,7 +538,7 @@ export default function LandingNav({
                     <button
                       onClick={() => onCurrencyChange('COP')}
                       aria-pressed={currency === 'COP'}
-                      className={`mobile-currency-btn cursor-pointer px-3 py-1.5 text-xs font-bold uppercase transition-all duration-200 rounded-full ${currency === 'COP' ? 'bg-[#FF5C3A] text-white scale-105 hover:bg-[#FF5C3A] hover:text-white' : 'text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white'
+                      className={`mobile-currency-btn cursor-pointer px-3 py-1.5 text-xs font-bold uppercase transition-all duration-200 rounded-full ${currency === 'COP' ? 'bg-accent text-white scale-105 hover:bg-accent hover:text-white' : 'text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white'
                         }`}
                     >
                       COP
@@ -546,7 +546,7 @@ export default function LandingNav({
                     <button
                       onClick={() => onCurrencyChange('USD')}
                       aria-pressed={currency === 'USD'}
-                      className={`mobile-currency-btn cursor-pointer px-3 py-1.5 text-xs font-bold uppercase transition-all duration-200 rounded-full ${currency === 'USD' ? 'bg-[#FF5C3A] text-white scale-105 hover:bg-[#FF5C3A] hover:text-white' : 'text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white'
+                      className={`mobile-currency-btn cursor-pointer px-3 py-1.5 text-xs font-bold uppercase transition-all duration-200 rounded-full ${currency === 'USD' ? 'bg-accent text-white scale-105 hover:bg-accent hover:text-white' : 'text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white'
                         }`}
                     >
                       USD
@@ -559,7 +559,7 @@ export default function LandingNav({
                   <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={toggleTheme}
-                    className="mobile-theme-btn flex items-center justify-center px-3 py-1.5 rounded-full border border-black/10 bg-black/5 text-[#FF5C3A] text-xs font-bold uppercase transition-all duration-300 hover:scale-105 hover:border-[#FF5C3A] dark:border-white/10 dark:bg-white/5"
+                    className="mobile-theme-btn flex items-center justify-center px-3 py-1.5 rounded-full border border-black/10 bg-black/5 text-accent text-xs font-bold uppercase transition-all duration-300 hover:scale-105 hover:border-accent dark:border-white/10 dark:bg-white/5"
                     aria-label={isDark ? 'Modo claro' : 'Modo oscuro'}
                   >
                     {isDark ? <Sun size={14} /> : <Moon size={14} />}
@@ -573,16 +573,16 @@ export default function LandingNav({
                 variants={mobileCardVariants}
                 className="flex w-full flex-col gap-2"
               >
-                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[#FF5C3A]/80">Navegación</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-accent/80">Navegación</p>
                 {menuLinks.map((link) => (
                   <motion.div key={link.href} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Link
                       href={link.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-nav-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/5 dark:border-white/5 dark:bg-white/5 dark:hover:border-[#FF5C3A]/30 dark:hover:bg-[#FF5C3A]/10"
+                      className="mobile-nav-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-accent/30 hover:bg-accent/5 dark:border-white/5 dark:bg-white/5 dark:hover:border-accent/30 dark:hover:bg-accent/10"
                     >
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#0a0a0a] transition-colors duration-200 group-hover:text-[#FF5C3A] dark:text-white dark:group-hover:text-[#FF5C3A]">{link.label}</span>
-                      <ArrowRight size={14} className="text-[#FF5C3A] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-dark transition-colors duration-200 group-hover:text-accent dark:text-white dark:group-hover:text-accent">{link.label}</span>
+                      <ArrowRight size={14} className="text-accent opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                     </Link>
                   </motion.div>
                 ))}
@@ -594,7 +594,7 @@ export default function LandingNav({
                 variants={mobileCardVariants}
                 className="flex w-full flex-col gap-2"
               >
-                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[#FF5C3A]/80">Productos Pro</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-accent/80">Productos Pro</p>
                 {productLinks.map((prod, index) => (
                   <motion.div
                     key={prod.title}
@@ -606,17 +606,17 @@ export default function LandingNav({
                     <Link
                       href={prod.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-product-link group flex items-center gap-3.5 rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/5 dark:border-white/5 dark:bg-white/5 dark:hover:border-[#FF5C3A]/30 dark:hover:bg-[#FF5C3A]/10"
+                      className="mobile-product-link group flex items-center gap-3.5 rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-accent/30 hover:bg-accent/5 dark:border-white/5 dark:bg-white/5 dark:hover:border-accent/30 dark:hover:bg-accent/10"
                     >
                       <motion.div
-                        className="mobile-product-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FF5C3A]/10 transition-transform duration-300 group-hover:scale-110"
+                        className="mobile-product-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 transition-transform duration-300 group-hover:scale-110"
                         whileHover={{ rotate: 90, backgroundColor: 'rgba(255, 92, 58, 0.2)' }}
                       >
-                        <ArrowRight size={16} className="text-[#FF5C3A]" />
+                        <ArrowRight size={16} className="text-accent" />
                       </motion.div>
                       <div className="text-left">
-                        <p className="text-[11px] font-black uppercase tracking-wider text-[#0a0a0a] transition-colors duration-200 group-hover:text-[#FF5C3A] dark:text-white dark:group-hover:text-[#FF5C3A]">{prod.title}</p>
-                        <p className="text-[10px] font-medium text-black/35 transition-colors duration-200 group-hover:text-[#FF5C3A]/70 dark:text-white/35 dark:group-hover:text-[#FF5C3A]/70">{prod.desc}</p>
+                        <p className="text-[11px] font-black uppercase tracking-wider text-dark transition-colors duration-200 group-hover:text-accent dark:text-white dark:group-hover:text-accent">{prod.title}</p>
+                        <p className="text-[10px] font-medium text-black/35 transition-colors duration-200 group-hover:text-accent/70 dark:text-white/35 dark:group-hover:text-accent/70">{prod.desc}</p>
                       </div>
                     </Link>
                   </motion.div>
@@ -629,16 +629,16 @@ export default function LandingNav({
                 variants={mobileCardVariants}
                 className="flex w-full flex-col gap-2"
               >
-                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[#FF5C3A]/80">Empresa</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-accent/80">Empresa</p>
                 {companyLinks.map((link) => (
                   <motion.div key={link.href} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Link
                       href={link.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-company-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/5 dark:border-white/5 dark:bg-white/5 dark:hover:border-[#FF5C3A]/30 dark:hover:bg-[#FF5C3A]/10"
+                      className="mobile-company-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-accent/30 hover:bg-accent/5 dark:border-white/5 dark:bg-white/5 dark:hover:border-accent/30 dark:hover:bg-accent/10"
                     >
-                      <span className="text-[11px] font-medium text-[#0a0a0a] transition-colors duration-200 group-hover:text-[#FF5C3A] dark:text-white dark:group-hover:text-[#FF5C3A]">{link.title}</span>
-                      <ArrowRight size={14} className="text-[#FF5C3A] opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                      <span className="text-[11px] font-medium text-dark transition-colors duration-200 group-hover:text-accent dark:text-white dark:group-hover:text-accent">{link.title}</span>
+                      <ArrowRight size={14} className="text-accent opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                     </Link>
                   </motion.div>
                 ))}
@@ -655,7 +655,7 @@ export default function LandingNav({
                     <Link
                       href="/dashboard"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-panel-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                      className="mobile-panel-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-dark transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                     >
                       Mi Panel
                     </Link>
@@ -665,7 +665,7 @@ export default function LandingNav({
                     <Link
                       href="/login"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-login-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                      className="mobile-login-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-dark transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                     >
                       Ingresar
                     </Link>
@@ -678,7 +678,7 @@ export default function LandingNav({
                       fetchTrialDataIfNeeded();
                       setMobileMenuOpen(false);
                     }}
-                    className="mobile-trial-btn flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all duration-300 hover:shadow-2xl hover:shadow-[#FF5C3A]/30"
+                    className="mobile-trial-btn flex items-center justify-center rounded-2xl bg-accent px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-accent/20 transition-all duration-300 hover:shadow-2xl hover:shadow-accent/30"
                   >
                     Trial {formatPrice(trialPriceCOP, currency, trm)}
                   </Link>
@@ -708,7 +708,7 @@ export default function LandingNav({
                     <Link
                       href={link.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="mobile-footer-link transition-colors duration-200 hover:text-[#FF5C3A]"
+                      className="mobile-footer-link transition-colors duration-200 hover:text-accent"
                     >
                       {link.label}
                     </Link>
