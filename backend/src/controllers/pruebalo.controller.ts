@@ -2452,13 +2452,13 @@ export class PruebaloController {
           'Accept': 'image/*,*/*',
         };
       } else if (imageUrl.includes('wilkiedevs.com')) {
-        // For other wilkiedevs.com URLs, try direct fetch first with fallback
+        // For other wilkiedevs.com URLs, try direct fetch first with fallback to VPS IP
         try {
           const testResponse = await fetch(imageUrl, { headers: fetchHeaders });
           if (!testResponse.ok) {
             if (testResponse.status >= 500 || testResponse.status === 403 || testResponse.status === 404) {
               const parsed = new URL(imageUrl);
-              fetchUrl = `http://traefik:80${parsed.pathname}${parsed.search}${parsed.hash}`;
+              fetchUrl = `http://31.220.18.39:80${parsed.pathname}${parsed.search}${parsed.hash}`;
               fetchHeaders['Host'] = parsed.host;
             } else {
               throw new Error(`Initial fetch failed: ${testResponse.statusText}`);
@@ -2470,11 +2470,14 @@ export class PruebaloController {
             err?.message?.includes('ECONNREFUSED') ||
             err?.message?.includes('fetch failed') ||
             err?.message?.includes('getaddrinfo') ||
-            err?.message?.includes('ETIMEDOUT');
+            err?.message?.includes('ETIMEDOUT') ||
+            err?.message?.includes('SSL') ||
+            err?.message?.includes('certificate') ||
+            err?.message?.includes('unable to verify the first certificate');
 
           if (isConnectionError) {
             const parsed = new URL(imageUrl);
-            fetchUrl = `http://traefik:80${parsed.pathname}${parsed.search}${parsed.hash}`;
+            fetchUrl = `http://31.220.18.39:80${parsed.pathname}${parsed.search}${parsed.hash}`;
             fetchHeaders['Host'] = parsed.host;
           } else {
             throw err;
@@ -2482,7 +2485,7 @@ export class PruebaloController {
         }
       }
 
-console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
+      console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
       let response: globalThis.Response;
       try {
         response = await fetch(fetchUrl, {
