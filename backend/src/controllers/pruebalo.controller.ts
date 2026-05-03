@@ -2545,8 +2545,10 @@ export class PruebaloController {
             fetchHeaders['Host'] = new URL(imageUrl).hostname;
             redirectUrl = `http://traefik:80${location}`;
           } else {
-            // Absolute redirect URL
-            redirectUrl = location;
+            // Absolute redirect URL - replace origin with Traefik to avoid loopback
+            const redirParsed = new URL(location);
+            fetchHeaders['Host'] = redirParsed.hostname;
+            redirectUrl = `http://traefik:80${redirParsed.pathname}${redirParsed.search}${redirParsed.hash}`;
           }
           console.log(`[imgProxy] Following redirect to: ${redirectUrl}`);
           response = await axios.get(redirectUrl, {
