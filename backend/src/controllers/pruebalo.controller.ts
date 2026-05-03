@@ -2446,6 +2446,11 @@ export class PruebaloController {
         const parsed = new URL(imageUrl);
         fetchUrl = `http://minio:9000${parsed.pathname}${parsed.search}${parsed.hash}`;
         console.log(`[imgProxy] MinIO URL detected, using internal Docker hostname: ${fetchUrl}`);
+        // MinIO internal doesn't like Sec-Fetch headers and may require minimal headers
+        fetchHeaders = {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'image/*,*/*',
+        };
       } else if (imageUrl.includes('wilkiedevs.com')) {
         // For other wilkiedevs.com URLs, try direct fetch first with fallback
         try {
