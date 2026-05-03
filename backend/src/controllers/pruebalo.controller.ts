@@ -2483,10 +2483,10 @@ export class PruebaloController {
           console.log(`[imgProxy] fetchErr.response.data: ${fetchErr.response.data}`);
         }
         // If direct fetch fails for wilkiedevs.com, try the fallback VPS IP path
-        if (imageUrl.includes('wilkiedevs.com') && fetchUrl.startsWith('https://wilkiedevs.com')) {
-          console.log('[imgProxy] Direct HTTPS failed, trying fallback Traefik HTTP path');
+        if (imageUrl.includes('wilkiedevs.com') && !imageUrl.includes('minio.wilkiedevs.com') && fetchUrl.startsWith('https://wilkiedevs.com')) {
+          console.log('[imgProxy] Direct HTTPS failed, trying fallback to real Hostinger IP for WordPress');
           const parsed = new URL(imageUrl);
-          fetchUrl = `http://traefik:80${parsed.pathname}${parsed.search}${parsed.hash}`;
+          fetchUrl = `https://92.112.198.238${parsed.pathname}${parsed.search}${parsed.hash}`;
           fetchHeaders['Host'] = parsed.host;
           console.log(`[imgProxy] Retry with fallback URL: ${fetchUrl}`);
           response = await axios.get(fetchUrl, {
@@ -2533,7 +2533,7 @@ export class PruebaloController {
       }
 
       // Treat 403/301/302 from fallback IP as success (Traefik redirects to HTTPS for static content)
-      const isFallbackPath = fetchUrl.startsWith('http://traefik:80') || fetchUrl.startsWith('http://31.220.18.39');
+      const isFallbackPath = fetchUrl.startsWith('http://traefik:80') || fetchUrl.startsWith('http://31.220.18.39') || fetchUrl.startsWith('https://92.112.198.238');
       if (isFallbackPath && (response.status === 301 || response.status === 302 || response.status === 403)) {
         console.log(`[imgProxy] Fallback path returned ${response.status}, following redirect via location header`);
         const location = response.headers['location'];
