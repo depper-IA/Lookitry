@@ -2471,7 +2471,8 @@ export class PruebaloController {
           headers: fetchHeaders,
           timeout: 10000,
           responseType: 'arraybuffer',
-          maxRedirects: 5,
+          maxRedirects: 0,
+          validateStatus: (status) => status >= 200 && status < 400
         });
       } catch (fetchErr: any) {
         console.error(`[imgProxy] axios error: ${fetchErr.message}, code: ${fetchErr.code}, status: ${fetchErr.response?.status}`);
@@ -2492,7 +2493,8 @@ export class PruebaloController {
             headers: fetchHeaders,
             timeout: 10000,
             responseType: 'arraybuffer',
-            maxRedirects: 5,
+            maxRedirects: 0,
+            validateStatus: (status) => status >= 200 && status < 400,
             httpsAgent: new https.Agent({ rejectUnauthorized: false })
           });
         } else if (fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
@@ -2503,7 +2505,8 @@ export class PruebaloController {
             headers: fetchHeaders,
             timeout: 10000,
             responseType: 'arraybuffer',
-            maxRedirects: 5,
+            maxRedirects: 0,
+            validateStatus: (status) => status >= 200 && status < 400,
             httpsAgent: new https.Agent({ rejectUnauthorized: false })
           });
         } else {
@@ -2522,7 +2525,8 @@ export class PruebaloController {
           headers: fetchHeaders,
           timeout: 10000,
           responseType: 'arraybuffer',
-          maxRedirects: 5,
+          maxRedirects: 0,
+          validateStatus: (status) => status >= 200 && status < 400,
           httpsAgent: new https.Agent({ rejectUnauthorized: false })
         });
         console.log(`[imgProxy] Fallback response status: ${response.status}`);
@@ -2534,13 +2538,22 @@ export class PruebaloController {
         console.log(`[imgProxy] Fallback path returned ${response.status}, following redirect via location header`);
         const location = response.headers['location'];
         if (location) {
-          const redirectUrl = location.startsWith('http') ? location : `${new URL(imageUrl).origin}${location}`;
+          let redirectUrl = location;
+          if (!location.startsWith('http')) {
+              fetchHeaders['Host'] = new URL(imageUrl).hostname;
+              redirectUrl = `https://traefik:443${location}`;
+          } else {
+              const redirParsed = new URL(location);
+              fetchHeaders['Host'] = redirParsed.hostname;
+              redirectUrl = location.replace(redirParsed.origin, 'https://traefik:443');
+          }
           console.log(`[imgProxy] Following redirect to: ${redirectUrl}`);
           response = await axios.get(redirectUrl, {
             headers: fetchHeaders,
             timeout: 10000,
             responseType: 'arraybuffer',
-            maxRedirects: 5,
+            maxRedirects: 0,
+            validateStatus: (status) => status >= 200 && status < 400,
             httpsAgent: new https.Agent({ rejectUnauthorized: false })
           });
           console.log(`[imgProxy] Redirect response status: ${response.status}`);
