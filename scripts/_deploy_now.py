@@ -137,6 +137,12 @@ if current_sha != remote_sha:
         ssh, f"cd {REPO} && git diff --name-only HEAD..origin/main"
     )
     run(ssh, f"cd {REPO} && git reset --hard origin/main && git clean -fd")
+    # Restore GCP credentials (git clean -fd removes untracked credentials/ dir)
+    run(
+        ssh,
+        f"mkdir -p {REPO}/credentials && cp {REPO}/gen-lang-client-0591001769-06f04cbf5e1a.json {REPO}/credentials/gcs-credentials.json && chmod 600 {REPO}/credentials/gcs-credentials.json",
+        check=False,
+    )
 else:
     print("\nSin commits nuevos en origin/main.")
 
