@@ -2452,7 +2452,9 @@ export class PruebaloController {
           'Accept': 'image/*,*/*',
         };
       } else if (imageUrl.includes('wilkiedevs.com')) {
-        // For other wilkiedevs.com URLs, try direct fetch first with fallback to VPS IP
+        // For other wilkiedevs.com URLs, try direct fetch first.
+        // If it fails with SSL errors or connection errors, fall back to the public IP path
+        // which routes through Traefik on the Docker host.
         try {
           const testResponse = await fetch(imageUrl, { headers: fetchHeaders });
           if (!testResponse.ok) {
@@ -2490,6 +2492,9 @@ export class PruebaloController {
       try {
         response = await fetch(fetchUrl, {
           headers: fetchHeaders,
+          // Node.js fetch doesn't follow redirects by default for 3xx, but we want to handle them
+          // Use signal to set a timeout
+          signal: AbortSignal.timeout(10000),
         });
       } catch (fetchErr: any) {
         console.error(`[imgProxy] fetch() threw: ${fetchErr.message}, code: ${fetchErr.code}`);
@@ -2498,9 +2503,7 @@ export class PruebaloController {
           console.log('[imgProxy] MinIO internal failed (fetch threw), falling back to public URL');
           fetchUrl = imageUrl;
           console.log(`[imgProxy] Retry with public URL: ${fetchUrl}`);
-          response = await fetch(fetchUrl, {
-            headers: fetchHeaders,
-          });
+          response = await fetch(fetchUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(10000) });
         } else {
           throw fetchErr;
         }
@@ -2513,10 +2516,23 @@ export class PruebaloController {
         console.log('[imgProxy] MinIO internal returned 403, falling back to public URL');
         fetchUrl = imageUrl;
         console.log(`[imgProxy] Retry with public URL: ${fetchUrl}`);
-        response = await fetch(fetchUrl, {
-          headers: fetchHeaders,
-        });
+        response = await fetch(fetchUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(10000) });
         console.log(`[imgProxy] Fallback response status: ${response.status}, ok: ${response.ok}`);
+      }
+
+      // Treat 403/301/302 from fallback IP as success (Traefik redirects to HTTPS for static content)
+      // Only do this when we're using the fallback IP path (not for direct successful fetches)
+      const isFallbackPath = fetchUrl.startsWith('http://31.220.18.39');
+      if (isFallbackPath && !response.ok && (response.status === 301 || response.status === 302 || response.status === 403)) {
+        console.log(`[imgProxy] Fallback path returned ${response.status}, following redirect via location header`);
+        const location = response.headers.get('location');
+        if (location) {
+          // Construct absolute URL if location is relative
+          const redirectUrl = location.startsWith('http') ? location : `${new URL(imageUrl).origin}${location}`;
+          console.log(`[imgProxy] Following redirect to: ${redirectUrl}`);
+          response = await fetch(redirectUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(10000) });
+          console.log(`[imgProxy] Redirect response status: ${response.status}, ok: ${response.ok}`);
+        }
       }
 
       if (!response.ok) {
