@@ -860,69 +860,39 @@ export class PruebaloController {
 
 
 
-      // 7.10 Polling until generation is ready (max 90s) — in case worker updates the record
-
-      const maxPolls = 45;
-
-      let pollCount = 0;
-
       let finalGeneration = generation;
 
+      // Si n8n respondió directamente, usar ese resultado y evitar polling
+      if (n8nResult.success && n8nResult.imageUrl) {
+        await generationsService.updateGeneration(generation.id, {
+          status: 'SUCCESS',
+          result_image_url: n8nResult.imageUrl,
+          processing_time: Date.now() - startTime,
+          prompt_used: prompt,
+        });
+        finalGeneration = (await generationsService.getGenerationById(generation.id)) || generation;
+      } else {
+        // 7.10 Polling until generation is ready (max 90s) — in case worker updates the record
+        const maxPolls = 60;
+        let pollCount = 0;
 
+        while (pollCount < maxPolls) {
+          // Dynamic polling: faster at first, then slower
+          const delayMs = pollCount < 10 ? 1000 : 2000;
+          await new Promise(resolve => setTimeout(resolve, delayMs));
 
-      while (pollCount < maxPolls) {
+          const updated = await generationsService.getGenerationById(generation.id);
+          if (updated?.status === 'SUCCESS' && updated.result_image_url) {
+            finalGeneration = updated;
+            break;
+          }
+          if (updated?.status === 'FAILED') {
+            throw new Error(updated.error_message || 'Generación fallida');
+          }
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-
-
-        const updated = await generationsService.getGenerationById(generation.id);
-
-        if (updated?.status === 'SUCCESS' && updated.result_image_url) {
-
-          finalGeneration = updated;
-
-          break;
-
+          pollCount++;
         }
-
-        if (updated?.status === 'FAILED') {
-
-          throw new Error(updated.error_message || 'Generación fallida');
-
-        }
-
-
-
-        // Si n8n respondió directamente, usar ese resultado
-
-        if (n8nResult.success && n8nResult.imageUrl) {
-
-          await generationsService.updateGeneration(generation.id, {
-
-            status: 'SUCCESS',
-
-            result_image_url: n8nResult.imageUrl,
-
-            processing_time: Date.now() - startTime,
-
-            prompt_used: prompt,
-
-          });
-
-          finalGeneration = (await generationsService.getGenerationById(generation.id)) || finalGeneration;
-
-          break;
-
-        }
-
-
-
-        pollCount++;
-
       }
-
-
 
       // Si despu©s del polling aún no tenemos resultado y n8n dio error, lanzar error de n8n
 

@@ -11,12 +11,23 @@ import { UploadService } from './upload.service';
  * @returns Buffer of the compressed image in JPEG quality 85
  */
 export async function compressImageFromUrl(url: string, maxPx: number = 1024): Promise<{ buffer: Buffer; originalSize: number; compressedSize: number }> {
-  console.log(`[ImageCompression] Descargando imagen para comprimir: ${url}`);
+  let finalUrl = url;
+  try {
+    const parsed = new URL(finalUrl);
+    if (parsed.pathname.includes('/img-proxy')) {
+      const originalUrl = parsed.searchParams.get('url');
+      if (originalUrl) {
+        finalUrl = originalUrl;
+      }
+    }
+  } catch {}
 
-  const isInternalService = url.includes('wilkiedevs.com') || url.includes('minio.wilkiedevs.com');
+  console.log(`[ImageCompression] Descargando imagen para comprimir: ${finalUrl}`);
+
+  const isInternalService = finalUrl.includes('wilkiedevs.com') || finalUrl.includes('minio.wilkiedevs.com');
   const httpsAgent = isInternalService ? new https.Agent({ rejectUnauthorized: false }) : undefined;
 
-  const response = await axios.get(url, {
+  const response = await axios.get(finalUrl, {
     responseType: 'arraybuffer',
     timeout: 30000,
     httpsAgent,
@@ -73,21 +84,30 @@ export async function uploadCompressedToMinio(buffer: Buffer, originalUrl: strin
  * @returns URL de la imagen comprimida (o original si falló)
  */
 export async function compressAndUpload(url: string, maxPx: number = 1024): Promise<{ compressedUrl: string; originalUrl: string; success: boolean; sizeBefore?: number; sizeAfter?: number }> {
+  let unproxiedUrl = url;
   try {
-    const { buffer, originalSize, compressedSize } = await compressImageFromUrl(url, maxPx);
-    const compressedUrl = await uploadCompressedToMinio(buffer, url);
+    const parsed = new URL(url);
+    if (parsed.pathname.includes('/img-proxy')) {
+      const origUrl = parsed.searchParams.get('url');
+      if (origUrl) unproxiedUrl = origUrl;
+    }
+  } catch {}
+
+  try {
+    const { buffer, originalSize, compressedSize } = await compressImageFromUrl(unproxiedUrl, maxPx);
+    const compressedUrl = await uploadCompressedToMinio(buffer, unproxiedUrl);
     return {
       compressedUrl,
-      originalUrl: url,
+      originalUrl: unproxiedUrl,
       success: true,
       sizeBefore: originalSize,
       sizeAfter: compressedSize,
     };
   } catch (error: any) {
-    console.error(`[ImageCompression] Error comprimiendo imagen ${url}:`, error.message);
+    console.error(`[ImageCompression] Error comprimiendo imagen ${unproxiedUrl}:`, error.message);
     return {
-      compressedUrl: url,
-      originalUrl: url,
+      compressedUrl: unproxiedUrl,
+      originalUrl: unproxiedUrl,
       success: false,
     };
   }
