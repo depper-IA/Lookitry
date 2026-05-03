@@ -2478,9 +2478,27 @@ export class PruebaloController {
       }
 
       console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
-      const response = await fetch(fetchUrl, {
-        headers: fetchHeaders,
-      });
+      let response: Response;
+      try {
+        response = await fetch(fetchUrl, {
+          headers: fetchHeaders,
+        });
+      } catch (fetchErr: any) {
+        console.error(`[imgProxy] fetch() threw: ${fetchErr.message}, code: ${fetchErr.code}`);
+        // If MinIO internal failed and it's a MinIO URL, try the public URL as fallback
+        if (fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
+          console.log('[imgProxy] MinIO internal failed, falling back to public URL');
+          fetchUrl = imageUrl;
+          console.log(`[imgProxy] Retry with public URL: ${fetchUrl}`);
+          response = await fetch(fetchUrl, {
+            headers: fetchHeaders,
+          });
+        } else {
+          throw fetchErr;
+        }
+      }
+
+      console.log(`[imgProxy] Response status: ${response.status}, ok: ${response.ok}`);
 
 
 
