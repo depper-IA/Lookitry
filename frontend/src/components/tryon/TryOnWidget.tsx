@@ -263,10 +263,10 @@ export function TryOnWidget({
    * Maximum ~135s (15 polls × ~9s average with exponential backoff)
    */
   const pollGeneration = useCallback(async (generationId: string) => {
-    const MAX_POLLS = 15;
+    const MAX_POLLS = 30;
     for (let i = 0; i < MAX_POLLS; i++) {
-      // Espera inicial 3s, luego +1s por cada poll adicional (3s, 4s, 5s…)
-      const delay = (i + 3) * 1000;
+      // Dynamic polling: faster at first, then slower
+      const delay = i < 5 ? 1000 : i < 10 ? 2000 : 3000;
       await new Promise(resolve => setTimeout(resolve, delay));
 
       let status;
