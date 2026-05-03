@@ -1,10 +1,19 @@
-import { Router } from 'express';
-import { asyncHandler } from '../middleware/errorHandler';
-import { supabaseAdmin } from '../config/supabase';
-import { UploadService } from '../services/upload.service';
-import { isWhitelistedSync } from '../middleware/rateLimiter';
-
-const router = Router();
+import { Router } from 'express';
+
+import { asyncHandler } from '../middleware/errorHandler';
+
+import { supabaseAdmin } from '../config/supabase';
+
+import { UploadService } from '../services/upload.service';
+
+import { isWhitelistedSync } from '../middleware/rateLimiter';
+
+import multer from 'multer';
+
+const router = Router();
+
+// Multer middleware for multipart binary upload (avoids base64 inflation)
+const multerMem = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // Products for home tryon (Wilkie Devs brand)
 const HOME_TRYON_PRODUCT_IDS = [
@@ -96,16 +105,26 @@ router.get('/check', asyncHandler(async (req, res) => {
   });
 }));
 
-// POST /api/home/tryon/generate - Generate try-on for home demo
-// Whitelisted IPs bypass trial limit, others get 1 trial only
-router.post('/generate', asyncHandler(async (req, res) => {
-  const { productId, selfieBase64 } = req.body;
-  const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 'unknown';
-  const isTestIp = isWhitelistedSync(ip);
-
-  if (!productId || !selfieBase64) {
-    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'productId and selfieBase64 are required' });
-  }
+// POST /api/home/tryon/generate - Generate try-on for home demo
+
+// Whitelisted IPs bypass trial limit, others get 1 trial only
+
+router.post('/generate', multerMem.single('selfie'), asyncHandler(async (req: any, res) => {
+  const productId = req.body.productId as string;
+
+  // Support both multipart (binary) and JSON (base64 legacy)
+  const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 'unknown';
+
+  const isTestIp = isWhitelistedSync(ip);
+
+  if (!productId) {
+    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'productId is required' });
+  }
+
+  const selfieFile = req.file;
+  if (!selfieFile) {
+    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'selfie file is required' });
+  }
 
   // Validate product is one of our home tryon products
   if (!HOME_TRYON_PRODUCT_IDS.includes(productId)) {
@@ -152,25 +171,22 @@ router.post('/generate', asyncHandler(async (req, res) => {
     }
   }
 
-  // 1. Convert base64 to buffer and upload to MinIO
-  let selfieUrl: string;
-  const uploadService = new UploadService();
-  try {
-    // Remove data:image/...;base64, prefix if present
-    const base64Data = selfieBase64.replace(/^data:image\/\w+;base64,/, '');
-    const buffer = Buffer.from(base64Data, 'base64');
-
-    const uploadResult = await uploadService.uploadImageBuffer({
-      buffer,
-      filename: `selfie-${Date.now()}.jpg`,
-      temporary: true,
-    });
-    selfieUrl = uploadResult.url;
-    console.log(`[HomeTryon] Selfie uploaded to: ${selfieUrl}`);
-  } catch (uploadError: any) {
-    console.error('[HomeTryon] Error uploading selfie:', uploadError);
-    return res.status(500).json({ error: 'UPLOAD_ERROR', message: 'Error uploading selfie' });
-  }
+  // 1. Upload selfie as binary multipart (avoids base64 inflation)
+  let selfieUrl: string;
+  const uploadService = new UploadService();
+
+  try {
+    const uploadResult = await uploadService.uploadImageBuffer({
+      buffer: selfieFile.buffer,
+      filename: `selfie-${Date.now()}.jpg`,
+      temporary: true,
+    });
+    selfieUrl = uploadResult.url;
+    console.log(`[HomeTryon] Selfie uploaded to: ${selfieUrl}`);
+  } catch (uploadError: any) {
+    console.error('[HomeTryon] Error uploading selfie:', uploadError);
+    return res.status(500).json({ error: 'UPLOAD_ERROR', message: 'Error uploading selfie' });
+  }
 
   // 2. Call n8n with URL instead of base64
   try {

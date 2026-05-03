@@ -210,13 +210,20 @@ export default function LandingHero() {
     setStep('loading');
 
     try {
+    const formData = new FormData();
+      formData.append('productId', selectedProduct.id);
+      if (selfie) {
+        // Convert data URL back to Blob for binary upload (no base64)
+        const base64Data = selfie.split(',')[1] || selfie;
+        const binaryData = Buffer.from(base64Data, 'base64');
+        const blob = new Blob([binaryData], { type: 'image/jpeg' });
+        formData.append('selfie', blob, 'selfie.jpg');
+      }
+
       const res = await fetch('/api/home/tryon/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: selectedProduct.id,
-          selfieBase64: selfie,
-        }),
+        body: formData,
+        // No Content-Type header — browser sets it with boundary for FormData
       });
 
       const data = await res.json();
