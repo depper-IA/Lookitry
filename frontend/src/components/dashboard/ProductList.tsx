@@ -88,15 +88,20 @@ const DESIGN = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-  falda: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
-  vestido: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
-  tops: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
-  camisa: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
-  accessories: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
-  rines: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
-  zapatos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
-  bolso: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
-  conjunto: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Falda: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
+  Vestido: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
+  Tops: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Camisa: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Accesorios: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
+  Rines: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
+  Zapatos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
+  Bolsos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
+  Conjunto: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Pantalones: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Chaqueta: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Hoodie: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Cascos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
+  Lentes: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
   default: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
 };
 

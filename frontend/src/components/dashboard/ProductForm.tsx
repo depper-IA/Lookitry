@@ -23,11 +23,11 @@ interface ProductFormProps {
 }
 
 // Categorías públicas para todos
-const PUBLIC_CATEGORIES = ['tshirt', 'vestido', 'zapatos', 'camisa', 'hoodie', 'chaqueta', 'pantalones', 'accesorios', 'lentes', 'cascos', 'bolsos'];
+const PUBLIC_CATEGORIES = ['Tops', 'Vestido', 'Zapatos', 'Camisa', 'Hoodie', 'Chaqueta', 'Pantalones', 'Accesorios', 'Lentes', 'Cascos', 'Bolsos'];
 
 // Categorías internas (solo para marcas específicas)
 const INTERNAL_CATEGORIES: Record<string, string[]> = {
-  [WILKIE_DEVS_BRAND_ID]: ['rines'],
+  [WILKIE_DEVS_BRAND_ID]: ['Rines'],
 };
 
 function getAvailableCategories(brandId?: string): string[] {
@@ -39,20 +39,20 @@ function getAvailableCategories(brandId?: string): string[] {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  tshirt: 'Camiseta', hoodie: 'Hoodie', chaqueta: 'Chaqueta', pantalones: 'Pantalones',
-  zapatos: 'Zapatos', accesorios: 'Accesorios', vestido: 'Vestido', rines: 'Rines',
-  camisa: 'Camisa', lentes: 'Lentes', cascos: 'Cascos', bolsos: 'Bolsos y Carteras', other: 'Otros',
+  Tops: 'Tops (Camisetas, Blusas)', Hoodie: 'Hoodie / Sudadera', Chaqueta: 'Chaqueta', Pantalones: 'Pantalones / Jeans / Faldas',
+  Zapatos: 'Zapatos', Accesorios: 'Accesorios', Vestido: 'Vestido', Rines: 'Rines',
+  Camisa: 'Camisa', Lentes: 'Lentes / Gafas', Cascos: 'Cascos', Bolsos: 'Bolsos y Carteras', other: 'Otros',
 };
 
 const AI_CATEGORY_MAP: Record<string, string> = {
-  CAMISA: 'tshirt', SHIRT: 'tshirt', TSHIRT: 'tshirt', BLUSA: 'tshirt',
-  PANTALON: 'pants', PANTS: 'pants', JEANS: 'pants', FALDA: 'pants',
-  ZAPATOS: 'shoes', SHOES: 'shoes', SNEAKERS: 'shoes', BOTAS: 'shoes',
-  HOODIE: 'hoodie', SUDADERA: 'hoodie', CHAQUETA: 'jacket', JACKET: 'jacket',
-  ACCESORIOS: 'accessories', CASCO: 'cascos', HELMET: 'cascos', GORRA: 'accessories',
-  LENTES: 'lentes', GAFAS: 'lentes', GLASSES: 'lentes',
-  BOLSO: 'bolsos', BOLSA: 'bolsos', CARTERA: 'bolsos', BAG: 'bolsos', HANDBAG: 'bolsos',
-  VESTIDO: 'vestido', DRESS: 'vestido', RINES: 'rines',
+  CAMISA: 'Camisa', SHIRT: 'Camisa', TSHIRT: 'Tops', BLUSA: 'Tops',
+  PANTALON: 'Pantalones', PANTS: 'Pantalones', JEANS: 'Pantalones', FALDA: 'Pantalones',
+  ZAPATOS: 'Zapatos', SHOES: 'Zapatos', SNEAKERS: 'Zapatos', BOTAS: 'Zapatos',
+  HOODIE: 'Hoodie', SUDADERA: 'Hoodie', CHAQUETA: 'Chaqueta', JACKET: 'Chaqueta',
+  ACCESORIOS: 'Accesorios', CASCO: 'Cascos', HELMET: 'Cascos', GORRA: 'Accesorios',
+  LENTES: 'Lentes', GAFAS: 'Lentes', GLASSES: 'Lentes',
+  BOLSO: 'Bolsos', BOLSA: 'Bolsos', CARTERA: 'Bolsos', BAG: 'Bolsos', HANDBAG: 'Bolsos',
+  VESTIDO: 'Vestido', DRESS: 'Vestido', RINES: 'Rines',
 };
 
 function mapAICategory(text: string): string | undefined {
@@ -199,7 +199,7 @@ function DynamicAttributes({ category, attributes, onChange }: DynamicAttributes
 export function ProductForm({ product, showExternalId = false, brandId, onSubmit, onCancel }: ProductFormProps) {
   const availableCategories = getAvailableCategories(brandId);
   const [formData, setFormData] = useState<CreateProductDto & { short_description?: string; attributes?: Record<string, any> }>({ 
-    name: '', description: '', short_description: '', imageUrl: '', category: 'tshirt', 
+    name: '', description: '', short_description: '', imageUrl: '', category: 'Tops', 
     price: undefined, badge: undefined, externalId: undefined, attributes: {},
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -231,9 +231,11 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
 
   useEffect(() => {
     if (product) {
-      const isCustom = !availableCategories.includes(product.category);
+      const dbCat = product.category || '';
+      const matchedCat = availableCategories.find(c => c.toLowerCase() === dbCat.toLowerCase());
+      const isCustom = !matchedCat;
       setFormData({ name: product.name, description: product.description || '', short_description: product.shortDescription || '',
-        imageUrl: product.imageUrl, category: isCustom ? 'other' : product.category, price: product.price ?? undefined,
+        imageUrl: product.imageUrl, category: isCustom ? 'other' : matchedCat, price: product.price ?? undefined,
         badge: product.badge ?? undefined, externalId: product.externalId ?? undefined, attributes: product.attributes || {} });
       setImagePreview(product.imageUrl);
       if (isCustom) { setShowCustomCategory(true); setCustomCategory(product.category); }

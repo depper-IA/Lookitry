@@ -10,11 +10,15 @@ import {
 
 // Category styling map
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-  rines: { bg: 'rgba(30, 41, 59, 0.9)', text: '#94A3B8', icon: <Gauge className="w-3 h-3" /> },
-  tshirt: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
-  camisa: { bg: 'rgba(120, 53, 15, 0.9)', text: '#FCD34D', icon: <Star className="w-3 h-3" /> },
-  vestido: { bg: 'rgba(76, 29, 149, 0.9)', text: '#C4B5FD', icon: <Sparkles className="w-3 h-3" /> },
-  zapatos: { bg: 'rgba(22, 101, 52, 0.9)', text: '#86EFAC', icon: <Star className="w-3 h-3" /> },
+  Rines: { bg: 'rgba(30, 41, 59, 0.9)', text: '#94A3B8', icon: <Gauge className="w-3 h-3" /> },
+  Tops: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
+  Camisa: { bg: 'rgba(120, 53, 15, 0.9)', text: '#FCD34D', icon: <Star className="w-3 h-3" /> },
+  Vestido: { bg: 'rgba(76, 29, 149, 0.9)', text: '#C4B5FD', icon: <Sparkles className="w-3 h-3" /> },
+  Zapatos: { bg: 'rgba(22, 101, 52, 0.9)', text: '#86EFAC', icon: <Star className="w-3 h-3" /> },
+  Hoodie: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
+  Chaqueta: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
+  Pantalones: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Layers className="w-3 h-3" /> },
+  Accesorios: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Star className="w-3 h-3" /> },
   default: { bg: 'rgba(63, 63, 70, 0.9)', text: '#A1A1AA', icon: <Sparkles className="w-3 h-3" /> },
 };
 
