@@ -16,11 +16,15 @@ const router = Router();
 const multerMem = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // Products for home tryon (Wilkie Devs brand)
-const HOME_TRYON_PRODUCT_IDS = [
-  '219f8a80-c7a2-46fd-bf4a-42c31621cede', // Camisa a Cuadros
-  'ee5bf4ec-da9b-4cd5-b8da-2484797d0a71', // Bolso Nike Verde
-  '7bee6762-3791-4330-86c4-7ec424adfb01', // Casco para moto multi-modular Harley-Davidson
-];
+const HOME_TRYON_PRODUCT_IDS = [
+
+  '219f8a80-c7a2-46fd-bf4a-42c31621cede', // Camisa a Cuadros
+
+  'ee5bf4ec-da9b-4cd5-b8da-2484797d0a71', // Bolso Nike Verde
+
+  'e65a8d0c-8f28-48c0-96f3-9dc79c4ecf83', // Lentes
+
+];
 const HOME_TRYON_BRAND_SLUG = 'wilkie-devs';
 
 /**
