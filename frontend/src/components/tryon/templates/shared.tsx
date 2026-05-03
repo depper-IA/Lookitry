@@ -16,11 +16,15 @@ export function isLightBg(hex: string): boolean {
 
 // ── Badge y categoría para productos ──────────────────────────────────────
 const CATEGORY_STYLES: Record<string, { bg: string; text: string }> = {
-  rines: { bg: '#1E293B', text: 'rgba(255,255,255,0.9)' },
-  tshirt: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
-  camisa: { bg: '#78350F', text: 'rgba(255,255,255,0.9)' },
-  vestido: { bg: '#4C1D95', text: 'rgba(255,255,255,0.9)' },
-  zapatos: { bg: '#166534', text: 'rgba(255,255,255,0.9)' },
+  Rines: { bg: '#1E293B', text: 'rgba(255,255,255,0.9)' },
+  Tops: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
+  Camisa: { bg: '#78350F', text: 'rgba(255,255,255,0.9)' },
+  Vestido: { bg: '#4C1D95', text: 'rgba(255,255,255,0.9)' },
+  Zapatos: { bg: '#166534', text: 'rgba(255,255,255,0.9)' },
+  Hoodie: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
+  Chaqueta: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
+  Pantalones: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
+  Accesorios: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
   default: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
 };
 

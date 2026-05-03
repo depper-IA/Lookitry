@@ -24,11 +24,15 @@ const DANGER = '#EF4444';
 // CATEGORY STYLES — Color-coded by category type
 // ═══════════════════════════════════════════════════════════════════════════════
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
-  rines: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
-  tshirt: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
-  camisa: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
-  vestido: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
-  zapatos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
+  Rines: { bg: '#18181B', text: '#FFFFFF', icon: <Gauge className="w-3 h-3" /> },
+  Tops: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Camisa: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Vestido: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
+  Zapatos: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
+  Hoodie: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Chaqueta: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Pantalones: { bg: '#18181B', text: '#FFFFFF', icon: <Layers className="w-3 h-3" /> },
+  Accesorios: { bg: '#18181B', text: '#FFFFFF', icon: <Star className="w-3 h-3" /> },
   default: { bg: '#18181B', text: '#FFFFFF', icon: <Sparkles className="w-3 h-3" /> },
 };
 
