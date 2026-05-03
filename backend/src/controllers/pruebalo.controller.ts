@@ -2458,7 +2458,7 @@ export class PruebaloController {
           if (!testResponse.ok) {
             if (testResponse.status >= 500 || testResponse.status === 403 || testResponse.status === 404) {
               const parsed = new URL(imageUrl);
-              fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
+              fetchUrl = `http://traefik:80${parsed.pathname}${parsed.search}${parsed.hash}`;
               fetchHeaders['Host'] = parsed.host;
             } else {
               throw new Error(`Initial fetch failed: ${testResponse.statusText}`);
@@ -2474,7 +2474,7 @@ export class PruebaloController {
 
           if (isConnectionError) {
             const parsed = new URL(imageUrl);
-            fetchUrl = `http://31.220.18.39${parsed.pathname}${parsed.search}${parsed.hash}`;
+            fetchUrl = `http://traefik:80${parsed.pathname}${parsed.search}${parsed.hash}`;
             fetchHeaders['Host'] = parsed.host;
           } else {
             throw err;
