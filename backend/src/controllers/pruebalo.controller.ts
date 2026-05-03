@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import https from 'https';
 
 import { Request, Response } from 'express';
 
@@ -2463,6 +2464,7 @@ export class PruebaloController {
       }
 
       console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
+      console.log(`[imgProxy] fetchHeaders: ${JSON.stringify(fetchHeaders)}`);
       let response: AxiosResponse;
       try {
         response = await axios.get(fetchUrl, {
@@ -2473,11 +2475,17 @@ export class PruebaloController {
         });
       } catch (fetchErr: any) {
         console.error(`[imgProxy] axios error: ${fetchErr.message}, code: ${fetchErr.code}, status: ${fetchErr.response?.status}`);
+        console.log(`[imgProxy] fetchErr keys: ${Object.keys(fetchErr)}`);
+        console.log(`[imgProxy] fetchErr.isAxiosError: ${fetchErr.isAxiosError}`);
+        if (fetchErr.response) {
+          console.log(`[imgProxy] fetchErr.response.status: ${fetchErr.response.status}`);
+          console.log(`[imgProxy] fetchErr.response.data: ${fetchErr.response.data}`);
+        }
         // If direct fetch fails for wilkiedevs.com, try the fallback VPS IP path
         if (imageUrl.includes('wilkiedevs.com') && fetchUrl.startsWith('https://wilkiedevs.com')) {
-          console.log('[imgProxy] Direct HTTPS failed, trying fallback VPS IP path');
+          console.log('[imgProxy] Direct HTTPS failed, trying fallback Traefik HTTP path');
           const parsed = new URL(imageUrl);
-          fetchUrl = `http://31.220.18.39:80${parsed.pathname}${parsed.search}${parsed.hash}`;
+          fetchUrl = `http://traefik:80${parsed.pathname}${parsed.search}${parsed.hash}`;
           fetchHeaders['Host'] = parsed.host;
           console.log(`[imgProxy] Retry with fallback URL: ${fetchUrl}`);
           response = await axios.get(fetchUrl, {
@@ -2485,6 +2493,7 @@ export class PruebaloController {
             timeout: 10000,
             responseType: 'arraybuffer',
             maxRedirects: 5,
+            httpsAgent: new https.Agent({ rejectUnauthorized: false })
           });
         } else if (fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
           console.log('[imgProxy] MinIO internal failed (axios threw), falling back to public URL');
@@ -2495,6 +2504,7 @@ export class PruebaloController {
             timeout: 10000,
             responseType: 'arraybuffer',
             maxRedirects: 5,
+            httpsAgent: new https.Agent({ rejectUnauthorized: false })
           });
         } else {
           throw fetchErr;
@@ -2513,12 +2523,13 @@ export class PruebaloController {
           timeout: 10000,
           responseType: 'arraybuffer',
           maxRedirects: 5,
+          httpsAgent: new https.Agent({ rejectUnauthorized: false })
         });
         console.log(`[imgProxy] Fallback response status: ${response.status}`);
       }
 
       // Treat 403/301/302 from fallback IP as success (Traefik redirects to HTTPS for static content)
-      const isFallbackPath = fetchUrl.startsWith('http://31.220.18.39');
+      const isFallbackPath = fetchUrl.startsWith('http://traefik:80') || fetchUrl.startsWith('http://31.220.18.39');
       if (isFallbackPath && (response.status === 301 || response.status === 302 || response.status === 403)) {
         console.log(`[imgProxy] Fallback path returned ${response.status}, following redirect via location header`);
         const location = response.headers['location'];
@@ -2530,6 +2541,7 @@ export class PruebaloController {
             timeout: 10000,
             responseType: 'arraybuffer',
             maxRedirects: 5,
+            httpsAgent: new https.Agent({ rejectUnauthorized: false })
           });
           console.log(`[imgProxy] Redirect response status: ${response.status}`);
         }
