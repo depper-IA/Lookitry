@@ -95,7 +95,15 @@ function DynamicAttributes({ category, attributes, onChange }: DynamicAttributes
     async function loadAttributes() {
       setLoading(true);
       try {
-        const attrs = await categoryAttributesService.getByCategory(category);
+        const normalizedCategory = category ? category.toLowerCase() : 'general';
+        let attrs = await categoryAttributesService.getByCategory(normalizedCategory);
+        
+        // Si no encontró por el nombre exacto, intenta con una versión simplificada (ej. 'cascos' si es 'Cascos')
+        if (!attrs && normalizedCategory !== 'general') {
+          const simpleKey = normalizedCategory.split(' ')[0];
+          attrs = await categoryAttributesService.getByCategory(simpleKey);
+        }
+        
         setCategoryAttrs(attrs);
         if (!attrs) {
           const generalAttrs = await categoryAttributesService.getByCategory('general');
