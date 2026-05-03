@@ -168,7 +168,7 @@ function ResultImage({
     >
       {!loaded && (
         <div 
-          className={`w-full ${aspectRatio ?? 'aspect-[3/4]'} animate-pulse flex flex-col items-center justify-center gap-3`}
+          className={`w-full ${aspectRatio ?? 'aspect-[3/4]'} animate-pulse flex flex-col items-center justify-center gap-3 absolute inset-0`}
           style={{ backgroundColor: cardBg || '#f3f4f6' }}
         >
           <div className="w-10 h-10 rounded-full border-4 border-gray-200 border-t-transparent animate-spin" style={{ borderTopColor: primaryColor }} />
@@ -181,7 +181,7 @@ function ResultImage({
       <img
         src={imageUrl}
         alt={`Prueba virtual de ${productName}`}
-        className={`w-full ${aspectRatio ? `${fit === 'contain' ? 'object-contain' : 'object-cover'} h-full` : 'h-auto'}`}
+        className={`w-full h-full ${aspectRatio ? `${fit === 'contain' ? 'object-contain' : 'object-cover'}` : 'h-auto'}`}
         onLoad={() => setLoaded(true)}
       />
       {loaded && !compact && (
