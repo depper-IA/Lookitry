@@ -2454,39 +2454,14 @@ export class PruebaloController {
           'Accept': 'image/*,*/*',
         };
       } else if (imageUrl.includes('wilkiedevs.com')) {
-        // For other wilkiedevs.com URLs, try direct fetch first.
-        // If it fails with SSL errors or connection errors, fall back to the public IP path
-        // which routes through Traefik on the Docker host.
-        try {
-          const testResponse = await fetch(imageUrl, { headers: fetchHeaders });
-          if (!testResponse.ok) {
-            if (testResponse.status >= 500 || testResponse.status === 403 || testResponse.status === 404) {
-              const parsed = new URL(imageUrl);
-              fetchUrl = `http://31.220.18.39:80${parsed.pathname}${parsed.search}${parsed.hash}`;
-              fetchHeaders['Host'] = parsed.host;
-            } else {
-              throw new Error(`Initial fetch failed: ${testResponse.statusText}`);
-            }
-          }
-        } catch (err: any) {
-          const isConnectionError =
-            err?.cause?.code === 'ECONNREFUSED' ||
-            err?.message?.includes('ECONNREFUSED') ||
-            err?.message?.includes('fetch failed') ||
-            err?.message?.includes('getaddrinfo') ||
-            err?.message?.includes('ETIMEDOUT') ||
-            err?.message?.includes('SSL') ||
-            err?.message?.includes('certificate') ||
-            err?.message?.includes('unable to verify the first certificate');
-
-          if (isConnectionError) {
-            const parsed = new URL(imageUrl);
-            fetchUrl = `http://31.220.18.39:80${parsed.pathname}${parsed.search}${parsed.hash}`;
-            fetchHeaders['Host'] = parsed.host;
-          } else {
-            throw err;
-          }
-        }
+        // For wilkiedevs.com, ALWAYS use the fallback path via the VPS public IP.
+        // This avoids Docker DNS resolution issues and SSL certificate problems
+        // that can occur when the backend container tries to fetch HTTPS directly.
+        // Traefik on the host receives the request and routes it correctly.
+        const parsed = new URL(imageUrl);
+        fetchUrl = `http://31.220.18.39:80${parsed.pathname}${parsed.search}${parsed.hash}`;
+        fetchHeaders['Host'] = parsed.host;
+        console.log(`[imgProxy] wilkiedevs.com URL, using fallback path: ${fetchUrl}`);
       }
 
       console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
