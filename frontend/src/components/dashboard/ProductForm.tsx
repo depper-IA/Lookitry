@@ -282,7 +282,14 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
       const clean = description.replace(/#{1,6}\s*/g, '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1').replace(/\n{3,}/g, '\n\n').trim();
       let mappedCategory = category, mappedCustom = '';
       if (aiCategory) { const mapped = mapAICategory(aiCategory); if (mapped) { mappedCategory = mapped; if (mapped === 'other') mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase(); } }
-      setFormData(p => ({ ...p, description: clean, category: mappedCategory }));
+      
+      // Update both internal 'description' (RAG) and visible 'short_description' (UI)
+      setFormData(p => ({ 
+        ...p, 
+        description: clean, 
+        short_description: clean.length > 500 ? clean.substring(0, 497) + '...' : clean,
+        category: mappedCategory 
+      }));
       setShowCustomCategory(mappedCategory === 'other'); setCustomCategory(mappedCustom); setAiGenerated(true);
       return clean;
     } catch (err: any) { 
