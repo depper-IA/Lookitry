@@ -227,15 +227,10 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
   const imagePreviewSrc = imagePreview ? buildProxyImageUrl(imagePreview) : null;
 
   const autoTriggeredRef = useRef(false);
-  useEffect(() => {
-    if (!formData.imageUrl || !formData.name.trim()) { autoTriggeredRef.current = false; return; }
-    // Skip if we are editing an existing product and the image hasn't changed
-    if (product && product.imageUrl === formData.imageUrl) { autoTriggeredRef.current = true; return; }
-    // Trigger AI even for existing products (if image changes)
-    if (autoTriggeredRef.current || aiGenerated || describingWithAI) return;
-    autoTriggeredRef.current = true;
-    triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category);
-  }, [formData.imageUrl, formData.name, product]);
+
+  // NOTA: Eliminamos el useEffect que disparaba la IA al teclear el nombre letra por letra.
+  // Ahora la IA se dispara explícitamente al Guardar (handleSubmit) si falta la descripción,
+  // o se puede añadir un botón manual.
 
   useEffect(() => {
     if (product) {
@@ -270,7 +265,7 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
     finally { setCompressing(false); }
   };
 
-  const triggerDescribeWithAI = async (imageUrl: string, productName: string, category: string) => {
+  const triggerDescribeWithAI = async (imageUrl: string, productName: string, category: string): Promise<string> => {
     setDescribingWithAI(true); setAiError(null);
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
@@ -289,7 +284,11 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
       if (aiCategory) { const mapped = mapAICategory(aiCategory); if (mapped) { mappedCategory = mapped; if (mapped === 'other') mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase(); } }
       setFormData(p => ({ ...p, description: clean, category: mappedCategory }));
       setShowCustomCategory(mappedCategory === 'other'); setCustomCategory(mappedCustom); setAiGenerated(true);
-    } catch (err: any) { setAiError(err.message || 'Error al generar descripción'); } 
+      return clean;
+    } catch (err: any) { 
+      setAiError(err.message || 'Error al generar descripción'); 
+      throw err;
+    } 
     finally { setDescribingWithAI(false); }
   };
 
@@ -309,8 +308,23 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
     if (!validate()) return;
     setIsSubmitting(true);
     try {
+      let finalDescription = formData.description;
+      const finalCategory = formData.category === 'other' ? customCategory.trim() : formData.category;
+      
+      // Auto-generar la descripción en segundo plano al guardar si no existe, o si cambió la imagen/nombre
+      if (!finalDescription || autoTriggeredRef.current === false) {
+         try {
+           finalDescription = await triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), finalCategory);
+           autoTriggeredRef.current = true;
+         } catch (err) {
+           console.error("AI Describe failed on submit, continuing save...", err);
+         }
+      }
+
       await onSubmit({
-        ...formData, category: formData.category === 'other' ? customCategory.trim() : formData.category,
+        ...formData, 
+        description: finalDescription,
+        category: finalCategory,
         price: formData.price ? Number(formData.price) : undefined, badge: formData.badge || undefined,
         externalId: formData.externalId || undefined,
       });
@@ -368,6 +382,16 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
               )}
               {aiError && !describingWithAI && (
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 font-medium" title={aiError}>✗ IA Error</span>
+              )}
+              
+              {!describingWithAI && canDescribeWithAI && (
+                <button 
+                  type="button" 
+                  onClick={() => triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category)}
+                  className="ml-auto text-[10px] px-2 py-0.5 rounded border border-[#FF5C3A] text-[#FF5C3A] hover:bg-[#FF5C3A] hover:text-white transition-colors"
+                >
+                  ✨ Detectar Detalles IA
+                </button>
               )}
             </div>
             <textarea name="short_description" value={formData.short_description || ''} onChange={handleChange} rows={2}

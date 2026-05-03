@@ -317,16 +317,32 @@ export class ProductsController {
 
       // 3. Call descriptorService (replaces n8n webhook)
       // image_url is intentionally NOT passed — the descriptor uses text-only prompts
-      const description = await descriptorService.describeProduct({
+      const descriptionObj = await descriptorService.describeProduct({
         name: product_name,
         category,
         brand_description,
         image_url: req.body.image_url,
       });
 
-      // 4. Return the discriminated union response directly
-      // The frontend expects: product_type, short_description, features, + type-specific fields
-      return res.status(200).json(description);
+      // Construir un string descriptivo para que el frontend lo guarde como "description"
+      const parts = Object.entries(descriptionObj)
+        .filter(([k, v]) => v && k !== 'product_type' && k !== 'extra_attributes')
+        .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`);
+        
+      if (descriptionObj.extra_attributes) {
+        Object.entries(descriptionObj.extra_attributes).forEach(([k, v]) => {
+          parts.push(`${k}: ${v}`);
+        });
+      }
+      
+      const descriptionString = parts.join('\n');
+
+      // 4. Return the response in a format the frontend understands
+      return res.status(200).json({
+        description: descriptionString,
+        raw_data: descriptionObj,
+        category
+      });
     } catch (error: any) {
       // Distinguish error types for debugging
       if (error.name === 'ValidationError') {
