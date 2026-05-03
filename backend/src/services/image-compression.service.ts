@@ -1,20 +1,25 @@
 import sharp from 'sharp';
 import axios from 'axios';
+import https from 'https';
 import crypto from 'crypto';
 import { UploadService } from './upload.service';
 
 /**
- * Descarga una imagen desde una URL y la comprime usando sharp.
- * @param url URL de la imagen (debe ser accessible publicly)
- * @param maxPx Máximo de píxeles en el lado más largo (default: 1024)
- * @returns Buffer de la imagen comprimida en JPEG calidad 85
+ * Downloads an image from a URL and compresses it using sharp.
+ * @param url URL of the image (must be publicly accessible)
+ * @param maxPx Maximum pixels on longest side (default: 1024)
+ * @returns Buffer of the compressed image in JPEG quality 85
  */
 export async function compressImageFromUrl(url: string, maxPx: number = 1024): Promise<{ buffer: Buffer; originalSize: number; compressedSize: number }> {
   console.log(`[ImageCompression] Descargando imagen para comprimir: ${url}`);
 
+  const isInternalService = url.includes('wilkiedevs.com') || url.includes('minio.wilkiedevs.com');
+  const httpsAgent = isInternalService ? new https.Agent({ rejectUnauthorized: false }) : undefined;
+
   const response = await axios.get(url, {
     responseType: 'arraybuffer',
     timeout: 30000,
+    httpsAgent,
   });
 
   const originalBuffer = Buffer.from(response.data);

@@ -2482,20 +2482,21 @@ export class PruebaloController {
           console.log(`[imgProxy] fetchErr.response.status: ${fetchErr.response.status}`);
           console.log(`[imgProxy] fetchErr.response.data: ${fetchErr.response.data}`);
         }
-        // If direct fetch fails for wilkiedevs.com, try the fallback VPS IP path
+        // If direct fetch fails for wilkiedevs.com, try internal Docker network
+        // Use http://traefik:80 (Traefik proxy) with Host header to preserve virtual host
         if (imageUrl.includes('wilkiedevs.com') && !imageUrl.includes('minio.wilkiedevs.com') && fetchUrl.startsWith('https://wilkiedevs.com')) {
-          console.log('[imgProxy] Direct HTTPS failed, trying fallback to real Hostinger IP for WordPress');
+          console.log('[imgProxy] Direct HTTPS failed, trying internal Traefik path');
           const parsed = new URL(imageUrl);
-          fetchUrl = `https://92.112.198.238${parsed.pathname}${parsed.search}${parsed.hash}`;
+          // Use internal Docker network - Traefik handles HTTPS termination internally
+          fetchUrl = `http://traefik:80${parsed.pathname}${parsed.search}${parsed.hash}`;
           fetchHeaders['Host'] = parsed.host;
-          console.log(`[imgProxy] Retry with fallback URL: ${fetchUrl}`);
+          console.log(`[imgProxy] Retry with internal Traefik: ${fetchUrl}`);
           response = await axios.get(fetchUrl, {
             headers: fetchHeaders,
             timeout: 10000,
             responseType: 'arraybuffer',
             maxRedirects: 0,
-            validateStatus: (status) => status >= 200 && status < 400,
-            httpsAgent: new https.Agent({ rejectUnauthorized: false })
+            validateStatus: (status) => status >= 200 && status < 400
           });
         } else if (fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
           console.log('[imgProxy] MinIO internal failed (axios threw), falling back to public URL');
@@ -2532,20 +2533,20 @@ export class PruebaloController {
         console.log(`[imgProxy] Fallback response status: ${response.status}`);
       }
 
-      // Treat 403/301/302 from fallback IP as success (Traefik redirects to HTTPS for static content)
+      // Treat 403/301/302 from internal Traefik as success (Traefik redirects to HTTPS for static content)
       const isFallbackPath = fetchUrl.startsWith('http://traefik:80') || fetchUrl.startsWith('http://31.220.18.39') || fetchUrl.startsWith('https://92.112.198.238');
       if (isFallbackPath && (response.status === 301 || response.status === 302 || response.status === 403)) {
         console.log(`[imgProxy] Fallback path returned ${response.status}, following redirect via location header`);
         const location = response.headers['location'];
         if (location) {
-          let redirectUrl = location;
+          let redirectUrl: string;
           if (!location.startsWith('http')) {
-              fetchHeaders['Host'] = new URL(imageUrl).hostname;
-              redirectUrl = `https://traefik:443${location}`;
+            // Relative redirect - rebuild using internal Traefik HTTP
+            fetchHeaders['Host'] = new URL(imageUrl).hostname;
+            redirectUrl = `http://traefik:80${location}`;
           } else {
-              const redirParsed = new URL(location);
-              fetchHeaders['Host'] = redirParsed.hostname;
-              redirectUrl = location.replace(redirParsed.origin, 'https://traefik:443');
+            // Absolute redirect URL
+            redirectUrl = location;
           }
           console.log(`[imgProxy] Following redirect to: ${redirectUrl}`);
           response = await axios.get(redirectUrl, {
@@ -2554,7 +2555,7 @@ export class PruebaloController {
             responseType: 'arraybuffer',
             maxRedirects: 0,
             validateStatus: (status) => status >= 200 && status < 400,
-            httpsAgent: new https.Agent({ rejectUnauthorized: false })
+            httpsAgent: redirectUrl.startsWith('https://') ? new https.Agent({ rejectUnauthorized: false }) : undefined
           });
           console.log(`[imgProxy] Redirect response status: ${response.status}`);
         }
