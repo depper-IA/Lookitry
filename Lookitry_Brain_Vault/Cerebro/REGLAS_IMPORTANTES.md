@@ -501,6 +501,7 @@ Ver: `Cerebro/Skills/code-sync-checker.md`
 ### Session Security
 - **TTL**: Sesiones reducidas a 7 días
 - **Admin Rate Limit**: Rate limit más estricto para endpoints admin
+- **Dual JWT**: Soporte de rotación segura con `JWT_SECRET_PREVIOUS` para tokens de acceso y refresh (Arquitectura Dual JWT).
 
 ### Cookie Security
 - **COOKIE_DOMAIN**: Configurado en producción para cookies HTTP-only

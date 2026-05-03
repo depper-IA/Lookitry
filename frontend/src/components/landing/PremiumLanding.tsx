@@ -103,7 +103,7 @@ export default function PremiumLanding({
 
   return (
     <PromoBannerProvider>
-      <div className="min-h-screen bg-white dark:bg-black text-[#0a0a0a] dark:text-white selection:bg-[#FF5C3A]/30 selection:text-white font-dm-sans overflow-x-clip">
+      <div className="min-h-screen bg-white dark:bg-dark text-dark dark:text-text-primary selection:bg-accent/30 selection:text-white font-dm-sans overflow-x-clip">
         <PromoBanner />
         <LandingNav currency={navCurrency} onCurrencyChange={handleNavCurrencyChange} />
         <main className="relative">

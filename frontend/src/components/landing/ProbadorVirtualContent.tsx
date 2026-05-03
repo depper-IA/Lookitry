@@ -35,8 +35,8 @@ function fadeUp(delay = 0) {
 // ─── Section Tag ─────────────────────────────────────────────────────────────
 function Tag({ children, accent = false }: { children: React.ReactNode; accent?: boolean }) {
   return (
-    <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] ${accent ? 'bg-[#FF5C3A]/10 border-[#FF5C3A]/20 text-[#FF5C3A]' : 'bg-white/5 border-white/10 text-white/60'}`}>
-      <span className={`h-1.5 w-1.5 rounded-full animate-pulse ${accent ? 'bg-[#FF5C3A]' : 'bg-white/40'}`} />
+    <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] ${accent ? 'bg-accent/10 border-accent/20 text-accent' : 'bg-white/5 border-white/10 text-white/60'}`}>
+      <span className={`h-1.5 w-1.5 rounded-full animate-pulse ${accent ? 'bg-accent' : 'bg-white/40'}`} />
       {children}
     </div>
   );
@@ -76,7 +76,7 @@ function PlatformCard({ color, icon, title, features }: { color: string; icon: R
 function StepItem({ n, title, desc }: { n: number; title: string; desc: string }) {
   return (
     <div className="flex items-start gap-4">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] font-jakarta text-sm font-black text-white">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent font-jakarta text-sm font-black text-white">
         {n}
       </div>
       <div className="pt-1">
@@ -91,7 +91,7 @@ function StepItem({ n, title, desc }: { n: number; title: string; desc: string }
 function FeatureItem({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="flex items-start gap-4 rounded-xl border border-white/5 bg-white/3 p-5">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FF5C3A]/10 text-[#FF5C3A]">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
         {icon}
       </div>
       <div>
@@ -108,7 +108,7 @@ function TestimonialItem({ quote, author, brand }: { quote: string; author: stri
     <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
       <p className="mb-4 text-sm leading-relaxed text-white/70 italic">&ldquo;{quote}&rdquo;</p>
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FF5C3A]/20 font-jakarta font-black text-[#FF5C3A]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/20 font-jakarta font-black text-accent">
           {author[0]}
         </div>
         <div>
@@ -123,7 +123,7 @@ function TestimonialItem({ quote, author, brand }: { quote: string; author: stri
 // ─── Code Block ─────────────────────────────────────────────────────────────
 function CodeBlock() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d]">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-dark-overlay">
       <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
         <div className="h-2.5 w-2.5 rounded-full bg-red-500/60" />
         <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/60" />
@@ -242,7 +242,7 @@ function ReviewsSection() {
         <Tag accent>Casos de éxito</Tag>
         <h2 className="mt-6 font-jakarta text-3xl font-black leading-tight tracking-tight md:text-5xl">
           Lo que dicen{' '}
-          <span className="text-[#FF5C3A]">nuestras marcas.</span>
+          <span className="text-accent">nuestras marcas.</span>
         </h2>
       </motion.div>
 
@@ -251,12 +251,12 @@ function ReviewsSection() {
           <div key={review.id} className="rounded-2xl border border-white/10 bg-white/5 p-6">
             <div className="mb-3 flex items-center gap-1">
               {Array.from({ length: review.rating }).map((_, i) => (
-                <Star key={i} size={12} className="fill-[#FF5C3A] text-[#FF5C3A]" />
+                <Star key={i} size={12} className="fill-accent text-accent" />
               ))}
             </div>
             <p className="mb-4 text-sm leading-relaxed text-white/70 italic">&ldquo;{review.comment.length > 150 ? review.comment.slice(0, 150) + '…' : review.comment}&rdquo;</p>
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FF5C3A]/20 font-jakarta font-black text-[#FF5C3A]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/20 font-jakarta font-black text-accent">
                 {review.reviewer_name.charAt(0)}
               </div>
               <div>
@@ -276,7 +276,7 @@ function CTAButton({ href, primary, children }: { href: string; primary: boolean
   return (
     <a
       href={href}
-      className={`inline-flex items-center gap-2 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95 ${primary ? 'bg-[#FF5C3A] text-white px-8 py-4 shadow-lg shadow-[#FF5C3A]/30' : 'border border-white/20 bg-white/5 px-8 py-4 text-white hover:bg-white/10'}`}
+      className={`inline-flex items-center gap-2 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95 ${primary ? 'bg-accent text-white px-8 py-4 shadow-lg shadow-accent/30' : 'border border-white/20 bg-white/5 px-8 py-4 text-white hover:bg-white/10'}`}
     >
       {children}
       <ArrowRight size={16} />
@@ -287,7 +287,7 @@ function CTAButton({ href, primary, children }: { href: string; primary: boolean
 // ─── MAIN COMPONENT ─────────────────────────────────────────────────────────
 export default function ProbadorVirtualContent() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] font-dm-sans text-white selection:bg-[#FF5C3A]/30 selection:text-[#FF5C3A]">
+    <div className="min-h-screen bg-dark font-dm-sans text-white selection:bg-accent/30 selection:text-accent">
       <LandingNav />
 
       <main className="px-6 pb-24 pt-20">
@@ -299,7 +299,7 @@ export default function ProbadorVirtualContent() {
           </motion.div>
           <motion.h1 {...fadeUp(0.1)} className="mt-6 mb-6 font-jakarta text-4xl font-black leading-[0.95] tracking-tight md:text-6xl">
             Tu tienda, tu marca,{' '}
-            <span className="text-[#FF5C3A]">tu probador virtual.</span>
+            <span className="text-accent">tu probador virtual.</span>
           </motion.h1>
           <motion.p {...fadeUp(0.2)} className="mx-auto mb-10 max-w-2xl text-lg font-medium text-white/50">
             Integración en menos de 180 segundos. Funciona en Instagram, TikTok,
@@ -311,7 +311,7 @@ export default function ProbadorVirtualContent() {
           </motion.div>
           <motion.div {...fadeUp(0.4)} className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-white/40">
             <div className="flex items-center gap-1">
-              {[1,2,3,4,5].map(i => <span key={i} className="text-[#FF5C3A]">★</span>)}
+              {[1,2,3,4,5].map(i => <span key={i} className="text-accent">★</span>)}
               <span className="ml-2">4.9/5 satisfacción</span>
             </div>
             <span className="h-4 w-px bg-white/10" />
@@ -328,7 +328,7 @@ export default function ProbadorVirtualContent() {
               <Tag accent>Qué es Embed</Tag>
               <h2 className="mt-6 mb-5 font-jakarta text-3xl font-black leading-tight tracking-tight md:text-5xl">
                 El motor de IA que<br />
-                <span className="text-[#FF5C3A]">viaja con tu marca.</span>
+                <span className="text-accent">viaja con tu marca.</span>
               </h2>
               <p className="mb-8 text-base leading-relaxed text-white/50">
                 Embed es la tecnología de Lookitry que permite integrar un probador virtual
@@ -342,7 +342,7 @@ export default function ProbadorVirtualContent() {
                   { icon: <Check size={16} />, text: 'Mobile-first, responsive' },
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm font-semibold text-white/70">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#FF5C3A]/20 text-[#FF5C3A]">{item.icon}</div>
+                    <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-accent/20 text-accent">{item.icon}</div>
                     {item.text}
                   </li>
                 ))}
@@ -350,17 +350,17 @@ export default function ProbadorVirtualContent() {
             </motion.div>
 
             {/* Browser mockup */}
-            <motion.div {...fadeUp(0.15)} className="overflow-hidden rounded-2xl border border-white/10 bg-[#111] shadow-2xl">
+            <motion.div {...fadeUp(0.15)} className="overflow-hidden rounded-2xl border border-white/10 bg-dark-card shadow-2xl">
               <div className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
                 <div className="h-2.5 w-2.5 rounded-full bg-white/10" />
                 <div className="h-2.5 w-2.5 rounded-full bg-white/10" />
-                <div className="h-2.5 w-2.5 rounded-full bg-[#FF5C3A]/50" />
+                <div className="h-2.5 w-2.5 rounded-full bg-accent/50" />
                 <div className="flex-1 rounded-full bg-white/5 px-3 py-1.5 text-[9px] text-white/30">lookitry.com/mi-tienda</div>
               </div>
-              <div className="relative aspect-[16/10] bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] p-8 flex items-center justify-center">
-                <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#141414] p-6">
+              <div className="relative aspect-[16/10] bg-gradient-to-br from-dark-input to-dark p-8 flex items-center justify-center">
+                <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-dark-surface p-6">
                   <div className="mb-4 flex items-center justify-between">
-                    <div className="h-6 w-6 rounded-lg bg-[#FF5C3A]/20" />
+                    <div className="h-6 w-6 rounded-lg bg-accent/20" />
                     <div className="h-2 w-16 rounded-full bg-white/10" />
                   </div>
                   <div className="mb-4 aspect-square rounded-xl bg-white/5 flex items-center justify-center">
@@ -371,13 +371,13 @@ export default function ProbadorVirtualContent() {
                     <div className="h-3 w-3/4 rounded-full bg-white/5" />
                   </div>
                   <div className="mt-6 flex gap-2">
-                    <div className="h-9 flex-1 rounded-lg bg-[#FF5C3A]" />
+                    <div className="h-9 flex-1 rounded-lg bg-accent" />
                     <div className="h-9 flex-1 rounded-lg border border-white/10" />
                   </div>
                 </div>
-                <div className="absolute right-6 top-6 rounded-xl border border-[#FF5C3A]/30 bg-[#FF5C3A]/10 px-3 py-1.5 backdrop-blur">
-                  <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#FF5C3A]">
-                    <div className="h-1.5 w-1.5 rounded-full bg-[#FF5C3A] animate-pulse" />
+                <div className="absolute right-6 top-6 rounded-xl border border-accent/30 bg-accent/10 px-3 py-1.5 backdrop-blur">
+                  <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-accent">
+                    <div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
                     Widget Activo
                   </div>
                 </div>
@@ -392,7 +392,7 @@ export default function ProbadorVirtualContent() {
             <Tag accent>Canales de distribución</Tag>
             <h2 className="mt-6 font-jakarta text-3xl font-black leading-tight tracking-tight md:text-5xl">
               Funciona donde{' '}
-              <span className="text-[#FF5C3A]">tu cliente ya está.</span>
+              <span className="text-accent">tu cliente ya está.</span>
             </h2>
           </motion.div>
 
@@ -434,7 +434,7 @@ export default function ProbadorVirtualContent() {
                 <Tag accent>Integración en 4 pasos</Tag>
                 <h2 className="mt-6 mb-4 font-jakarta text-3xl font-black leading-tight tracking-tight md:text-5xl">
                   Activo en{' '}
-                  <span className="text-[#FF5C3A]">menos de 3 minutos.</span>
+                  <span className="text-accent">menos de 3 minutos.</span>
                 </h2>
                 <p className="text-base text-white/50">
                   No necesitas desarrolladores. El código funciona out-of-the-box.
@@ -461,7 +461,7 @@ export default function ProbadorVirtualContent() {
             <Tag accent>Ventajas competitivas</Tag>
             <h2 className="mt-6 font-jakarta text-3xl font-black leading-tight tracking-tight md:text-5xl">
               Por qué las marcas{' '}
-              <span className="text-[#FF5C3A]">eligen Embed.</span>
+              <span className="text-accent">eligen Embed.</span>
             </h2>
           </motion.div>
 
@@ -485,11 +485,11 @@ export default function ProbadorVirtualContent() {
         <section className="mx-auto max-w-4xl py-16">
           <motion.div
             {...fadeUp(0)}
-            className="overflow-hidden rounded-3xl border border-[#FF5C3A]/20 bg-gradient-to-br from-[#FF5C3A]/10 to-transparent p-12 text-center md:p-16"
+            className="overflow-hidden rounded-3xl border border-accent/20 bg-gradient-to-br from-accent/10 to-transparent p-12 text-center md:p-16"
           >
             <h2 className="mb-4 font-jakarta text-3xl font-black leading-tight tracking-tight md:text-5xl">
               Empieza hoy.{' '}
-              <span className="text-[#FF5C3A]">Sin costo de setup.</span>
+              <span className="text-accent">Sin costo de setup.</span>
             </h2>
             <p className="mx-auto mb-10 max-w-lg text-base text-white/50">
               Trial de 7 días por $20.000 COP. Sin compromisos, sin contratos.

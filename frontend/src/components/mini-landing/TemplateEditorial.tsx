@@ -180,11 +180,15 @@ function EditorialProductCard({ product, selected, theme, onClick }: { product: 
                 const isColor = key.toLowerCase() === 'color' || key.toLowerCase() === 'colores';
                 if (!isColor) return null;
                 const cssColor = getCssColor(String(Array.isArray(value) ? value[0] : value));
+                const isHex = cssColor?.startsWith('#');
                 return cssColor ? (
                   <div
                     key={key}
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: cssColor, border: '1px solid rgba(0,0,0,0.12)' }}
+                    className={`w-2.5 h-2.5 rounded-full shrink-0 ${!isHex ? cssColor : ''}`}
+                    style={{ 
+                      ...(isHex ? { backgroundColor: cssColor } : {}), 
+                      border: '1px solid rgba(0,0,0,0.12)' 
+                    }}
                   />
                 ) : null;
               })}

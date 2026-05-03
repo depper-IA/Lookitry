@@ -296,5 +296,63 @@ router.post('/refresh-session', authMiddleware, asyncHandler(async (req: any, re
 
 
 
+// POST /api/auth/refresh — renueva el JWT usando el refreshToken
+router.post('/refresh', asyncHandler(async (req: any, res: Response) => {
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+  
+  if (!refreshToken) {
+    return res.status(401).json({ error: 'NO_REFRESH_TOKEN', message: 'Refresh token no proporcionado' });
+  }
+
+  const { verifyRefreshToken, generateAccessToken, generateRefreshToken } = require('../utils/jwt');
+  
+  try {
+    const payload = verifyRefreshToken(refreshToken);
+    
+    const newAccessToken = generateAccessToken({ brandId: payload.brandId, email: payload.email });
+    const newRefreshToken = generateRefreshToken({ brandId: payload.brandId, email: payload.email });
+    
+    const IS_PROD = process.env.NODE_ENV === 'production';
+    const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+    
+    const cookieOptions: any = {
+      httpOnly: true,
+      secure: IS_PROD,
+      sameSite: 'lax',
+      path: '/',
+    };
+    
+    if (COOKIE_DOMAIN && IS_PROD) {
+      cookieOptions.domain = COOKIE_DOMAIN;
+    }
+    
+    res.cookie('token', newAccessToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    
+    res.cookie('refreshToken', newRefreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    
+    res.json({ ok: true, token: newAccessToken, refreshToken: newRefreshToken });
+  } catch (error) {
+    const clearOptions: any = {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    };
+    if (process.env.COOKIE_DOMAIN && process.env.NODE_ENV === 'production') {
+      clearOptions.domain = process.env.COOKIE_DOMAIN;
+    }
+    res.clearCookie('token', clearOptions);
+    res.clearCookie('refreshToken', clearOptions);
+    
+    return res.status(401).json({ error: 'INVALID_REFRESH_TOKEN', message: 'Refresh token inválido o expirado' });
+  }
+}));
+
 export default router;
 

@@ -119,13 +119,13 @@ export function getSmartBorderColor(color?: string | null): string {
 }
 
 export const CSS_COLOR_MAP: Record<string, string> = {
-  blanco: '#ffffff', negro: '#000000', rojo: '#ef4444', azul: '#3b82f6',
-  verde: '#10b981', amarillo: '#eab308', gris: '#6b7280', rosa: '#ec4899',
-  morado: '#a855f7', naranja: '#f97316', beige: '#f5f5dc', marron: '#8b4513',
-  marrón: '#8b4513', celeste: '#38bdf8', vino: '#722f37', navy: '#000080',
-  white: '#ffffff', black: '#000000', red: '#ef4444', blue: '#3b82f6',
-  green: '#10b981', yellow: '#eab308', gray: '#6b7280', pink: '#ec4899',
-  purple: '#a855f7', orange: '#f97316', brown: '#8b4513',
+  blanco: 'bg-white', negro: 'bg-black', rojo: 'bg-red-500', azul: 'bg-blue-500',
+  verde: 'bg-emerald-500', amarillo: 'bg-yellow-500', gris: 'bg-gray-500', rosa: 'bg-pink-500',
+  morado: 'bg-purple-500', naranja: 'bg-orange-500', beige: 'bg-orange-50', marron: 'bg-amber-900',
+  marrón: 'bg-amber-900', celeste: 'bg-sky-400', vino: 'bg-rose-900', navy: 'bg-blue-900',
+  white: 'bg-white', black: 'bg-black', red: 'bg-red-500', blue: 'bg-blue-500',
+  green: 'bg-emerald-500', yellow: 'bg-yellow-500', gray: 'bg-gray-500', pink: 'bg-pink-500',
+  purple: 'bg-purple-500', orange: 'bg-orange-500', brown: 'bg-amber-900',
 };
 
 export function getCssColor(val: string) {

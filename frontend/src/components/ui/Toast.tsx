@@ -30,28 +30,28 @@ export function Toast({
 
   const configs = {
     success: {
-      bg: 'bg-[#0d1f0d]/90',
+      bg: 'bg-emerald-950/90',
       border: 'border-emerald-500/50',
       icon: <CheckCircle className="w-5 h-5 text-emerald-400" />,
       accent: 'bg-emerald-500'
     },
     error: {
-      bg: 'bg-[#1f0d0d]/90',
+      bg: 'bg-red-950/90',
       border: 'border-red-500/50',
       icon: <XCircle className="w-5 h-5 text-red-400" />,
       accent: 'bg-red-500'
     },
     warning: {
-      bg: 'bg-[#1f1a0d]/90',
+      bg: 'bg-amber-950/90',
       border: 'border-amber-500/50',
       icon: <AlertTriangle className="w-5 h-5 text-amber-400" />,
       accent: 'bg-amber-500'
     },
     info: {
-      bg: 'bg-[#1a120f]/90',
-      border: 'border-[#FF5C3A]/50',
-      icon: <Info className="w-5 h-5 text-[#FF5C3A]" />,
-      accent: 'bg-[#FF5C3A]'
+      bg: 'bg-dark-surface/90',
+      border: 'border-accent/50',
+      icon: <Info className="w-5 h-5 text-accent" />,
+      accent: 'bg-accent'
     }
   };
 

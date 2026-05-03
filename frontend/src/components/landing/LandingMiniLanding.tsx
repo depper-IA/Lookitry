@@ -62,7 +62,7 @@ export default function LandingMiniLanding() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.4, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] bg-[#FF5C3A]/5 border border-[#FF5C3A]/20 text-[#FF5C3A]"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] bg-accent/5 border border-accent/20 text-accent"
             >
               Tu propia página
             </motion.div>
@@ -74,7 +74,7 @@ export default function LandingMiniLanding() {
               className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6 leading-tight"
             >
               Tu tienda online, <br />
-              <span className="text-[#FF5C3A]">sin pagar un diseñador.</span>
+              <span className="text-accent">sin pagar un diseñador.</span>
             </motion.h2>
 
             <motion.div
@@ -88,13 +88,13 @@ export default function LandingMiniLanding() {
                 <motion.div
                   key={idx}
                   variants={itemVariants}
-                  className="dark:bg-[#1a1a1a] bg-[#f8f6f4] border border-white/5 dark:border-[#2a2a2a] p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl hover:bg-[#141414] dark:hover:bg-[#141414] hover:shadow-xl transition-all group"
+                  className="dark:bg-dark-input bg-warm border border-white/5 dark:border-border-active p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl hover:bg-dark-surface dark:hover:bg-dark-surface hover:shadow-xl transition-all group"
                 >
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
                     {feat.icon}
                   </div>
                   <h4 className="font-jakarta font-bold text-sm sm:text-base text-black dark:text-white mb-1.5 sm:mb-2">{feat.title}</h4>
-                  <p className="text-[#666] dark:text-white/60 text-xs leading-relaxed">{feat.desc}</p>
+                  <p className="text-text-muted dark:text-white/60 text-xs leading-relaxed">{feat.desc}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -106,10 +106,10 @@ export default function LandingMiniLanding() {
               viewport={{ once: true, margin: '-100px' }}
               className="flex flex-wrap gap-3 sm:gap-4"
             >
-              <Link href="/checkout?plan=LANDING" className="bg-[#FF5C3A] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20">
+              <Link href="/checkout?plan=LANDING" className="bg-accent text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-accent/20">
                 Crear mi página ahora
               </Link>
-              <Link href="/planes" className="bg-white dark:bg-[#0a0a0a] text-[#0a0a0a] dark:text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:bg-[#FF5C3A] dark:hover:bg-[#FF5C3A] dark:hover:text-white">
+              <Link href="/planes" className="bg-white dark:bg-dark text-dark dark:text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:bg-accent dark:hover:bg-accent dark:hover:text-white">
                 Ver planes y precios
               </Link>
             </motion.div>
@@ -123,11 +123,11 @@ export default function LandingMiniLanding() {
             whileHover={{ scale: 1.02 }}
             className="hidden lg:block relative"
           >
-            <div className="relative z-10 rounded-2xl sm:rounded-[2rem] overflow-hidden border border-black/10 dark:border-[#e8e4df] shadow-2xl group-hover:shadow-3xl transition-shadow">
+            <div className="relative z-10 rounded-2xl sm:rounded-[2rem] overflow-hidden border border-black/10 dark:border-gray-200 shadow-2xl group-hover:shadow-3xl transition-shadow">
               <Image src="/hero/promo_landing.png" alt="Vista previa de Lookitry Landing" width={600} height={400} className="w-full h-auto" />
-              <div className="absolute inset-0 bg-gradient-to-br from-black/5 via-transparent to-[#FF5C3A]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             </div>
-            <div className="absolute -top-6 sm:-top-10 -right-6 sm:-right-10 w-32 h-32 sm:w-40 sm:h-40 bg-[#FF5C3A]/10 blur-3xl rounded-full" aria-hidden="true" />
+            <div className="absolute -top-6 sm:-top-10 -right-6 sm:-right-10 w-32 h-32 sm:w-40 sm:h-40 bg-accent/10 blur-3xl rounded-full" aria-hidden="true" />
           </motion.div>
         </div>
       </div>

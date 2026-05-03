@@ -9,6 +9,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getStorageClient, getProjectId } from "../services/gcp-client.js";
 import {
   ListBucketsInputSchema,
+  CreateBucketInputSchema,
   ListBucketContentsInputSchema,
   GetBucketMetadataInputSchema,
   ResponseFormat
@@ -21,6 +22,66 @@ import { CHARACTER_LIMIT } from "../constants.js";
  */
 export function registerStorageTools(server: McpServer): void {
   
+  // ========================================
+  // Tool: gcp_storage_create_bucket
+  // ========================================
+  server.registerTool(
+    "gcp_storage_create_bucket",
+    {
+      title: "Create GCS Bucket",
+      description: `Creates a new Google Cloud Storage bucket in a GCP project.
+      
+Args:
+  - bucketName (string): Name of the bucket to create.
+  - location (string, optional): Location (e.g., US, EU). Default: US.
+  - storageClass (string, optional): Storage class. Default: STANDARD.
+  - projectId (string, optional): GCP project ID.`,
+      inputSchema: CreateBucketInputSchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true
+      }
+    },
+    async (params) => {
+      try {
+        const projectId = getProjectId(params.projectId);
+        const storage = getStorageClient();
+        
+        const [bucket] = await storage.createBucket(params.bucketName, {
+          location: params.location,
+          storageClass: params.storageClass,
+          project: projectId
+        });
+
+        const output = {
+          success: true,
+          name: bucket.name,
+          location: bucket.metadata.location,
+          storageClass: bucket.metadata.storageClass
+        };
+
+        if (params.responseFormat === ResponseFormat.JSON) {
+          return {
+            content: [{ type: "text", text: JSON.stringify(output, null, 2) }]
+          };
+        }
+
+        return {
+          content: [{ type: "text", text: `Bucket ${bucket.name} created successfully in ${bucket.metadata.location} with class ${bucket.metadata.storageClass}.` }]
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: "text",
+            text: `Error creating bucket: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
   // ========================================
   // Tool: gcp_storage_list_buckets
   // ========================================

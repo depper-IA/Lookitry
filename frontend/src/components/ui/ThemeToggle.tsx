@@ -48,7 +48,7 @@ export function ThemeToggle() {
           }}
           className="relative z-10 flex items-center justify-center w-6 h-6 rounded-full"
           style={{
-            backgroundColor: isDark ? '#FF5C3A' : '#ffffff',
+            backgroundColor: isDark ? 'var(--accent)' : '#ffffff',
             boxShadow: isDark 
               ? '0 2px 8px rgba(255, 92, 58, 0.5), 0 0 15px rgba(255, 92, 58, 0.3)' 
               : '0 2px 8px rgba(0, 0, 0, 0.2), 0 0 10px rgba(255, 255, 255, 0.1)',

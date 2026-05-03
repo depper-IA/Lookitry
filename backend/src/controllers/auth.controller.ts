@@ -10,7 +10,7 @@ import { RegisterBrandDto, LoginDto } from '../types';
 
 import { AuthRequest } from '../middleware/auth';
 
-import { generateToken } from '../utils/jwt';
+import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 
 import { supabaseAdmin } from '../config/supabase';
 
@@ -32,7 +32,7 @@ const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 
 
 
-function setCookieToken(res: Response, token: string): void {
+function setCookieToken(res: Response, token: string, refreshToken?: string): void {
 
   const cookieOptions: any = {
 
@@ -59,6 +59,10 @@ function setCookieToken(res: Response, token: string): void {
 
 
   res.cookie('token', token, cookieOptions);
+
+  if (refreshToken) {
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+  }
 
 }
 
@@ -89,6 +93,7 @@ function clearCookieToken(res: Response): void {
 
 
   res.clearCookie('token', clearOptions);
+  res.clearCookie('refreshToken', clearOptions);
 
 }
 
@@ -102,7 +107,7 @@ export class AuthController {
 
       // Si el usuario ya tiene sesión activa, cerrar la sesión antes de registrar
 
-      const token = (req as any).cookies?.token || req.headers.authorization?.replace('Bearer ', '');
+      const token = (req as any).cookies?.token || req.headers?.authorization?.replace('Bearer ', '');
 
       if (token) {
 
@@ -168,7 +173,7 @@ export class AuthController {
 
         }
 
-        const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || '';
+        const ip = req.ip || req.headers?.['x-forwarded-for']?.toString()?.split(',')[0].trim() || '';
 
         const formData = new URLSearchParams();
 
@@ -316,7 +321,7 @@ export class AuthController {
 
         ...data,
 
-        ip: req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || 'unknown',
+        ip: req.ip || req.headers?.['x-forwarded-for']?.toString()?.split(',')[0].trim() || 'unknown',
 
         fingerprint: req.body.fingerprint || null,
 
@@ -354,7 +359,7 @@ export class AuthController {
 
       // Emitir token como cookie HTTP-Only (más seguro que localStorage)
 
-      if (result.token) setCookieToken(res, result.token);
+      if (result.token) setCookieToken(res, result.token, result.refreshToken);
 
 
 
@@ -462,9 +467,10 @@ export class AuthController {
 
         if (fullBrand) {
 
-          const newToken = generateToken({ brandId: fullBrand.id, email: fullBrand.email });
+          const newToken = generateAccessToken({ brandId: fullBrand.id, email: fullBrand.email });
+          const newRefreshToken = generateRefreshToken({ brandId: fullBrand.id, email: fullBrand.email });
 
-          setCookieToken(res, newToken);
+          setCookieToken(res, newToken, newRefreshToken);
 
           
 
@@ -576,7 +582,7 @@ export class AuthController {
 
           try {
 
-            const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || '';
+            const ip = req.ip || req.headers?.['x-forwarded-for']?.toString()?.split(',')[0].trim() || '';
 
             const formData = new URLSearchParams();
 
@@ -648,7 +654,7 @@ export class AuthController {
 
 
 
-      const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || '';
+      const ip = req.ip || req.headers?.['x-forwarded-for']?.toString()?.split(',')[0].trim() || '';
 
       const fingerprint = req.body.fingerprint || null;
 
@@ -658,7 +664,7 @@ export class AuthController {
 
       // Emitir token como cookie HTTP-Only (más seguro que localStorage)
 
-      if (result.token) setCookieToken(res, result.token);
+      if (result.token) setCookieToken(res, result.token, result.refreshToken);
 
       return res.status(200).json(result);
 
@@ -1052,7 +1058,7 @@ export class AuthController {
 
 
 
-      if (result.token) setCookieToken(res, result.token);
+      if (result.token) setCookieToken(res, result.token, result.refreshToken);
 
 
 
@@ -1374,9 +1380,10 @@ export class AuthController {
 
 
 
-      const newToken = generateToken({ brandId: brandData.id, email: brandData.email });
+      const newToken = generateAccessToken({ brandId: brandData.id, email: brandData.email });
+      const newRefreshToken = generateRefreshToken({ brandId: brandData.id, email: brandData.email });
 
-      setCookieToken(res, newToken);
+      setCookieToken(res, newToken, newRefreshToken);
 
 
 

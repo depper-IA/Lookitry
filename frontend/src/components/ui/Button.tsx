@@ -13,10 +13,10 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
-  const base = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A]/50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
+  const base = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
   const variants: Record<string, string> = {
-    primary:   'bg-[#FF5C3A] text-white hover:bg-[#e04e2f]',
+    primary:   'bg-accent text-white hover:bg-accent/90',
     secondary: 'border hover:opacity-80',
     danger:    'bg-red-600 text-white hover:bg-red-700',
     ghost:     'hover:opacity-70',

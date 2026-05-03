@@ -56,7 +56,7 @@ function DoubleBezelCard({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative overflow-hidden rounded-[2rem] bg-black/5 ring-1 ring-white/10 p-1.5">
       <div
-        className="relative h-full rounded-[calc(2rem-0.375rem)] bg-[#141414] p-8"
+        className="relative h-full rounded-[calc(2rem-0.375rem)] bg-dark-surface p-8"
         style={{ borderRadius: 'calc(2rem - 0.375rem)' }}
       >
         {children}
@@ -149,8 +149,8 @@ export function ExitIntentPopup({ isOpen, onClose, onLeadCaptured }: ExitIntentP
               {status === 'success' ? (
                 /* Success State */
                 <div className="flex flex-col items-center py-6 text-center">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#FF5C3A]/10">
-                    <Mail className="h-6 w-6 text-[#FF5C3A]" />
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
+                    <Mail className="h-6 w-6 text-accent" />
                   </div>
                   <h3 id="exit-intent-title" className="mb-2 font-jakarta text-xl font-bold text-white">
                     Estas en la lista
@@ -170,8 +170,8 @@ export function ExitIntentPopup({ isOpen, onClose, onLeadCaptured }: ExitIntentP
                 <form onSubmit={handleSubmit} className="text-center">
                   {/* Header Icon */}
                   <div className="mb-5 flex items-center justify-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FF5C3A]/10">
-                      <Mail className="h-7 w-7 text-[#FF5C3A]" />
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10">
+                      <Mail className="h-7 w-7 text-accent" />
                     </div>
                   </div>
 
@@ -201,7 +201,7 @@ export function ExitIntentPopup({ isOpen, onClose, onLeadCaptured }: ExitIntentP
                         "focus:outline-none focus:ring-2",
                         error
                           ? 'border-red-500/50 bg-red-500/5'
-                          : 'border-white/10 hover:border-white/20 focus:border-[#FF5C3A]/50 focus:ring-[#FF5C3A]/20'
+                          : 'border-white/10 hover:border-white/20 focus:border-accent/50 focus:ring-accent/20'
                       )}
                       aria-invalid={!!error}
                       aria-describedby={error ? 'exit-email-error' : undefined}
@@ -218,7 +218,7 @@ export function ExitIntentPopup({ isOpen, onClose, onLeadCaptured }: ExitIntentP
                     <button
                       type="submit"
                       disabled={status === 'submitting'}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-[#FF5C3A] px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-white transition-all hover:bg-[#ff7b5e] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-white transition-all hover:bg-accent-bright disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {status === 'submitting' ? (
                         <>

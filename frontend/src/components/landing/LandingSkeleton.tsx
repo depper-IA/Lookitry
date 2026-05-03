@@ -47,9 +47,9 @@ export function LandingSkeleton({ variant = 'hero', className = '' }: LandingSke
 
             {/* Right: Widget mockup */}
             <div className="flex w-full items-center justify-center lg:justify-end">
-              <div className="w-full max-w-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#141414] p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] sm:max-w-[500px] sm:rounded-[2rem] sm:p-4 lg:max-w-[620px]">
+              <div className="w-full max-w-[400px] overflow-hidden rounded-2xl border border-white/10 bg-dark-surface p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] sm:max-w-[500px] sm:rounded-[2rem] sm:p-4 lg:max-w-[620px]">
                 {/* Widget header */}
-                <div className="mb-3 flex items-center justify-center gap-2 rounded-full bg-[#ABABAB]/10 px-4 py-2 sm:mb-6">
+                <div className="mb-3 flex items-center justify-center gap-2 rounded-full bg-text-muted/10 px-4 py-2 sm:mb-6">
                   <Skeleton width={20} height={20} borderRadius="50%" />
                   <Skeleton width={140} height={16} borderRadius="6px" />
                 </div>
@@ -87,7 +87,7 @@ export function LandingSkeleton({ variant = 'hero', className = '' }: LandingSke
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl border border-[#e8e4df] dark:border-white/10 bg-white dark:bg-[#141414]"
+                className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-dark-surface"
                 style={{ minWidth: '180px' }}
               >
                 <Skeleton width={48} height={48} borderRadius="12px" className="shrink-0" />
@@ -124,7 +124,7 @@ export function LandingSkeleton({ variant = 'hero', className = '' }: LandingSke
 
   if (variant === 'pricing') {
     return (
-      <div className={`py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-b from-white to-[#fafafa] dark:from-black dark:to-[#0a0a0a] ${className}`}>
+      <div className={`py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-dark ${className}`}>
         <div className="max-w-5xl mx-auto">
           <Skeleton width={240} height={40} borderRadius="8px" className="mx-auto mb-4" />
           <Skeleton width={300} height={20} borderRadius="6px" className="mx-auto mb-12" />
@@ -132,7 +132,7 @@ export function LandingSkeleton({ variant = 'hero', className = '' }: LandingSke
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="rounded-[1.5rem] border border-[#e8e4df] dark:border-white/10 bg-white dark:bg-[#141414] p-6 sm:p-8"
+                className="rounded-[1.5rem] border border-gray-200 dark:border-white/10 bg-white dark:bg-dark-surface p-6 sm:p-8"
               >
                 <Skeleton width={80} height={24} borderRadius="6px" className="mb-4" />
                 <Skeleton width={120} height={48} borderRadius="8px" className="mb-6" />

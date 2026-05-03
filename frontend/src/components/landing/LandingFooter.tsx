@@ -193,7 +193,7 @@ export default function LandingFooter() {
                 <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
               </div>
               <span className="font-jakarta text-lg font-bold tracking-tighter text-black dark:text-white">
-                Look<span className="text-[#FF5C3A]">itry</span>
+                Look<span className="text-accent">itry</span>
               </span>
             </Link>
             <p className="max-w-[260px] text-xs leading-relaxed text-black/50 dark:text-white/40">
@@ -221,7 +221,7 @@ export default function LandingFooter() {
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="social-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 transition-all duration-300 hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/10 hover:text-[#FF5C3A] hover:scale-110 sm:h-10 sm:w-10 dark:border-white/5 dark:bg-white/5 dark:text-white/40 dark:hover:border-[#FF5C3A]/30 dark:hover:bg-[#FF5C3A]/10 dark:hover:text-[#FF5C3A]"
+                className="social-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 transition-all duration-300 hover:border-accent/30 hover:bg-accent/10 hover:text-accent hover:scale-110 sm:h-10 sm:w-10 dark:border-white/5 dark:bg-white/5 dark:text-white/40 dark:hover:border-accent/30 dark:hover:bg-accent/10 dark:hover:text-accent"
                 aria-label={item.label}
               >
                 <item.Icon size={16} aria-hidden="true" />
@@ -231,7 +231,7 @@ export default function LandingFooter() {
               href={socialLinks.tiktok}
               target="_blank"
               rel="noopener noreferrer"
-              className="social-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 transition-all duration-300 hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/10 hover:text-[#FF5C3A] hover:scale-110 dark:border-white/5 dark:bg-white/5 dark:text-white/40 dark:hover:border-[#FF5C3A]/30 dark:hover:bg-[#FF5C3A]/10 dark:hover:text-[#FF5C3A]"
+              className="social-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 transition-all duration-300 hover:border-accent/30 hover:bg-accent/10 hover:text-accent hover:scale-110 dark:border-white/5 dark:bg-white/5 dark:text-white/40 dark:hover:border-accent/30 dark:hover:bg-accent/10 dark:hover:text-accent"
               aria-label="TikTok"
               suppressHydrationWarning
             >
@@ -263,13 +263,13 @@ export default function LandingFooter() {
               >
                 <button
                   onClick={() => toggleSection(section.title)}
-                  className="group flex w-full items-center justify-between py-3 text-[10px] font-bold uppercase tracking-wider text-black/60 transition-colors duration-300 hover:text-[#FF5C3A] dark:text-white/60 dark:hover:text-[#FF5C3A]"
+                  className="group flex w-full items-center justify-between py-3 text-[10px] font-bold uppercase tracking-wider text-black/60 transition-colors duration-300 hover:text-accent dark:text-white/60 dark:hover:text-accent"
                   aria-expanded={openSections[section.title]}
                 >
                   {section.title}
                   <ChevronDown
                     size={14}
-                    className={`text-black/25 transition-all duration-300 group-hover:text-[#FF5C3A] dark:text-white/25 dark:group-hover:text-[#FF5C3A] ${openSections[section.title] ? 'rotate-180' : ''}`}
+                    className={`text-black/25 transition-all duration-300 group-hover:text-accent dark:text-white/25 dark:group-hover:text-accent ${openSections[section.title] ? 'rotate-180' : ''}`}
                   />
                 </button>
                 <div
@@ -296,7 +296,7 @@ export default function LandingFooter() {
                         >
                           <Link
                             href={item.href}
-                            className="block py-2 text-center text-xs text-black/45 transition-colors duration-300 hover:text-[#FF5C3A] dark:text-white/35 dark:hover:text-[#FF5C3A]"
+                            className="block py-2 text-center text-xs text-black/45 transition-colors duration-300 hover:text-accent dark:text-white/35 dark:hover:text-accent"
                           >
                             {item.name}
                           </Link>
@@ -326,7 +326,7 @@ export default function LandingFooter() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative transition-colors duration-300 hover:text-[#FF5C3A] after:absolute after:-bottom-0.5 after:left-0 after:h-[1px] after:w-0 after:bg-[#FF5C3A] after:transition-all after:duration-300 hover:after:w-full"
+                className="relative transition-colors duration-300 hover:text-accent after:absolute after:-bottom-0.5 after:left-0 after:h-[1px] after:w-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full"
               >
                 {link.label}
               </Link>
@@ -352,7 +352,7 @@ export default function LandingFooter() {
                   <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
                 </div>
                 <span className="font-jakarta text-2xl font-bold tracking-tighter text-black dark:text-white sm:text-3xl">
-                  Look<span className="text-[#FF5C3A]">itry</span>
+                  Look<span className="text-accent">itry</span>
                 </span>
               </Link>
               <p className="mb-6 max-w-xs text-sm font-light leading-relaxed text-black/70 transition-colors duration-300 dark:text-white/70 sm:mb-8 sm:text-base">
@@ -361,10 +361,10 @@ export default function LandingFooter() {
               <div className="mb-6 sm:mb-8 md:mb-10">
                 <Link
                   href="/sobre-nosotros"
-                  className="group relative border-b border-[#FF5C3A]/30 pb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#FF5C3A] transition-colors duration-300 hover:text-[#FF5C3A]/80 sm:text-[11px] sm:tracking-[0.2em]"
+                  className="group relative border-b border-accent/30 pb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-accent transition-colors duration-300 hover:text-accent/80 sm:text-[11px] sm:tracking-[0.2em]"
                 >
                   <span className="relative z-10">Conoce nuestra historia</span>
-                  <span className="absolute bottom-0 left-0 h-full w-0 bg-[#FF5C3A]/10 transition-all duration-300 group-hover:w-full" />
+                  <span className="absolute bottom-0 left-0 h-full w-0 bg-accent/10 transition-all duration-300 group-hover:w-full" />
                 </Link>
               </div>
               <div className="flex items-center gap-2.5 sm:gap-3">
@@ -378,7 +378,7 @@ export default function LandingFooter() {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="social-btn group relative flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 transition-all duration-300 hover:border-[#FF5C3A]/40 hover:bg-[#FF5C3A]/10 hover:text-[#FF5C3A] hover:scale-110 hover:shadow-[0_0_20px_rgba(255,92,58,0.15)] sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60 dark:hover:border-[#FF5C3A]/40 dark:hover:bg-[#FF5C3A]/10 dark:hover:text-[#FF5C3A] dark:hover:shadow-[0_0_20px_rgba(255,92,58,0.15)]"
+                    className="social-btn group relative flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 transition-all duration-300 hover:border-accent/40 hover:bg-accent/10 hover:text-accent hover:scale-110 hover:shadow-[0_0_20px_rgba(255,92,58,0.15)] sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60 dark:hover:border-accent/40 dark:hover:bg-accent/10 dark:hover:text-accent dark:hover:shadow-[0_0_20px_rgba(255,92,58,0.15)]"
                     aria-label={item.label}
                   >
                     <item.Icon size={18} aria-hidden="true" className="transition-transform duration-300 group-hover:scale-110" />
@@ -388,7 +388,7 @@ export default function LandingFooter() {
                   href={socialLinks.tiktok}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="social-btn group relative flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 transition-all duration-300 hover:border-[#FF5C3A]/40 hover:bg-[#FF5C3A]/10 hover:text-[#FF5C3A] hover:scale-110 hover:shadow-[0_0_20px_rgba(255,92,58,0.15)] sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60 dark:hover:border-[#FF5C3A]/40 dark:hover:bg-[#FF5C3A]/10 dark:hover:text-[#FF5C3A] dark:hover:shadow-[0_0_20px_rgba(255,92,58,0.15)]"
+                  className="social-btn group relative flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 transition-all duration-300 hover:border-accent/40 hover:bg-accent/10 hover:text-accent hover:scale-110 hover:shadow-[0_0_20px_rgba(255,92,58,0.15)] sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60 dark:hover:border-accent/40 dark:hover:bg-accent/10 dark:hover:text-accent dark:hover:shadow-[0_0_20px_rgba(255,92,58,0.15)]"
                   aria-label="TikTok"
                   suppressHydrationWarning
                 >
@@ -410,7 +410,7 @@ export default function LandingFooter() {
                   transitionDelay: `${0.2 + sectionIdx * 0.1}s`,
                 }}
               >
-                <h5 className="mb-6 font-jakarta text-[9px] font-bold uppercase tracking-[0.25em] text-black transition-colors duration-300 hover:text-[#FF5C3A] dark:text-white sm:mb-8 sm:text-[10px] sm:tracking-[0.3em] md:mb-10">
+                <h5 className="mb-6 font-jakarta text-[9px] font-bold uppercase tracking-[0.25em] text-black transition-colors duration-300 hover:text-accent dark:text-white sm:mb-8 sm:text-[10px] sm:tracking-[0.3em] md:mb-10">
                   {section.title}
                 </h5>
                 <ul className="flex flex-col gap-3 sm:gap-4 md:gap-5">
@@ -426,10 +426,10 @@ export default function LandingFooter() {
                     >
                       <Link
                         href={item.href}
-                        className="group relative text-sm text-black/65 transition-colors duration-300 hover:text-[#FF5C3A] dark:text-white/60 dark:hover:text-[#FF5C3A]"
+                        className="group relative text-sm text-black/65 transition-colors duration-300 hover:text-accent dark:text-white/60 dark:hover:text-accent"
                       >
                         {item.name}
-                        <span className="absolute -bottom-0.5 left-0 h-[1px] w-0 bg-[#FF5C3A] transition-all duration-300 group-hover:w-full" />
+                        <span className="absolute -bottom-0.5 left-0 h-[1px] w-0 bg-accent transition-all duration-300 group-hover:w-full" />
                       </Link>
                     </li>
                   ))}
@@ -442,7 +442,7 @@ export default function LandingFooter() {
 
       {/* Bottom Bar */}
       <div
-        className="mt-5 w-full bg-[#FF5C3A] md:mt-0"
+        className="mt-5 w-full bg-accent md:mt-0"
         style={{
           opacity: footerVisible ? 1 : 0,
           transition: `opacity 0.5s cubic-bezier(${EASING.outQuart.join(',')})`,
@@ -487,7 +487,7 @@ export default function LandingFooter() {
               <button
                 onClick={toggle}
                 aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                className="group flex items-center gap-2 rounded-full border border-black/20 px-4 py-2 text-xs font-medium text-black/90 transition-all duration-300 hover:border-[#ffffff]/40 hover:bg-[#ffffff]/10 hover:text-[#ffffff] sm:text-sm"
+                className="group flex items-center gap-2 rounded-full border border-black/20 px-4 py-2 text-xs font-medium text-black/90 transition-all duration-300 hover:border-text-primary/40 hover:bg-text-primary/10 hover:text-text-primary sm:text-sm"
               >
                 {mounted ? (
                   isDark ? (

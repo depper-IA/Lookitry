@@ -146,7 +146,7 @@ export default function LandingStats() {
   return (
     <section className="bg-white dark:bg-black py-12 sm:py-16 md:py-20 px-4 sm:px-6 relative overflow-hidden" aria-label="Estadisticas">
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#FF5C3A]/5 via-transparent to-[#FF5C3A]/5" />
+      <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-transparent to-accent/5" />
 
       <motion.div
         variants={staggerContainer}
@@ -161,11 +161,11 @@ export default function LandingStats() {
               key={i}
               custom={i}
               variants={cardVariants}
-              className="group relative flex items-center gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 rounded-2xl sm:rounded-[2rem] bg-white dark:bg-[#141414] border border-[#e8e4df] dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-[#FF5C3A]/10 hover:border-[#FF5C3A]/30 transition-all duration-300 cursor-default"
+              className="group relative flex items-center gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 rounded-2xl sm:rounded-[2rem] bg-white dark:bg-dark-surface border border-gray-200 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-accent/10 hover:border-accent/30 transition-all duration-300 cursor-default"
             >
               {/* Icon container */}
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#FF5C3A]/10 dark:bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-[#FF5C3A] transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[#FF5C3A]/30">
-                <span className="text-[#FF5C3A] group-hover:text-white transition-colors duration-300">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-accent/10 dark:bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-accent transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-accent/30">
+                <span className="text-accent group-hover:text-white transition-colors duration-300">
                   {React.cloneElement(stat.icon as React.ReactElement, { className: "w-5 h-5 sm:w-6 sm:h-6" })}
                 </span>
               </div>
@@ -186,14 +186,14 @@ export default function LandingStats() {
                     <AnimatedNumber value={stat.val} suffix={stat.suffix} delay={i * 0.15} />
                   )}
                 </div>
-                <div className="font-dm-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#666] dark:text-white/60 group-hover:text-[#FF5C3A] transition-colors duration-300">
+                <div className="font-dm-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-text-muted dark:text-white/60 group-hover:text-accent transition-colors duration-300">
                   {stat.label}
                 </div>
               </div>
 
               {/* Decorative corner accent */}
               <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden rounded-tr-2xl">
-                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-[#FF5C3A]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
             </motion.div>
           ))}

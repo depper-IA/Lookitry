@@ -25,13 +25,13 @@ export function AdminBottomNav() {
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
     >
       <div className="mx-auto max-w-sm px-3 pt-1">
-        <div className="flex items-center justify-center gap-0.5 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 shadow-2xl shadow-black/20 dark:shadow-black/40 px-1.5 py-1.5">
+        <div className="flex items-center justify-center gap-0.5 rounded-2xl bg-white dark:bg-dark border border-black/10 dark:border-white/10 shadow-2xl shadow-black/20 dark:shadow-black/40 px-1.5 py-1.5">
           <Link
             href="/admin/dashboard"
             aria-current={isActive('/admin/dashboard') ? 'page' : undefined}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
               isActive('/admin/dashboard')
-                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                ? 'bg-accent/15 text-accent'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
@@ -44,7 +44,7 @@ export function AdminBottomNav() {
             aria-current={isActive('/admin/brands') ? 'page' : undefined}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
               isActive('/admin/brands')
-                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                ? 'bg-accent/15 text-accent'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
@@ -57,7 +57,7 @@ export function AdminBottomNav() {
             aria-current={isActive('/admin/leads') ? 'page' : undefined}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
               isActive('/admin/leads')
-                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                ? 'bg-accent/15 text-accent'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
@@ -70,7 +70,7 @@ export function AdminBottomNav() {
             aria-current={isActive('/admin/notifications') ? 'page' : undefined}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
               isActive('/admin/notifications')
-                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                ? 'bg-accent/15 text-accent'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
@@ -83,7 +83,7 @@ export function AdminBottomNav() {
             aria-current={isActive('/admin/config') ? 'page' : undefined}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
               isActive('/admin/config')
-                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                ? 'bg-accent/15 text-accent'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >

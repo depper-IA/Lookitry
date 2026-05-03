@@ -11,7 +11,7 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | **Frontend** | Next.js (App Router) | 16.2.4 | UI y renderizado |
 | **Backend** | Node.js + Express | 4.18.2 | API de Negocio |
 | **Base de datos** | Supabase (PostgreSQL + pgvector) | — | Persistencia de datos + RAG embeddings |
-| **Autenticación** | JWT propio (HTTP-only cookies) | — | Seguridad de sesión |
+| **Autenticación** | Dual JWT propio (HTTP-only) | — | Seguridad de sesión con Key Rotation |
 | **OAuth** | Google Sign-In | — | Login alternativo |
 | **IA / Try-On** | n8n + OpenRouter | — | Orquestación de IA |
 | **Styling** | Tailwind CSS | 3.4.0 | Diseño y UI |

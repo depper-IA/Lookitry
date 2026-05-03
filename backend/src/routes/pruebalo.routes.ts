@@ -5,6 +5,7 @@ import { PruebaloController } from '../controllers/pruebalo.controller';
 import { uploadSingleImage, handleMulterError } from '../middleware/multer.middleware';
 
 import { publicRateLimiter, generationRateLimiter, slugGenerationRateLimiter } from '../middleware/rateLimiter';
+import { widgetSecurity } from '../middleware/widgetSecurity';
 
 
 
@@ -68,7 +69,7 @@ router.get('/img-proxy', publicRateLimiter, pruebaloController.imgProxy);
 
 // GET /api/pruebalo/:brandSlug - Obtener configuración pública de marca y productos
 
-router.get('/:brandSlug', publicRateLimiter, pruebaloController.getBrandConfig);
+router.get('/:brandSlug', publicRateLimiter, widgetSecurity, pruebaloController.getBrandConfig);
 
 
 
@@ -81,6 +82,8 @@ router.post(
   slugGenerationRateLimiter,
 
   generationRateLimiter,
+
+  widgetSecurity,
 
   uploadSingleImage,
 
@@ -100,6 +103,8 @@ router.get(
 
   publicRateLimiter,
 
+  widgetSecurity,
+
   pruebaloController.getGenerationStatus
 
 );
@@ -113,6 +118,8 @@ router.post(
   '/:brandSlug/generation/:generationId/feedback',
 
   publicRateLimiter,
+
+  widgetSecurity,
 
   pruebaloController.reportGenerationFeedback
 
