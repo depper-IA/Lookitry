@@ -2490,6 +2490,7 @@ export class PruebaloController {
           // Use internal Docker network - Traefik handles HTTPS termination internally
           fetchUrl = `http://traefik:80${parsed.pathname}${parsed.search}${parsed.hash}`;
           fetchHeaders['Host'] = parsed.host;
+          fetchHeaders['X-Forwarded-Proto'] = 'https';
           console.log(`[imgProxy] Retry with internal Traefik: ${fetchUrl}`);
           response = await axios.get(fetchUrl, {
             headers: fetchHeaders,
@@ -2543,11 +2544,13 @@ export class PruebaloController {
           if (!location.startsWith('http')) {
             // Relative redirect - rebuild using internal Traefik HTTP
             fetchHeaders['Host'] = new URL(imageUrl).hostname;
+            fetchHeaders['X-Forwarded-Proto'] = 'https';
             redirectUrl = `http://traefik:80${location}`;
           } else {
             // Absolute redirect URL - replace origin with Traefik to avoid loopback
             const redirParsed = new URL(location);
             fetchHeaders['Host'] = redirParsed.hostname;
+            fetchHeaders['X-Forwarded-Proto'] = 'https';
             redirectUrl = `http://traefik:80${redirParsed.pathname}${redirParsed.search}${redirParsed.hash}`;
           }
           console.log(`[imgProxy] Following redirect to: ${redirectUrl}`);
