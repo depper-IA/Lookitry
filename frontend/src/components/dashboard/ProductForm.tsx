@@ -283,11 +283,10 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
       let mappedCategory = category, mappedCustom = '';
       if (aiCategory) { const mapped = mapAICategory(aiCategory); if (mapped) { mappedCategory = mapped; if (mapped === 'other') mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase(); } }
       
-      // Update both internal 'description' (RAG) and visible 'short_description' (UI)
+      // Guarda SOLO la descripción interna (RAG/Try-On) y respeta la categoría
       setFormData(p => ({ 
         ...p, 
         description: clean, 
-        short_description: clean.length > 500 ? clean.substring(0, 497) + '...' : clean,
         category: mappedCategory 
       }));
       setShowCustomCategory(mappedCategory === 'other'); setCustomCategory(mappedCustom); setAiGenerated(true);
