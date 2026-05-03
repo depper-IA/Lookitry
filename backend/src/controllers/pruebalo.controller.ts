@@ -2477,8 +2477,8 @@ export class PruebaloController {
         }
       }
 
-      console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
-      let response: Response;
+console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
+      let response: globalThis.Response;
       try {
         response = await fetch(fetchUrl, {
           headers: fetchHeaders,
@@ -2500,12 +2500,8 @@ export class PruebaloController {
 
       console.log(`[imgProxy] Response status: ${response.status}, ok: ${response.ok}`);
 
-
-
       if (!response.ok) {
-
         throw new Error(`Error fetching image: ${response.statusText}`);
-
       }
 
 
