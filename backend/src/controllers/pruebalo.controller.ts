@@ -2487,7 +2487,7 @@ console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
         console.error(`[imgProxy] fetch() threw: ${fetchErr.message}, code: ${fetchErr.code}`);
         // If MinIO internal failed and it's a MinIO URL, try the public URL as fallback
         if (fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
-          console.log('[imgProxy] MinIO internal failed, falling back to public URL');
+          console.log('[imgProxy] MinIO internal failed (fetch threw), falling back to public URL');
           fetchUrl = imageUrl;
           console.log(`[imgProxy] Retry with public URL: ${fetchUrl}`);
           response = await fetch(fetchUrl, {
@@ -2499,6 +2499,17 @@ console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
       }
 
       console.log(`[imgProxy] Response status: ${response.status}, ok: ${response.ok}`);
+
+      // If MinIO internal returned 403, fall back to public URL
+      if (!response.ok && response.status === 403 && fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
+        console.log('[imgProxy] MinIO internal returned 403, falling back to public URL');
+        fetchUrl = imageUrl;
+        console.log(`[imgProxy] Retry with public URL: ${fetchUrl}`);
+        response = await fetch(fetchUrl, {
+          headers: fetchHeaders,
+        });
+        console.log(`[imgProxy] Fallback response status: ${response.status}, ok: ${response.ok}`);
+      }
 
       if (!response.ok) {
         throw new Error(`Error fetching image: ${response.statusText}`);
