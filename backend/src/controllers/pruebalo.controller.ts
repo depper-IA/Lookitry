@@ -1,3 +1,5 @@
+import axios, { AxiosResponse } from 'axios';
+
 import { Request, Response } from 'express';
 
 import { createHash } from 'crypto';
@@ -2488,60 +2490,71 @@ export class PruebaloController {
       }
 
       console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
-      let response: globalThis.Response;
+      let response: AxiosResponse;
       try {
-        response = await fetch(fetchUrl, {
+        response = await axios.get(fetchUrl, {
           headers: fetchHeaders,
-          // Node.js fetch doesn't follow redirects by default for 3xx, but we want to handle them
-          // Use signal to set a timeout
-          signal: AbortSignal.timeout(10000),
+          timeout: 10000,
+          responseType: 'arraybuffer',
+          maxRedirects: 5,
         });
       } catch (fetchErr: any) {
-        console.error(`[imgProxy] fetch() threw: ${fetchErr.message}, code: ${fetchErr.code}`);
+        console.error(`[imgProxy] axios error: ${fetchErr.message}, code: ${fetchErr.code}`);
         // If MinIO internal failed and it's a MinIO URL, try the public URL as fallback
         if (fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
-          console.log('[imgProxy] MinIO internal failed (fetch threw), falling back to public URL');
+          console.log('[imgProxy] MinIO internal failed (axios threw), falling back to public URL');
           fetchUrl = imageUrl;
           console.log(`[imgProxy] Retry with public URL: ${fetchUrl}`);
-          response = await fetch(fetchUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(10000) });
+          response = await axios.get(fetchUrl, {
+            headers: fetchHeaders,
+            timeout: 10000,
+            responseType: 'arraybuffer',
+            maxRedirects: 5,
+          });
         } else {
           throw fetchErr;
         }
       }
 
-      console.log(`[imgProxy] Response status: ${response.status}, ok: ${response.ok}`);
+      console.log(`[imgProxy] Response status: ${response.status}, ok: ${response.status >= 200 && response.status < 300}`);
 
       // If MinIO internal returned 403, fall back to public URL
-      if (!response.ok && response.status === 403 && fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
+      if (response.status === 403 && fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
         console.log('[imgProxy] MinIO internal returned 403, falling back to public URL');
         fetchUrl = imageUrl;
         console.log(`[imgProxy] Retry with public URL: ${fetchUrl}`);
-        response = await fetch(fetchUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(10000) });
-        console.log(`[imgProxy] Fallback response status: ${response.status}, ok: ${response.ok}`);
+        response = await axios.get(fetchUrl, {
+          headers: fetchHeaders,
+          timeout: 10000,
+          responseType: 'arraybuffer',
+          maxRedirects: 5,
+        });
+        console.log(`[imgProxy] Fallback response status: ${response.status}`);
       }
 
       // Treat 403/301/302 from fallback IP as success (Traefik redirects to HTTPS for static content)
-      // Only do this when we're using the fallback IP path (not for direct successful fetches)
       const isFallbackPath = fetchUrl.startsWith('http://31.220.18.39');
-      if (isFallbackPath && !response.ok && (response.status === 301 || response.status === 302 || response.status === 403)) {
+      if (isFallbackPath && (response.status === 301 || response.status === 302 || response.status === 403)) {
         console.log(`[imgProxy] Fallback path returned ${response.status}, following redirect via location header`);
-        const location = response.headers.get('location');
+        const location = response.headers['location'];
         if (location) {
-          // Construct absolute URL if location is relative
           const redirectUrl = location.startsWith('http') ? location : `${new URL(imageUrl).origin}${location}`;
           console.log(`[imgProxy] Following redirect to: ${redirectUrl}`);
-          response = await fetch(redirectUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(10000) });
-          console.log(`[imgProxy] Redirect response status: ${response.status}, ok: ${response.ok}`);
+          response = await axios.get(redirectUrl, {
+            headers: fetchHeaders,
+            timeout: 10000,
+            responseType: 'arraybuffer',
+            maxRedirects: 5,
+          });
+          console.log(`[imgProxy] Redirect response status: ${response.status}`);
         }
       }
 
-      if (!response.ok) {
-        throw new Error(`Error fetching image: ${response.statusText}`);
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(`Error fetching image: HTTP ${response.status}`);
       }
 
-
-
-      const contentType = response.headers.get('content-type');
+      const contentType = response.headers['content-type'];
 
       if (contentType) {
 
@@ -2552,14 +2565,11 @@ export class PruebaloController {
 
 
       // Cache por 24 horas
-
       res.setHeader('Cache-Control', 'public, max-age=86400');
 
 
-
-      const buffer = await response.arrayBuffer();
-
-      return res.send(Buffer.from(buffer));
+      const buffer = Buffer.from(response.data);
+      return res.send(buffer);
 
 } catch (error: any) {
       console.error(`[imgProxy] CATCH block reached. Error message: ${error.message}, stack: ${error.stack?.substring(0, 300)}`);
