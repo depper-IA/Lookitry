@@ -2454,14 +2454,12 @@ export class PruebaloController {
           'Accept': 'image/*,*/*',
         };
       } else if (imageUrl.includes('wilkiedevs.com')) {
-        // For wilkiedevs.com, ALWAYS use the fallback path via the VPS public IP.
-        // This avoids Docker DNS resolution issues and SSL certificate problems
-        // that can occur when the backend container tries to fetch HTTPS directly.
-        // Traefik on the host receives the request and routes it correctly.
+        // For wilkiedevs.com URLs, try direct HTTPS fetch first.
+        // The container may have DNS issues resolving wilkiedevs.com, so we fall back
+        // to the VPS public IP path if direct fetch fails or returns error.
         const parsed = new URL(imageUrl);
-        fetchUrl = `http://31.220.18.39:80${parsed.pathname}${parsed.search}${parsed.hash}`;
-        fetchHeaders['Host'] = parsed.host;
-        console.log(`[imgProxy] wilkiedevs.com URL, using fallback path: ${fetchUrl}`);
+        fetchUrl = imageUrl; // Try direct HTTPS first
+        console.log(`[imgProxy] wilkiedevs.com URL, trying direct HTTPS: ${fetchUrl}`);
       }
 
       console.log(`[imgProxy] Final fetchUrl: ${fetchUrl}`);
@@ -2474,9 +2472,21 @@ export class PruebaloController {
           maxRedirects: 5,
         });
       } catch (fetchErr: any) {
-        console.error(`[imgProxy] axios error: ${fetchErr.message}, code: ${fetchErr.code}`);
-        // If MinIO internal failed and it's a MinIO URL, try the public URL as fallback
-        if (fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
+        console.error(`[imgProxy] axios error: ${fetchErr.message}, code: ${fetchErr.code}, status: ${fetchErr.response?.status}`);
+        // If direct fetch fails for wilkiedevs.com, try the fallback VPS IP path
+        if (imageUrl.includes('wilkiedevs.com') && fetchUrl.startsWith('https://wilkiedevs.com')) {
+          console.log('[imgProxy] Direct HTTPS failed, trying fallback VPS IP path');
+          const parsed = new URL(imageUrl);
+          fetchUrl = `http://31.220.18.39:80${parsed.pathname}${parsed.search}${parsed.hash}`;
+          fetchHeaders['Host'] = parsed.host;
+          console.log(`[imgProxy] Retry with fallback URL: ${fetchUrl}`);
+          response = await axios.get(fetchUrl, {
+            headers: fetchHeaders,
+            timeout: 10000,
+            responseType: 'arraybuffer',
+            maxRedirects: 5,
+          });
+        } else if (fetchUrl.includes('minio:9000') && imageUrl.includes('minio.wilkiedevs.com')) {
           console.log('[imgProxy] MinIO internal failed (axios threw), falling back to public URL');
           fetchUrl = imageUrl;
           console.log(`[imgProxy] Retry with public URL: ${fetchUrl}`);
