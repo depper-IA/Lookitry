@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic';
 import { getPricingConfig, type PricingConfig } from '@/lib/pricing';
+import { organizationSchema, websiteSchema } from '@/lib/seo';
 
 // Carga dinámica para code splitting (SSR habilitado para buen FCP/LCP)
 const PremiumLanding = dynamic(
@@ -81,16 +82,15 @@ export default async function HomePage() {
       finalReviews.push(...mockReviews.slice(0, 5 - finalReviews.length));
   }
 
+  const baseOrgSchema = organizationSchema();
+  const baseWebSchema = websiteSchema();
+
   const jsonLd = {
-    // ... (rest of jsonLd remains the same)
     '@context': 'https://schema.org',
     '@graph': [
       {
-        '@type': 'Organization',
+        ...baseOrgSchema,
         '@id': `${BASE_URL}/#organization`,
-        name: 'Lookitry',
-        url: BASE_URL,
-        logo: { '@type': 'ImageObject', url: `${BASE_URL}/logo.svg` },
         contactPoint: {
           '@type': 'ContactPoint',
           telephone: '+57-310-543-6281',
@@ -100,10 +100,8 @@ export default async function HomePage() {
         },
       },
       {
-        '@type': 'WebSite',
+        ...baseWebSchema,
         '@id': `${BASE_URL}/#website`,
-        url: BASE_URL,
-        name: 'Lookitry',
         publisher: { '@id': `${BASE_URL}/#organization` },
         inLanguage: 'es',
       },

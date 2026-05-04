@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { fetchBlogPostBySlug, fetchRecentBlogPosts, getBlogShareImage } from '@/services/blog.service';
 import { BlogThemeWrapper } from '@/components/blog/BlogThemeWrapper';
 import BlogPostContent from '@/components/blog/BlogPostContent';
+import { articleSchema } from '@/lib/seo';
 
 interface BlogPostPageProps {
   params: {
@@ -53,8 +54,21 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const recentPosts = await fetchRecentBlogPosts(3, post.slug);
   const shareUrl = `https://lookitry.com/blog/${params.slug}`;
 
+  const schema = articleSchema({
+    title: post.title,
+    description: post.meta_description || post.excerpt,
+    publishedAt: post.published_at || post.created_at,
+    updatedAt: post.updated_at || post.published_at || post.created_at,
+    imageUrl: getBlogShareImage(post) || undefined,
+    authorName: 'Lookitry' // Assuming we don't have author field easily available, defaulting to Lookitry
+  });
+
   return (
     <BlogThemeWrapper>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <BlogPostContent 
         post={post} 
         recentPosts={recentPosts} 

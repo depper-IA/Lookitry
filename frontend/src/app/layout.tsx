@@ -121,6 +121,7 @@ style={
         {/* fb:app_id requerido por Facebook/WhatsApp scraper */}
         <meta property="fb:app_id" content="966242223397117" />
         <meta name="google-site-verification" content="F-LW3EGCNrjEhNaAT56Qrioyo4-UD2CRWYyqgS-sExE" />
+        <meta name="msvalidate.01" content="BING_VERIFICATION_CODE_HERE" />
         {/* OG fallback explícito para scrapers que no ejecutan JS */}
         <meta property="og:site_name" content="Lookitry" />
         <meta property="og:locale" content="es_CO" />
