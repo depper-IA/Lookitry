@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/*
+Disallow: /admin/*
+Disallow: /dashboard/*
+Disallow: /auth/*
+Disallow: /checkout/*
+Disallow: /trial-*
+
+Sitemap: https://lookitry.com/sitemap.xml

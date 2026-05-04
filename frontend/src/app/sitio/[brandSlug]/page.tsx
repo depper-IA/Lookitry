@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { MiniLanding } from '@/components/mini-landing/MiniLanding';
+import { brandPageSchema } from '@/lib/seo';
 
 // Forzar renderizado dinámico — nunca cachear esta página
 export const dynamic = 'force-dynamic';
@@ -225,5 +226,23 @@ export default async function TryOnPage({ params }: PageProps) {
     return <PaginaSuspendida brandName={brand.name} />;
   }
 
-  return <MiniLanding brandSlug={params.brandSlug} initialData={data} footerUrl={data.footer_brand_url} />;
+  const schema = brandPageSchema({
+    name: brand.name,
+    slug: brand.slug,
+    description: brand.brand_description,
+    logo: brand.logo,
+    city: brand.city,
+    country: brand.country,
+    phone: brand.phone
+  });
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      <MiniLanding brandSlug={params.brandSlug} initialData={data} footerUrl={data.footer_brand_url} />
+    </>
+  );
 }

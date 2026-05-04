@@ -881,6 +881,7 @@ LOOKITRY/
 │   │   ├── api/                # API routes internas
 │   │   └── pruebalo/, sitio/, embed/, marca/  # Páginas públicas
 │   ├── src/components/         # Componentes reutilizables (40+)
+│   ├── src/lib/seo/            # Generadores de esquemas JSON-LD (Auditoría SEO 2026)
 │   └── src/services/           # Clientes HTTP
 ├── backend/                     # Express API
 │   ├── src/controllers/        # Lógica de negocio
@@ -983,6 +984,23 @@ LOOKITRY/
 |-------|------|-------------|
 | `failed_login_attempts` | integer DEFAULT 0 | Contador de intentos fallidos |
 | `locked_until` | timestamptz | Timestamp hasta el cual la cuenta está bloqueada |
+
+---
+
+## 12. SEO & Crawlers (Auditoría 2026)
+
+### 12.1 Crawlers y Sitemaps
+- **robots.txt**: Configurado en `frontend/public/robots.txt`. Permite indexación general pero bloquea rutas internas (`/api`, `/admin`, `/dashboard`, etc.).
+- **sitemap.xml**: Generado dinámicamente vía Route Handler en `frontend/src/app/sitemap.xml/route.ts`. Extrae slugs de blogs y landing pages activas de Supabase con `changefreq` y `priority` optimizados.
+- **llms.txt**: Archivo de contexto optimizado para IA/LLMs en `frontend/src/app/llms.txt/route.ts`, siguiendo el estándar de llamaindex.
+
+### 12.2 Datos Estructurados (JSON-LD)
+- Sistema tipado ubicado en `frontend/src/lib/seo/`.
+- Generadores de esquemas implementados y exportados para inyección en `<script type="application/ld+json">`:
+  - `OrganizationSchema` y `WebSiteSchema` (Home)
+  - `ProductSchema` o `ServiceSchema` (Try-on Product)
+  - `ArticleSchema` (Blogs)
+  - `ProfessionalServiceSchema` (Brand Pages)
 
 ---
 
