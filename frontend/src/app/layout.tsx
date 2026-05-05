@@ -196,25 +196,27 @@ style={
         </noscript>
         {/* End Meta Pixel Code */}
         <ThemeProvider>
-          <ExitIntentProvider>
-            <Suspense fallback={null}>
-              <Analytics />
-            </Suspense>
-            {children}
-            <Suspense fallback={null}>
-              <RouteChrome />
-            </Suspense>
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                style: {
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)',
-                },
-              }}
-            />
-          </ExitIntentProvider>
+          <Suspense fallback={null}>
+            <ExitIntentProvider>
+              <Suspense fallback={null}>
+                <Analytics />
+              </Suspense>
+              {children}
+              <Suspense fallback={null}>
+                <RouteChrome />
+              </Suspense>
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  style: {
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)',
+                  },
+                }}
+              />
+            </ExitIntentProvider>
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>
