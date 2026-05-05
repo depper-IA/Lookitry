@@ -183,12 +183,15 @@ style={
           `}
         </Script>
         <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             height="1"
             width="1"
             style={{ display: 'none' }}
             src="https://www.facebook.com/tr?id=1496054805555549&ev=PageView&noscript=1"
             alt=""
+            loading="lazy"
+            decoding="async"
           />
         </noscript>
         {/* End Meta Pixel Code */}

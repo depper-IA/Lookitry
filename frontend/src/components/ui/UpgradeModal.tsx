@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { X, Sparkles, ArrowRight, Zap, Crown, Gift, Infinity as UnlimitedIcon, Palette, Smartphone } from 'lucide-react';
-import { getPricingConfig } from '@/lib/pricing';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -13,15 +12,19 @@ interface UpgradeModalProps {
 export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
   const [basicPrice, setBasicPrice] = useState<string>('...');
 
-  // Fetch dynamic price from pricing config
+  // Fetch dynamic price — usa la API route del backend, no Supabase directamente
   useEffect(() => {
     if (!isOpen) return;
-    getPricingConfig().then(config => {
-      const price = config.basic.precio_mensual_cop;
-      setBasicPrice(`$${price.toLocaleString('es-CO')} COP`);
-    }).catch(() => {
-      setBasicPrice('consulta');
-    });
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+    fetch(`${API_URL}/api/pricing-config`)
+      .then(r => r.ok ? r.json() : null)
+      .then((result: { ok: boolean; data: { id: string; data: { precio_mensual_cop?: number } }[] } | null) => {
+        const basicRow = result?.data?.find((r: { id: string }) => r.id === 'basic');
+        const price = basicRow?.data?.precio_mensual_cop;
+        if (price) setBasicPrice(`${price.toLocaleString('es-CO')} COP`);
+        else setBasicPrice('consulta');
+      })
+      .catch(() => setBasicPrice('consulta'));
   }, [isOpen]);
   // Keyboard Escape support
   useEffect(() => {
