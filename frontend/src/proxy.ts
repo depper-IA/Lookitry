@@ -189,11 +189,11 @@ export async function proxy(request: NextRequest) {
     // Limpiar siempre X-Frame-Options para que nuestro CSP no tenga conflictos
     response.headers.delete('X-Frame-Options');
 
-    const isProd = process.env.NODE_ENV === 'production';
     const scriptSrc = [
       "'self'",
       "'unsafe-inline'",
-      ...(isProd ? [] : ["'unsafe-eval'"]),
+      // Turnstile necesita 'unsafe-eval' para su worker interno en todos los entornos
+      "'unsafe-eval'",
       "https://challenges.cloudflare.com",
       "https://checkout.wompi.co",
       "https://accounts.google.com",
