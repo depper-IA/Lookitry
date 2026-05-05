@@ -27,6 +27,8 @@ services:
       - MINIO_ACCESS_KEY=Wilkiedevs
       - MINIO_SECRET_KEY=Travis2305*
       - MINIO_PUBLIC_URL=https://minio.wilkiedevs.com
+      # Gemini — para generar embeddings del Knowledge Base de Rebecca
+      - GEMINI_API_KEY=AIzaSyC0VSpvwBFT9l57e9lpYA4MCGd3I_BebvE
     volumes:
       - n8n_data:/home/node/.n8n
     networks:

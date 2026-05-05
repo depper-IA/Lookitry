@@ -136,10 +136,8 @@
     "telegram": {
       "type": "local",
       "command": [
-        "npx",
-        "-y",
-        "tsx",
-        "C:\\Users\\Matt\\Lookitry\\.opencode\\mcp-servers\\telegram-mcp\\src\\index.ts"
+        "node",
+        "C:\\Users\\Matt\\Lookitry\\.opencode\\mcp-servers\\telegram-mcp\\dist\\index.js"
       ],
       "enabled": true,
       "environment": {
@@ -150,10 +148,8 @@
     "n8n": {
       "type": "local",
       "command": [
-        "npx",
-        "-y",
-        "tsx",
-        "C:\\Users\\Matt\\Lookitry\\.opencode\\mcp-servers\\n8n-mcp-server\\src\\index.ts"
+        "node",
+        "C:\\Users\\Matt\\Lookitry\\.opencode\\mcp-servers\\n8n-mcp-server\\dist\\index.js"
       ],
       "enabled": true,
       "environment": {

@@ -132,6 +132,7 @@ const adminNav = [
       { href: '/admin/reviews', label: 'Reviews', icon: StarIcon },
       { href: '/admin/blog', label: 'Blog', icon: BookOpen },
       { href: '/admin/feedback', label: 'Feedback', icon: BellIcon },
+      { href: '/admin/knowledge', label: 'Knowledge Base', icon: Brain },
     ],
   },
   {
