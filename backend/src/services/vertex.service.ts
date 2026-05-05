@@ -1,4 +1,4 @@
-import { VertexAI, SafetySetting, HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold, types } from '@google/genai';
 
 // Configuration
 const VERTEX_PROJECT_ID = process.env.VERTEX_PROJECT_ID || 'gen-lang-client-0591001769';
@@ -27,19 +27,20 @@ export const VERTEX_MODELS = {
 export type VertexModelId = keyof typeof VERTEX_MODELS;
 
 // Singleton instance
-let vertexAIInstance: VertexAI | null = null;
+let genAIInstance: GoogleGenAI | null = null;
 
-function getVertexAI(): VertexAI {
-  if (!vertexAIInstance) {
+function getGenAI(): GoogleGenAI {
+  if (!genAIInstance) {
     const rawLocation = process.env.VERTEX_LOCATION || 'us-central1';
     const location = rawLocation === 'global' ? 'us-central1' : rawLocation;
-    
-    vertexAIInstance = new VertexAI({
+
+    genAIInstance = new GoogleGenAI({
+      vertexai: true,
       project: process.env.VERTEX_PROJECT_ID || 'gen-lang-client-0591001769',
       location: location,
     });
   }
-  return vertexAIInstance;
+  return genAIInstance;
 }
 
 export interface VertexGenerateOptions {
@@ -106,11 +107,10 @@ class VertexService {
    */
   async generateContent(options: VertexGenerateOptions): Promise<VertexGenerateResult> {
     const modelId = options.model || 'gemini-2.5-flash';
-    const vertexAI = getVertexAI();
+    const ai = getGenAI();
 
     try {
-      // First try using the Vertex AI SDK (requires ADC credentials)
-      // Clean up config to avoid sending undefined values that might cause API errors
+      // Clean up config to avoid sending undefined values
       const cleanConfig = options.generationConfig ? Object.fromEntries(
         Object.entries({
           temperature: options.generationConfig.temperature,
@@ -122,24 +122,30 @@ class VertexService {
         }).filter(([_, v]) => v !== undefined)
       ) : undefined;
 
-      const model = vertexAI.getGenerativeModel({
+      // Build request parameters
+      const requestParams: types.GenerateContentParameters = {
         model: modelId,
-        systemInstruction: options.systemInstruction ? {
-          role: 'system',
-          parts: options.systemInstruction.parts,
-        } : undefined,
-        generationConfig: cleanConfig && Object.keys(cleanConfig).length > 0 ? cleanConfig : undefined,
-        safetySettings: options.safetySettings as SafetySetting[] || undefined,
-      });
-
-      const result = await model.generateContent({
         contents: options.contents as any,
-      });
+      };
 
-      const response = result.response;
+      if (options.systemInstruction) {
+        requestParams.systemInstruction = {
+          parts: options.systemInstruction.parts,
+        };
+      }
+
+      if (cleanConfig && Object.keys(cleanConfig).length > 0) {
+        requestParams.config = cleanConfig as any;
+      }
+
+      if (options.safetySettings && options.safetySettings.length > 0) {
+        requestParams.safetySettings = options.safetySettings as any;
+      }
+
+      const result = await ai.models.generateContent(requestParams);
 
       return {
-        candidates: response.candidates?.map(candidate => ({
+        candidates: result.candidates?.map(candidate => ({
           content: {
             role: candidate.content?.role || 'model',
             parts: candidate.content?.parts?.map(part => ({
@@ -148,21 +154,21 @@ class VertexService {
           },
           finishReason: candidate.finishReason || 'STOP',
         })),
-        usageMetadata: response.usageMetadata ? {
-          promptTokenCount: response.usageMetadata.promptTokenCount || 0,
-          candidatesTokenCount: response.usageMetadata.candidatesTokenCount || 0,
-          totalTokenCount: response.usageMetadata.totalTokenCount || 0,
+        usageMetadata: result.usageMetadata ? {
+          promptTokenCount: result.usageMetadata.promptTokenCount || 0,
+          candidatesTokenCount: result.usageMetadata.candidatesTokenCount || 0,
+          totalTokenCount: result.usageMetadata.totalTokenCount || 0,
         } : undefined,
       };
     } catch (error: any) {
-      console.error(`[VertexService] Error generating content with Vertex AI, falling back to REST:`, error?.message || error);
+      console.error(`[VertexService] Error generating content with @google/genai, falling back to REST:`, error?.message || error);
 
-      // Fallback to Gemini REST API using GOOGLE_API_KEY if Vertex fails due to missing ADC
+      // Fallback to Gemini REST API using GOOGLE_API_KEY if Vertex fails
       const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
       if (apiKey) {
         try {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
-          
+
           const payload = {
             system_instruction: options.systemInstruction,
             contents: options.contents,
@@ -213,28 +219,32 @@ class VertexService {
    */
   async *streamGenerateContent(options: VertexGenerateOptions): AsyncGenerator<string> {
     const modelId = options.model || 'gemini-2.5-flash';
-    const vertexAI = getVertexAI();
+    const ai = getGenAI();
 
-    const model = vertexAI.getGenerativeModel({
+    const requestParams: types.GenerateContentParameters = {
       model: modelId,
-      systemInstruction: options.systemInstruction ? {
-        role: 'system',
+      contents: options.contents as any,
+    };
+
+    if (options.systemInstruction) {
+      requestParams.systemInstruction = {
         parts: options.systemInstruction.parts,
-      } : undefined,
-      generationConfig: options.generationConfig ? {
+      };
+    }
+
+    if (options.generationConfig) {
+      requestParams.config = {
         temperature: options.generationConfig.temperature,
         topP: options.generationConfig.topP,
         topK: options.generationConfig.topK,
         maxOutputTokens: options.generationConfig.maxOutputTokens,
         stopSequences: options.generationConfig.stopSequences,
-      } : undefined,
-    });
+      };
+    }
 
-    const streamResult = await model.generateContentStream({
-      contents: options.contents as any,
-    });
+    const streamResult = await ai.models.generateContentStream(requestParams);
 
-    for await (const chunk of streamResult.stream) {
+    for await (const chunk of streamResult) {
       const text = chunk.candidates?.[0]?.content?.parts?.[0]?.text;
       if (text) {
         yield text;

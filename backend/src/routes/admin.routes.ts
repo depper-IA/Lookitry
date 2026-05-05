@@ -295,4 +295,20 @@ router.delete('/widget-ip-whitelist/:id', requirePermission('settings'), deleteW
 router.get('/widget-ip-whitelist/check/:ip', requirePermission('settings'), checkWidgetIpWhitelist);
 router.post('/widget-ip-whitelist/refresh-cache', requirePermission('settings'), refreshWidgetIpWhitelistCache);
 
+// Knowledge Base (WhatsApp Agent — Rebecca)
+import {
+  getKnowledgeItems,
+  createKnowledgeItem,
+  updateKnowledgeItem,
+  deleteKnowledgeItem,
+  backfillEmbeddings,
+} from '../controllers/admin/knowledge.admin.controller';
+
+router.get('/knowledge', requirePermission('settings'), getKnowledgeItems);
+router.post('/knowledge', requirePermission('settings'), createKnowledgeItem);
+router.patch('/knowledge/:id', requirePermission('settings'), updateKnowledgeItem);
+router.delete('/knowledge/:id', requirePermission('settings'), deleteKnowledgeItem);
+// Backfill: regenera embeddings para todos los items sin embedding (correr una sola vez post-migración)
+router.post('/knowledge/backfill-embeddings', requirePermission('settings'), backfillEmbeddings);
+
 export default router;

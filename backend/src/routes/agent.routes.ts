@@ -6,6 +6,175 @@ import axios from 'axios';
 
 const router = Router();
 
+// === RAG: Lookitry Knowledge Search (Rebecca WhatsApp Agent) ===
+
+const GEMINI_API_KEY_AGENT = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY ?? '';
+const GEMINI_BASE_AGENT    = 'https://generativelanguage.googleapis.com/v1beta';
+
+/**
+ * POST /api/agent/knowledge/search
+ * Búsqueda semántica en el knowledge base de Rebecca.
+ * Llamar desde n8n con la pregunta del usuario para obtener contexto relevante.
+ *
+ * Body: { query: string, match_count?: number, category?: string, min_similarity?: number }
+ * Response: { results: [{id, category, title, content, similarity}], context_block: string }
+ */
+router.post('/knowledge/search', async (req: Request, res: Response) => {
+  try {
+    const {
+      query,
+      match_count    = 5,
+      category       = null,
+      min_similarity = 0.3,
+    } = req.body;
+
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
+      res.status(400).json({ error: 'query es requerido' });
+      return;
+    }
+
+    if (query.length > 500) {
+      res.status(400).json({ error: 'query demasiado larga (max 500 caracteres)' });
+      return;
+    }
+
+    let results: any[] = [];
+    let searchType = 'semantic';
+
+    // 1. Intentar búsqueda semántica con embeddings
+    if (GEMINI_API_KEY_AGENT) {
+      try {
+        const embRes = await fetch(
+          `${GEMINI_BASE_AGENT}/models/gemini-embedding-001:embedContent?key=${GEMINI_API_KEY_AGENT}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'models/gemini-embedding-001',
+              content: { parts: [{ text: query }] },
+              taskType: 'RETRIEVAL_QUERY',
+            }),
+          }
+        );
+
+        if (embRes.ok) {
+          const embJson = await embRes.json() as { embedding?: { values?: number[] } };
+          const embedding = embJson?.embedding?.values;
+
+          if (embedding && embedding.length === 768) {
+            const { data, error } = await supabaseAdmin.rpc('search_lookitry_knowledge', {
+              p_query_embedding: embedding,
+              p_match_count:     Math.min(match_count, 10),
+              p_category_filter: category || null,
+              p_min_similarity:  min_similarity,
+            });
+
+            if (!error && data?.length > 0) {
+              results = data;
+            }
+          }
+        }
+      } catch (embErr: any) {
+        console.warn('[Knowledge Search] Embedding falló, usando keyword fallback:', embErr.message);
+      }
+    }
+
+    // 2. Fallback a búsqueda por keyword si no hay resultados semánticos
+    if (results.length === 0) {
+      searchType = 'keyword';
+      let kbQuery = supabaseAdmin
+        .from('lookitry_knowledge')
+        .select('id, category, title, content')
+        .eq('is_active', true)
+        .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+        .limit(Math.min(match_count, 10));
+
+      if (category) kbQuery = kbQuery.eq('category', category);
+
+      const { data, error } = await kbQuery;
+      if (!error && data) {
+        results = data.map((r: any) => ({ ...r, similarity: 0 }));
+      }
+    }
+
+    // 3. Construir bloque de contexto listo para inyectar en el prompt de Rebecca
+    const contextBlock = results.length > 0
+      ? results
+          .map((r: any) => `### ${r.title}\n${r.content}`)
+          .join('\n\n')
+      : '';
+
+    res.json({
+      query,
+      search_type: searchType,
+      count: results.length,
+      results: results.map((r: any) => ({
+        id:         r.id,
+        category:   r.category,
+        title:      r.title,
+        content:    r.content,
+        similarity: r.similarity ?? 0,
+      })),
+      // Bloque listo para pegar en el system prompt de Rebecca
+      context_block: contextBlock
+        ? `## INFORMACIÓN DE LOOKITRY\n\n${contextBlock}`
+        : '',
+    });
+
+  } catch (err: any) {
+    console.error('[AgentRoutes] POST /knowledge/search error:', err);
+    res.status(500).json({ error: 'Error en búsqueda de knowledge', details: err.message });
+  }
+});
+
+/**
+ * GET /api/agent/knowledge/all
+ * Retorna todo el knowledge base activo como bloque de contexto.
+ * Útil para cargar el contexto completo de Rebecca al inicio de una conversación.
+ */
+router.get('/knowledge/all', async (_req: Request, res: Response) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('lookitry_knowledge')
+      .select('id, category, title, content')
+      .eq('is_active', true)
+      .order('category')
+      .order('title');
+
+    if (error) throw error;
+
+    const items = data || [];
+
+    // Agrupar por categoría para mejor legibilidad en el prompt
+    const grouped: Record<string, typeof items> = {};
+    for (const item of items) {
+      if (!grouped[item.category]) grouped[item.category] = [];
+      grouped[item.category].push(item);
+    }
+
+    const contextBlock = Object.entries(grouped)
+      .map(([cat, catItems]) => {
+        const catTitle = cat.charAt(0).toUpperCase() + cat.slice(1);
+        const content = catItems
+          .map((i: any) => `### ${i.title}\n${i.content}`)
+          .join('\n\n');
+        return `## ${catTitle}\n\n${content}`;
+      })
+      .join('\n\n---\n\n');
+
+    res.json({
+      count: items.length,
+      items,
+      context_block: contextBlock
+        ? `# CONOCIMIENTO DE LOOKITRY\n\n${contextBlock}`
+        : '',
+    });
+  } catch (err: any) {
+    console.error('[AgentRoutes] GET /knowledge/all error:', err);
+    res.status(500).json({ error: 'Error obteniendo knowledge base' });
+  }
+});
+
 // === RAG: Project Knowledge Search ===
 
 /**
