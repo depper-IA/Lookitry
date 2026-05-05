@@ -1,15 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { ExitIntentPopup } from './ExitIntentPopup';
 
 const EXIT_INTENT_STORAGE_KEY = 'exit_intent_captured';
 
+// Rutas donde el exit intent NO debe activarse
+const EXCLUDED_PREFIXES = ['/dashboard', '/admin', '/checkout', '/onboarding'];
+
 export function ExitIntentProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [showPopup, setShowPopup] = useState(false);
   const [hasTriggered, setHasTriggered] = useState(false);
 
+  const isExcluded = EXCLUDED_PREFIXES.some(prefix => pathname?.startsWith(prefix));
+
   useEffect(() => {
+    // No activar en dashboards, admin ni checkout
+    if (isExcluded) return;
+
     // Check if already captured in this session
     const alreadyCaptured = localStorage.getItem(EXIT_INTENT_STORAGE_KEY);
     if (alreadyCaptured) {
@@ -30,7 +40,7 @@ export function ExitIntentProvider({ children }: { children: React.ReactNode }) 
     return () => {
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [hasTriggered]);
+  }, [hasTriggered, isExcluded]);
 
   const handleClose = () => {
     setShowPopup(false);
@@ -41,6 +51,9 @@ export function ExitIntentProvider({ children }: { children: React.ReactNode }) 
     setShowPopup(false);
     setHasTriggered(true);
   };
+
+  // No renderizar el popup en rutas excluidas
+  if (isExcluded) return <>{children}</>;
 
   return (
     <>
