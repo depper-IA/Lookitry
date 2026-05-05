@@ -24,6 +24,13 @@ export const metadata: Metadata = {
     default: 'Lookitry — Probador virtual con IA para tu tienda online',
     template: '%s | Lookitry',
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-lk.ico', sizes: 'any' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
   description:
     'Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica. Intégralo en tu tienda en 10 minutos. Sin apps, sin desarrollo.',
   keywords: [
