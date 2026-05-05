@@ -25,10 +25,7 @@ export const metadata: Metadata = {
     template: '%s | Lookitry',
   },
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon-lk.ico', sizes: 'any' },
-    ],
+    icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
   description:
