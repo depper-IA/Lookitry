@@ -1,4 +1,4 @@
-import { GoogleGenAI, HarmCategory, HarmBlockThreshold, types } from '@google/genai';
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold, GenerateContentParameters } from '@google/genai';
 
 // Configuration
 const VERTEX_PROJECT_ID = process.env.VERTEX_PROJECT_ID || 'gen-lang-client-0591001769';
@@ -123,23 +123,25 @@ class VertexService {
       ) : undefined;
 
       // Build request parameters
-      const requestParams: types.GenerateContentParameters = {
+      const requestParams: GenerateContentParameters = {
         model: modelId,
         contents: options.contents as any,
       };
 
-      if (options.systemInstruction) {
-        requestParams.systemInstruction = {
-          parts: options.systemInstruction.parts,
-        };
-      }
+      requestParams.config = cleanConfig ? { ...cleanConfig } : {};
 
-      if (cleanConfig && Object.keys(cleanConfig).length > 0) {
-        requestParams.config = cleanConfig as any;
+      if (options.systemInstruction) {
+        requestParams.config.systemInstruction = {
+          parts: options.systemInstruction.parts,
+        } as any;
       }
 
       if (options.safetySettings && options.safetySettings.length > 0) {
-        requestParams.safetySettings = options.safetySettings as any;
+        requestParams.config.safetySettings = options.safetySettings as any;
+      }
+
+      if (Object.keys(requestParams.config).length === 0) {
+        delete requestParams.config;
       }
 
       const result = await ai.models.generateContent(requestParams);
@@ -221,25 +223,31 @@ class VertexService {
     const modelId = options.model || 'gemini-2.5-flash';
     const ai = getGenAI();
 
-    const requestParams: types.GenerateContentParameters = {
+    const requestParams: GenerateContentParameters = {
       model: modelId,
       contents: options.contents as any,
     };
 
+    requestParams.config = {};
+
     if (options.systemInstruction) {
-      requestParams.systemInstruction = {
+      requestParams.config.systemInstruction = {
         parts: options.systemInstruction.parts,
-      };
+      } as any;
     }
 
     if (options.generationConfig) {
-      requestParams.config = {
+      Object.assign(requestParams.config, {
         temperature: options.generationConfig.temperature,
         topP: options.generationConfig.topP,
         topK: options.generationConfig.topK,
         maxOutputTokens: options.generationConfig.maxOutputTokens,
         stopSequences: options.generationConfig.stopSequences,
-      };
+      });
+    }
+
+    if (Object.keys(requestParams.config).length === 0) {
+      delete requestParams.config;
     }
 
     const streamResult = await ai.models.generateContentStream(requestParams);

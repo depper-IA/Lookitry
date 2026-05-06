@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { receiveWebhook, getConversations, getConversationMessages, replyToConversation } from '../controllers/chat.controller';
-import { requireAdmin } from '../middleware/auth';
+import { adminAuthMiddleware } from '../middleware/adminAuth';
 
 const router = Router();
 
@@ -8,8 +8,8 @@ const router = Router();
 router.post('/webhook', receiveWebhook);
 
 // Admin endpoints
-router.get('/conversations', requireAdmin, getConversations);
-router.get('/conversations/:id', requireAdmin, getConversationMessages);
-router.post('/conversations/:id/reply', requireAdmin, replyToConversation);
+router.get('/conversations', adminAuthMiddleware, getConversations);
+router.get('/conversations/:id', adminAuthMiddleware, getConversationMessages);
+router.post('/conversations/:id/reply', adminAuthMiddleware, replyToConversation);
 
 export default router;
