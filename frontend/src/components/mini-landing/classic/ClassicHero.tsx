@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BrandData } from '../shared';
+import { BrandData, ImageUrlProvider } from '../shared';
 import { useLandingTheme, useContrastTheme, getCoverPresentation, isDarkColor, getContrastColor } from '../shared';
 import { SparklesIcon, StarIcon } from './Icons';
 
@@ -84,7 +84,13 @@ export function ClassicHero({ brand, primaryColor, secondaryColor, onScrollDown,
           {hasCover ? (
             <>
               <div className="absolute inset-0" style={{ backgroundColor: coverBaseColor }} />
-              <img src={brand.cover_image_url || ''} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" style={{ opacity: imageOpacity }} />
+              <ImageUrlProvider 
+                src={brand.cover_image_url || ''} 
+                alt={brand.name} 
+                className="absolute inset-0 w-full h-full object-cover" 
+                style={{ opacity: imageOpacity }} 
+                primaryColor={primaryColor}
+              />
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: coverBaseColor }}>
