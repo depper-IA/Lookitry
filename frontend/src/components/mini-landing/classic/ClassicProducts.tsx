@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { BrandData, ProductData } from '../shared';
+import { BrandData, ProductData, ImageUrlProvider } from '../shared';
 import { useLandingTheme, useContrastTheme, getSmartBorderColor } from '../shared';
 import { SparklesIcon } from './Icons';
 
@@ -74,16 +74,27 @@ export function ClassicProducts({ brand, primaryColor, secondaryColor, products,
           {filtered.map(product => (
             <article key={product.id} className="group relative rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:scale-[1.03]" style={{ backgroundColor: `${primaryColor}05`, border: `1px solid ${getSmartBorderColor(theme.productsBg)}` }}>
               {/* Image */}
-              <div className="aspect-[3/4] overflow-hidden bg-center bg-cover" style={{ backgroundImage: product.image_url ? `url(${product.image_url})` : undefined, backgroundColor: `${primaryColor}10` }}>
+              <ImageUrlProvider
+                src={product.image_url}
+                alt={product.name}
+                as="background"
+                className="aspect-[3/4] overflow-hidden bg-center bg-cover relative"
+                style={{ backgroundColor: `${primaryColor}10` }}
+                primaryColor={primaryColor}
+              >
                 {!product.image_url && (
-                  <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center absolute inset-0">
                     <span className="text-4xl" style={{ color: `${primaryColor}30` }}>👗</span>
                   </div>
                 )}
                 {/* Overlay on hover */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center" style={{ backgroundColor: `${primaryColor}90` }}>
                   <button
-                    onClick={() => onGenerate?.(product.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onGenerate?.(product.id);
+                    }}
                     className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold uppercase tracking-wider text-white hover:scale-105 transition-transform"
                     style={{ backgroundColor: '#fff', color: primaryColor }}
                   >
@@ -91,7 +102,7 @@ export function ClassicProducts({ brand, primaryColor, secondaryColor, products,
                     Probar IA
                   </button>
                 </div>
-              </div>
+              </ImageUrlProvider>
               {/* Info */}
               <div className="p-4 space-y-1">
                 <p className="text-xs font-bold uppercase tracking-widest truncate" style={{ color: localTheme.muted }}>{product.category}</p>

@@ -30,11 +30,8 @@ export function getProxiedImageUrl(src: string, plan?: string, download?: boolea
 export function getProxiedUrl(url: string): string {
   if (!url) return '';
   
-  // Whitelist: Solo nuestra infraestructura de almacenamiento (MinIO) carga directamente
-  // para aprovechar el ancho de banda del cliente y caché de navegador sin pasar por nuestro servidor.
-  const isInternalStorage = url.includes('minio.wilkiedevs.com') || url.includes('minio.lookitry.com');
-
-  if (isInternalStorage) {
+  // GCS URLs are already public and fast, no need to proxy
+  if (url.includes('storage.googleapis.com')) {
     return url;
   }
 
@@ -45,10 +42,10 @@ export function getProxiedUrl(url: string): string {
     const cleanPath = url.startsWith('/') ? url.slice(1) : url;
     // Si la ruta no incluye el bucket, lo añadimos (default 'images')
     const finalPath = cleanPath.startsWith('images/') ? cleanPath : `images/${cleanPath}`;
-    return `${minioBase}/${finalPath}`;
+    const fullUrl = `${minioBase}/${finalPath}`;
+    return `/api/img-proxy?url=${encodeURIComponent(fullUrl)}`;
   }
 
-  // Para CUALQUIER otro dominio externo (el WooCommerce del cliente), usamos nuestro proxy
-  // Esto garantiza que funcione en cualquier dominio nuevo sin tocar el código.
+  // Para CUALQUIER otro dominio externo (incluyendo nuestro MinIO para evitar CORS), usamos nuestro proxy
   return `/api/img-proxy?url=${encodeURIComponent(url)}`;
 }
