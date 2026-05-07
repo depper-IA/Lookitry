@@ -162,7 +162,7 @@ services:
       - MINIO_ROOT_USER=Wilkiedevs
       - MINIO_ROOT_PASSWORD=Travis2305*
     volumes:
-      - minio_data:/data
+      - /var/lib/docker/volumes/minio_data/_data:/data
     networks:
       - proxy
     command: server /data --console-address ":9001"
