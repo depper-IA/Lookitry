@@ -185,10 +185,14 @@ export async function GET(req: NextRequest) {
   }
 
   // Verificar que no apunte a IPs internas (prevención SSRF)
-  const { safe } = await resolveAndCheckIP(parsedUrl);
-  if (!safe) {
-    console.warn(`[Img Proxy] Intento de acceso a IP interna bloqueado: ${parsedUrl.hostname}`);
-    return new NextResponse('Acceso denegado', { status: 403 });
+  // Bypass SSRF for our known safe domains
+  const isSafeDomain = ['wilkiedevs.com', 'minio.wilkiedevs.com', 'lookitry.com', 'api.lookitry.com'].some(d => parsedUrl.hostname.endsWith(d));
+  if (!isSafeDomain) {
+    const { safe } = await resolveAndCheckIP(parsedUrl);
+    if (!safe) {
+      console.warn(`[Img Proxy] Intento de acceso a IP interna bloqueado: ${parsedUrl.hostname}`);
+      return new NextResponse('Acceso denegado', { status: 403 });
+    }
   }
 
   // Lista de User-Agents para evadir bloqueos de seguridad
