@@ -59,7 +59,7 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
           .single();
 
         if (error || !data) {
-          console.log(`[widgetSecurity] Bloqueado: Marca no encontrada (${brandSlug})`);
+          console.log(`[widgetSecurity] Bloqueado: Marca no encontrada (${brandSlug}). Error Supabase:`, JSON.stringify(error));
           return res.status(403).json({ error: 'Forbidden: Brand not found' });
         }
 
