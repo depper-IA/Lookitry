@@ -193,3 +193,5 @@ networks:
 volumes:
   n8n_data:
   minio_data:
+    name: minio_data
+    external: true
