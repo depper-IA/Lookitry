@@ -23,10 +23,18 @@ export const widgetRateLimiter = rateLimit({
 // 2. Validación dinámica de Origin
 export const validateWidgetOrigin = async (req: Request, res: Response, next: NextFunction) => {
   const origin = req.headers.origin;
+  console.log(`[widgetSecurity] Validando origin: ${origin} para ${req.params.brandSlug || 'global'}`);
 
   // En desarrollo local o postman, permitiremos la falta de origin solo si estamos en dev
   if (!origin) {
     if (process.env.NODE_ENV === 'development') {
+      return next();
+    }
+    console.log(`[widgetSecurity] Bloqueado: Falta Origin (Headers: ${JSON.stringify(req.headers)})`);
+    // PERMITIR peticiones internas desde el mismo servidor (Next.js SSR) si no hay origin pero es localhost
+    const isInternalIp = req.ip === '::1' || req.ip === '127.0.0.1' || req.ip?.includes('172.');
+    if (isInternalIp) {
+      console.log(`[widgetSecurity] Permitido por ser IP interna: ${req.ip}`);
       return next();
     }
     return res.status(403).json({ error: 'Forbidden: Missing Origin' });
@@ -51,6 +59,7 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
           .single();
 
         if (error || !data) {
+          console.log(`[widgetSecurity] Bloqueado: Marca no encontrada (${brandSlug})`);
           return res.status(403).json({ error: 'Forbidden: Brand not found' });
         }
 
@@ -93,7 +102,8 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
     const lookitryDomains = ['lookitry.com', 'www.lookitry.com', 'lookitry.vercel.app', 'localhost'];
     const isLookitryDomain = lookitryDomains.some(d => origin.includes(d));
 
-    if (!normalizedIncoming && !isLocalhost) {
+    if (!normalizedIncoming && !isLocalhost && !isLookitryDomain) {
+       console.log(`[widgetSecurity] Bloqueado: Origin inválido (${origin})`);
        return res.status(403).json({ error: 'Forbidden: Invalid Origin' });
     }
 
@@ -102,6 +112,7 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
     });
 
     if (!isAllowed && !isLocalhost && !isLookitryDomain) {
+      console.log(`[widgetSecurity] Bloqueado: Origin no permitido (${origin}). Permitidos: ${JSON.stringify(allowedOrigins)}`);
       return res.status(403).json({ error: 'Forbidden: Origin not allowed by brand configuration' });
     }
 
