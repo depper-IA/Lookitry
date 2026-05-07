@@ -89,6 +89,10 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
     const normalizedIncoming = normalizeOrigin(origin);
     const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
 
+    // Always allow Lookitry main domain as origin (for /marca/[slug] pages)
+    const lookitryDomains = ['lookitry.com', 'www.lookitry.com', 'lookitry.vercel.app', 'localhost'];
+    const isLookitryDomain = lookitryDomains.some(d => origin.includes(d));
+
     if (!normalizedIncoming && !isLocalhost) {
        return res.status(403).json({ error: 'Forbidden: Invalid Origin' });
     }
@@ -97,7 +101,7 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
       return normalizeOrigin(allowed) === normalizedIncoming;
     });
 
-    if (!isAllowed && !isLocalhost) {
+    if (!isAllowed && !isLocalhost && !isLookitryDomain) {
       return res.status(403).json({ error: 'Forbidden: Origin not allowed by brand configuration' });
     }
 
