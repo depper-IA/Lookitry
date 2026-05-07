@@ -51,10 +51,10 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
       if (cached) {
         allowedOrigins = JSON.parse(cached);
       } else {
-        // Consultar a Supabase el campo allowed_origins (o en jsonb social_links como fallback)
+        // Consultar a Supabase el campo social_links donde están los origenes permitidos
         const { data, error } = await supabaseAdmin
           .from('brands')
-          .select('allowed_origins, social_links')
+          .select('social_links')
           .eq('slug', brandSlug)
           .single();
 
@@ -63,9 +63,7 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
           return res.status(403).json({ error: 'Forbidden: Brand not found' });
         }
 
-        if (Array.isArray(data.allowed_origins)) {
-          allowedOrigins = data.allowed_origins;
-        } else if (data.social_links && Array.isArray((data.social_links as any).allowed_origins)) {
+        if (data.social_links && Array.isArray((data.social_links as any).allowed_origins)) {
           allowedOrigins = (data.social_links as any).allowed_origins;
         }
 
@@ -82,11 +80,10 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
       } else {
         const { data, error } = await supabaseAdmin
           .from('brands')
-          .select('allowed_origins, social_links');
+          .select('social_links');
           
         if (!error && data) {
           allowedOrigins = data.flatMap(d => {
-            if (Array.isArray(d.allowed_origins)) return d.allowed_origins;
             if (d.social_links && Array.isArray((d.social_links as any).allowed_origins)) return (d.social_links as any).allowed_origins;
             return [];
           }).filter(Boolean);
