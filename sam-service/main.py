@@ -48,8 +48,14 @@ async def predict(request: PredictRequest):
         predictor.set_image(input_image)
         
         h, w, _ = input_image.shape
-        input_point = np.array([[w // 2, h // 2]])
-        input_label = np.array([1])
+        
+        # Multiple points to capture the whole person (chest, waist, legs)
+        input_point = np.array([
+            [w // 2, int(h * 0.3)],  # upper body / chest
+            [w // 2, int(h * 0.5)],  # mid body / waist
+            [w // 2, int(h * 0.7)]   # lower body / legs
+        ])
+        input_label = np.array([1, 1, 1])
         
         masks, scores, logits = predictor.predict(
             point_coords=input_point,
