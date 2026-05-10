@@ -191,6 +191,14 @@ print("\n=== Preparando pantalla de mantenimiento ===")
 run(ssh, f"cd {REPO} && docker compose -f docker-compose.errors.yml up -d")
 
 if do_backend:
+    print("\n=== Rebuild SAM LOCAL ===")
+    build_cmd_sam = (
+        f"cd {REPO} && docker compose -f vps-docker-compose.yml build {build_flag} sam-local > docker_build_sam.log 2>&1 || "
+        f"{{ tail -20 docker_build_sam.log; exit 1; }}"
+    )
+    run(ssh, build_cmd_sam, timeout=600)
+    run(ssh, f"cd {REPO} && docker compose -f vps-docker-compose.yml up -d sam-local")
+
     print("\n=== Rebuild BACKEND ===")
     # Subir env file de Sammy si no existe en VPS
     sammy_env_local = os.path.join(
@@ -236,7 +244,7 @@ if do_frontend:
             check=False,
         )
         # Extraer solo variables NEXT_PUBLIC_* y permitidas para crear .env que docker-compose usa
-        ALLOWED_SERVER_KEYS = ["SUPABASE_SERVICE_KEY", "TURNSTILE_SECRET_KEY"]
+        ALLOWED_SERVER_KEYS = ["SUPABASE_SERVICE_KEY", "TURNSTILE_SECRET_KEY", "JWT_SECRET"]
         env_lines = []
         for line in frontend_env_content.splitlines():
             line = line.strip()
