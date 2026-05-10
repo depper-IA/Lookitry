@@ -47,6 +47,7 @@ services:
       # === SERVIDOR ===
       - NODE_ENV=production
       - PORT=3001
+      - SAM_LOCAL_URL=http://sam-local:8000
 
       # === N8N ===
       - N8N_WEBHOOK_URL=https://n8n.wilkiedevs.com/webhook/wPLypk7KhBcFLicX
@@ -178,6 +179,17 @@ services:
       - "traefik.http.routers.minio-console.tls.certresolver=mytlschallenge"
       - "traefik.http.routers.minio-console.service=minio-console"
       - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+    restart: unless-stopped
+
+  # ============================================================================
+  # SAM LOCAL - Segmentación de prendas (Alternativa a Vertex AI)
+  # ============================================================================
+  sam-local:
+    build:
+      context: ./sam-service
+    container_name: lookitry-sam-local
+    networks:
+      - proxy
     restart: unless-stopped
 
 # ============================================================================
