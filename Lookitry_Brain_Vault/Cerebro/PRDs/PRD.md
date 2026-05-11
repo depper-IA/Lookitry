@@ -42,7 +42,7 @@
 
 | Producto | Descripción |
 |----------|-------------|
-| **Créditos extra** | Paquetes de generaciones adicionales comprables por separado (tabla `addon_packages`). Se descuentan del `extra_credits_balance` de la marca. |
+| **Créditos extra** | Paquetes de generaciones adicionales comprables por separado (tabla `addon_packages`). Se descartan del `extra_credits_balance` de la marca. |
 
 ### 2.5 Plan ENTERPRISE
 
@@ -130,6 +130,57 @@
 - **Dashboard**: Mission Control (`/mission-control/agents`) con polling de 30s
 - **Colaboraciones**: Pixel+Melissa (frontend), Kira+Cipher (seguridad), Nadia+Marlo (datos)
 
+### 3.9 Pipeline de Try-On con Vertex AI
+- **Motor primario**: Google Vertex AI — SAM 2 (segmentación) + Imagen 3 (inpainting) + Gemini 2.5 Flash Image (Nano Banana)
+- **Segmentación local**: MobileSAM (Python/FastAPI en `sam-service/`) como primera opción antes de Vertex
+- **Fallback automático**: n8n cuando Vertex falla
+- **Compresión de imágenes**: `image-compression.service.ts` comprime selfie + producto (max 1024px, JPEG 85%) antes de enviar a n8n o Vertex
+- **Flujo**: SAM Local → SAM Vertex (fallback) → Imagen 3 / Nano Banana → MinIO → Supabase
+- **Detalle técnico completo**: Ver [[TECH_STACK]] sección 7.0
+
+### 3.10 Knowledge Base de Rebecca + RAG
+- **Tabla**: `lookitry_knowledge` con embeddings pgvector (768-dim, Gemini Embedding 001)
+- **Admin UI**: `/admin/knowledge` — CRUD completo con categorías, toggle activo, búsqueda
+- **Categorías**: planes, features, faq, proceso, contacto
+- **Búsqueda semántica**: `POST /api/agent/knowledge/search` con fallback a keyword
+- **Integración Rebecca**: n8n llama al endpoint de búsqueda para inyectar contexto en el system prompt
+- **Backfill**: `KnowledgeEmbeddingService.backfillMissing()` para items sin embedding
+- **Detalle técnico completo**: Ver [[TECH_STACK]] sección 6.3 y 7.0b
+
+### 3.11 Sistema de Chat WhatsApp con Supervisión Humana
+- **Tablas**: `lead_conversations`, `lead_messages`, `lead_attachments`
+- **Webhook**: `POST /api/chat/webhook` recibe mensajes de WhatsApp (YCloud)
+- **Queue**: `ChatQueueService` encola mensajes en Redis (`queue:chat_messages`)
+- **Admin UI**: `/admin/chat` — lista de conversaciones + hilo de mensajes + respuesta manual
+- **Flujo**: WhatsApp → webhook → Redis queue → Rebecca (MiniMax) → respuesta automática
+- **Supervisión**: Admin puede ver todas las conversaciones y responder manualmente
+
+### 3.12 AI Product Descriptor Polimórfico
+- **Motor**: Vertex AI Gemini 2.5 Flash (reemplaza proxy a n8n)
+- **Patrón**: Strategy Pattern con formatters por categoría (Clothing, Accessory, Footwear)
+- **Validación**: Zod con unión discriminada por `product_type`
+- **Endpoint**: `POST /api/ai/describe-product`
+- **Soporte multimodal**: Acepta `image_url` para análisis visual del producto
+- **Rollback**: Código n8n preservado como bloque comentado en `products.controller.ts`
+- **Detalle técnico completo**: Ver [[TECH_STACK]] sección 7.0d
+
+### 3.13 Widget Security
+- **Rate Limiting Redis**: 100 requests / 15 min por IP
+- **Validación de Origin**: Verifica `brands.social_links.allowed_origins` con cache Redis (1h)
+- **Siempre permitidos**: dominios de Lookitry, localhost, IPs internas (Next.js SSR)
+
+### 3.14 Leads Públicos
+- **Endpoint**: `POST /api/leads/public` — captura leads desde formularios de contacto y post-demo modal
+- **Upsert por email**: Si el email ya existe, actualiza en lugar de duplicar
+- **Fuentes**: `organic_contact` (formulario de contacto), `post_demo_capture` (modal post-demo)
+- **Validación**: nombre, email, nombre_negocio, tipo_negocio, teléfono (opcional), mensaje (opcional)
+
+### 3.15 GCP MCP Server
+- **Ubicación**: `mcp-gcp/` — servidor MCP Node.js para Google Cloud Platform
+- **Herramientas GCS**: `gcp_storage_list_buckets`, `gcp_storage_list_bucket_contents`, `gcp_storage_get_bucket_metadata`
+- **Herramientas Compute**: `gcp_compute_list_instances`, `gcp_compute_get_instance`, `gcp_compute_list_zones`
+- **Auth**: Service Account JSON, `GOOGLE_APPLICATION_CREDENTIALS`, o ADC
+
 ---
 
 ## 4. Flujos Principales
@@ -148,14 +199,19 @@
 4. Redirección a `/register/google-setup` para completar perfil.
 5. Acceso al dashboard tras onboarding.
 
-### 4.3 Flujo de Try-On (IA)
+### 4.3 Flujo de Try-On (IA) — Pipeline Nativo Vertex AI
 1. Usuario sube selfie en el widget.
 2. Backend valida la solicitud y encola el trabajo en una **cola de Redis**.
-3. Un **Worker de segundo plano** procesa la cola, gestiona la concurrencia y dispara el Webhook `/webhook/tryon` en n8n (ID: `wPLypk7KhBcFLicX`).
-4. n8n procesa con IA usando reglas de prompt por categoría (`prompt-rules.ts`).
-5. n8n actualiza Supabase con el resultado.
-6. Frontend hace **polling** hasta que `status = SUCCESS`.
-7. Usuario puede reportar error (feedback con embedding pgvector para RAG).
+3. Un **Worker de segundo plano** procesa la cola, gestiona la concurrencia.
+4. **Compresión de imágenes**: selfie + producto comprimidos a max 1024px, JPEG 85% via `image-compression.service.ts`.
+5. **SAM Local** (MobileSAM FastAPI en `sam-service/`) genera la máscara de segmentación.
+   - Si falla → **SAM Vertex AI** como fallback.
+6. **Vertex AI Imagen 3** (inpainting con máscara) o **Gemini 2.5 Flash Image** (Nano Banana, multimodal) genera el resultado.
+   - Si Vertex falla → **n8n** como fallback final (webhook `wPLypk7KhBcFLicX`).
+7. Imagen resultado guardada en MinIO, Supabase actualizado con `status = SUCCESS`.
+8. Frontend hace **polling** hasta que `status = SUCCESS`.
+9. Usuario puede reportar error (feedback con embedding pgvector para RAG).
+- **Detalle del pipeline**: Ver [[TECH_STACK]] sección 7.0
 
 ### 4.4 Flujo de Pago (Wompi)
 1. Usuario selecciona plan en checkout.
@@ -226,6 +282,7 @@
 ---
 
 ## 5. Reglas de Negocio Clave
+
 - **Account Lockout**: 5 intentos fallidos de login = 15 min de bloqueo (campo `locked_until`)
 - **Mini-landing**: Requiere plan activo. Se suspende si expira. Período de gracia de 90 días (`landing_suspended_at`).
 - **Upgrade**: Siempre con prorrateo. Preview disponible antes de pagar.
@@ -337,11 +394,46 @@
 - `/api/payment-settings/public`
 - `/health`
 
+### 6.14 Vertex AI
+- `/api/vertex/models` (GET) — Lista modelos disponibles
+- `/api/vertex/generate` (POST) — Genera contenido con Vertex AI
+- `/api/vertex/stream` (POST) — Streaming de contenido con Vertex AI
+
+### 6.15 AI Descriptor
+- `/api/ai/describe-product` (POST) — Genera descripción de producto con Gemini 2.5 Flash
+
+### 6.16 Chat WhatsApp
+- `/api/chat/webhook` (POST) — Recibe mensajes de WhatsApp (YCloud)
+- `/api/chat/conversations` (GET) — Lista conversaciones (admin)
+- `/api/chat/conversations/:id` (GET) — Mensajes de una conversación
+- `/api/chat/conversations/:id/reply` (POST) — Respuesta manual del admin
+
+### 6.17 Agent / Knowledge RAG
+- `/api/agent/knowledge/search` (POST) — Búsqueda semántica en knowledge base de Rebecca
+- `/api/agent/knowledge/all` (GET) — Todo el knowledge base activo
+- `/api/agent/rag/search` (POST) — Búsqueda en Project Knowledge
+- `/api/agent/rag/stats` (GET) — Estadísticas de documentos indexados
+- `/api/agent/rag/list` (GET) — Lista documentos indexados
+- `/api/agent/rag/index` (POST) — Indexa documento manualmente
+- `/api/agent/activity` (POST/PUT) — Registro de actividad de agentes
+- `/api/agent/activities` (GET) — Consulta actividades con filtros
+- `/api/agent/stats` (GET) — Estadísticas agregadas de agentes
+- `/api/agent/heartbeat` (POST) — Heartbeat de agente
+- `/api/agent/alive` (GET) — Agentes activos
+
+### 6.18 Leads Públicos
+- `/api/leads/public` (POST) — Captura lead desde formulario público
+- `/api/leads/public/check` (GET) — Verifica si email ya existe como lead
+
+### 6.19 Admin Knowledge
+- `/api/admin/knowledge` (GET) — Lista items del knowledge base con filtros
+- `/api/admin/knowledge` (POST) — Crea item
+- `/api/admin/knowledge/:id` (PATCH) — Edita item / toggle activo
+- `/api/admin/knowledge/:id` (DELETE) — Elimina item
+
 ---
 
-##不走
-
-## Issues Conocidos (Abril 2026)
+## Issues Conocidos
 
 | Issue | Severidad | Estado |
 |-------|-----------|--------|
@@ -349,9 +441,23 @@
 | Precios inconsistentes /terminos vs /planes | CRÍTICO | ✅ Arreglado |
 | URLs 404 en sitemap | ALTO | ✅ Arreglado (redirecciones) |
 | Trial confundidor ($20.000 vs gratis) | ALTO | ✅ Arreglado |
-| Sin skeleton loaders | MEDIO | ⚠️ Pendiente |
+| Sin skeleton loaders | MEDIO | ✅ Arreglado (LandingSkeleton, ProductSkeleton) |
 | Testimoniales mock | MEDIO | ⚠️ Pendiente |
+| SAM Local sin GPU en VPS | ALTO | ⚠️ Pendiente (corre en CPU, lento) |
+| Vertex SAM 2 Endpoint no configurado en prod | ALTO | ⚠️ Pendiente (requiere deploy en Vertex AI) |
+| Chat queue worker no implementado en producción | MEDIO | ⚠️ Pendiente |
 
 ---
 
-**Última actualización:** Abril 2026.
+## Referencias Cruzadas
+
+| Documento | Contenido |
+|-----------|-----------|
+| [[TECH_STACK]] | Stack técnico completo, librerías, DB schema, arquitectura de flujos IA, infra, URLs |
+| [[DESIGN]] | Sistema de diseño (colores, tipografía, componentes, estados UI) |
+| [[AGENTS]] | Configuración del equipo de agentes IA |
+| [[REGLAS_IMPORTANTES]] | Reglas operativas del proyecto |
+
+---
+
+**Última actualización:** Mayo 2026.

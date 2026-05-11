@@ -77,16 +77,16 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
   --bg-sidebar-hover; /* Hover en sidebar */
   --bg-header;        /* Fondo del header sticky */
   --bg-hover;         /* Hover genérico */
-  
+
   /* Bordes */
   --border-color;
-  
+
   /* Texto */
   --text-primary;     /* Texto principal */
   --text-secondary;   /* Texto secundario */
   --text-muted;       /* Texto muy sutil */
   --text-sidebar;     /* Texto en sidebar */
-  
+
   /* Sombras */
   --shadow-header;    /* Sombra del header */
 }
@@ -181,7 +181,9 @@ footer .social-btn:hover {
 }
 ```
 
-### 7.4 Sitemap - Páginas Públicas
+---
+
+## 8. Sitemap - Páginas Públicas
 
 | URL | Priority | Frecuencia |
 |-----|----------|------------|
@@ -206,7 +208,7 @@ footer .social-btn:hover {
 | `/aviso-legal` | 0.4 | yearly |
 | `/cookies` | 0.4 | yearly |
 
-### 7.4 Páginas NO Indexadas (No en sitemap)
+### Páginas NO Indexadas (No en sitemap)
 - `/dashboard/*`
 - `/admin/*`
 - `/checkout`
@@ -224,28 +226,28 @@ footer .social-btn:hover {
 
 ---
 
-## 8. Componentes Clave
+## 9. Componentes Clave
 
-### 8.1 Autenticación
+### 9.1 Autenticación
 - `RegisterForm.tsx` — Registro con Turnstile
 - `LoginForm.tsx` — Login
 - `IdleTimer.tsx` — Timer de sesión
 - `GoogleAuthButton.tsx` — Botón Google Sign-In
 
-### 8.2 Landing
+### 9.2 Landing
 - `LandingNav.tsx` — Navegación
 - `LandingFooter.tsx` — Footer
 - `PremiumLanding.tsx` — Landing premium
 - `LandingPricing.tsx` — Sección de precios
 
-### 8.3 Try-On
+### 9.3 Try-On
 - `TryOnWidget.tsx` — Widget de prueba virtual
 - `SelfieUploader.tsx` — Subida de selfie
 - `ResultDisplay.tsx` — Resultado
 - `GenerationLoader.tsx` — Loader durante generación
 - `LiveTryOnButton.tsx` — Botón try-on en vivo
 
-### 8.4 Dashboard
+### 9.4 Dashboard
 - `DashboardLayout.tsx` — Layout con sidebar
 - `UpgradeModal.tsx` — Modal de upgrade
 - `ProductList.tsx` — Lista de productos
@@ -261,7 +263,7 @@ footer .social-btn:hover {
 - `TrialBanner.tsx` — Banner de trial
 - `ProUpgradeBanner.tsx` — Banner de upgrade a PRO
 
-### 8.5 Pagos y Checkout
+### 9.5 Pagos y Checkout
 - `WompiButton.tsx` — Botón de pago Wompi
 - `StepProgress.tsx` — Progress en flujos multi-step
 - `CheckoutHeader.tsx` — Header del checkout
@@ -270,34 +272,24 @@ footer .social-btn:hover {
 - `PaymentMethodStep.tsx` — Paso de método de pago
 - `OrderSummary.tsx` — Resumen de orden
 - `CouponInput.tsx` — Input de cupón de descuento
-- `ReferralInput.tsx` — Input de código de referido para asociar una marca referida; el reward vigente es de 500 créditos extra para el referente
+- `ReferralInput.tsx` — Input de código de referido
 
-### 8.6 Mini-Landing
+### 9.6 Mini-Landing
 - `MiniLanding.tsx` — Componente principal
 - `TemplateClassic.tsx`
 - `TemplateEditorial.tsx`
-- `TemplateModerno.tsx` (antes TemplateProbador)
+- `TemplateModerno.tsx`
 - `TemplateBare.tsx`
 
-### 8.7 Blog
+### 9.7 Blog
 - `BlogList.tsx` — Lista de posts
 - `BlogCard.tsx` — Card de post individual
 - `BlogShareRail.tsx` — Barra de compartir en redes
 
-### 8.8 Admin
+### 9.8 Admin
 - `EnterpriseCalculator.tsx` — Calculadora de plan enterprise
 - `ConfirmDialog.tsx` — Diálogo de confirmación
 - `AdminNotifications.tsx` — Panel de notificaciones admin
-
-### 8.9 Widget Templates
-- `TemplateBare` — Minimal, básico
-- `TemplateMinimalTopBar` — Top bar minimal
-- `TemplateModernSidebar` — Sidebar moderno
-- `TemplateBoldProStudio` — Bold Pro Studio
-- `TemplateLandingEmbed` — Para embebidos en landing pages
-- `TemplateShowcase` — Showcase de producto con gallery
-
-### 8.10 Admin y Mission Control
 - `MissionControl.tsx` — Dashboard central de métricas
 - `AgentDetailModal.tsx` — Modal de detalle de agente
 - `AdminAuditLog.tsx` — Log de auditoría de acciones admin
@@ -305,96 +297,66 @@ footer .social-btn:hover {
 - `LoginAuditTable.tsx` — Tabla de auditoría de login
 - `EmailCampaignManager.tsx` — Gestor de campañas de email
 - `LeadPipelineTable.tsx` — Pipeline de leads con estados
-- `EnterpriseCalculator.tsx` — Calculadora de plan enterprise
-- `ConfirmDialog.tsx` — Diálogo de confirmación
-- `AdminNotifications.tsx` — Panel de notificaciones admin
+
+### 9.9 Widget Templates
+- `TemplateBare` — Minimal, básico
+- `TemplateMinimalTopBar` — Top bar minimal
+- `TemplateModernSidebar` — Sidebar moderno
+- `TemplateBoldProStudio` — Bold Pro Studio
+- `TemplateLandingEmbed` — Para embebidos en landing pages
+- `TemplateShowcase` — Showcase de producto con gallery
 
 ---
 
-## 9. Templates de Widget
+## 10. Estados de UI — Colores
 
-| Template | Descripción |
-|----------|-------------|
-| `TemplateBare` | Minimal, básico |
-| `TemplateMinimalTopBar` | Top bar minimal |
-| `TemplateModernSidebar` | Sidebar moderno |
-| `TemplateBoldProStudio` | Bold Pro Studio |
-| `TemplateLandingEmbed` | Para embebidos en landing pages |
-| `TemplateShowcase` | Showcase de producto con gallery |
-
----
-
-## 10. UI States
+> Los valores de los estados (active, pending, failed, etc.) están definidos en [[PRD]]. Aquí solo se definen los colores visuales.
 
 ### 10.1 Estados de Suscripción
-| Estado | Descripción |
-|--------|-------------|
-| `active` | Suscripción activa |
-| `expiring_soon` | Por expirar |
-| `expired` | Expirada |
-| `suspended` | Suspendida |
-| `trial` | Período de prueba |
+| Estado | Color | Hex |
+|--------|-------|-----|
+| `active` | Verde | `#10b981` |
+| `expiring_soon` | Ámbar | `#f59e0b` |
+| `expired` | Rojo | `#ef4444` |
+| `suspended` | Gris | `#6b7280` |
+| `trial` | Violeta | `#6366f1` |
 
 ### 10.2 Estados de Generación
-| Estado | Descripción |
-|--------|-------------|
-| `PENDING` | Procesando |
-| `SUCCESS` | Exitosa |
-| `FAILED` | Fallida |
+| Estado | Color | Hex |
+|--------|-------|-----|
+| `PENDING` | Ámbar | `#f59e0b` |
+| `SUCCESS` | Verde | `#10b981` |
+| `FAILED` | Rojo | `#ef4444` |
 
 ### 10.3 Estados de Pago
-| Estado | Descripción |
-|--------|-------------|
-| `pending` | Pago pendiente |
-| `completed` | Pago completado |
-| `failed` | Pago fallido |
-| `refunded` | Reembolsado |
+| Estado | Color | Hex |
+|--------|-------|-----|
+| `pending` | Ámbar | `#f59e0b` |
+| `completed` | Verde | `#10b981` |
+| `failed` | Rojo | `#ef4444` |
+| `refunded` | Gris | `#6b7280` |
 
-### 10.4 Estados de Plan Change Request
-| Estado | Descripción |
-|--------|-------------|
-| `pending` | Solicitud pendiente |
-| `processing` | En proceso |
-| `completed` | Completada |
-| `failed` | Fallida |
+### 10.4 Estados de Leads
+| Estado | Color | Hex |
+|--------|-------|-----|
+| `NEW` | Azul | `#3b82f6` |
+| `CONTACTED` | Cyan | `#06b6d4` |
+| `QUALIFIED` | Violeta | `#8b5cf6` |
+| `INTERESTED` | Naranja | `#f97316` |
+| `CONVERTED` | Verde | `#22c55e` |
+| `LOST` | Gris | `#6b7280` |
 
-### 10.5 Estados de Leads
-| Estado | Descripción |
-|--------|-------------|
-| `NEW` | Lead nuevo |
-| `CONTACTED` | Contactado |
-| `QUALIFIED` | Calificado |
-| `INTERESTED` | Interesado |
-| `CONVERTED` | Convertido a cliente |
-| `LOST` | Perdido |
+### 10.5 Estados de Agentes
+| Estado | Color | Hex |
+|--------|-------|-----|
+| `online` | Verde | `#10b981` |
+| `busy` | Ámbar | `#f59e0b` |
+| `offline` | Gris | `#6b7280` |
 
-### 10.6 Estados de Blog
-| Estado | Descripción |
-|--------|-------------|
-| `draft` | Borrador |
-| `pending` | Pendiente de procesamiento |
-| `processing` | Procesando (n8n) |
-| `published` | Publicado |
-| `failed` | Fallido |
+---
 
-### 10.7 Estados de Outreach
-| Estado | Descripción |
-|--------|-------------|
-| `PENDING` | Pendiente |
-| `SENT` | Enviado |
-| `DELIVERED` | Entregado |
-| `OPENED` | Abierto |
-| `REPLIED` | Respondido |
-| `FAILED` | Fallido |
+## 11. Páginas de Error y Estado
 
-### 10.8 Estados de Agentes
-| Estado | Descripción |
-|--------|-------------|
-| `online` | Disponible |
-| `busy` | Ocupado (trabajando) |
-| `offline` | Desconectado |
-
-### 10.9 Páginas de Error y Estado
 | Página | Archivo | Estándar de Diseño |
 |--------|---------|---------------------|
 | **404 Not Found** | `not-found.tsx` | Branding central, soporte Light/Dark, `pt-40` para Navbar. |
@@ -406,7 +368,7 @@ footer .social-btn:hover {
 
 ---
 
-## 11. Animaciones y Transiciones
+## 12. Animaciones y Transiciones
 
 - Usar **Framer Motion** para transiciones
 - GSAP disponible (`@gsap/react`, `gsap`)
@@ -414,7 +376,7 @@ footer .social-btn:hover {
 
 ---
 
-## 12. Responsive
+## 13. Responsive
 
 - **Regla:** Toda nueva vista debe estar 100% responsive
 - Mobile-first approach recomendado
@@ -422,8 +384,17 @@ footer .social-btn:hover {
 
 ---
 
-##不走
+## Referencias Cruzadas
+
+| Documento | Contenido |
+|-----------|-----------|
+| [[PRD]] | Lógica de negocio, features, flujos, APIs, reglas de negocio |
+| [[TECH_STACK]] | Stack técnico, librerías, DB schema, arquitectura IA |
+| [[AGENTS]] | Configuración del equipo de agentes IA |
+| [[REGLAS_IMPORTANTES]] | Reglas operativas del proyecto |
+
+---
 
 Este documento define el sistema de diseño de Lookitry. Cualquier nuevo componente o página debe seguir estas reglas.
 
-**Última actualización:** Abril 2026 - v2.0 (añadidos Social OS, Mission Control, estados de leads/outreach/agentes)
+**Última actualización:** Mayo 2026 - v2.1 (deduplicado con PRD y TECH_STACK)
