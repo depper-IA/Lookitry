@@ -33,8 +33,11 @@ Thumbs.db
 *.swp
 *.swo
 
-# TypeScript
-*.tsbuildinfo
+# Credenciales y secrets (nunca subir)
+gen-lang-client-*.json
+service-account*.json
+*.pem
+*.key
 
 # Coverage
 coverage/
