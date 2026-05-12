@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, createContext, useContext, useRef } from 'react';
 import Image from 'next/image';
+import { getProxiedUrl } from '@/utils/imageProxy';
 
 // ── Tipos compartidos ─────────────────────────────────────────────────────────
 export interface BrandData {
@@ -36,6 +37,8 @@ export interface BrandData {
   cover_overlay_opacity?: number | null;
   show_brand_name?: boolean | null;
   header_color?: string | null;
+  whatsapp_number?: string | null;
+  support_email?: string | null;
   landing_steps?: {
     select_label?: string | null;
     select_desc?: string | null;
@@ -116,6 +119,22 @@ export function getSmartBorderColor(color?: string | null): string {
   return isDarkColor(color) ? 'rgba(255,255,255,0.08)' : '#f3f4f6';
 }
 
+export const CSS_COLOR_MAP: Record<string, string> = {
+  blanco: 'bg-white', negro: 'bg-black', rojo: 'bg-red-500', azul: 'bg-blue-500',
+  verde: 'bg-emerald-500', amarillo: 'bg-yellow-500', gris: 'bg-gray-500', rosa: 'bg-pink-500',
+  morado: 'bg-purple-500', naranja: 'bg-orange-500', beige: 'bg-orange-50', marron: 'bg-amber-900',
+  marrón: 'bg-amber-900', celeste: 'bg-sky-400', vino: 'bg-rose-900', navy: 'bg-blue-900',
+  white: 'bg-white', black: 'bg-black', red: 'bg-red-500', blue: 'bg-blue-500',
+  green: 'bg-emerald-500', yellow: 'bg-yellow-500', gray: 'bg-gray-500', pink: 'bg-pink-500',
+  purple: 'bg-purple-500', orange: 'bg-orange-500', brown: 'bg-amber-900',
+};
+
+export function getCssColor(val: string) {
+  const normalized = val.toLowerCase().trim();
+  if (normalized.startsWith('#')) return normalized;
+  return CSS_COLOR_MAP[normalized] || null;
+}
+
 export function getSmartOverlayColor(color?: string | null): string {
   if (!color) return 'rgba(255,255,255,0.02)';
   return isDarkColor(color) ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
@@ -142,8 +161,8 @@ export function getContrastTheme(bg: string, primaryColor?: string): ContrastThe
   const border = isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6';
   const surface = isDark ? 'rgba(255,255,255,0.05)' : '#ffffff';
   const surfaceHover = isDark ? 'rgba(255,255,255,0.10)' : '#f9fafb';
-  const ctaBg = primaryColor || '#FF5C3A';
-  const ctaText = isDarkColor(ctaBg) ? '#ffffff' : '#ffffff';
+  const ctaBg = primaryColor || (isDark ? '#ffffff' : '#111111');
+  const ctaText = isDarkColor(ctaBg) ? '#ffffff' : '#111111';
   const overlay = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
   return { bg, isDark, text, muted, border, surface, surfaceHover, ctaBg, ctaText, overlay };
 }
@@ -178,6 +197,9 @@ export interface LandingTheme {
   surface: string;
   surfaceHover: string;
   overlay: string;
+  // Cards
+  cardText: string;
+  cardMuted: string;
   // CTA
   ctaBg: string;
   ctaText: string;
@@ -186,10 +208,14 @@ export interface LandingTheme {
   isDarkHero: boolean;
   isDarkProducts: boolean;
   isDarkFooter: boolean;
+  // Colores efectivos de la marca (para uso directo en vez de recalcular)
+  primary: string;
+  secondary: string;
 }
 
 export function getLandingTheme(brand: BrandData): LandingTheme {
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#FF5C3A';
+  const secondary = brand.social_links?._landing_secondary || brand.secondary_color || primary;
 
   // Fondos con fallbacks
   const heroBg = brand.cover_bg_color || '#f9f8f6';
@@ -214,6 +240,7 @@ export function getLandingTheme(brand: BrandData): LandingTheme {
   const heroMuted = isDarkHero ? 'rgba(255,255,255,0.72)' : '#6b7280';
   const productsMuted = isDarkProducts ? 'rgba(255,255,255,0.72)' : '#6b7280';
   const footerMuted = isDarkFooter ? 'rgba(255,255,255,0.72)' : '#6b7280';
+  const cardMuted = isDarkColor(cardBg) ? 'rgba(255,255,255,0.72)' : '#6b7280';
 
   // Textos terciarios
   const heroMutedLight = isDarkHero ? 'rgba(255,255,255,0.4)' : '#9ca3af';
@@ -227,7 +254,7 @@ export function getLandingTheme(brand: BrandData): LandingTheme {
 
   // CTA
   const ctaBg = primary;
-  const ctaText = isDarkColor(ctaBg) ? '#ffffff' : '#ffffff';
+  const ctaText = isDarkColor(ctaBg) ? '#ffffff' : '#111111';
 
   return {
     heroBg,
@@ -244,12 +271,16 @@ export function getLandingTheme(brand: BrandData): LandingTheme {
     surface: isDarkColor(productsBg) ? 'rgba(255,255,255,0.05)' : '#ffffff',
     surfaceHover: isDarkColor(productsBg) ? 'rgba(255,255,255,0.10)' : '#f9fafb',
     overlay: isDarkHero ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+    cardText,
+    cardMuted,
     ctaBg,
     ctaText,
     isDark: isDarkHero,
     isDarkHero,
     isDarkProducts,
     isDarkFooter,
+    primary,
+    secondary,
   };
 }
 
@@ -341,39 +372,124 @@ export function LookitryLogoText({ className = "" }: { className?: string }) {
 
 // ── Componentes Auxiliares Compartidos ────────────────────────────────────────
 
-export function BrandLogo({ src, alt, className, priority = false }: { src?: string | null; alt: string; className?: string; priority?: boolean }) {
+export interface ImageUrlProviderProps {
+  src?: string | null;
+  alt?: string;
+  className?: string;
+  style?: React.CSSProperties;
+  sizes?: string;
+  primaryColor?: string;
+  as?: 'img' | 'background';
+  priority?: boolean;
+  children?: React.ReactNode;
+}
+
+export function ImageUrlProvider({ 
+  src, alt = '', className = '', style = {}, sizes, primaryColor = '#FF5C3A', as = 'img', priority = false, children
+}: ImageUrlProviderProps) {
   const [hasError, setHasError] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
 
-  if (!src || hasError) return null;
+  useEffect(() => {
+    if (src) {
+      setImgSrc(getProxiedUrl(src));
+      setHasError(false);
+    } else {
+      setImgSrc(null);
+    }
+  }, [src]);
 
-  const blurDataURL = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="#e5e7eb" width="100" height="100"/></svg>').toString('base64');
+  if (!imgSrc || hasError) {
+    if (as === 'background') {
+      return (
+        <div 
+          className={`flex items-center justify-center ${className}`} 
+          style={{ ...style, backgroundColor: `${primaryColor}15` }}
+        >
+          <SparklesIcon className="w-12 h-12 opacity-30 absolute" style={{ color: primaryColor }} />
+          {children}
+        </div>
+      );
+    }
+    return (
+      <div
+        className={`flex items-center justify-center ${className}`}
+        style={{ ...style, backgroundColor: `${primaryColor}15`, minHeight: as === 'img' ? 200 : undefined }}
+      >
+        <svg className="w-12 h-12 opacity-30 absolute" fill="none" viewBox="0 0 24 24" stroke={primaryColor} strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+        </svg>
+        {children}
+      </div>
+    );
+  }
+
+  if (as === 'background') {
+    return (
+      <div 
+        className={className} 
+        style={{ 
+          ...style, 
+          backgroundImage: `url("${imgSrc}")`, 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center' 
+        }} 
+      >
+        {children}
+      </div>
+    );
+  }
 
   return (
-    <div className={`relative ${className || ''}`} style={{ minWidth: 24, minHeight: 24 }}>
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        className="object-contain"
-        sizes="(max-width: 640px) 100px, 160px"
-        loading={priority ? 'eager' : 'lazy'}
-        placeholder="blur"
-        blurDataURL={blurDataURL}
-        priority={priority}
-        onError={() => setHasError(true)}
-      />
-    </div>
+    <img
+      src={imgSrc}
+      alt={alt}
+      className={className}
+      style={style}
+      loading={priority ? 'eager' : 'lazy'}
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
+export function BrandLogo({ src, alt, className, priority = false }: { src?: string | null; alt: string; className?: string; priority?: boolean }) {
+  const [hasError, setHasError] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (src) setImgSrc(getProxiedUrl(src));
+    else setImgSrc(null);
+  }, [src]);
+
+  if (!imgSrc || hasError) return null;
+
+  return (
+    <img
+      src={imgSrc}
+      alt={alt}
+      className={className}
+      loading={priority ? 'eager' : 'lazy'}
+      onError={() => setHasError(true)}
+    />
   );
 }
 
 export function CoverImage({ src, alt, className, style }: { src?: string | null; alt: string; className?: string; style?: React.CSSProperties }) {
-  if (!src) return null;
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (src) setImgSrc(getProxiedUrl(src));
+    else setImgSrc(null);
+  }, [src]);
+
+  if (!imgSrc) return null;
+
   return (
     <div 
       className={`transition-opacity duration-1000 ${className}`} 
       style={{ 
         ...style, 
-        backgroundImage: `url("${src}")`, 
+        backgroundImage: `url("${imgSrc}")`, 
         backgroundSize: 'cover', 
         backgroundPosition: 'center' 
       }} 
@@ -383,8 +499,14 @@ export function CoverImage({ src, alt, className, style }: { src?: string | null
 
 export function ProductImage({ src, alt, className, sizes, primaryColor = '#FF5C3A' }: { src: string; alt: string; className?: string; sizes?: string; primaryColor?: string }) {
   const [hasError, setHasError] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
 
-  if (hasError) {
+  useEffect(() => {
+    if (src) setImgSrc(getProxiedUrl(src));
+    else setImgSrc(null);
+  }, [src]);
+
+  if (hasError || !imgSrc) {
     return (
       <div
         className={`flex items-center justify-center ${className || ''}`}
@@ -400,7 +522,7 @@ export function ProductImage({ src, alt, className, sizes, primaryColor = '#FF5C
   return (
     <div className={`relative overflow-hidden ${className || ''}`}>
       <Image
-        src={src}
+        src={imgSrc}
         alt={alt}
         fill
         className="object-cover"
@@ -411,7 +533,7 @@ export function ProductImage({ src, alt, className, sizes, primaryColor = '#FF5C
   );
 }
 
-export function ProductBadge({ badge }: { badge: string }) {
+export function ProductBadge({ badge, primaryColor }: { badge: string; primaryColor?: string }) {
   return (
     <span className="px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-sm text-[9px] font-black uppercase tracking-widest text-black shadow-sm border border-black/5">
       {badge}
@@ -426,10 +548,67 @@ export function WhatsAppFAB({ phone, message }: { phone: string; message?: strin
     <a 
       href={`https://wa.me/${clean}${msg}`}
       target="_blank" rel="noopener noreferrer"
+      aria-label="Contactar por WhatsApp"
       className="fixed bottom-6 left-6 z-50 w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-2xl hover:scale-110 transition-transform active:scale-95"
     >
       <WhatsAppIcon className="w-7 h-7" />
     </a>
+  );
+}
+
+// ── Componentes Compartidos de UI ────────────────────────────────────────────────
+
+export function SocialLinks({ 
+  entries, 
+  limit,
+  className = '', 
+  linkClassName = '', 
+  iconClassName = '',
+  linkStyle 
+}: { 
+  entries: [string, string][]; 
+  limit?: number;
+  className?: string; 
+  linkClassName?: string; 
+  iconClassName?: string;
+  linkStyle?: React.CSSProperties | ((platform: string) => React.CSSProperties);
+}) {
+  if (entries.length === 0) return null;
+  const visibleEntries = limit ? entries.slice(0, limit) : entries;
+
+  const socialIcons: Record<string, React.ReactNode> = {
+    instagram: <InstagramIcon className={iconClassName} />,
+    facebook: <FacebookIcon className={iconClassName} />,
+    tiktok: <TikTokIcon className={iconClassName} />,
+    youtube: <YouTubeIcon className={iconClassName} />,
+    x: <XIcon className={iconClassName} />,
+  };
+
+  return (
+    <div className={`flex ${className}`}>
+      {visibleEntries.map(([platform, url]) => (
+        <a 
+          key={platform} 
+          href={url} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          aria-label={`Síguenos en ${platform}`}
+          className={`flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2 ${linkClassName}`}
+          style={typeof linkStyle === 'function' ? linkStyle(platform) : linkStyle}
+        >
+          {socialIcons[platform.toLowerCase()] || platform.slice(0, 1)}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+export function FiveStars({ rating, className = '', starClassName = 'w-5 h-5' }: { rating?: number | null; className?: string; starClassName?: string }) {
+  if (typeof rating !== 'number') return null;
+  return (
+    <div className={`flex gap-1 text-yellow-400 ${className}`}>
+      {[1, 2, 3, 4, 5].map(i => <StarIcon key={i} className={starClassName} filled={i <= Math.round(rating || 0)} />)}
+    </div>
   );
 }
 
@@ -483,9 +662,9 @@ export function XIcon({ className }: { className?: string }) {
   );
 }
 
-export function SparklesIcon({ className }: { className?: string }) {
+export function SparklesIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
     </svg>
   );

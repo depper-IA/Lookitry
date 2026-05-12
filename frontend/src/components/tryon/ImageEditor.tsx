@@ -72,6 +72,7 @@ export function ImageEditor({
   const [rotation, setRotation] = useState(0);
   const [aspectFormat, setAspectFormat] = useState<AspectFormat>('original');
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [imageAspect, setImageAspect] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const onCropComplete = useCallback((_croppedArea: Area, croppedPixels: Area) => {
@@ -130,7 +131,39 @@ export function ImageEditor({
   // correctamente antes de dibujar en canvas (a diferencia de drawImage normal).
   const getOriginalImg = async (imageSrc: string): Promise<{ file: File; url: string } | null> => {
     try {
+      // Las URLs blob: no se pueden usar con fetch(), usar <img> en su lugar
+      if (imageSrc.startsWith('blob:')) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { resolve(null); return; }
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((b) => {
+              if (!b) { resolve(null); return; }
+              const url = URL.createObjectURL(b);
+              const file = new File([b], 'photo.jpg', { type: 'image/jpeg', lastModified: Date.now() });
+              resolve({ file, url });
+            }, 'image/jpeg', 0.95);
+          };
+          img.onerror = () => {
+            console.error('[ImageEditor] getOriginalImg: failed to load blob image');
+            resolve(null);
+          };
+          img.src = imageSrc;
+        });
+      }
+
+      // Para URLs HTTP normales, usar fetch
       const response = await fetch(imageSrc);
+      if (!response?.ok) {
+        console.error('[ImageEditor] getOriginalImg: fetch response not ok');
+        return null;
+      }
       const blob = await response.blob();
 
       let bitmap: ImageBitmap;
@@ -207,6 +240,13 @@ export function ImageEditor({
 
   const currentAspect = FORMAT_OPTIONS.find(f => f.value === aspectFormat)?.aspect;
 
+  // For "original" mode: use the image's natural aspect ratio.
+  // This ensures the crop box encompasses the entire image by default.
+  const effectiveAspect = currentAspect ?? imageAspect;
+
+  // Determine crop shape - "original" uses rect but allows free movement
+  const isOriginal = aspectFormat === 'original';
+
   // ── Helper: ícono por formato ─────────────────────────────────────────────
   const getFormatIcon = (value: AspectFormat, active: boolean) => {
     const color = active ? 'white' : 'rgba(255,255,255,0.4)';
@@ -221,7 +261,7 @@ export function ImageEditor({
   // ────────────────────────────────────────────────────────────────────────────
   return (
     <motion.div 
-      className="fixed inset-0 z-[100] flex flex-col bg-[#0a0a0a]"
+      className="fixed inset-0 z-[100] flex flex-col bg-[#000000]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -252,23 +292,31 @@ export function ImageEditor({
       </div>
 
       {/* ── Cropper Area ── */}
-      <div className="relative flex-1 overflow-hidden min-h-0">
-        <Cropper
-          image={src}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          // Para 'original': aspect undefined → usa dimensiones naturales (respeta EXIF)
-          aspect={currentAspect}
-          onCropChange={setCrop}
-          onRotationChange={setRotation}
-          onCropComplete={onCropComplete}
-          onZoomChange={setZoom}
-          classes={{
-            containerClassName: 'bg-[#0a0a0a]',
-            mediaClassName: 'bg-[#0a0a0a]',
-          }}
-        />
+      {/* Container needs min-height and proper sizing for vertical crop formats (4:3, 9:16) */}
+      <div className="relative flex-1 overflow-hidden min-h-0 flex items-center justify-center">
+        <div className="relative w-full h-full">
+          <Cropper
+            image={src}
+            crop={crop}
+            zoom={zoom}
+            rotation={rotation}
+            // Use effectiveAspect: 999 for "original" (very wide frame = full image visible)
+            aspect={effectiveAspect}
+            onCropChange={setCrop}
+            onRotationChange={setRotation}
+            onCropComplete={onCropComplete}
+            onZoomChange={setZoom}
+            onMediaLoaded={(mediaSize) => {
+              setImageAspect(mediaSize.width / mediaSize.height);
+            }}
+            cropShape="rect"
+            showGrid={!isOriginal}
+            classes={{
+              containerClassName: '!relative !w-full !h-full !bg-[#000000]',
+              mediaClassName: '!bg-[#000000]',
+            }}
+          />
+        </div>
       </div>
 
       {/* ── Bottom Toolbar ── */}

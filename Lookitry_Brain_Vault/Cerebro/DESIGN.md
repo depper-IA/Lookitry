@@ -77,16 +77,16 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
   --bg-sidebar-hover; /* Hover en sidebar */
   --bg-header;        /* Fondo del header sticky */
   --bg-hover;         /* Hover genérico */
-  
+
   /* Bordes */
   --border-color;
-  
+
   /* Texto */
   --text-primary;     /* Texto principal */
   --text-secondary;   /* Texto secundario */
   --text-muted;       /* Texto muy sutil */
   --text-sidebar;     /* Texto en sidebar */
-  
+
   /* Sombras */
   --shadow-header;    /* Sombra del header */
 }
@@ -144,7 +144,46 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 - Dashboard: `#0a0a0a` (oscuro por defecto)
 - Landing: puede usar `#f5f2ee` como sección alternativa
 
-### 7.3 Sitemap - Páginas Públicas
+### 7.3 Footer - Modo Oscuro (Regla Obligatoria)
+En el footer de la página principal (`LandingFooter.tsx`), los enlaces de las secciones **Ecosistema**, **Recursos** y **Legal** deben seguir estas reglas en modo oscuro:
+
+| Elemento | Color Normal | Color Hover | Efecto Hover |
+|----------|--------------|-------------|--------------|
+| Enlaces de secciones (Ecosistema/Recursos/Legal) | `white/60` | `#FF5C3A` | Transición `300ms` + scale sutil `1.02` |
+| Botones de redes sociales | `white/60` con borde `white/5` | Fondo `#FF5C3A`, borde `#FF5C3A`, icono blanco | Transición `300ms` + scale `1.1` + sombra |
+| Título de sección | `white` | — | — |
+
+**Regla CSS obligatoria:**
+```css
+/* Footer dark mode links */
+footer a.hover-naranja {
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 300ms ease, transform 300ms ease;
+}
+footer a.hover-naranja:hover {
+  color: #FF5C3A;
+  transform: scale(1.02);
+}
+
+/* Social buttons */
+footer .social-btn {
+  color: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+footer .social-btn:hover {
+  color: #ffffff;
+  background: #FF5C3A;
+  border-color: #FF5C3A;
+  transform: scale(1.1);
+  box-shadow: 0 4px 20px rgba(255, 92, 58, 0.4);
+}
+```
+
+---
+
+## 8. Sitemap - Páginas Públicas
 
 | URL | Priority | Frecuencia |
 |-----|----------|------------|
@@ -169,7 +208,7 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 | `/aviso-legal` | 0.4 | yearly |
 | `/cookies` | 0.4 | yearly |
 
-### 7.4 Páginas NO Indexadas (No en sitemap)
+### Páginas NO Indexadas (No en sitemap)
 - `/dashboard/*`
 - `/admin/*`
 - `/checkout`
@@ -187,28 +226,28 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 
 ---
 
-## 8. Componentes Clave
+## 9. Componentes Clave
 
-### 8.1 Autenticación
+### 9.1 Autenticación
 - `RegisterForm.tsx` — Registro con Turnstile
 - `LoginForm.tsx` — Login
 - `IdleTimer.tsx` — Timer de sesión
 - `GoogleAuthButton.tsx` — Botón Google Sign-In
 
-### 8.2 Landing
+### 9.2 Landing
 - `LandingNav.tsx` — Navegación
 - `LandingFooter.tsx` — Footer
 - `PremiumLanding.tsx` — Landing premium
 - `LandingPricing.tsx` — Sección de precios
 
-### 8.3 Try-On
+### 9.3 Try-On
 - `TryOnWidget.tsx` — Widget de prueba virtual
 - `SelfieUploader.tsx` — Subida de selfie
 - `ResultDisplay.tsx` — Resultado
 - `GenerationLoader.tsx` — Loader durante generación
 - `LiveTryOnButton.tsx` — Botón try-on en vivo
 
-### 8.4 Dashboard
+### 9.4 Dashboard
 - `DashboardLayout.tsx` — Layout con sidebar
 - `UpgradeModal.tsx` — Modal de upgrade
 - `ProductList.tsx` — Lista de productos
@@ -224,7 +263,7 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 - `TrialBanner.tsx` — Banner de trial
 - `ProUpgradeBanner.tsx` — Banner de upgrade a PRO
 
-### 8.5 Pagos y Checkout
+### 9.5 Pagos y Checkout
 - `WompiButton.tsx` — Botón de pago Wompi
 - `StepProgress.tsx` — Progress en flujos multi-step
 - `CheckoutHeader.tsx` — Header del checkout
@@ -233,79 +272,91 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 - `PaymentMethodStep.tsx` — Paso de método de pago
 - `OrderSummary.tsx` — Resumen de orden
 - `CouponInput.tsx` — Input de cupón de descuento
-- `ReferralInput.tsx` — Input de código de referido para asociar una marca referida; el reward vigente es de 500 créditos extra para el referente
+- `ReferralInput.tsx` — Input de código de referido
 
-### 8.6 Mini-Landing
+### 9.6 Mini-Landing
 - `MiniLanding.tsx` — Componente principal
 - `TemplateClassic.tsx`
 - `TemplateEditorial.tsx`
-- `TemplateModerno.tsx` (antes TemplateProbador)
+- `TemplateModerno.tsx`
 - `TemplateBare.tsx`
 
-### 8.7 Blog
+### 9.7 Blog
 - `BlogList.tsx` — Lista de posts
 - `BlogCard.tsx` — Card de post individual
 - `BlogShareRail.tsx` — Barra de compartir en redes
 
-### 8.8 Admin
+### 9.8 Admin
 - `EnterpriseCalculator.tsx` — Calculadora de plan enterprise
 - `ConfirmDialog.tsx` — Diálogo de confirmación
 - `AdminNotifications.tsx` — Panel de notificaciones admin
+- `MissionControl.tsx` — Dashboard central de métricas
+- `AgentDetailModal.tsx` — Modal de detalle de agente
+- `AdminAuditLog.tsx` — Log de auditoría de acciones admin
+- `SecurityDashboard.tsx` — Dashboard de seguridad
+- `LoginAuditTable.tsx` — Tabla de auditoría de login
+- `EmailCampaignManager.tsx` — Gestor de campañas de email
+- `LeadPipelineTable.tsx` — Pipeline de leads con estados
 
-### 8.9 Widget Templates
+### 9.9 Widget Templates
 - `TemplateBare` — Minimal, básico
 - `TemplateMinimalTopBar` — Top bar minimal
 - `TemplateModernSidebar` — Sidebar moderno
 - `TemplateBoldProStudio` — Bold Pro Studio
+- `TemplateLandingEmbed` — Para embebidos en landing pages
+- `TemplateShowcase` — Showcase de producto con gallery
 
 ---
 
-## 9. Templates de Widget
+## 10. Estados de UI — Colores
 
-| Template | Descripción |
-|----------|-------------|
-| `TemplateBare` | Minimal, básico |
-| `TemplateMinimalTopBar` | Top bar minimal |
-| `TemplateModernSidebar` | Sidebar moderno |
-| `TemplateBoldProStudio` | Bold Pro Studio |
-
----
-
-## 10. UI States
+> Los valores de los estados (active, pending, failed, etc.) están definidos en [[PRD]]. Aquí solo se definen los colores visuales.
 
 ### 10.1 Estados de Suscripción
-| Estado | Descripción |
-|--------|-------------|
-| `active` | Suscripción activa |
-| `expiring_soon` | Por expirar |
-| `expired` | Expirada |
-| `suspended` | Suspendida |
-| `trial` | Período de prueba |
+| Estado | Color | Hex |
+|--------|-------|-----|
+| `active` | Verde | `#10b981` |
+| `expiring_soon` | Ámbar | `#f59e0b` |
+| `expired` | Rojo | `#ef4444` |
+| `suspended` | Gris | `#6b7280` |
+| `trial` | Violeta | `#6366f1` |
 
 ### 10.2 Estados de Generación
-| Estado | Descripción |
-|--------|-------------|
-| `PENDING` | Procesando |
-| `SUCCESS` | Exitosa |
-| `FAILED` | Fallida |
+| Estado | Color | Hex |
+|--------|-------|-----|
+| `PENDING` | Ámbar | `#f59e0b` |
+| `SUCCESS` | Verde | `#10b981` |
+| `FAILED` | Rojo | `#ef4444` |
 
 ### 10.3 Estados de Pago
-| Estado | Descripción |
-|--------|-------------|
-| `pending` | Pago pendiente |
-| `completed` | Pago completado |
-| `failed` | Pago fallido |
-| `refunded` | Reembolsado |
+| Estado | Color | Hex |
+|--------|-------|-----|
+| `pending` | Ámbar | `#f59e0b` |
+| `completed` | Verde | `#10b981` |
+| `failed` | Rojo | `#ef4444` |
+| `refunded` | Gris | `#6b7280` |
 
-### 10.4 Estados de Plan Change Request
-| Estado | Descripción |
-|--------|-------------|
-| `pending` | Solicitud pendiente |
-| `processing` | En proceso |
-| `completed` | Completada |
-| `failed` | Fallida |
+### 10.4 Estados de Leads
+| Estado | Color | Hex |
+|--------|-------|-----|
+| `NEW` | Azul | `#3b82f6` |
+| `CONTACTED` | Cyan | `#06b6d4` |
+| `QUALIFIED` | Violeta | `#8b5cf6` |
+| `INTERESTED` | Naranja | `#f97316` |
+| `CONVERTED` | Verde | `#22c55e` |
+| `LOST` | Gris | `#6b7280` |
 
-### 10.5 Páginas de Error y Estado
+### 10.5 Estados de Agentes
+| Estado | Color | Hex |
+|--------|-------|-----|
+| `online` | Verde | `#10b981` |
+| `busy` | Ámbar | `#f59e0b` |
+| `offline` | Gris | `#6b7280` |
+
+---
+
+## 11. Páginas de Error y Estado
+
 | Página | Archivo | Estándar de Diseño |
 |--------|---------|---------------------|
 | **404 Not Found** | `not-found.tsx` | Branding central, soporte Light/Dark, `pt-40` para Navbar. |
@@ -317,7 +368,7 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 
 ---
 
-## 11. Animaciones y Transiciones
+## 12. Animaciones y Transiciones
 
 - Usar **Framer Motion** para transiciones
 - GSAP disponible (`@gsap/react`, `gsap`)
@@ -325,7 +376,7 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 
 ---
 
-## 12. Responsive
+## 13. Responsive
 
 - **Regla:** Toda nueva vista debe estar 100% responsive
 - Mobile-first approach recomendado
@@ -333,8 +384,17 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 
 ---
 
-##不走
+## Referencias Cruzadas
+
+| Documento | Contenido |
+|-----------|-----------|
+| [[PRD]] | Lógica de negocio, features, flujos, APIs, reglas de negocio |
+| [[TECH_STACK]] | Stack técnico, librerías, DB schema, arquitectura IA |
+| [[AGENTS]] | Configuración del equipo de agentes IA |
+| [[REGLAS_IMPORTANTES]] | Reglas operativas del proyecto |
+
+---
 
 Este documento define el sistema de diseño de Lookitry. Cualquier nuevo componente o página debe seguir estas reglas.
 
-**Última actualización:** Abril 2026
+**Última actualización:** Mayo 2026 - v2.1 (deduplicado con PRD y TECH_STACK)

@@ -28,8 +28,6 @@ lastUpdated: "2026-04-19 11:54 GMT-5"
 | **Infra / VPS / Docker / Deploy** | Zephyr | "Verifica el estado del VPS" |
 | **Documentación** | Lina | "Actualiza el CHANGELOG con los cambios" |
 | **Seguridad / Pentesting** | Cipher | "Audita vulnerabilidades en auth" |
-| **Trading / Inversiones** | Leo | "Revisa el estado del portafolio" |
-| **UGC / Contenido / Redes** | Rebecca | "Crea 5 posts para Instagram" |
 | **Pagos / Auth / Webhooks** | Kira | "Valida la firma del webhook de Wompi" |
 
 ---

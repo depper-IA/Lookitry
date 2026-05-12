@@ -23,16 +23,17 @@ export function DashboardBottomNav() {
     <nav
       role="navigation"
       aria-label="Navegación del dashboard"
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-safe"
+      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
     >
-      <div className="mx-auto max-w-sm px-3 pb-2 pt-1">
-        <div className="flex items-center justify-center gap-0.5 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 shadow-2xl shadow-black/20 dark:shadow-black/40 px-1.5 py-1.5 pb-safe">
+      <div className="mx-auto max-w-sm px-3 pt-1">
+        <div className="flex items-center justify-center gap-0.5 rounded-2xl bg-white dark:bg-dark border border-black/10 dark:border-white/10 shadow-2xl shadow-black/20 dark:shadow-black/40 px-1.5 py-1.5 pb-safe">
           <Link
             href="/dashboard"
             aria-current={isActive('/dashboard') ? 'page' : undefined}
             className={`${itemClass} ${
               isActive('/dashboard')
-                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                ? 'bg-accent/15 text-accent'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
@@ -45,7 +46,7 @@ export function DashboardBottomNav() {
             aria-current={isActive('/dashboard/products') ? 'page' : undefined}
             className={`${itemClass} ${
               isActive('/dashboard/products')
-                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                ? 'bg-accent/15 text-accent'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
@@ -58,7 +59,7 @@ export function DashboardBottomNav() {
             aria-current={isActive('/dashboard/generations') ? 'page' : undefined}
             className={`${itemClass} ${
               isActive('/dashboard/generations')
-                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                ? 'bg-accent/15 text-accent'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
@@ -71,7 +72,7 @@ export function DashboardBottomNav() {
             aria-current={isActive('/dashboard/analytics') ? 'page' : undefined}
             className={`${itemClass} ${
               isActive('/dashboard/analytics')
-                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                ? 'bg-accent/15 text-accent'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
@@ -84,7 +85,7 @@ export function DashboardBottomNav() {
             aria-current={isActive('/dashboard/profile') ? 'page' : undefined}
             className={`${itemClass} ${
               isActive('/dashboard/profile')
-                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                ? 'bg-accent/15 text-accent'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >

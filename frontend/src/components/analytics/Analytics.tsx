@@ -1,54 +1,51 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
 
 export function Analytics() {
-  const [gaId, setGaId] = useState<string>(GA_ID);
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [gaId, setGaId] = useState<string>(GA_ID);
 
+  // Obtener GA ID dinámicamente si no está en env (caso raro)
   useEffect(() => {
-    if (GA_ID) return; // Ya tenemos el ID desde env
-    
+    if (GA_ID) return;
     const fetchGaId = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment-settings/public`);
+        // Usa el proxy de Next.js (/api/...) para evitar CORS con el backend
+        const res = await fetch('/api/payment-settings/public');
         if (res.ok) {
           const data = await res.json();
-          if (data.gaMeasurementId) {
-            setGaId(data.gaMeasurementId);
-          }
+          if (data.gaMeasurementId) setGaId(data.gaMeasurementId);
         }
-      } catch (e) {
-        console.warn('No se pudo obtener GA ID de config:', e);
-      }
+      } catch {}
     };
     fetchGaId();
   }, []);
 
+  // Track page views en cambios de ruta
   useEffect(() => {
-    if (!gaId) return;
-
-    if (typeof window !== 'undefined' && window.gtag) {
-      const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
-      window.gtag('config', gaId, {
-        page_path: url,
-      });
-    }
+    if (!gaId || typeof window === 'undefined' || !(window as any).gtag) return;
+    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+    (window as any).gtag('config', gaId, { page_path: url });
   }, [pathname, searchParams, gaId]);
 
   if (!gaId) return null;
 
   return (
     <>
-      <script
-        async
+      {/* GA4 — afterInteractive para no bloquear LCP mobile */}
+      <Script
+        strategy="afterInteractive"
         src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
       />
-      <script
+      <Script
+        id="ga-config"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
@@ -67,8 +64,8 @@ export function Analytics() {
 }
 
 export function trackEvent(eventName: string, params?: Record<string, string | number | boolean>) {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', eventName, params);
+  if (typeof window !== 'undefined' && (window as any).gtag) {
+    (window as any).gtag('event', eventName, params);
   }
 }
 

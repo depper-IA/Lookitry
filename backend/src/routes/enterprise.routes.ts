@@ -11,22 +11,22 @@ import { syncProductWebhook } from '../controllers/enterprise.controller';
 
 const router = Router();
 
-// ── Alta completa de cliente Enterprise (requiere permiso brands + subscriptions) ──
+// — Alta completa de cliente Enterprise (requiere permiso brands + subscriptions) —
 router.post('/create-client', adminAuthMiddleware, requirePermission('brands'), createEnterpriseClient);
 
-// ── Listar todas las configs de sync Enterprise ──────────────────────────────
+// — Listar todas las configs de sync Enterprise ———————————————
 router.get('/', adminAuthMiddleware, listEnterpriseSyncConfigs);
 
-// ── Crear / actualizar config de sync para una marca ─────────────────────────
+// — Crear / actualizar config de sync para una marca ————————————â
 router.post('/:brandId/sync-config', adminAuthMiddleware, upsertEnterpriseSyncConfig);
 
-// ── Disparar sync manual desde el panel de admin ─────────────────────────────
+// — Disparar sync manual desde el panel de admin ——————————————â
 router.post('/:brandId/trigger-sync', adminAuthMiddleware, triggerEnterpriseSync);
 
-// ── Actualizar estado del sync (llamado por n8n al finalizar) ────────────────
+// — Actualizar estado del sync (llamado por n8n al finalizar) ————————
 router.patch('/:brandId/sync-status', updateSyncStatus);
 
-// ── Webhook para insertar/actualizar productos (llamado por n8n por producto) ─
+// — Webhook para insertar/actualizar productos (llamado por n8n por producto) â
 router.post('/sync-product', syncProductWebhook);
 
 export default router;

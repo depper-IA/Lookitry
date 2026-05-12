@@ -34,7 +34,7 @@ export default function CheckoutHeader({ OA }: CheckoutHeaderProps) {
   return (
     <nav className="sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-md border-b border-[#1a1a1a] px-6 h-16 flex items-center justify-between">
       <Link href="/" className="flex items-center gap-2 group">
-        <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="group-hover:scale-110 transition-transform" priority />
+        <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="group-hover:scale-110 transition-transform" style={{ width: 'auto', height: 'auto' }} priority />
         <span className="font-jakarta font-extrabold text-lg text-white tracking-tight">
           Look<span style={{ color: OA }}>itry</span>
         </span>

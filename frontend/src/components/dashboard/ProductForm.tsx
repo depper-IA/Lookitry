@@ -23,11 +23,11 @@ interface ProductFormProps {
 }
 
 // Categorías públicas para todos
-const PUBLIC_CATEGORIES = ['tshirt', 'vestido', 'zapatos', 'camisa', 'hoodie', 'chaqueta', 'pantalones', 'accesorios'];
+const PUBLIC_CATEGORIES = ['Tops', 'Vestido', 'Zapatos', 'Camisa', 'Hoodie', 'Chaqueta', 'Pantalones', 'Accesorios', 'Lentes', 'Cascos', 'Bolsos'];
 
 // Categorías internas (solo para marcas específicas)
 const INTERNAL_CATEGORIES: Record<string, string[]> = {
-  [WILKIE_DEVS_BRAND_ID]: ['rines'],
+  [WILKIE_DEVS_BRAND_ID]: ['Rines'],
 };
 
 function getAvailableCategories(brandId?: string): string[] {
@@ -39,18 +39,20 @@ function getAvailableCategories(brandId?: string): string[] {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  tshirt: 'Camiseta', hoodie: 'Hoodie', chaqueta: 'Chaqueta', pantalones: 'Pantalones',
-  zapatos: 'Zapatos', accesorios: 'Accesorios', vestido: 'Vestido', rines: 'Rines',
-  camisa: 'Camisa', other: 'Otros',
+  Tops: 'Tops (Camisetas, Blusas)', Hoodie: 'Hoodie / Sudadera', Chaqueta: 'Chaqueta', Pantalones: 'Pantalones / Jeans / Faldas',
+  Zapatos: 'Zapatos', Accesorios: 'Accesorios', Vestido: 'Vestido', Rines: 'Rines',
+  Camisa: 'Camisa', Lentes: 'Lentes / Gafas', Cascos: 'Cascos', Bolsos: 'Bolsos y Carteras', other: 'Otros',
 };
 
 const AI_CATEGORY_MAP: Record<string, string> = {
-  CAMISA: 'tshirt', SHIRT: 'tshirt', TSHIRT: 'tshirt', BLUSA: 'tshirt',
-  PANTALON: 'pants', PANTS: 'pants', JEANS: 'pants', FALDA: 'pants',
-  ZAPATOS: 'shoes', SHOES: 'shoes', SNEAKERS: 'shoes', BOTAS: 'shoes',
-  HOODIE: 'hoodie', SUDADERA: 'hoodie', CHAQUETA: 'jacket', JACKET: 'jacket',
-  ACCESORIOS: 'accessories', CASCO: 'accessories', GORRA: 'accessories',
-  VESTIDO: 'vestido', DRESS: 'vestido', RINES: 'rines',
+  CAMISA: 'Camisa', SHIRT: 'Camisa', TSHIRT: 'Tops', BLUSA: 'Tops',
+  PANTALON: 'Pantalones', PANTS: 'Pantalones', JEANS: 'Pantalones', FALDA: 'Pantalones',
+  ZAPATOS: 'Zapatos', SHOES: 'Zapatos', SNEAKERS: 'Zapatos', BOTAS: 'Zapatos',
+  HOODIE: 'Hoodie', SUDADERA: 'Hoodie', CHAQUETA: 'Chaqueta', JACKET: 'Chaqueta',
+  ACCESORIOS: 'Accesorios', CASCO: 'Cascos', HELMET: 'Cascos', GORRA: 'Accesorios',
+  LENTES: 'Lentes', GAFAS: 'Lentes', GLASSES: 'Lentes',
+  BOLSO: 'Bolsos', BOLSA: 'Bolsos', CARTERA: 'Bolsos', BAG: 'Bolsos', HANDBAG: 'Bolsos',
+  VESTIDO: 'Vestido', DRESS: 'Vestido', RINES: 'Rines',
 };
 
 function mapAICategory(text: string): string | undefined {
@@ -93,7 +95,15 @@ function DynamicAttributes({ category, attributes, onChange }: DynamicAttributes
     async function loadAttributes() {
       setLoading(true);
       try {
-        const attrs = await categoryAttributesService.getByCategory(category);
+        const normalizedCategory = category ? category.toLowerCase() : 'general';
+        let attrs = await categoryAttributesService.getByCategory(normalizedCategory);
+        
+        // Si no encontró por el nombre exacto, intenta con una versión simplificada (ej. 'cascos' si es 'Cascos')
+        if (!attrs && normalizedCategory !== 'general') {
+          const simpleKey = normalizedCategory.split(' ')[0];
+          attrs = await categoryAttributesService.getByCategory(simpleKey);
+        }
+        
         setCategoryAttrs(attrs);
         if (!attrs) {
           const generalAttrs = await categoryAttributesService.getByCategory('general');
@@ -137,31 +147,49 @@ function DynamicAttributes({ category, attributes, onChange }: DynamicAttributes
         </span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {categoryAttrs.attributes.map((attr: AttributeDefinition) => (
-          <div key={attr.key} className="space-y-1.5">
+        {categoryAttrs.attributes.map((attr: AttributeDefinition & { name?: string }, idx) => {
+          const uniqueKey = attr.key || attr.name || `attr-${idx}`;
+          return (
+          <div key={uniqueKey} className="space-y-1.5">
             <label className="block text-xs font-medium text-[var(--text-secondary)]">{attr.label}</label>
             {attr.type === 'text' && (
-              <input type="text" value={attributes[attr.key] || ''} onChange={(e) => handleChange(attr.key, e.target.value)}
+              <input type="text" value={attributes[uniqueKey] || ''} onChange={(e) => handleChange(uniqueKey, e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors"
                 placeholder={`Ej: ${attr.options?.[0] || 'Valor'}`} />
             )}
             {attr.type === 'number' && (
-              <input type="number" value={attributes[attr.key] || ''} onChange={(e) => handleChange(attr.key, e.target.value ? Number(e.target.value) : undefined)}
+              <input type="number" value={attributes[uniqueKey] || ''} onChange={(e) => handleChange(uniqueKey, e.target.value ? Number(e.target.value) : undefined)}
                 className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors" />
             )}
             {attr.type === 'select' && attr.options && (
-              <select value={attributes[attr.key] || ''} onChange={(e) => handleChange(attr.key, e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors">
-                <option value="">Seleccionar...</option>
-                {attr.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
+              <div className="space-y-2">
+                <select 
+                  value={attributes[uniqueKey] && !attr.options.includes(attributes[uniqueKey]) ? 'Otro' : (attributes[uniqueKey] || '')} 
+                  onChange={(e) => handleChange(uniqueKey, e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                >
+                  <option value="">Seleccionar...</option>
+                  {attr.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+                
+                {(attributes[uniqueKey] === 'Otro' || (attributes[uniqueKey] && !attr.options.includes(attributes[uniqueKey]))) && attr.options.includes('Otro') && (
+                  <input 
+                    type="text" 
+                    value={attributes[uniqueKey] === 'Otro' ? '' : attributes[uniqueKey]} 
+                    onChange={(e) => handleChange(uniqueKey, e.target.value || 'Otro')}
+                    className="w-full px-3 py-2 text-sm bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                    placeholder="Especificar valor personalizado..." 
+                    autoFocus
+                  />
+                )}
+              </div>
             )}
             {attr.type === 'tags' && attr.options && (
               <div className="flex flex-wrap gap-2">
                 {attr.options.map((opt) => {
-                  const isSelected = (attributes[attr.key] || []).includes(opt);
+                  const isSelected = (attributes[uniqueKey] || []).includes(opt);
                   return (
-                    <button key={opt} type="button" onClick={() => handleTagToggle(attr.key, opt)}
+                    <button key={opt} type="button" onClick={() => handleTagToggle(uniqueKey, opt)}
                       className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${isSelected ? 'bg-[#FF5C3A] text-white border-[#FF5C3A]' : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border-[var(--border-color)] hover:border-[#FF5C3A]'}`}>
                       {opt}
                     </button>
@@ -170,7 +198,7 @@ function DynamicAttributes({ category, attributes, onChange }: DynamicAttributes
               </div>
             )}
           </div>
-        ))}
+        )})}
       </div>
     </div>
   );
@@ -179,7 +207,7 @@ function DynamicAttributes({ category, attributes, onChange }: DynamicAttributes
 export function ProductForm({ product, showExternalId = false, brandId, onSubmit, onCancel }: ProductFormProps) {
   const availableCategories = getAvailableCategories(brandId);
   const [formData, setFormData] = useState<CreateProductDto & { short_description?: string; attributes?: Record<string, any> }>({ 
-    name: '', description: '', short_description: '', imageUrl: '', category: 'tshirt', 
+    name: '', description: '', short_description: '', imageUrl: '', category: 'Tops', 
     price: undefined, badge: undefined, externalId: undefined, attributes: {},
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -199,19 +227,18 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
   const imagePreviewSrc = imagePreview ? buildProxyImageUrl(imagePreview) : null;
 
   const autoTriggeredRef = useRef(false);
-  useEffect(() => {
-    if (!formData.imageUrl || !formData.name.trim()) { autoTriggeredRef.current = false; return; }
-    // Trigger AI even for existing products (if image changes)
-    if (autoTriggeredRef.current || aiGenerated || describingWithAI) return;
-    autoTriggeredRef.current = true;
-    triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category);
-  }, [formData.imageUrl, formData.name]);
+
+  // NOTA: Eliminamos el useEffect que disparaba la IA al teclear el nombre letra por letra.
+  // Ahora la IA se dispara explícitamente al Guardar (handleSubmit) si falta la descripción,
+  // o se puede añadir un botón manual.
 
   useEffect(() => {
     if (product) {
-      const isCustom = !availableCategories.includes(product.category);
+      const dbCat = product.category || '';
+      const matchedCat = availableCategories.find(c => c.toLowerCase() === dbCat.toLowerCase());
+      const isCustom = !matchedCat;
       setFormData({ name: product.name, description: product.description || '', short_description: product.shortDescription || '',
-        imageUrl: product.imageUrl, category: isCustom ? 'other' : product.category, price: product.price ?? undefined,
+        imageUrl: product.imageUrl, category: isCustom ? 'other' : matchedCat, price: product.price ?? undefined,
         badge: product.badge ?? undefined, externalId: product.externalId ?? undefined, attributes: product.attributes || {} });
       setImagePreview(product.imageUrl);
       if (isCustom) { setShowCustomCategory(true); setCustomCategory(product.category); }
@@ -238,7 +265,7 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
     finally { setCompressing(false); }
   };
 
-  const triggerDescribeWithAI = async (imageUrl: string, productName: string, category: string) => {
+  const triggerDescribeWithAI = async (imageUrl: string, productName: string, category: string): Promise<string> => {
     setDescribingWithAI(true); setAiError(null);
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
@@ -255,9 +282,19 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
       const clean = description.replace(/#{1,6}\s*/g, '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1').replace(/\n{3,}/g, '\n\n').trim();
       let mappedCategory = category, mappedCustom = '';
       if (aiCategory) { const mapped = mapAICategory(aiCategory); if (mapped) { mappedCategory = mapped; if (mapped === 'other') mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase(); } }
-      setFormData(p => ({ ...p, description: clean, category: mappedCategory }));
+      
+      // Guarda SOLO la descripción interna (RAG/Try-On) y respeta la categoría
+      setFormData(p => ({ 
+        ...p, 
+        description: clean, 
+        category: mappedCategory 
+      }));
       setShowCustomCategory(mappedCategory === 'other'); setCustomCategory(mappedCustom); setAiGenerated(true);
-    } catch (err: any) { setAiError(err.message || 'Error al generar descripción'); } 
+      return clean;
+    } catch (err: any) { 
+      setAiError(err.message || 'Error al generar descripción'); 
+      throw err;
+    } 
     finally { setDescribingWithAI(false); }
   };
 
@@ -277,8 +314,23 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
     if (!validate()) return;
     setIsSubmitting(true);
     try {
+      let finalDescription = formData.description;
+      const finalCategory = formData.category === 'other' ? customCategory.trim() : formData.category;
+      
+      // Auto-generar la descripción en segundo plano al guardar si no existe, o si cambió la imagen/nombre
+      if (!finalDescription || autoTriggeredRef.current === false) {
+         try {
+           finalDescription = await triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), finalCategory);
+           autoTriggeredRef.current = true;
+         } catch (err) {
+           console.error("AI Describe failed on submit, continuing save...", err);
+         }
+      }
+
       await onSubmit({
-        ...formData, category: formData.category === 'other' ? customCategory.trim() : formData.category,
+        ...formData, 
+        description: finalDescription,
+        category: finalCategory,
         price: formData.price ? Number(formData.price) : undefined, badge: formData.badge || undefined,
         externalId: formData.externalId || undefined,
       });
@@ -336,6 +388,16 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
               )}
               {aiError && !describingWithAI && (
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 font-medium" title={aiError}>✗ IA Error</span>
+              )}
+              
+              {!describingWithAI && canDescribeWithAI && (
+                <button 
+                  type="button" 
+                  onClick={() => triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category)}
+                  className="ml-auto text-[10px] px-2 py-0.5 rounded border border-[#FF5C3A] text-[#FF5C3A] hover:bg-[#FF5C3A] hover:text-white transition-colors"
+                >
+                  ✨ Detectar Detalles IA
+                </button>
               )}
             </div>
             <textarea name="short_description" value={formData.short_description || ''} onChange={handleChange} rows={2}

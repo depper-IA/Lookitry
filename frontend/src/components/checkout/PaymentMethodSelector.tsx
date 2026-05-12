@@ -24,8 +24,12 @@ function formatCOP(amount: number): string {
   }).format(amount);
 }
 
+const MINIMUM_MARGIN_COP = 10000;
+const FALLBACK_TRM = 4000;
+
 function formatUSD(amountInCOP: number, trm: number): string {
-  const amountUSD = amountInCOP / trm;
+  const safeTrm = trm > 0 ? trm : FALLBACK_TRM;
+  const amountUSD = Math.ceil((amountInCOP + MINIMUM_MARGIN_COP) / safeTrm);
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',

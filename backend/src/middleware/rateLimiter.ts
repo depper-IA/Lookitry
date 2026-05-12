@@ -1,112 +1,131 @@
 import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
 import { Request, Response, NextFunction } from 'express';
+import { redis, redisGetSafe } from '../config/redis';
+import { supabaseAdmin } from '../config/supabase';
 
-/**
- * Rate limiter para endpoints públicos
- * 500 requests por 15 minutos por IP (Aumentado de 100)
- */
-export const publicRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 500, // Límite aumentado para evitar falsos positivos por hooks de sesión
-  message: {
-    error: 'RATE_LIMIT_EXCEEDED',
-    message: 'Demasiadas solicitudes desde esta IP, por favor intenta de nuevo más tarde.',
-    retryAfter: '15 minutos',
-  },
-  standardHeaders: true, // Retornar info de rate limit en headers `RateLimit-*`
-  legacyHeaders: false, // Deshabilitar headers `X-RateLimit-*`
-  // Handler personalizado cuando se excede el límite
-  handler: (req: Request, res: Response) => {
-    console.warn(`⚠️  Rate limit excedido para IP: ${req.ip}`);
-    res.status(429).json({
-      error: 'RATE_LIMIT_EXCEEDED',
-      message: 'Demasiadas solicitudes desde esta IP, por favor intenta de nuevo más tarde.',
-      retryAfter: '15 minutos',
-      timestamp: new Date().toISOString(),
-    });
-  },
-  // Omitir rate limiting para ciertas condiciones
-  skip: (req: Request) => {
-    // Omitir rate limiting para localhost en desarrollo (::1, 127.0.0.1, ::ffff:127.0.0.1)
-    if (process.env.NODE_ENV === 'development') {
-      const ip = req.ip || '';
-      if (ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127.') || ip === 'localhost') {
-        return true;
-      }
-    }
-    return false;
-  },
-});
+// ─── IP Whitelist ────────────────────────────────────────────────────────────
 
-/**
- * Rate limiter más estricto para endpoints de generación de imágenes
- * 50 requests por 15 minutos por IP (Aumentado de 20)
- */
-export const generationRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 50, // Límite aumentado
-  message: {
-    error: 'GENERATION_RATE_LIMIT_EXCEEDED',
-    message: 'Has excedido el límite de generaciones por IP. Por favor intenta de nuevo más tarde.',
-    retryAfter: '15 minutos',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req: Request, res: Response) => {
-    console.warn(`⚠️  Rate limit de generación excedido para IP: ${req.ip}`);
-    res.status(429).json({
-      error: 'GENERATION_RATE_LIMIT_EXCEEDED',
-      message: 'Has excedido el límite de generaciones por IP. Por favor intenta de nuevo más tarde.',
-      retryAfter: '15 minutos',
-      timestamp: new Date().toISOString(),
+const HARDCODED_WHITELIST_IPS = [
+  '161.18.87.45',  // Travis - desarrollo
+  '161.18.93.138', // Sam Wilkie
+];
+
+interface WhitelistCache {
+  ips: string[];
+  updatedAt: number;
+}
+let whitelistCache: WhitelistCache = { ips: [], updatedAt: 0 };
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+export const refreshWhitelistCache = async (): Promise<void> => {
+  const now = Date.now();
+  try {
+    const [settingsResult, widgetResult] = await Promise.all([
+      supabaseAdmin.from('payment_settings').select('ip_whitelist').eq('id', 1).maybeSingle(),
+      supabaseAdmin.from('widget_ip_whitelist').select('ip_address').eq('is_active', true),
+    ]);
+
+    const settingsIps = settingsResult?.data?.ip_whitelist
+      ? settingsResult.data.ip_whitelist.split(',').map((ip: string) => ip.trim()).filter(Boolean)
+      : [];
+
+    const widgetIps = widgetResult?.data
+      ? widgetResult.data.map((row: any) => row.ip_address).filter(Boolean)
+      : [];
+
+    const allIps = [...new Set([...settingsIps, ...widgetIps])];
+    whitelistCache = { ips: allIps, updatedAt: now };
+    console.log(`[RateLimiter] Cache refreshed: ${allIps.length} IPs`);
+  } catch (err) {
+    console.error('[RateLimiter] Error refreshing cache:', err);
+  }
+};
+
+refreshWhitelistCache().catch(console.error);
+
+async function getDbWhitelistIps(): Promise<string[]> {
+  const now = Date.now();
+  if (whitelistCache.ips.length > 0 && now - whitelistCache.updatedAt < CACHE_TTL_MS) {
+    return whitelistCache.ips;
+  }
+  await refreshWhitelistCache();
+  return whitelistCache.ips;
+}
+
+export const isWhitelistedSync = (ip: string): boolean => {
+  if (ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127.') || ip === 'localhost') {
+    return true;
+  }
+  if (HARDCODED_WHITELIST_IPS.includes(ip)) return true;
+  return whitelistCache.ips.includes(ip);
+};
+
+export const isWhitelisted = async (ip: string): Promise<boolean> => {
+  if (isWhitelistedSync(ip)) return true;
+  const dbIps = await getDbWhitelistIps();
+  return dbIps.includes(ip);
+};
+
+let testBypassCache: { allowed: boolean; updatedAt: number } = { allowed: false, updatedAt: 0 };
+const BYPASS_CACHE_TTL = 60 * 1000;
+
+export async function isTestBypassAllowed(): Promise<boolean> {
+  const now = Date.now();
+  if (now - testBypassCache.updatedAt < BYPASS_CACHE_TTL) return testBypassCache.allowed;
+  try {
+    const { data } = await supabaseAdmin
+      .from('payment_settings')
+      .select('bypass_ip_protection')
+      .eq('id', 1)
+      .maybeSingle();
+    testBypassCache = { allowed: data?.bypass_ip_protection === true, updatedAt: now };
+    return testBypassCache.allowed;
+  } catch {
+    return testBypassCache.allowed;
+  }
+}
+
+// ─── Redis Store factory ─────────────────────────────────────────────────────
+// Crea un RedisStore para rate-limit-redis@4 con ioredis.
+// Si Redis no está disponible, devuelve undefined y express-rate-limit
+// cae automáticamente al store en memoria (comportamiento por defecto).
+
+function makeRedisStore(prefix: string): RedisStore | undefined {
+  try {
+    return new RedisStore({
+      // @ts-expect-error — diferencias de tipado entre ioredis y rate-limit-redis
+      sendCommand: (...args: string[]) => redis.call(...args),
+      prefix,
     });
-  },
-  skip: (req: Request) => {
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
+  } catch {
+    return undefined;
+  }
+}
+
+// ─── Skip helper ─────────────────────────────────────────────────────────────
+
+const skipWhitelisted = (req: Request): boolean => {
+  const ip = req.ip || '';
+  if (isWhitelistedSync(ip)) return true;
+  if (process.env.NODE_ENV === 'development') {
+    if (ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127.') || ip === 'localhost') {
       return true;
     }
-    return false;
-  },
-});
+  }
+  return false;
+};
+
+// ─── Rate Limiters ───────────────────────────────────────────────────────────
 
 /**
- * Rate limiter para endpoints de autenticación
- * 50 intentos por 15 minutos por IP (Aumentado de 10)
- */
-export const authRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 50, // Límite aumentado para permitir flujos de Google Auth y check-email
-  message: {
-    error: 'AUTH_RATE_LIMIT_EXCEEDED',
-    message: 'Demasiados intentos de autenticación. Por favor intenta de nuevo más tarde.',
-    retryAfter: '15 minutos',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req: Request, res: Response) => {
-    console.warn(`⚠️  Rate limit de auth excedido para IP: ${req.ip}`);
-    res.status(429).json({
-      error: 'AUTH_RATE_LIMIT_EXCEEDED',
-      message: 'Demasiados intentos de autenticación. Por favor intenta de nuevo más tarde.',
-      retryAfter: '15 minutos',
-      timestamp: new Date().toISOString(),
-    });
-  },
-  skip: (req: Request) => {
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
-      return true;
-    }
-    return false;
-  },
-});
-
-/**
- * Rate limiter MUY estricto para /login
- * 5 intentos por 15 minutos por IP — protección contra fuerza bruta
+ * Login — 5 intentos / 15 min / IP (Redis)
+ * Protección principal contra brute force en credenciales.
  */
 export const loginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
+  store: makeRedisStore('rl:login:'),
   message: {
     error: 'LOGIN_RATE_LIMIT_EXCEEDED',
     message: 'Demasiados intentos de inicio de sesión. Por favor espera 15 minutos.',
@@ -123,21 +142,43 @@ export const loginRateLimiter = rateLimit({
       timestamp: new Date().toISOString(),
     });
   },
-  skip: (req: Request) => {
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
-      return true;
-    }
-    return false;
-  },
+  skip: skipWhitelisted,
 });
 
 /**
- * Rate limiter para registro
- * 3 registros por hora por IP — prevenir spam de cuentas
+ * Admin login — 5 intentos / 15 min / IP (Redis)
+ */
+export const adminLoginRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  store: makeRedisStore('rl:admin-login:'),
+  message: {
+    error: 'ADMIN_LOGIN_RATE_LIMIT_EXCEEDED',
+    message: 'Demasiados intentos de inicio de sesión. Por favor espera 15 minutos.',
+    retryAfter: '15 minutos',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    console.warn(`⚠️  Admin login rate limit excedido para IP: ${req.ip}`);
+    res.status(429).json({
+      error: 'ADMIN_LOGIN_RATE_LIMIT_EXCEEDED',
+      message: 'Demasiados intentos de inicio de sesión. Por favor espera 15 minutos.',
+      retryAfter: '15 minutos',
+      timestamp: new Date().toISOString(),
+    });
+  },
+  skip: skipWhitelisted,
+});
+
+/**
+ * Registro — 3 intentos / hora / IP (Redis)
+ * Previene spam de cuentas.
  */
 export const registerRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 3,
+  store: makeRedisStore('rl:register:'),
   message: {
     error: 'REGISTER_RATE_LIMIT_EXCEEDED',
     message: 'Demasiados intentos de registro. Por favor intenta de nuevo en una hora.',
@@ -154,80 +195,96 @@ export const registerRateLimiter = rateLimit({
       timestamp: new Date().toISOString(),
     });
   },
-  skip: (req: Request) => {
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
-      return true;
-    }
-    return false;
-  },
+  skip: skipWhitelisted,
 });
 
-// Store en memoria para rate limiting por brandSlug
-const slugStore = new Map<string, { count: number; resetAt: number }>();
-
-// Limpiar entradas expiradas cada 10 minutos
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of slugStore.entries()) {
-    if (now >= entry.resetAt) {
-      slugStore.delete(key);
-    }
-  }
-}, 10 * 60 * 1000);
-
 /**
- * Crea un rate limiter por brandSlug (no por IP)
- * Máximo 20 generaciones por hora por brandSlug (Aumentado de 10)
+ * Auth general (forgot-password, reset-password, resend-verification) — 5 intentos / 15 min / IP (Redis)
+ * Bajado de 50 a 5 para prevenir enumeración de emails y abuso de reset.
  */
-function createSlugRateLimiter() {
-  const WINDOW_MS = 60 * 60 * 1000; // 1 hora
-  const MAX_REQUESTS = 20;
-
-  return (req: Request, res: Response, next: NextFunction): void => {
-    const { brandSlug } = req.params;
-
-    if (!brandSlug) {
-      next();
-      return;
-    }
-
-    const now = Date.now();
-    const entry = slugStore.get(brandSlug);
-
-    if (!entry || now >= entry.resetAt) {
-      // Primera request o ventana expirada: iniciar nueva ventana
-      slugStore.set(brandSlug, { count: 1, resetAt: now + WINDOW_MS });
-      next();
-      return;
-    }
-
-    if (entry.count >= MAX_REQUESTS) {
-      const secondsRemaining = Math.ceil((entry.resetAt - now) / 1000);
-      const minutesRemaining = Math.ceil(secondsRemaining / 60);
-
-      res.setHeader('Retry-After', String(secondsRemaining));
-      res.status(429).json({
-        error: 'SLUG_RATE_LIMIT_EXCEEDED',
-        message: 'Se ha alcanzado el límite de generaciones para esta marca. Por favor intenta de nuevo más tarde.',
-        retryAfter: `${minutesRemaining} minutos`,
-      });
-      return;
-    }
-
-    entry.count += 1;
-    next();
-  };
-}
-
-export const slugGenerationRateLimiter = createSlugRateLimiter();
+export const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  store: makeRedisStore('rl:auth:'),
+  message: {
+    error: 'AUTH_RATE_LIMIT_EXCEEDED',
+    message: 'Demasiados intentos de autenticación. Por favor intenta de nuevo más tarde.',
+    retryAfter: '15 minutos',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    console.warn(`⚠️  Auth rate limit excedido para IP: ${req.ip}`);
+    res.status(429).json({
+      error: 'AUTH_RATE_LIMIT_EXCEEDED',
+      message: 'Demasiados intentos de autenticación. Por favor intenta de nuevo más tarde.',
+      retryAfter: '15 minutos',
+      timestamp: new Date().toISOString(),
+    });
+  },
+  skip: skipWhitelisted,
+});
 
 /**
- * Rate limiter global para toda la API
- * 2000 requests por 15 minutos por IP (Aumentado de 1000)
+ * Endpoints públicos (widget, embed, reviews) — 200 requests / 15 min / IP
+ * Bajado de 500 para reducir superficie de abuso.
+ */
+export const publicRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: {
+    error: 'RATE_LIMIT_EXCEEDED',
+    message: 'Demasiadas solicitudes desde esta IP, por favor intenta de nuevo más tarde.',
+    retryAfter: '15 minutos',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    const ip = req.ip || 'unknown';
+    console.warn(`⚠️  Rate limit excedido para IP: ${ip}`);
+    res.status(429).json({
+      error: 'RATE_LIMIT_EXCEEDED',
+      message: 'Demasiadas solicitudes desde esta IP, por favor intenta de nuevo más tarde.',
+      retryAfter: '15 minutos',
+      timestamp: new Date().toISOString(),
+    });
+  },
+  skip: skipWhitelisted,
+});
+
+/**
+ * Generación de imágenes — 50 requests / 15 min / IP
+ */
+export const generationRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  message: {
+    error: 'GENERATION_RATE_LIMIT_EXCEEDED',
+    message: 'Has excedido el límite de generaciones por IP. Por favor intenta de nuevo más tarde.',
+    retryAfter: '15 minutos',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    console.warn(`⚠️  Rate limit de generación excedido para IP: ${req.ip}`);
+    res.status(429).json({
+      error: 'GENERATION_RATE_LIMIT_EXCEEDED',
+      message: 'Has excedido el límite de generaciones por IP. Por favor intenta de nuevo más tarde.',
+      retryAfter: '15 minutos',
+      timestamp: new Date().toISOString(),
+    });
+  },
+  skip: skipWhitelisted,
+});
+
+/**
+ * Global — 1000 requests / 15 min / IP (Redis)
+ * Bajado de 2000. Cubre toda la API como última línea de defensa.
  */
 export const globalRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 2000, // Límite aumentado
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  store: makeRedisStore('rl:global:'),
   message: {
     error: 'GLOBAL_RATE_LIMIT_EXCEEDED',
     message: 'Demasiadas solicitudes. Por favor intenta de nuevo más tarde.',
@@ -245,13 +302,57 @@ export const globalRateLimiter = rateLimit({
     });
   },
   skip: (req: Request) => {
-    // Omitir health check del rate limiting global
-    if (req.path === '/health') {
-      return true;
-    }
-    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
-      return true;
-    }
-    return false;
+    if (req.path === '/health') return true;
+    return skipWhitelisted(req);
   },
 });
+
+// ─── Slug Rate Limiter (en memoria — por brandSlug, no por IP) ───────────────
+
+const slugStore = new Map<string, { count: number; resetAt: number }>();
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of slugStore.entries()) {
+    if (now >= entry.resetAt) slugStore.delete(key);
+  }
+}, 10 * 60 * 1000);
+
+function createSlugRateLimiter() {
+  const WINDOW_MS = 60 * 60 * 1000; // 1 hora
+  const MAX_REQUESTS = 20;
+
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const { brandSlug } = req.params;
+    if (!brandSlug) { next(); return; }
+
+    const ip = req.ip || '';
+    if (isWhitelistedSync(ip)) { next(); return; }
+
+    const now = Date.now();
+    const entry = slugStore.get(brandSlug);
+
+    if (!entry || now >= entry.resetAt) {
+      slugStore.set(brandSlug, { count: 1, resetAt: now + WINDOW_MS });
+      next();
+      return;
+    }
+
+    if (entry.count >= MAX_REQUESTS) {
+      const secondsRemaining = Math.ceil((entry.resetAt - now) / 1000);
+      const minutesRemaining = Math.ceil(secondsRemaining / 60);
+      res.setHeader('Retry-After', String(secondsRemaining));
+      res.status(429).json({
+        error: 'SLUG_RATE_LIMIT_EXCEEDED',
+        message: 'Se ha alcanzado el límite de generaciones para esta marca. Por favor intenta de nuevo más tarde.',
+        retryAfter: `${minutesRemaining} minutos`,
+      });
+      return;
+    }
+
+    entry.count += 1;
+    next();
+  };
+}
+
+export const slugGenerationRateLimiter = createSlugRateLimiter();

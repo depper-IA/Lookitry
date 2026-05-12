@@ -124,6 +124,22 @@ export const deleteBrand = async (req: any, res: Response) => {
 };
 
 /**
+ * POST /api/admin/brands/:id/reset
+ */
+export const resetBrand = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'ID de marca requerido' });
+    await adminService.resetBrand(id);
+    auditService.log({ admin_id: req.admin?.id ?? 'unknown', admin_email: req.admin?.email ?? 'unknown', action: 'brand.reset', target_brand_id: id });
+    return res.status(200).json({ message: 'Marca reseteada exitosamente (trial/suscripción limpiados)' });
+  } catch (error: any) {
+    const isNotFound = error.message === 'Marca no encontrada';
+    return res.status(isNotFound ? 404 : 500).json({ error: isNotFound ? 'NOT_FOUND' : 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al resetear marca') });
+  }
+};
+
+/**
  * DELETE /api/admin/brands/:id/products/:productId
  */
 export const deleteInactiveProduct = async (req: Request, res: Response) => {
@@ -244,21 +260,26 @@ export const updateBrandNotes = async (req: any, res: Response) => {
 export const getMiniLandingsAdmin = async (_req: Request, res: Response) => {
   try {
     const { supabaseAdmin } = await import('../../config/supabase');
-    const { data, error } = await supabaseAdmin.from('brands').select('id, name, email, slug, plan, trial_end_date, has_landing_page, landing_suspended_at, subscription_status, created_at').order('created_at', { ascending: false });
+    const { data, error } = await supabaseAdmin.from('brands').select('id, name, email, slug, plan, trial_end_date, has_landing_page, landing_suspended_at, subscription_status, created_at, social_links').order('created_at', { ascending: false });
     if (error) throw error;
 
     const ahora = Date.now();
     const now = new Date();
-    const brands = (data || []).map((b: any) => {
-      let dias_para_eliminacion: number | null = null;
-      if (b.landing_suspended_at) {
-        const transcurridos = Math.floor((ahora - new Date(b.landing_suspended_at).getTime()) / (1000 * 60 * 60 * 24));
-        dias_para_eliminacion = Math.max(0, 90 - transcurridos);
-      }
-      const trialEnd = b.trial_end_date ? new Date(b.trial_end_date) : null;
-      const is_in_trial = b.plan === 'TRIAL' && trialEnd !== null && trialEnd > now && b.subscription_status !== 'active' && b.subscription_status !== 'expiring_soon';
-      return { ...b, dias_para_eliminacion, is_in_trial };
-    });
+    const brands = (data || [])
+      .filter((b: any) => {
+        const sl = b.social_links || {};
+        return !sl.account_archived_at;
+      })
+      .map((b: any) => {
+        let dias_para_eliminacion: number | null = null;
+        if (b.landing_suspended_at) {
+          const transcurridos = Math.floor((ahora - new Date(b.landing_suspended_at).getTime()) / (1000 * 60 * 60 * 24));
+          dias_para_eliminacion = Math.max(0, 90 - transcurridos);
+        }
+        const trialEnd = b.trial_end_date ? new Date(b.trial_end_date) : null;
+        const is_in_trial = b.plan === 'TRIAL' && trialEnd !== null && trialEnd > now && b.subscription_status !== 'active' && b.subscription_status !== 'expiring_soon';
+        return { ...b, dias_para_eliminacion, is_in_trial };
+      });
     return res.status(200).json({ brands, count: brands.length });
   } catch (error: any) {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener mini-landings' });

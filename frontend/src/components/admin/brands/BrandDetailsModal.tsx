@@ -3,6 +3,7 @@
 import { Brand } from '@/app/admin/brands/page';
 import { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface BrandDetailsModalProps {
   brand: Brand;
@@ -26,22 +27,38 @@ export function BrandDetailsModal({
   const [notes, setNotes] = useState(brand.internal_notes || '');
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
-      <div
-        className="rounded-[2rem] p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95"
-        style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       >
-        {/* Header */}
-        <div className="flex justify-between items-start mb-5">
-          <h2 className="font-jakarta font-bold tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>
-            Detalles de {brand.name}
-          </h2>
-          <button onClick={onClose} style={{ color: 'var(--text-secondary)' }}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 50 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 50 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="rounded-[2rem] p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+        >
+          {/* Header */}
+          <div className="flex justify-between items-start mb-5">
+            <h2 className="font-jakarta font-bold tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>
+              Detalles de {brand.name}
+            </h2>
+            <motion.button
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onClose}
+              className="p-2 rounded-full transition-colors"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </motion.button>
+          </div>
 
         <div className="space-y-4">
           {/* Info grid */}
@@ -186,7 +203,8 @@ export function BrandDetailsModal({
             Cerrar
           </button>
         </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

@@ -33,7 +33,13 @@ export class BrandAdminService {
         throw new Error('Error al obtener marcas: ' + error?.message);
       }
 
-      const brandIds = brands.map(b => b.id);
+      // Filtrar marcas que tienen el flag de archivado en social_links
+      const activeBrands = brands.filter(b => {
+        const sl = b.social_links || {};
+        return !sl.account_archived_at;
+      });
+
+      const brandIds = activeBrands.map(b => b.id);
 
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -58,7 +64,7 @@ export class BrandAdminService {
       successData.data?.forEach(s => { successCounts[s.brand_id] = (successCounts[s.brand_id] || 0) + 1; });
       failedData.data?.forEach(f => { failedCounts[f.brand_id] = (failedCounts[f.brand_id] || 0) + 1; });
 
-      return brands.map(brand => {
+      return activeBrands.map(brand => {
         const trialEnd = brand.trial_end_date ? new Date(brand.trial_end_date) : null;
         const isInTrial =
           brand.plan === 'TRIAL' &&
@@ -160,30 +166,57 @@ export class BrandAdminService {
   async deleteBrand(brandId: string): Promise<void> {
     const { data: brand, error: fetchError } = await supabaseAdmin
       .from('brands')
-      .select('id')
+      .select('id, email, slug, social_links')
       .eq('id', brandId)
       .single();
 
     if (fetchError || !brand) throw new Error('Marca no encontrada');
 
+    // Generar sufijo único para liberar el email y slug originales
+    const suffix = Math.random().toString(36).substring(2, 7);
+    const archivedEmail = `archived-${brandId.slice(0, 8)}-${suffix}@lookitry.archived`;
+    const archivedSlug = `archived-${brand.slug}-${suffix}`.replace(/_/g, '-');
     const socialLinks = getBrandSocialLinks(brand as any);
 
     const { error: deleteError } = await supabaseAdmin
       .from('brands')
       .update({
+        email: archivedEmail, // Liberamos el email original
+        slug: archivedSlug,   // Liberamos el slug original
         subscription_status: 'suspended',
         has_landing_page: false,
         landing_suspended_at: new Date().toISOString(),
         social_links: {
           ...socialLinks,
           account_archived_at: new Date().toISOString(),
-          account_archived_reason: 'admin_delete',
+          account_archived_reason: 'admin_delete_reproduction',
           account_archived_by: 'admin',
+          original_email: brand.email,
         },
       })
       .eq('id', brandId);
 
-    if (deleteError) throw new Error('Error al archivar marca: ' + deleteError.message);
+    if (deleteError) throw new Error('Error al archivar marca y liberar credenciales: ' + deleteError.message);
+  }
+
+  /**
+   * Resetear una marca (limpiar trial/suscripción pero mantener cuenta e histórico)
+   */
+  async resetBrand(brandId: string): Promise<void> {
+    const { error } = await supabaseAdmin
+      .from('brands')
+      .update({
+        plan: 'BASIC',
+        subscription_status: 'expired',
+        trial_end_date: null,
+        subscription_start_date: null,
+        subscription_end_date: null,
+        has_landing_page: false,
+        landing_suspended_at: null
+      })
+      .eq('id', brandId);
+
+    if (error) throw new Error('Error al resetear marca: ' + error.message);
   }
 
   /**
@@ -379,9 +412,9 @@ export class BrandAdminService {
 
     let query = supabaseAdmin
       .from('brands')
-      .select('id, name, email, slug, plan, subscription_status')
+      .select('id, name, email, slug, plan, subscription_status, social_links')
       .order('name', { ascending: true })
-      .limit(limit);
+      .limit(limit * 2); // Fetch more to allow for filtering
 
     if (search && typeof search === 'string' && search.trim().length > 0) {
       const searchTerm = search.trim();
@@ -391,7 +424,14 @@ export class BrandAdminService {
     const { data, error } = await query;
 
     if (error) throw new Error('Error al obtener marcas: ' + error.message);
-    return data || [];
+    
+    // Filtrar archivados en memoria para mayor seguridad con JSONB
+    return (data || [])
+      .filter(brand => {
+        const sl = brand.social_links || {};
+        return !sl.account_archived_at;
+      })
+      .slice(0, limit);
   }
 }
 

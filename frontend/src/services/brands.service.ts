@@ -41,12 +41,14 @@ class BrandsService {
       stateProvince: response.data.state_province,
       postalCode: response.data.postal_code,
       billingEmail: response.data.billing_email,
-apiKey: response.data.api_key,
+      apiKey: response.data.api_key,
       socialLinks: response.data.social_links,
       onboardingDismissed: response.data.onboarding_dismissed,
       shareMessage: response.data.share_message,
       // Widget playlist - map from snake_case
       widgetProductIds: response.data.widget_product_ids || [],
+      widgetCoverImage: response.data.widget_cover_image || null,
+      whatsappContact: response.data.whatsapp_contact || null,
     };
 
     return brandData;
@@ -90,6 +92,10 @@ apiKey: response.data.api_key,
       welcome_message: data.welcomeMessage,
       share_message: data.shareMessage,
       header_color: data.headerColor,
+      widget_cover_image: data.widgetCoverImage !== undefined ? (data.widgetCoverImage || null) : undefined,
+      whatsapp_contact: data.whatsappContact,
+      custom_domain: data.customDomain,
+      onboarding_dismissed: data.onboardingDismissed,
     };
     
     const response = await api.patch<any>('/brands/me', backendData);
@@ -122,6 +128,8 @@ apiKey: response.data.api_key,
       apiKey: response.data.api_key,
       socialLinks: response.data.social_links,
       onboardingDismissed: response.data.onboarding_dismissed,
+      widgetCoverImage: response.data.widget_cover_image || null,
+      whatsappContact: response.data.whatsapp_contact || null,
     };
     
     return brandData;

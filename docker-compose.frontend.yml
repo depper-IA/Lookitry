@@ -15,8 +15,11 @@ services:
         NEXT_PUBLIC_GTM_ID: ${NEXT_PUBLIC_GTM_ID:-GTM-KX6L62K3}
         NEXT_PUBLIC_WOMPI_PUBLIC_KEY: ${NEXT_PUBLIC_WOMPI_PUBLIC_KEY}
         NEXT_PUBLIC_WOMPI_ENABLED: ${NEXT_PUBLIC_WOMPI_ENABLED:-false}
+        SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
     container_name: lookitry-frontend
     restart: unless-stopped
+    environment:
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
     volumes:
       - /home/travis/.openclaw/agents:/home/travis/.openclaw/agents:ro
     networks:

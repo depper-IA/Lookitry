@@ -5,7 +5,7 @@
  * - Drop-caps duplicados en múltiples secciones
  * - CTAs fragmentados/huerfanos después de blog-cta-inline
  * 
- * SOLUCIÓN: Limpiar el HTML eliminando elementos duplicados y修復 fragmentos.
+ * SOLUCIñN: Limpiar el HTML eliminando elementos duplicados yä¿®å¾© fragmentos.
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -17,7 +17,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!);
 
 async function cleanupBlog(blogId: string, slug: string): Promise<void> {
-  console.log(`\n📝 Limpiando: ${slug} (${blogId})`);
+  console.log(`\nð Limpiando: ${slug} (${blogId})`);
   
   // 1. Fetch el artículo
   const { data: blog, error: fetchError } = await supabase
@@ -27,7 +27,7 @@ async function cleanupBlog(blogId: string, slug: string): Promise<void> {
     .single();
     
   if (fetchError || !blog) {
-    console.error(`  ❌ Error fetching: ${fetchError?.message}`);
+    console.error(`  â Error fetching: ${fetchError?.message}`);
     return;
   }
   
@@ -59,7 +59,7 @@ async function cleanupBlog(blogId: string, slug: string): Promise<void> {
         const spanEnd = endPos + endTag.length;
         // Extraer: <span class="drop-cap"...>X</span> -> solo dejar X (la letra)
         const spanContent = html.substring(pos, spanEnd);
-        const letterMatch = spanContent.match(/<span[^>]*>([A-ZÁÉÍÓÚÑ])<\/span>/i);
+        const letterMatch = spanContent.match(/<span[^>]*>([A-Zññññññ])<\/span>/i);
         if (letterMatch) {
           const letter = letterMatch[1];
           // Reemplazar el span completo con solo la letra
@@ -70,7 +70,7 @@ async function cleanupBlog(blogId: string, slug: string): Promise<void> {
         }
       }
     }
-    console.log(`  ✓ Drop-caps duplicados removidos`);
+    console.log(`  â Drop-caps duplicados removidos`);
   }
   
   // 3. Limpiar CTAs huérfanos: buscar el patrón después de blog-cta-inline
@@ -81,7 +81,7 @@ async function cleanupBlog(blogId: string, slug: string): Promise<void> {
     console.log(`  - CTAs huérfanos encontrados: ${matches.length}`);
     // Remover los CTAs huérfanos (ya tenemos CTAs válidos en generateArticleHTML)
     html = html.replace(orphanCtaPattern, '');
-    console.log(`  ✓ CTAs huérfanos removidos`);
+    console.log(`  â CTAs huérfanos removidos`);
   }
   
   // 4. Verificar que no haya más elementos problemáticos
@@ -99,17 +99,17 @@ async function cleanupBlog(blogId: string, slug: string): Promise<void> {
       .eq('id', blogId);
       
     if (updateError) {
-      console.error(`  ❌ Error actualizando: ${updateError.message}`);
+      console.error(`  â Error actualizando: ${updateError.message}`);
     } else {
-      console.log(`  ✅ Actualizado: ${originalLen} -> ${html.length} bytes`);
+      console.log(`  â Actualizado: ${originalLen} -> ${html.length} bytes`);
     }
   } else {
-    console.log(`  ✓ Sin cambios necesarios`);
+    console.log(`  â Sin cambios necesarios`);
   }
 }
 
 async function main() {
-  console.log('🧹 Blog Cleanup Script');
+  console.log('ð§¹ Blog Cleanup Script');
   console.log('====================\n');
   
   // Artículos conocidos con problemas
@@ -123,7 +123,7 @@ async function main() {
     await cleanupBlog(blog.id, blog.slug);
   }
   
-  console.log('\n✅ Cleanup completo');
+  console.log('\nâ Cleanup completo');
 }
 
 main().catch(console.error);

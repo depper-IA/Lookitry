@@ -1,7 +1,7 @@
 'use client';
 
 import { Brand } from '@/app/admin/brands/page';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, RotateCcw, Trash2 } from 'lucide-react';
 
 interface BrandTableProps {
   brands: Brand[];
@@ -13,6 +13,8 @@ interface BrandTableProps {
   onSelectActivate: (brand: Brand) => void;
   onSelectModalConfig: (brand: Brand) => void;
   onSendReset: (brand: Brand) => void;
+  onResetAccount: (brand: Brand) => void;
+  onDeleteBrand: (brand: Brand) => void;
   sortField: 'name' | 'email' | 'plan' | 'status' | 'products' | 'generations';
   sortOrder: 'asc' | 'desc';
   onSortChange: (field: 'name' | 'email' | 'plan' | 'status' | 'products' | 'generations') => void;
@@ -52,6 +54,7 @@ function StatusBadge({ status }: { status?: string | null }) {
 export function BrandTable({
   brands, selected, onToggleSelect, onToggleSelectAll,
   onSelectDetails, onSelectProducts, onSelectActivate, onSelectModalConfig, onSendReset,
+  onResetAccount, onDeleteBrand,
   sortField, sortOrder, onSortChange,
   currentPage, itemsPerPage, onPageChange, landingPrice,
 }: BrandTableProps) {
@@ -230,6 +233,24 @@ style={{ accentColor: 'var(--accent)' }}
                         style={{ backgroundColor: 'rgba(249,115,22,0.1)', color: '#f97316' }}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      </button>
+                      <button
+                        onClick={() => onResetAccount(brand)}
+                        className="p-1.5 rounded-lg transition-all duration-150"
+                        title="Resetear trial/suscripción"
+                        aria-label={`Resetear ${brand.name}`}
+                        style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }}
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onDeleteBrand(brand)}
+                        className="p-1.5 rounded-lg transition-all duration-150"
+                        title="Archivar/Eliminar marca"
+                        aria-label={`Eliminar ${brand.name}`}
+                        style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444' }}
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>

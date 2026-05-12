@@ -27,6 +27,8 @@ services:
       - MINIO_ACCESS_KEY=Wilkiedevs
       - MINIO_SECRET_KEY=Travis2305*
       - MINIO_PUBLIC_URL=https://minio.wilkiedevs.com
+      # Gemini — para generar embeddings del Knowledge Base de Rebecca
+      - GEMINI_API_KEY=AIzaSyC0VSpvwBFT9l57e9lpYA4MCGd3I_BebvE
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
@@ -45,6 +47,7 @@ services:
       # === SERVIDOR ===
       - NODE_ENV=production
       - PORT=3001
+      - SAM_LOCAL_URL=http://sam-local:8000
 
       # === N8N ===
       - N8N_WEBHOOK_URL=https://n8n.wilkiedevs.com/webhook/wPLypk7KhBcFLicX
@@ -160,7 +163,7 @@ services:
       - MINIO_ROOT_USER=Wilkiedevs
       - MINIO_ROOT_PASSWORD=Travis2305*
     volumes:
-      - minio_data:/data
+      - /var/lib/docker/volumes/minio_data/_data:/data
     networks:
       - proxy
     command: server /data --console-address ":9001"
@@ -169,11 +172,24 @@ services:
       - "traefik.http.routers.minio.rule=Host(`minio.wilkiedevs.com`)"
       - "traefik.http.routers.minio.entrypoints=websecure"
       - "traefik.http.routers.minio.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.minio.service=minio"
       - "traefik.http.services.minio.loadbalancer.server.port=9000"
       - "traefik.http.routers.minio-console.rule=Host(`minio.wilkiedevs.com`) && PathPrefix(`/ui`)"
       - "traefik.http.routers.minio-console.entrypoints=websecure"
       - "traefik.http.routers.minio-console.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.minio-console.service=minio-console"
       - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+    restart: unless-stopped
+
+  # ============================================================================
+  # SAM LOCAL - Segmentación de prendas (Alternativa a Vertex AI)
+  # ============================================================================
+  sam-local:
+    build:
+      context: ./sam-service
+    container_name: lookitry-sam-local
+    networks:
+      - proxy
     restart: unless-stopped
 
 # ============================================================================
@@ -189,3 +205,5 @@ networks:
 volumes:
   n8n_data:
   minio_data:
+    name: minio_data
+    external: true

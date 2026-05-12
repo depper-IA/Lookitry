@@ -1,6 +1,7 @@
 export function priceInUsd(amountCop: number, trm: number): number {
   const safeTrm = trm > 0 ? trm : 3900;
-  return Math.ceil(amountCop / safeTrm);
+  const MINIMUM_MARGIN_COP = 10000;
+  return Math.ceil((amountCop + MINIMUM_MARGIN_COP) / safeTrm);
 }
 
 export function formatCop(amount: number): string {

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { adminAuthMiddleware, requirePermission } from '../middleware/adminAuth';
-import { authRateLimiter } from '../middleware/rateLimiter';
+import { authRateLimiter, adminLoginRateLimiter } from '../middleware/rateLimiter';
 
 // Todas las funciones de controladores admin modularizados se exportan desde admin.controller facade
 import {
@@ -13,7 +13,7 @@ import {
   deleteInactiveProduct, changeBrandPlan, activateBrandPlan, 
   toggleLandingPage, updateBrandNotes, updateModalConfig, 
   sendBrandResetEmail, getMiniLandingsAdmin, suspendMiniLanding, 
-  restoreMiniLanding, getBrandFull, getBrandsList,
+  restoreMiniLanding, getBrandFull, getBrandsList, resetBrand,
   // Stats
   getGlobalStats, getConversionStats, getTopBrands, getAlerts, 
   getRiskData, getEconomics, getMissionControl,
@@ -91,11 +91,23 @@ import {
   getTicketMessages,
   addTicketMessage,
 } from '../controllers/admin/tickets.admin.controller';
+import {
+  getGenerationFeedback,
+  resolveFeedbackAdmin,
+} from '../controllers/admin/feedback.admin.controller';
+import {
+  getWidgetIpWhitelist,
+  addWidgetIpWhitelist,
+  updateWidgetIpWhitelist,
+  deleteWidgetIpWhitelist,
+  checkWidgetIpWhitelist,
+  refreshWidgetIpWhitelistCache,
+} from '../controllers/widgetIpWhitelist.controller';
 
 const router = Router();
 
-// Auth routes (not requiring adminAuthMiddleware yet, but using authRateLimiter)
-router.post('/auth/login', authRateLimiter, adminLogin);
+// Auth routes (not requiring adminAuthMiddleware yet, but using adminLoginRateLimiter)
+router.post('/auth/login', adminLoginRateLimiter, adminLogin);
 router.post('/auth/logout', adminLogout);
 router.post('/auth/forgot-password', authRateLimiter, adminForgotPassword);
 router.post('/auth/reset-password', authRateLimiter, adminResetPassword);
@@ -127,6 +139,7 @@ router.patch('/brands/:id/landing-page', requirePermission('brands'), toggleLand
 router.patch('/brands/:id/notes', requirePermission('brands'), updateBrandNotes);
 router.patch('/brands/:id/modal-config', requirePermission('brands'), updateModalConfig);
 router.post('/brands/:id/send-reset-email', requirePermission('brands'), sendBrandResetEmail);
+router.post('/brands/:id/reset', requirePermission('brands'), resetBrand);
 router.get('/brands/list', requirePermission('brands'), getBrandsList);
 
 // Mini-landings — panel de control
@@ -162,6 +175,7 @@ router.get('/feedback/count-unresolved', requirePermission('brands'), getUnresol
 router.get('/feedback/stats', requirePermission('brands'), getFeedbackStats);
 router.get('/feedback', requirePermission('brands'), getFeedbacks);
 router.patch('/feedback/:id/resolve', requirePermission('brands'), resolveFeedback);
+router.post('/feedback/:id/resolve', requirePermission('brands'), resolveFeedbackAdmin);
 router.delete('/feedback/:id', requirePermission('brands'), deleteFeedback);
 
 // Monitor de créditos e IA
@@ -255,11 +269,12 @@ router.patch('/social-api-configs/:platform/active', requirePermission('settings
 router.delete('/social-api-configs/:platform', requirePermission('settings'), deleteSocialApiConfig);
 
 // Historial de Generaciones (Try-On)
+router.get('/generations/stats', requirePermission('brands'), getGenerationsStats);
 router.get('/generations', requirePermission('brands'), getGenerations);
 router.get('/generations/:id', requirePermission('brands'), getGenerationById);
+router.get('/generations/:id/feedback', requirePermission('brands'), getGenerationFeedback);
 router.patch('/generations/:id/retry', requirePermission('brands'), retryGeneration);
 router.get('/brands/:brandId/generations', requirePermission('brands'), getBrandGenerations);
-router.get('/generations/stats', requirePermission('brands'), getGenerationsStats);
 
 // Tickets de Soporte
 router.get('/tickets', requirePermission('brands'), getTickets);
@@ -271,5 +286,29 @@ router.post('/tickets/bulk-action', requirePermission('brands'), bulkActionTicke
 router.get('/tickets/stats', requirePermission('brands'), getTicketsStats);
 router.get('/tickets/:id/messages', requirePermission('brands'), getTicketMessages);
 router.post('/tickets/:id/messages', requirePermission('brands'), addTicketMessage);
+
+// Widget IP Whitelist
+router.get('/widget-ip-whitelist', requirePermission('settings'), getWidgetIpWhitelist);
+router.post('/widget-ip-whitelist', requirePermission('settings'), addWidgetIpWhitelist);
+router.put('/widget-ip-whitelist/:id', requirePermission('settings'), updateWidgetIpWhitelist);
+router.delete('/widget-ip-whitelist/:id', requirePermission('settings'), deleteWidgetIpWhitelist);
+router.get('/widget-ip-whitelist/check/:ip', requirePermission('settings'), checkWidgetIpWhitelist);
+router.post('/widget-ip-whitelist/refresh-cache', requirePermission('settings'), refreshWidgetIpWhitelistCache);
+
+// Knowledge Base (WhatsApp Agent — Rebecca)
+import {
+  getKnowledgeItems,
+  createKnowledgeItem,
+  updateKnowledgeItem,
+  deleteKnowledgeItem,
+  backfillEmbeddings,
+} from '../controllers/admin/knowledge.admin.controller';
+
+router.get('/knowledge', requirePermission('settings'), getKnowledgeItems);
+router.post('/knowledge', requirePermission('settings'), createKnowledgeItem);
+router.patch('/knowledge/:id', requirePermission('settings'), updateKnowledgeItem);
+router.delete('/knowledge/:id', requirePermission('settings'), deleteKnowledgeItem);
+// Backfill: regenera embeddings para todos los items sin embedding (correr una sola vez post-migración)
+router.post('/knowledge/backfill-embeddings', requirePermission('settings'), backfillEmbeddings);
 
 export default router;

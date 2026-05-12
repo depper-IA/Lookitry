@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { authService } from '@/services/auth.service';
 
@@ -59,6 +60,7 @@ function IdleTimeoutWarning({
 
 export default function IdleTimer({ children }: { children: React.ReactNode }) {
   const { logout, brand } = useAuth();
+  const router = useRouter();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
@@ -98,9 +100,14 @@ export default function IdleTimer({ children }: { children: React.ReactNode }) {
     hideWarning();
     console.log('[IdleTimer] Usuario eligió cerrar sesión');
     logout();
-  }, [hideWarning, logout]);
+    router.push('/login');
+  }, [hideWarning, logout, router]);
 
   const resetTimer = useCallback(() => {
+    // Si ya se está mostrando el warning, no queremos que la actividad accidental 
+    // (como mover el mouse) detenga el countdown de cierre de sesión.
+    if (showWarning) return;
+
     clearAllTimers();
 
     const timeSinceLastActivity = Date.now() - lastActivityRef.current;
@@ -125,6 +132,7 @@ export default function IdleTimer({ children }: { children: React.ReactNode }) {
               setShowWarning(false);
               setRemainingSeconds(0);
               logout();
+              router.push('/login');
               return 0;
             }
             return prev - 1;

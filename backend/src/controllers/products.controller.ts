@@ -3,6 +3,7 @@ import { ProductsService, CreateProductDto, UpdateProductDto } from '../services
 import { AuthRequest } from '../middleware/auth';
 import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { sanitizeError } from '../utils/sanitizeError';
+import { descriptorService } from '../services/ai-descriptor/ai-descriptor.service';
 
 const productsService = new ProductsService();
 
@@ -291,30 +292,101 @@ export class ProductsController {
 
   /**
    * POST /api/products/describe-ai
-   * Proxy para llamar al webhook de n8n que genera descripciones con IA.
-   * Evita bloqueos de CORS del navegador al llamar a n8n directamente.
+   * Generates AI product descriptions using the direct Vertex AI descriptor service.
+   * Replaces the former n8n webhook proxy.
    */
+  async describeProductWithAI(req: AuthRequest, res: Response) {
+    try {
+      const { product_name, category, brand_description } = req.body;
+
+      // 1. Validation — product_name and category are required
+      if (!product_name || !category) {
+        return res.status(400).json({
+          error: 'VALIDATION_ERROR',
+          message: 'product_name y category son requeridos',
+        });
+      }
+
+      // 2. Auth check
+      if (!req.brand) {
+        return res.status(401).json({
+          error: 'UNAUTHORIZED',
+          message: 'No autenticado',
+        });
+      }
+
+      // 3. Call descriptorService (replaces n8n webhook)
+      // image_url is intentionally NOT passed — the descriptor uses text-only prompts
+      const descriptionObj = await descriptorService.describeProduct({
+        name: product_name,
+        category,
+        brand_description,
+        image_url: req.body.image_url,
+      });
+
+      // Construir un string descriptivo para que el frontend lo guarde como "description"
+      const parts = Object.entries(descriptionObj)
+        .filter(([k, v]) => v && k !== 'product_type' && k !== 'extra_attributes')
+        .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`);
+        
+      if (descriptionObj.extra_attributes) {
+        Object.entries(descriptionObj.extra_attributes).forEach(([k, v]) => {
+          parts.push(`${k}: ${v}`);
+        });
+      }
+      
+      const descriptionString = parts.join('\n');
+
+      // 4. Return the response in a format the frontend understands
+      return res.status(200).json({
+        description: descriptionString,
+        raw_data: descriptionObj,
+        category
+      });
+    } catch (error: any) {
+      // Distinguish error types for debugging
+      if (error.name === 'ValidationError') {
+        return res.status(502).json({
+          error: 'WEBHOOK_NOT_FOUND',
+          message: sanitizeError(error, 'Respuesta inválida del servicio de IA'),
+        });
+      }
+      if (error.name === 'VertexError') {
+        return res.status(500).json({
+          error: 'VERTEX_ERROR',
+          message: sanitizeError(error, 'Error del servicio de IA'),
+        });
+      }
+
+      console.error('[AI-Descriptor] Error general:', error);
+      return res.status(500).json({
+        error: 'INTERNAL_ERROR',
+        message: sanitizeError(error, 'Error al procesar la descripción con IA'),
+      });
+    }
+  }
+
+  /* ——————— ROLLBACK: n8n webhook code (kept for safe rollback) ———————
+  The code below was the original n8n proxy implementation.
+  It is preserved here in case a rollback is needed.
+
+  Original implementation (lines 297-399):
+  ----------------------------------------------------------------
   async describeProductWithAI(req: AuthRequest, res: Response) {
     try {
       let { image_url, product_name, category } = req.body;
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
       const descriptorUrl = process.env.N8N_DESCRIPTOR_URL || 'https://n8n.wilkiedevs.com/webhook/descriptor';
 
-      // 1. Si la imagen ya viene del proxy (desde el frontend que lo aplicó), extraemos la URL real temporalmente
-      // para normalizarla, pero luego decidiremos si debe ir proxidada o no.
       let finalImageUrl = image_url;
       if (image_url && image_url.includes('img-proxy?url=')) {
         try {
           const urlObj = new URL(image_url);
           const realUrl = urlObj.searchParams.get('url');
-          if (realUrl) {
-            finalImageUrl = realUrl;
-          }
+          if (realUrl) { finalImageUrl = realUrl; }
         } catch (e) {}
       }
 
-      // 2. Si es una URL externa (no es de nuestro MinIO), la envolvemos en nuestro proxy 
-      // para que n8n pueda saltarse bloqueos de Hotlinking/CORS del servidor de origen.
       const isInternal = finalImageUrl.includes('minio.wilkiedevs.com') || finalImageUrl.includes('supabase.co');
       if (finalImageUrl && !isInternal && finalImageUrl.startsWith('http')) {
         console.log(`[AI-Descriptor] Proxying external URL for n8n: ${finalImageUrl}`);
@@ -322,10 +394,7 @@ export class ProductsController {
       }
 
       if (!finalImageUrl || !product_name) {
-        return res.status(400).json({
-          error: 'VALIDATION_ERROR',
-          message: 'image_url y product_name son requeridos',
-        });
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'image_url y product_name son requeridos' });
       }
 
       console.log(`[AI-Descriptor] Iniciando descripción para: ${product_name} | URL: ${finalImageUrl}`);
@@ -336,11 +405,7 @@ export class ProductsController {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.N8N_BEARER_TOKEN || ''}`
         },
-        body: JSON.stringify({
-          image_url: finalImageUrl,
-          product_name,
-          category,
-        }),
+        body: JSON.stringify({ image_url: finalImageUrl, product_name, category }),
       });
 
       const rawText = await response.text();
@@ -369,7 +434,6 @@ export class ProductsController {
       const statusCode = error?.statusCode || error?.response?.status;
       const n8nMessage = error?.n8nBody?.message || error?.n8nBody?.error;
 
-      // Distinguir tipos de error para debugging más fácil
       if (statusCode === 400) {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: sanitizeError(error, 'Solicitud inválida al servicio de IA') });
       }
@@ -397,4 +461,5 @@ export class ProductsController {
       });
     }
   }
+  -------------------------------------------------------------------- */
 }

@@ -5,7 +5,7 @@ import type { TryOnConfigResponse } from '@/types';
 import type { Product, Step } from './types';
 
 // Helper para determinar si un color es claro u oscuro
-function isLightBg(hex: string): boolean {
+export function isLightBg(hex: string): boolean {
   const clean = hex.replace('#', '');
   const r = parseInt(clean.substring(0, 2), 16);
   const g = parseInt(clean.substring(2, 4), 16);
@@ -16,11 +16,15 @@ function isLightBg(hex: string): boolean {
 
 // ── Badge y categoría para productos ──────────────────────────────────────
 const CATEGORY_STYLES: Record<string, { bg: string; text: string }> = {
-  rines: { bg: '#1E293B', text: 'rgba(255,255,255,0.9)' },
-  tshirt: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
-  camisa: { bg: '#78350F', text: 'rgba(255,255,255,0.9)' },
-  vestido: { bg: '#4C1D95', text: 'rgba(255,255,255,0.9)' },
-  zapatos: { bg: '#166534', text: 'rgba(255,255,255,0.9)' },
+  Rines: { bg: '#1E293B', text: 'rgba(255,255,255,0.9)' },
+  Tops: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
+  Camisa: { bg: '#78350F', text: 'rgba(255,255,255,0.9)' },
+  Vestido: { bg: '#4C1D95', text: 'rgba(255,255,255,0.9)' },
+  Zapatos: { bg: '#166534', text: 'rgba(255,255,255,0.9)' },
+  Hoodie: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
+  Chaqueta: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
+  Pantalones: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
+  Accesorios: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
   default: { bg: '#3F3F46', text: 'rgba(255,255,255,0.9)' },
 };
 
@@ -29,6 +33,11 @@ const BADGE_STYLES: Record<string, { bg: string; text: string; dot: string }> = 
   top: { bg: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', text: 'white', dot: '#FCD34D' },
   oferta: { bg: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', text: 'white', dot: '#FCA5A5' },
 };
+
+export function getBadgeColor(badge: string | undefined): string {
+  if (!badge) return BADGE_STYLES.nuevo.bg;
+  return BADGE_STYLES[badge.toLowerCase()]?.bg ?? BADGE_STYLES.nuevo.bg;
+}
 
 export function ProductBadge({ type }: { type: string }) {
   const style = BADGE_STYLES[type.toLowerCase()] || BADGE_STYLES.nuevo;
@@ -90,10 +99,10 @@ function AttrPills({ attributes }: { attributes: Record<string, any>; primaryCol
 }
 
 // Price display
-function PriceTag({ price, textColor }: { price: number | undefined | null; textColor: string }) {
+function PriceTag({ price, textColor, primaryColor = '#FF5C3A' }: { price: number | undefined | null; textColor: string; primaryColor?: string }) {
   if (price == null) return null;
   return (
-    <p className="text-base font-black tracking-tight" style={{ color: '#FF5C3A' }}>
+    <p className="text-base font-black tracking-tight" style={{ color: primaryColor }}>
       ${price.toLocaleString('es-CO')}
     </p>
   );
@@ -126,7 +135,8 @@ export function StepBar({ step, primaryColor }: { step: Step; primaryColor: stri
                   done ? 'text-white' : active ? 'text-white shadow-md' : 'bg-gray-100 text-gray-400'
                 }`}
                 style={done || active ? { backgroundColor: primaryColor } : {}}
-                whileTap={{ scale: 0.95 }}
+whileTap={{ scale: 0.9 }}
+              transition={{ duration: 0.1 }}
               >
                 {done ? (
                   <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -156,6 +166,7 @@ export function StepBar({ step, primaryColor }: { step: Step; primaryColor: stri
 // ── Selector de productos amigable (con toda la información del editor) ────────
 export function FriendlyProductSelector({
   products, selected, onSelect, primaryColor, generatedProducts, textColor, textMutedColor,
+  showHeader = true,
 }: {
   products: Product[];
   selected: Product | null;
@@ -164,6 +175,7 @@ export function FriendlyProductSelector({
   generatedProducts: Map<string, string>;
   textColor?: string;
   textMutedColor?: string;
+  showHeader?: boolean;
 }) {
   const bgLuminance = isLightBg(primaryColor);
   const textMain = textColor || (bgLuminance ? '#050505' : '#ffffff');
@@ -193,20 +205,25 @@ export function FriendlyProductSelector({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="mb-3 md:mb-4 text-center">
-        <p className="text-sm font-black uppercase italic tracking-tight" style={{ color: textMain }}>¿Qué quieres probarte?</p>
-        <p className="text-[10px] font-medium uppercase tracking-widest mt-0.5" style={{ color: textMuted }}>Toca el producto que más te guste</p>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
+      {showHeader && (
+        <div role="heading" aria-level={2} className="mb-3 md:mb-4 text-center">
+          <p className="text-sm font-black uppercase italic tracking-tight" style={{ color: textMain }}>¿Qué quieres probarte?</p>
+          <p className="text-[10px] font-medium uppercase tracking-widest mt-0.5" style={{ color: textMuted }}>Toca el producto que más te guste</p>
+        </div>
+      )}
+      <div role="listbox" aria-label="Productos disponibles" className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2 sm:gap-4 justify-center">
         {products.map((p, index) => {
           const sel = selected?.id === p.id;
           const alreadyGenerated = generatedProducts.has(p.id);
           const cardBg = 'rgba(255,255,255,0.1)';
           const borderColor = 'rgba(255,255,255,0.15)';
-          
+
           return (
             <motion.button
               key={p.id}
+              role="option"
+              aria-selected={sel}
+              aria-label={`${p.name}${p.price != null ? `, precio $${p.price.toLocaleString('es-CO')}` : ''}${alreadyGenerated ? ', ya probado' : ''}`}
               onClick={() => onSelect(p)}
               className={`rounded-2xl overflow-hidden border-2 text-left transition-all duration-300 ${
                 sel ? 'scale-[1.03] shadow-xl' : 'hover:scale-[1.02] hover:shadow-lg'
@@ -220,7 +237,6 @@ export function FriendlyProductSelector({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               whileTap={{ scale: 0.98 }}
-              aria-label={`Seleccionar ${p.name}`}
             >
               {/* Image Container */}
               <div className="relative bg-gray-100">
@@ -429,10 +445,14 @@ export function ErrorBanner({
         className="mb-4 overflow-hidden"
       >
         <div 
-          className="p-3 md:p-4 rounded-2xl flex items-start gap-2 md:gap-3 border"
+          className={`p-3 md:p-4 rounded-2xl flex items-start gap-2 md:gap-3 border ${
+            isServiceError 
+              ? (cardBg ? '' : 'bg-gray-100') + ' ' + (cardBorder ? '' : 'border-gray-200')
+              : 'bg-red-50 border-red-200'
+          }`}
           style={{ 
-            backgroundColor: isServiceError ? (cardBg || '#f3f4f6') : '#fef2f2',
-            borderColor: isServiceError ? (cardBorder || '#e5e5e5') : '#fecaca',
+            ...(isServiceError && cardBg ? { backgroundColor: cardBg } : {}),
+            ...(isServiceError && cardBorder ? { borderColor: cardBorder } : {})
           }}
         >
           <motion.div
@@ -440,13 +460,23 @@ export function ErrorBanner({
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           >
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: isServiceError ? (mutedColor || '#666') : '#ef4444' }} strokeWidth={2} />
+            <AlertCircle 
+              className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isServiceError && !mutedColor ? 'text-gray-500' : (!isServiceError ? 'text-red-500' : '')}`} 
+              style={isServiceError && mutedColor ? { color: mutedColor } : {}} 
+              strokeWidth={2} 
+            />
           </motion.div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold" style={{ color: isServiceError ? (textColor || '#1a1a1a') : '#dc2626' }}>
+            <p 
+              className={`text-sm font-semibold ${isServiceError && !textColor ? 'text-gray-900' : (!isServiceError ? 'text-red-600' : '')}`} 
+              style={isServiceError && textColor ? { color: textColor } : {}}
+            >
               {isServiceError ? 'La prueba virtual está temporalmente no disponible' : 'Algo salió mal'}
             </p>
-            <p className="text-xs mt-0.5" style={{ color: isServiceError ? (mutedColor || '#666') : '#991b1b' }}>
+            <p 
+              className={`text-xs mt-0.5 ${isServiceError && !mutedColor ? 'text-gray-500' : (!isServiceError ? 'text-red-800' : '')}`} 
+              style={isServiceError && mutedColor ? { color: mutedColor } : {}}
+            >
               {isServiceError 
                 ? 'El servicio de generación se quedó sin capacidad temporalmente. Intenta de nuevo en unos minutos.'
                 : error
@@ -461,7 +491,10 @@ export function ErrorBanner({
               whileTap={{ scale: 0.9 }}
               aria-label="Cerrar notificación"
             >
-              <X className="w-4 h-4" style={{ color: mutedColor || (isServiceError ? '#666' : '#991b1b') }} />
+              <X 
+                className={`w-4 h-4 ${isServiceError && !mutedColor ? 'text-gray-500' : (!isServiceError ? 'text-red-800' : '')}`} 
+                style={isServiceError && mutedColor ? { color: mutedColor } : {}} 
+              />
             </motion.button>
           )}
         </div>
@@ -561,30 +594,30 @@ const INFO_STYLES = {
   info: {
     bg: 'bg-blue-50',
     border: 'border-blue-200',
-    iconColor: '#3b82f6',
-    titleColor: '#1d4ed8',
-    textColor: '#1e40af',
+    iconClass: 'text-blue-500',
+    titleClass: 'text-blue-700',
+    textClass: 'text-blue-800',
   },
   warning: {
     bg: 'bg-amber-50',
     border: 'border-amber-200',
-    iconColor: '#f59e0b',
-    titleColor: '#b45309',
-    textColor: '#92400e',
+    iconClass: 'text-amber-500',
+    titleClass: 'text-amber-700',
+    textClass: 'text-amber-800',
   },
   error: {
     bg: 'bg-red-50',
     border: 'border-red-200',
-    iconColor: '#ef4444',
-    titleColor: '#dc2626',
-    textColor: '#991b1b',
+    iconClass: 'text-red-500',
+    titleClass: 'text-red-600',
+    textClass: 'text-red-800',
   },
   success: {
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',
-    iconColor: '#10b981',
-    titleColor: '#047857',
-    textColor: '#065f46',
+    iconClass: 'text-emerald-500',
+    titleClass: 'text-emerald-700',
+    textClass: 'text-emerald-800',
   },
 };
 
@@ -621,9 +654,9 @@ export function InfoBanner({
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           >
-            <Icon className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: styles.iconColor }} strokeWidth={2} />
+            <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${styles.iconClass}`} strokeWidth={2} />
           </motion.div>
-          <p className="text-sm font-medium flex-1" style={{ color: styles.textColor }}>{message}</p>
+          <p className={`text-sm font-medium flex-1 ${styles.textClass}`}>{message}</p>
           {onDismiss && (
             <motion.button
               onClick={onDismiss}
@@ -632,7 +665,7 @@ export function InfoBanner({
               whileTap={{ scale: 0.9 }}
               aria-label="Cerrar notificación"
             >
-              <X className="w-4 h-4" style={{ color: styles.iconColor }} />
+              <X className={`w-4 h-4 ${styles.iconClass}`} />
             </motion.button>
           )}
         </div>

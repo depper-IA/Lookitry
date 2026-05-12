@@ -10,7 +10,7 @@ interface AlertProps {
 export const Alert: React.FC<AlertProps> = ({ type = 'info', title, message, className = '' }) => {
   const configs = {
     success: {
-      bg: 'bg-[#0d1f0d]/30',
+      bg: 'bg-emerald-950/30',
       border: 'border-emerald-500/20',
       accent: 'bg-emerald-500',
       icon: (
@@ -20,7 +20,7 @@ export const Alert: React.FC<AlertProps> = ({ type = 'info', title, message, cla
       )
     },
     error: {
-      bg: 'bg-[#1f0d0d]/30',
+      bg: 'bg-red-950/30',
       border: 'border-red-500/20',
       accent: 'bg-red-500',
       icon: (
@@ -30,7 +30,7 @@ export const Alert: React.FC<AlertProps> = ({ type = 'info', title, message, cla
       )
     },
     warning: {
-      bg: 'bg-[#1f1a0d]/30',
+      bg: 'bg-amber-950/30',
       border: 'border-amber-500/20',
       accent: 'bg-amber-500',
       icon: (
@@ -40,11 +40,11 @@ export const Alert: React.FC<AlertProps> = ({ type = 'info', title, message, cla
       )
     },
     info: {
-      bg: 'bg-[#1a120f]/30',
-      border: 'border-[#FF5C3A]/20',
-      accent: 'bg-[#FF5C3A]',
+      bg: 'bg-dark-surface/30',
+      border: 'border-accent/20',
+      accent: 'bg-accent',
       icon: (
-        <svg className="w-5 h-5 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       )
@@ -68,7 +68,7 @@ export const Alert: React.FC<AlertProps> = ({ type = 'info', title, message, cla
               {title}
             </h3>
           )}
-          <div className="text-[12.5px] md:text-[13px] text-[#888] leading-relaxed">
+          <div className="text-[12.5px] md:text-[13px] text-text-secondary leading-relaxed">
             {message}
           </div>
         </div>

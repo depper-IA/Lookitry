@@ -572,12 +572,48 @@ export default function AdminBrandsPage() {
     setSendingReset(brand.id);
     try {
       await adminApi.post(`/admin/brands/${brand.id}/send-reset-email`);
-      setResetToast({ message: `Email enviado a ${brand.email}`, type: 'success' });
-      setTimeout(() => setResetToast(null), 4000);
+      showToast(`Email enviado a ${brand.email}`, 'success');
     } catch (err: any) {
-      setResetToast({ message: err.message || 'Error', type: 'error' });
-      setTimeout(() => setResetToast(null), 4000);
+      showToast(err.message || 'Error', 'error');
     } finally { setSendingReset(null); }
+  };
+
+  const handleResetBrand = async (brand: Brand) => {
+    const ok = await confirm({
+      title: 'Resetear marca',
+      message: `¿Estás seguro de resetear la marca ${brand.name}? Se limpiará su trial y suscripción, pero se mantendrá la cuenta y productos.`,
+      confirmLabel: 'Resetear',
+      danger: true,
+      reason: 'Esta acción es útil para permitir que una marca comience de cero con un nuevo plan.',
+    });
+    if (!ok) return;
+
+    try {
+      await adminApi.post(`/admin/brands/${brand.id}/reset`);
+      showToast('Marca reseteada exitosamente', 'success');
+      await fetchBrands();
+    } catch (err: any) {
+      showToast(err.message || 'Error al resetear marca', 'error');
+    }
+  };
+
+  const handleDeleteBrand = async (brand: Brand) => {
+    const ok = await confirm({
+      title: 'Eliminar marca',
+      message: `¿Estás seguro de eliminar ${brand.name}? Su email y slug se liberarán para que pueda registrarse de nuevo.`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+      reason: 'La marca será archivada y ocultada del panel.',
+    });
+    if (!ok) return;
+
+    try {
+      await adminApi.delete(`/admin/brands/${brand.id}`);
+      showToast('Marca eliminada/archivada', 'success');
+      await fetchBrands();
+    } catch (err: any) {
+      showToast(err.message || 'Error al eliminar marca', 'error');
+    }
   };
 
   if (loading) return (
@@ -784,6 +820,8 @@ export default function AdminBrandsPage() {
               onSelectActivate={brand => handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')}
               onSelectModalConfig={handleOpenModalConfig}
               onSendReset={handleSendResetEmail}
+              onResetAccount={handleResetBrand}
+              onDeleteBrand={handleDeleteBrand}
               sortField="name"
               sortOrder="asc"
               onSortChange={() => {}}

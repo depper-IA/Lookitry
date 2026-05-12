@@ -4,6 +4,37 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 
+// CSS-only animations for infinite loops (performance optimization)
+// framer-motion repeat:Infinity is JS-driven and costly; CSS keyframes are GPU-accelerated
+const spinnerStyles = `
+  @keyframes spin-cw {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes spin-ccw {
+    to { transform: rotate(-360deg); }
+  }
+  @keyframes pulse-scale {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+  @keyframes dot-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+  }
+  .gen-spin-outer {
+    animation: spin-cw 1.2s linear infinite;
+  }
+  .gen-spin-inner {
+    animation: spin-ccw 1.8s linear infinite;
+  }
+  .gen-pulse {
+    animation: pulse-scale 2s ease-in-out infinite;
+  }
+  .gen-dot-pulse {
+    animation: dot-pulse 1.5s ease-in-out infinite;
+  }
+`;
+
 interface GenerationLoaderProps {
   productName: string;
   primaryColor?: string;
@@ -70,45 +101,38 @@ export function GenerationLoader({
   }, [msgIndex, prevMsgIndex]);
 
   return (
-    <div className="flex flex-col items-center justify-center py-6 md:py-12 px-4 w-full max-w-sm mx-auto">
-      {/* Skeleton shimmer effect */}
-      <motion.div 
-        className="relative w-20 h-20 md:w-24 md:h-24 mb-5 md:mb-6"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
-        {/* Outer ring */}
-        <div className="absolute inset-0 rounded-full border-4 opacity-20" style={{ borderColor: mutedColor }} />
-        
-        {/* Spinning arc */}
-        <motion.div 
-          className="absolute inset-0 rounded-full border-4 border-transparent"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-          style={{ borderTopColor: primaryColor }}
-        />
-        
-        {/* Inner spinning arc (reverse) */}
-        <motion.div 
-          className="absolute inset-2 md:inset-3 rounded-full border-4 border-transparent"
-          animate={{ rotate: -360 }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
-          style={{ borderTopColor: `${primaryColor}50` }}
-        />
-        
-        {/* Center icon */}
-        <motion.div 
-          className="absolute inset-0 flex items-center justify-center"
-          animate={{ 
-            scale: [1, 1.1, 1],
-            opacity: [0.8, 1, 0.8]
-          }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+    <>
+      {/* Inject CSS-only animation keyframes */}
+      <style dangerouslySetInnerHTML={{ __html: spinnerStyles }} />
+
+      <div className="flex flex-col items-center justify-center py-6 md:py-12 px-4 w-full max-w-sm mx-auto">
+        {/* Skeleton shimmer effect */}
+        <motion.div
+          className="relative w-20 h-20 md:w-24 md:h-24 mb-5 md:mb-6"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          <Sparkles className="w-7 h-7 md:w-9 md:h-9" style={{ color: primaryColor }} strokeWidth={1.5} />
+          {/* Outer ring */}
+          <div className="absolute inset-0 rounded-full border-4 opacity-20" style={{ borderColor: mutedColor }} />
+
+          {/* Spinning arc - CSS animation (was: repeat:Infinity framer-motion) */}
+          <div
+            className="absolute inset-0 rounded-full border-4 border-transparent gen-spin-outer"
+            style={{ borderTopColor: primaryColor }}
+          />
+
+          {/* Inner spinning arc (reverse) - CSS animation */}
+          <div
+            className="absolute inset-2 md:inset-3 rounded-full border-4 border-transparent gen-spin-inner"
+            style={{ borderTopColor: `${primaryColor}50` }}
+          />
+
+          {/* Center icon - CSS animation for pulse */}
+          <div className="absolute inset-0 flex items-center justify-center gen-pulse">
+            <Sparkles className="w-7 h-7 md:w-9 md:h-9" style={{ color: primaryColor }} strokeWidth={1.5} />
+          </div>
         </motion.div>
-      </motion.div>
 
       {/* Title */}
       <motion.h2 
@@ -185,25 +209,22 @@ export function GenerationLoader({
       </div>
 
       {/* Brand indicator */}
-      <motion.div 
+      <motion.div
         className="mt-8 md:mt-10 flex items-center gap-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
       >
-        <motion.div 
-          className="w-2 h-2 rounded-full"
+        {/* CSS animation instead of framer-motion repeat:Infinity */}
+        <div
+          className="w-2 h-2 rounded-full gen-dot-pulse"
           style={{ backgroundColor: primaryColor }}
-          animate={{ 
-            opacity: [1, 0.5, 1],
-            scale: [1, 1.2, 1]
-          }}
-          transition={{ duration: 1.5, repeat: Infinity }}
         />
         <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: mutedColor }}>
           IA LOOKITRY ACTIVE
         </p>
       </motion.div>
     </div>
+    </>
   );
 }

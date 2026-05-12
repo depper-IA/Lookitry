@@ -323,7 +323,7 @@ async function main() {
   
   if (args.length === 0) {
     console.log(`
-🎯 Web Verification Agent for Lookitry CRM
+ð¯ Web Verification Agent for Lookitry CRM
 
 Usage:
   npx ts-node src/scripts/crm-filter/web-verification-agent.ts <url>
@@ -353,10 +353,10 @@ Examples:
     });
     
     process.stdin.on('end', async () => {
-      console.log(`\n🔍 Verifying ${urls.length} URLs...\n`);
+      console.log(`\nð Verifying ${urls.length} URLs...\n`);
       
       const results = await agent.verifyBatch(urls, (current, total, result) => {
-        const icon = result.isFashion === true ? '✅' : result.isFashion === false ? '❌' : '⚠️';
+        const icon = result.isFashion === true ? 'â' : result.isFashion === false ? 'â' : 'â ï¸';
         console.log(`[${current}/${total}] ${icon} ${result.url}`);
         if (result.error) {
           console.log(`   Error: ${result.error}`);
@@ -365,22 +365,22 @@ Examples:
         }
       });
       
-      console.log('\n📊 SUMMARY:');
+      console.log('\nð SUMMARY:');
       const accepted = results.filter(r => r.isFashion === true).length;
       const rejected = results.filter(r => r.isFashion === false).length;
       const uncertain = results.filter(r => r.isFashion === null).length;
       
-      console.log(`   ✅ Accepted: ${accepted}`);
-      console.log(`   ❌ Rejected: ${rejected}`);
-      console.log(`   ⚠️  Uncertain: ${uncertain}`);
+      console.log(`   â Accepted: ${accepted}`);
+      console.log(`   â Rejected: ${rejected}`);
+      console.log(`   â ï¸  Uncertain: ${uncertain}`);
     });
   } else {
     // Single URL verification
     const result = await agent.verifyWebsite(args[0]);
-    console.log('\n🔍 VERIFICATION RESULT:');
-    console.log('────────────────────────────────────────');
+    console.log('\nð VERIFICATION RESULT:');
+    console.log('————————————————————');
     console.log(`URL:       ${result.url}`);
-    console.log(`Status:    ${result.isFashion === true ? '✅ FASHION' : result.isFashion === false ? '❌ NOT FASHION' : '⚠️ UNCERTAIN'}`);
+    console.log(`Status:    ${result.isFashion === true ? 'â FASHION' : result.isFashion === false ? 'â NOT FASHION' : 'â ï¸ UNCERTAIN'}`);
     console.log(`Reason:    ${result.reason}`);
     if (result.title) console.log(`Title:     ${result.title}`);
     if (result.keywordsFound.length) console.log(`Keywords:  ${result.keywordsFound.join(', ')}`);

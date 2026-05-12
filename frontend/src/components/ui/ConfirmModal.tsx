@@ -45,7 +45,7 @@ export function ConfirmModal({
       bg: 'bg-indigo-500/10',
       border: 'border-indigo-500/20',
       text: 'text-indigo-500',
-      button: 'bg-[#FF5C3A] hover:bg-[#FF5C3A]/90 shadow-[#FF5C3A]/30'
+      button: 'bg-accent hover:bg-accent/90 shadow-accent/30'
     }
   };
 
@@ -98,7 +98,7 @@ export function ConfirmModal({
                 <div className="flex gap-4 pt-4">
                   <button
                     onClick={onClose}
-                    className="flex-1 px-8 py-5 bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-2xl font-black uppercase tracking-widest text-[10px] hover:border-[#FF5C3A]/30 transition-all active:scale-95"
+                    className="flex-1 px-8 py-5 bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-2xl font-black uppercase tracking-widest text-[10px] hover:border-accent/30 transition-all active:scale-95"
                   >
                     {cancelLabel}
                   </button>

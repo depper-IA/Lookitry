@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -151,21 +151,44 @@ export default function PaymentSettingsPage() {
               Guardado
             </span>
           )}
-          <button
+          <motion.button
             onClick={handleSave}
             disabled={saving}
-            className="flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-2.5 text-white rounded-2xl disabled:opacity-50 font-black uppercase tracking-widest transition-colors shadow-lg shadow-[var(--accent)]/20"
+            whileHover={{ scale: saving ? 1 : 1.02 }}
+            whileTap={{ scale: saving ? 1 : 0.98 }}
+            className="relative overflow-hidden flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-2.5 text-white rounded-2xl disabled:opacity-50 font-black uppercase tracking-widest shadow-lg shadow-[var(--accent)]/20"
             style={{ backgroundColor: 'var(--accent)' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e04e30')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--accent)')}
           >
-            {saving ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-            ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-            )}
-            Guardar cambios
-          </button>
+            <AnimatePresence mode="wait">
+              {saving ? (
+                <motion.span
+                  key="saving"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-2"
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                  />
+                  Guardando...
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="save"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                  Guardar cambios
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
         </div>
       </div>
 
@@ -544,17 +567,18 @@ export default function PaymentSettingsPage() {
 
 function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean) => void }) {
   return (
-    <button
+    <motion.button
       onClick={() => onChange(!enabled)}
+      whileTap={{ scale: 0.95 }}
       className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
       style={{ backgroundColor: enabled ? 'var(--accent)' : 'var(--border-color)' }}
     >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-          enabled ? 'translate-x-6' : 'translate-x-1'
-        }`}
+      <motion.div
+        animate={{ x: enabled ? 22 : 2 }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        className="h-4 w-4 rounded-full bg-white shadow"
       />
-    </button>
+    </motion.button>
   );
 }
 
@@ -570,14 +594,22 @@ function Field({
 }) {
   return (
     <div>
-      <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">{label}</label>
-      <input
+      <motion.label
+        style={{ color: 'var(--text-secondary)' }}
+        className="block text-sm font-medium mb-1"
+        whileHover={{ color: '#FF5C3A' }}
+        transition={{ duration: 0.2 }}
+      >
+        {label}
+      </motion.label>
+      <motion.input
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
+        whileFocus={{ scale: 1.01, borderColor: "#FF5C3A" }}
         style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+        className="w-full px-3 py-2 border rounded-lg focus:outline-none text-sm transition-all"
       />
       {hint && <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">{hint}</p>}
     </div>

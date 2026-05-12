@@ -6,11 +6,13 @@ import { Calendar, Tag, ChevronLeft, ArrowUpRight, Zap, BarChart3 } from 'lucide
 import BlogArticle, { TableOfContents } from './BlogArticle';
 import { BlogImageWithFallback } from './BlogImageWithFallback';
 import { useTheme } from './BlogThemeWrapper';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 import { cn } from '@/utils/cn';
 import { getBlogFeaturedImage, getBlogTeaser } from '@/services/blog.service';
 import { BlogShareRail } from './BlogShareRail';
+import LeadMagnetBanner from './LeadMagnetBanner';
+import SafeJsonLd from './SafeJsonLd';
 
 interface BlogPostContentProps {
   post: any;
@@ -100,15 +102,9 @@ export default function BlogPostContent({ post, recentPosts, shareUrl }: BlogPos
   return (
     <div className="overflow-x-clip">
       {/* BlogPosting Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <SafeJsonLd data={jsonLd} />
       {/* BreadcrumbList Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <SafeJsonLd data={breadcrumbJsonLd} />
       <BlogShareRail title={post.title} url={shareUrl} />
       <LandingNav />
       <main className={cn(
@@ -197,6 +193,9 @@ export default function BlogPostContent({ post, recentPosts, shareUrl }: BlogPos
                 publishedAt={post.published_at || post.created_at}
                 readingTime={post.reading_time}
               />
+
+              {/* Lead Magnet Banner */}
+              <LeadMagnetBanner />
 
               <section className={cn(
                 "mt-10 rounded-[2rem] border p-8 md:p-10 transition-all duration-300",

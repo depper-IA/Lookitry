@@ -1,5 +1,6 @@
 import { api } from './api';
 import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
+import { getProxiedUrl } from '@/utils/imageProxy';
 
 function isCreditsExhaustedErrorPayload(payload: any): boolean {
   const errorCode = String(payload?.error || '').toUpperCase();
@@ -32,25 +33,26 @@ class TryOnService {
           id: data?.brand?.id ?? '',
           name: data?.brand?.name ?? '',
           slug: data?.brand?.slug ?? '',
-          logo: data?.brand?.logo ?? null,
+          logo: data?.brand?.logo ? getProxiedUrl(data.brand.logo) : undefined,
           primaryColor: data?.brand?.primary_color ?? '#FF5C3A',
-          secondaryColor: data?.brand?.secondary_color ?? null,
+          secondaryColor: data?.brand?.secondary_color ?? undefined,
           widgetTemplate: data?.brand?.widget_template ?? 'minimal',
           buttonText: data?.brand?.button_text ?? 'Probarme esto',
           welcomeMessage: data?.brand?.welcome_message ?? '',
           plan: data?.brand?.plan ?? 'BASIC',
-          headerColor: data?.brand?.header_color ?? null,
-          brandDescription: data?.brand?.brand_description ?? null,
-          whatsappContact: data?.brand?.whatsapp_contact ?? null,
-          coverImageUrl: data?.brand?.cover_image_url ?? null,
+          headerColor: data?.brand?.header_color ?? undefined,
+          brandDescription: data?.brand?.brand_description ?? undefined,
+          whatsappContact: data?.brand?.whatsapp_contact ?? undefined,
+          coverImageUrl: data?.brand?.cover_image_url ? getProxiedUrl(data.brand.cover_image_url) : undefined,
           socialLinks: data?.brand?.social_links ?? {},
           hasLandingPage: data?.brand?.has_landing_page ?? false,
-          customDomain: data?.brand?.custom_domain ?? null,
+          customDomain: data?.brand?.custom_domain ?? undefined,
+          widgetCoverImage: data?.brand?.widget_cover_image ? getProxiedUrl(data.brand.widget_cover_image) : undefined,
         },
         products: (data?.products ?? []).map((p: any) => ({
           id: p?.id ?? '',
           name: p?.name ?? '',
-          imageUrl: p?.image_url || '',
+          imageUrl: p?.image_url ? getProxiedUrl(p.image_url) : '',
           category: p?.category ?? '',
           description: p?.description ?? '',
           shortDescription: p?.short_description ?? '',
@@ -69,16 +71,18 @@ class TryOnService {
 
   /**
    * Obtener estado de una generación por ID
-   * Endpoint público — no requiere auth (el generationId actúa como token)
+   * Endpoint público de polling — usa /api/pruebalo/:brandSlug/generation/:generationId
+   * No requiere auth (el generationId actúa como token)
    */
-  async getGenerationStatus(generationId: string): Promise<{
+  async getGenerationStatus(generationId: string, brandSlug: string): Promise<{
     status: 'PENDING' | 'SUCCESS' | 'FAILED';
     imageUrl?: string;
     error?: string;
     processingTime?: number;
   }> {
     try {
-      const response = await api.get<any>(`/generations/${generationId}`);
+      // IMPORTANTE: Usar ruta pública de widget, NO /generations/:id (esa requiere auth)
+      const response = await api.get<any>(`/pruebalo/${brandSlug}/generation/${generationId}`);
       return {
         status: response.data?.status ?? 'PENDING',
         imageUrl: response.data?.imageUrl ?? response.data?.result_image_url,
@@ -103,6 +107,9 @@ class TryOnService {
     const formData = new FormData();
     formData.append('productId', data.productId);
     formData.append('selfie', data.selfieFile);
+    if (data.clientFingerprint) {
+      formData.append('clientFingerprint', data.clientFingerprint);
+    }
 
     try {
       const response = await api.post<GenerateTryOnResponse>(
@@ -115,6 +122,13 @@ class TryOnService {
       const json = err?.response?.data || {};
 
       if (err?.response?.status === 429) {
+        if (json.error === 'CLIENT_ATTEMPT_LIMIT_EXCEEDED') {
+          const limitErr = new Error(json.message || 'Límite de intentos excedido') as any;
+          limitErr.clientAttemptLimit = true;
+          limitErr.attemptsUsed = json.attemptsUsed;
+          limitErr.attemptsLimit = json.attemptsLimit;
+          throw limitErr;
+        }
         throw new Error(json.message || 'Límite de generaciones excedido');
       }
 

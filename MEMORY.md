@@ -1,51 +1,44 @@
-# MEMORY — Sammy (Orquestadora Lookitry)
+# MEMORY.md - Lookitry Session Memory
 
-## Protocolo de Arranque (OBLIGATORIO)
+## VPS Credentials (CRÍTICO)
 
-Antes de cualquier acción o análisis, SIEMPRE ejecutar en orden:
+| Campo | Valor |
+|-------|-------|
+| SSH Key | `C:\Users\Matt\.ssh\lookitry_key` |
+| Host | `root@31.220.18.39` |
+| ID VPS | 1004711 |
 
-1. **Leer CHANGELOG.md completo** — Estado actual de cambios
-2. **Leer memory/YYYY-MM-DD.md** (hoy + ayer) — Contexto reciente
-3. **Leer MEMORY.md** — Solo en sesión principal con Sam
-4. Solo después proceder con conversación/tareas
+**Siempre usar `-i "C:\Users\Matt\.ssh\lookitry_key"` para SSH**
 
-**Regla**: No asumir estado del proyecto. Consultar archivos primero.
+## Proyecto
 
----
+- **Repo**: https://github.com/depper-IA/Lookitry
+- **VPS**: Hostinger Ubuntu con Docker
+- **Dominios**: lookitry.com, api.lookitry.com, n8n.wilkiedevs.com, minio.wilkiedevs.com
 
-## Estado Actual del Proyecto (20 Abr 2026)
+## Servicios
 
-### Recovery Phase COMPLETA
-- ✅ Backend/Frontend/n8n/Redis/MinIO/Traefik todos corriendo en VPS
-- ✅ TLS/SSL funcionando para todos los subdominios
-- ✅ SUPABASE_SERVICE_KEY corregido (era anon key, ahora service_role)
-- ✅ Redis AUTH habilitado con password
-- ✅ Puertos expuestos 8080, 5678, 9001 CERRADOS
+| Servicio | URL | Contenedor |
+|----------|-----|------------|
+| Frontend | https://lookitry.com | lookitry-frontend |
+| Backend API | https://api.lookitry.com | lookitry-backend |
+| n8n | https://n8n.wilkiedevs.com | root-n8n-1 |
+| Redis | redis://root-redis-1:6379 | root-redis-1 |
 
-### Lo que YA está arreglado (según CHANGELOG)
-- MinIO con Traefik routing configurado
-- HTTP→HTTPS redirect activo
-- Backend routing vía Traefik para api.lookitry.com
-- Protección SSRF en img-proxy
-- Prompt injection protection en pruebalo.controller
+**Nota**: Sammy (agente IA) no está desplegado en VPS.
 
-### pending_img_proxy_403
-- El img-proxy está retornando 403 para `wilkiedevs.com`
-- Allowlist de img-proxy solo incluye dominios Lookitry
-- Dominio `wilkiedevs.com` NO está en allowlist
-- **Status**: Pendiente decisión de Sam
+## Deployment
 
----
+- **Deploy VPS**: Usar siempre `python scripts/_deploy_now.py` (NO GitHub Actions)
+- **GitHub Actions**: Solo para sync del plugin WordPress (`sync-plugin.yml`)
+- **Workflows activos**: `.github/workflows/sync-plugin.yml` (WordPress only)
 
-## VPS Credentials (referencia)
+## Recientes
 
-- **Host**: 31.220.18.39
-- **SSH Key**: `scripts/id_rsa_lookitry`
-- **Redis Password**: `Redis2024SecurePassNoSlash`
-- **Supabase Service Role Key**: Completado en REGLAS_IMPORTANTES.md
-
----
-
-## Último Commit de Sam
-
-"No analices, no hagas preguntas, solo ejecuta. Si no sabes qué hacer, pregunta."
+- **2026-04-22**: Auditoría de login completada
+  - COOKIE_DOMAIN configurado en producción
+  - Account lockout implementado (5 intentos = 15 min)
+  - Login audit logging agregado
+  - Admin rate limit más estricto
+  - Session TTL reducido a 7 días
+  - Columnas `failed_login_attempts` y `locked_until` agregadas a brands

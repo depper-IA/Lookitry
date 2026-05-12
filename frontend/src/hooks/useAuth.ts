@@ -90,8 +90,14 @@ export function useAuth() {
   };
 
   const logout = async () => {
-    authService.clearSession();
-    setBrand(null);
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.error('Error during logout:', err);
+      authService.clearSession();
+    } finally {
+      setBrand(null);
+    }
   };
 
   const refreshBrand = async () => {

@@ -9,6 +9,9 @@ services:
       - /root/virtual-tryon/backend/.env.production
     environment:
       - NODE_OPTIONS=--max-old-space-size=512
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/gcs-credentials.json
+    volumes:
+      - /root/virtual-tryon/credentials:/app/credentials:ro
     networks:
       - proxy
     labels:

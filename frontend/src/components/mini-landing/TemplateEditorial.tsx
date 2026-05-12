@@ -20,6 +20,8 @@ import {
   getContrastColor,
   useContrastTheme,
   useLandingTheme,
+  LandingTheme,
+  getCssColor,
   YouTubeIcon, 
   XIcon, 
   InstagramIcon, 
@@ -72,7 +74,19 @@ function EditorialHero({ brand }: { brand: BrandData }) {
   const mutedColor = getSmartMutedColor(coverBaseColor);
   
   return (
-    <section className="relative w-full h-[35vh] md:h-[50vh] flex items-center justify-center overflow-hidden" style={{ backgroundColor: coverBaseColor }}>
+    <section className="relative w-full h-[35vh] md:h-[50vh] flex items-center justify-center overflow-hidden"
+      style={{
+        backgroundColor: coverBaseColor,
+        // Si no hay imagen, agregar gradient decorativo para dar profundidad
+        ...(!brand.cover_image_url && {
+          background: `
+            radial-gradient(ellipse at 30% 0%, ${coverBaseColor}ee 0%, transparent 50%),
+            radial-gradient(ellipse at 70% 100%, ${coverBaseColor}44 0%, transparent 50%),
+            ${coverBaseColor}
+          `
+        })
+      }}
+    >
       {brand.cover_image_url && (
         <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover scale-105" style={{ opacity: imageOpacity }} />
       )}
@@ -90,35 +104,128 @@ function EditorialHero({ brand }: { brand: BrandData }) {
   );
 }
 
-function EditorialProductCard({ product, selected, primaryColor, onClick }: { product: ProductData; selected: boolean; primaryColor: string; onClick: () => void }) {
+function EditorialProductCard({ product, selected, theme, onClick }: { product: ProductData; selected: boolean; theme: LandingTheme; onClick: () => void }) {
+  const prodDesc = product.short_description || product.description;
   return (
-    <button onClick={onClick} aria-label={`Seleccionar ${product.name}`} className="group text-left w-full space-y-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2">
-      <div className={`relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-gray-50 border-2 transition-all duration-500 ${selected ? 'shadow-2xl shadow-[var(--secondary-20)] scale-[1.02]' : 'hover:shadow-xl'}`} style={{ borderColor: selected ? primaryColor : 'transparent' }}>
-        <ProductImage src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
-        {product.badge && <div className="absolute top-2 left-2 md:top-3 md:left-3 scale-90 origin-top-left"><ProductBadge badge={product.badge} /></div>}
-        {selected && (
-          <div className="absolute inset-0 bg-[var(--secondary-10)] flex items-center justify-center backdrop-blur-[1px]">
-            <div className="bg-white p-2 md:p-3 rounded-xl md:rounded-2xl shadow-2xl">
-              <SparklesIcon className="w-4 h-4 md:w-5 md:h-5 text-[var(--secondary)]" />
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="px-1 md:px-2 space-y-0.5 md:space-y-1">
-        <div className="flex justify-between items-start gap-2">
-          <h3 className="text-[10px] md:text-sm font-black text-gray-900 uppercase tracking-tight truncate flex-1">{product.name}</h3>
-          {product.price != null && <p className="text-[10px] md:text-sm font-black text-[var(--secondary)]">${product.price.toLocaleString('es-CO')}</p>}
+    <button
+      onClick={onClick}
+      aria-label={`Seleccionar ${product.name}`}
+      className="group text-left w-full focus-visible:outline-none"
+    >
+      {/* Imagen — formato editorial 3/4 */}
+      <div
+        className="relative aspect-[3/4] overflow-hidden rounded-xl"
+        style={{
+          backgroundColor: '#e8e8e8',
+          transition: 'outline-color 0.2s',
+          ...(selected
+            ? { outline: `2px solid ${theme.primary}`, outlineOffset: '3px' }
+            : {}),
+        }}
+      >
+        <ProductImage
+          src={product.image_url}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-[1.04]"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          primaryColor={theme.primary}
+        />
+
+        {/* Overlay hover — CTA sutil */}
+        <div className="absolute inset-0 flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <span
+            className="text-[8px] uppercase tracking-[0.3em] font-bold px-3 py-1.5"
+            style={{ backgroundColor: theme.primary, color: '#fff' }}
+          >
+            Probar
+          </span>
         </div>
-        <p className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest">{product.category}</p>
-        {product.short_description && <p className="text-[8px] md:text-[9px] text-gray-500 line-clamp-1 mt-1">{product.short_description}</p>}
-        {product.attributes && Object.keys(product.attributes).length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {Object.entries(product.attributes).slice(0, 2).map(([key, value]) => {
+
+        {/* Dot selected */}
+        {selected && (
+          <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full" style={{ backgroundColor: theme.primary }} />
+        )}
+
+        {product.badge && <ProductBadge badge={product.badge} primaryColor={theme.primary} />}
+      </div>
+
+      {/* Info */}
+      <div className="pt-3 space-y-1.5">
+        {/* Categoría como eyebrow */}
+        {product.category && (
+          <p className="text-[8px] uppercase tracking-[0.3em] font-medium" style={{ color: theme.primary }}>
+            {product.category}
+          </p>
+        )}
+
+        {/* Nombre */}
+        <h3
+          className="text-[11px] font-semibold uppercase tracking-[0.1em] leading-snug line-clamp-2"
+          style={{ color: theme.cardText }}
+        >
+          {product.name}
+        </h3>
+
+        {/* Precio + dots de color */}
+        <div className="flex items-center justify-between gap-2">
+          {product.price != null && (
+            <p className="text-[13px] font-black tabular-nums" style={{ color: theme.primary }}>
+              ${product.price.toLocaleString('es-CO')}
+            </p>
+          )}
+          {product.attributes && (
+            <div className="flex gap-1.5 flex-wrap justify-end">
+              {Object.entries(product.attributes).map(([key, value]) => {
+                if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                const isColor = key.toLowerCase() === 'color' || key.toLowerCase() === 'colores';
+                if (!isColor) return null;
+                const cssColor = getCssColor(String(Array.isArray(value) ? value[0] : value));
+                const isHex = cssColor?.startsWith('#');
+                return cssColor ? (
+                  <div
+                    key={key}
+                    className={`w-2.5 h-2.5 rounded-full shrink-0 ${!isHex ? cssColor : ''}`}
+                    style={{ 
+                      ...(isHex ? { backgroundColor: cssColor } : {}), 
+                      border: '1px solid rgba(0,0,0,0.12)' 
+                    }}
+                  />
+                ) : null;
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Descripción — 2 líneas */}
+        {prodDesc && (
+          <p
+            className="text-[9px] leading-relaxed line-clamp-2"
+            style={{ color: theme.cardMuted }}
+          >
+            {prodDesc}
+          </p>
+        )}
+
+        {/* Atributos no-color como tags */}
+        {product.attributes && (
+          <div className="flex flex-wrap gap-1 pt-0.5">
+            {Object.entries(product.attributes).map(([key, value]) => {
               if (!value || (Array.isArray(value) && value.length === 0)) return null;
-              const displayValue = Array.isArray(value) ? value.slice(0, 2).join(', ') : String(value);
+              const isColor = key.toLowerCase() === 'color' || key.toLowerCase() === 'colores';
+              if (isColor) return null;
+              const label = Array.isArray(value) ? value.join(' · ') : String(value);
+              if (!label.trim()) return null;
               return (
-                <span key={key} className="text-[7px] md:text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
-                  {displayValue}
+                <span
+                  key={key}
+                  className="text-[7px] uppercase tracking-[0.15em] font-medium px-1.5 py-0.5"
+                  style={{
+                    backgroundColor: `${theme.primary}15`,
+                    color: theme.cardText,
+                    border: `1px solid ${theme.primary}30`,
+                  }}
+                >
+                  {label}
                 </span>
               );
             })}
@@ -140,7 +247,7 @@ function EditorialInfo({ brand, secondaryColor }: { brand: BrandData; secondaryC
   } catch(e) {}
 
   const theme = useContrastTheme('#ffffff');
-  const accentColor = secondaryColor || '#FF5C3A';
+  const accentColor = secondaryColor || brand.secondary_color || '#FF5C3A';
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full">
@@ -159,7 +266,7 @@ function EditorialInfo({ brand, secondaryColor }: { brand: BrandData; secondaryC
           {brand.city_display && (
             <p className="text-lg md:text-2xl font-black uppercase italic tracking-tighter leading-none" style={{ color: theme.text }}>{brand.city_display}</p>
           )}
-          {brand.rating && (
+          {brand.rating && brand.total_reviews && (
             <div className="flex flex-col gap-2">
               <div className="flex gap-0.5 text-yellow-400">
                 {[1,2,3,4,5].map(i => <StarIcon key={i} className="w-3.5 h-3.5 md:w-4 md:h-4" filled={i <= Math.round(brand.rating!)} />)}
@@ -213,9 +320,7 @@ function EditorialAbout({ brand, primaryColor }: { brand: BrandData; primaryColo
   return (
     <section className="py-6 md:py-16">
       <div className="p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden shadow-2xl" style={{ backgroundColor: bgColor }}>
-        <div className="absolute top-0 right-0 p-12 opacity-10">
-          <SparklesIcon className="w-32 h-32 md:w-48 md:h-48" />
-        </div>
+        
         <div className="relative z-10 space-y-4 md:space-y-6 text-center md:text-left">
           <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.5em]" style={{ color: theme.muted }}>Nuestra Historia</span>
           <p className="text-base md:text-3xl leading-tight font-black italic uppercase tracking-tighter max-w-4xl" style={{ color: theme.text }}>
@@ -233,6 +338,9 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
   const { ref: productsRef, isVisible } = useScrollReveal();
   const theme = useLandingTheme(brand);
 
+  const [filterCat, setFilterCat] = useState<string>('all');
+  const [sortOption, setSortOption] = useState<string>('featured');
+
   useEffect(() => {
     if (products && products.length > 0) {
       setSelectedId(products[0].id);
@@ -240,17 +348,17 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
     }
   }, [products]);
 
-  const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
-  const secondary = brand.social_links?._landing_secondary || primary;
+  const primary = theme.primary;
+  const secondary = theme.secondary;
 
   const socialLinks = brand.social_links || {};
   const entries = getVisibleSocialEntries(socialLinks);
   const socialIcons: Record<string, React.ReactNode> = {
-    instagram: <InstagramIcon className="w-3.5 h-3.5" />,
-    facebook:  <FacebookIcon  className="w-3.5 h-3.5" />,
-    tiktok:    <TikTokIcon    className="w-3.5 h-3.5" />,
-    youtube:   <YouTubeIcon   className="w-3.5 h-3.5" />,
-    x:         <XIcon         className="w-3.5 h-3.5" />,
+    instagram: <InstagramIcon className="w-5 h-5" />,
+    facebook:  <FacebookIcon  className="w-5 h-5" />,
+    tiktok:    <TikTokIcon    className="w-5 h-5" />,
+    youtube:   <YouTubeIcon   className="w-5 h-5" />,
+    x:         <XIcon         className="w-5 h-5" />,
   };
 
   const handleProductClick = (id: string) => {
@@ -259,8 +367,19 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
+  const categories = Array.from(new Set((products || []).map(p => p.category).filter(Boolean))) as string[];
+
+  const filteredProducts = (products || []).filter(p => filterCat === 'all' || p.category === filterCat);
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOption === 'price_asc') return (a.price || 0) - (b.price || 0);
+    if (sortOption === 'price_desc') return (b.price || 0) - (a.price || 0);
+    if (sortOption === 'name_asc') return a.name.localeCompare(b.name);
+    return 0; // featured/newest
+  });
+
   return (
-    <div className={`min-h-screen flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden ${isPreview ? 'p-0 h-auto' : ''}`} style={{ backgroundColor: theme.cardBg, '--primary': primary, '--secondary': secondary, '--secondary-10': secondary + "1a", '--secondary-20': secondary + "33", '--secondary-05': secondary + "0d" } as React.CSSProperties}>
+    <div className={`min-h-screen flex flex-col
+        ${brand.landing_font || 'font-jakarta'} overflow-x-hidden ${isPreview ? 'p-0 h-auto' : ''}`} style={{ backgroundColor: theme.cardBg, '--primary': primary, '--secondary': secondary, '--secondary-10': secondary + "1a", '--secondary-20': secondary + "33", '--secondary-05': secondary + "0d" } as React.CSSProperties}>
       <EditorialHeader brand={brand} entries={entries} socialIcons={socialIcons} />
       <EditorialHero brand={brand} />
       
@@ -268,39 +387,103 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start mb-16">
           {/* Catálogo Prioritario */}
           <div className="order-2 lg:order-1">
-            <div className="flex items-center justify-between border-b-2 border-black pb-4 mb-10">
-              <h2 className="text-3xl font-black uppercase italic tracking-tighter">Colección</h2>
-              <span className="text-[10px] font-black bg-black text-white px-3 py-1 uppercase">{products?.length || 0} Items</span>
+            <div className="flex flex-col gap-3 mb-8">
+              {/* Título + contador */}
+              <div className="flex items-baseline justify-between">
+                <h2 className="text-xl md:text-2xl font-light uppercase tracking-[0.15em]" style={{ color: theme.cardText }}>Catálogo</h2>
+                <span className="text-[9px] uppercase tracking-widest" style={{ color: theme.cardMuted }}>{sortedProducts.length} piezas</span>
+              </div>
+
+              {/* Filtros de categoría */}
+              <div className="flex items-center gap-5 overflow-x-auto hide-scrollbar py-1">
+                {(['all', ...categories] as string[]).map(cat => {
+                  const active = filterCat === cat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setFilterCat(cat)}
+                      className="whitespace-nowrap text-[10px] uppercase tracking-[0.2em] transition-all duration-200 flex flex-col items-center gap-1 pb-0.5"
+                      style={{
+                        color: active ? theme.primary : theme.cardText,
+                        fontWeight: active ? 700 : 400,
+                        opacity: active ? 1 : 0.5,
+                      }}
+                    >
+                      {cat === 'all' ? 'Todo' : cat}
+                      <span
+                        className="block w-1 h-1 rounded-full transition-all duration-200"
+                        style={{ backgroundColor: active ? theme.primary : 'transparent' }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Sort */}
+              <div className="flex items-center justify-end gap-3">
+                {([['featured', 'Destacados'], ['price_asc', '$ ↑'], ['price_desc', '$ ↓'], ['name_asc', 'A–Z']] as [string, string][]).map(([val, label]) => (
+                  <button
+                    key={val}
+                    onClick={() => setSortOption(val)}
+                    className="text-[8px] uppercase tracking-[0.15em] transition-all duration-200 whitespace-nowrap"
+                    style={{
+                      color: sortOption === val ? theme.primary : theme.cardText,
+                      fontWeight: sortOption === val ? 700 : 400,
+                      opacity: sortOption === val ? 1 : 0.45,
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
+
             
-            <div ref={productsRef} className={`grid grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+            <div ref={productsRef} className={`grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-10 md:gap-x-6 md:gap-y-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
               {isLoading ? (
                 <>
-                  {[0,1,2].map(i => <ProductSkeleton key={i} primaryColor={primary} />)}
+                  {[0,1,2,3,4,5].map(i => <ProductSkeleton key={i} primaryColor={primary} />)}
                 </>
               ) : (
-                products && Array.isArray(products) && products.map(p => (
-                  <EditorialProductCard key={p.id} product={p} selected={selectedId === p.id} primaryColor={primary} onClick={() => handleProductClick(p.id)} />
+                sortedProducts.map(p => (
+                  <EditorialProductCard key={p.id} product={p} selected={selectedId === p.id} theme={theme} onClick={() => handleProductClick(p.id)} />
                 ))
               )}
             </div>
+            
+            {sortedProducts.length === 0 && !isLoading && (
+              <div className="text-center py-20">
+                <p className="font-medium" style={{ color: theme.muted }}>No se encontraron productos.</p>
+                <button onClick={() => setFilterCat('all')} className="mt-4 text-xs font-bold uppercase tracking-widest underline" style={{ color: theme.primary }}>Ver todos</button>
+              </div>
+            )}
           </div>
 
-          {/* Probador Prioritario (Sidebar Sticky) */}
+          {/* Probador — sidebar sticky */}
           <aside className="order-1 lg:order-2">
-            <div id="editorial-tryon" className="lg:sticky lg:top-28">
-              <div className={isPreview ? "overflow-hidden bg-white" : "rounded-[3rem] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] bg-white border border-gray-100"}>
-                <div className="px-6 py-4 text-white flex justify-between items-center" style={{ backgroundColor: primary }}>
-                  <span className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
-                    <SparklesIcon className="w-4 h-4" /> Probador IA
-                  </span>
-                  <span className="text-[8px] font-black opacity-60">AI POWERED</span>
-                </div>
-                <div className="bg-white">
-                  <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" lockProductSelection={true} />
-                </div>
+            <div id="editorial-tryon" className="lg:sticky lg:top-24 flex flex-col items-center gap-4">
+              {/* Label decorativo */}
+              <div className="flex items-center gap-3 w-full">
+                <div className="flex-1 h-px" style={{ backgroundColor: theme.borderLight }} />
+                <span className="text-[8px] uppercase tracking-[0.4em] font-semibold" style={{ color: theme.muted }}>Probador IA</span>
+                <div className="flex-1 h-px" style={{ backgroundColor: theme.borderLight }} />
               </div>
-              <p className="text-center mt-6 text-[9px] font-black uppercase tracking-[0.3em] text-gray-300">Desarrollado por Lookitry AI</p>
+
+              {/* Widget container */}
+              <div
+                className={`w-full max-w-sm mx-auto ${isPreview ? 'overflow-hidden rounded-2xl' : 'rounded-2xl overflow-hidden shadow-2xl'}`}
+                style={{
+                  backgroundColor: brand.widget_bg_color || '#0a0a0a',
+                  '--landing-text-primary': '#ffffff',
+                  '--landing-text-muted': 'rgba(255,255,255,0.55)',
+                  '--landing-card-bg': 'rgba(255,255,255,0.05)',
+                  '--landing-border-color': 'rgba(255,255,255,0.1)',
+                } as React.CSSProperties}
+              >
+                <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" lockProductSelection={true} />
+              </div>
+
+              <p className="text-[8px] font-medium uppercase tracking-[0.35em]" style={{ color: theme.muted }}>Desarrollado por Lookitry AI</p>
             </div>
           </aside>
         </div>
@@ -320,7 +503,11 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
           {/* Logo / Nombre en Footer */}
           <div className="flex flex-col items-center gap-4">
             {brand.logo ? (
-              <img src={brand.logo_light || brand.logo} alt={brand.name} className="h-12 w-auto object-contain opacity-90 mb-2 grayscale brightness-200" />
+              <BrandLogo 
+              src={brand.logo_light || brand.logo} 
+              alt={brand.name} 
+              className="h-12 w-auto max-w-[120px] object-contain opacity-90 mb-2" 
+            />
             ) : (
               <div className="h-12 w-12 rounded-2xl flex items-center justify-center text-white font-black text-xl mb-2" style={{ backgroundColor: primary }}>
                 {brand.name?.slice(0, 2).toUpperCase()}
@@ -346,7 +533,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
               Transformando la experiencia de compra online
             </p>
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-[9px] font-black text-white/20 uppercase tracking-widest">
-              <span>© 2026 {brand.name} </span>
+              <span>© {new Date().getFullYear()} {brand.name} </span>
               <span className="hidden md:block">|</span>
               <p>
                 Powered by <a href={footerUrl || 'https://lookitry.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-opacity text-white">Look<span className="text-[#FF5C3A]">itry</span> IA</a>

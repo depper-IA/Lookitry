@@ -22,7 +22,7 @@ export function startSchedulers() {
   }
   scheduled = true;
 
-  // ── Verificación diaria de suscripciones ──
+  // — Verificación diaria de suscripciones —
   // Se ejecuta todos los días a las 08:00 (hora del servidor)
   cron.schedule('0 8 * * *', async () => {
     console.log('\n[Scheduler] Ejecutando verificación diaria de suscripciones...');
@@ -33,7 +33,7 @@ export function startSchedulers() {
     }
   });
 
-  // ── Alertas de uso de generaciones ──
+  // — Alertas de uso de generaciones —
   // Se ejecuta cada 6 horas (08:00, 14:00, 20:00, 02:00)
   cron.schedule('0 */6 * * *', async () => {
     console.log('\n[Scheduler] Verificando alertas de uso...');
@@ -44,7 +44,7 @@ export function startSchedulers() {
     }
   });
 
-  // ── Limpieza de archivos temporales ──
+  // — Limpieza de archivos temporales —
   // Se ejecuta todos los días a las 03:00
   cron.schedule('0 3 * * *', async () => {
     console.log('\n[Scheduler] Limpiando archivos temporales...');

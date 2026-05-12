@@ -23,8 +23,6 @@ lastUpdated: "2026-04-19 12:00 GMT-5"
 | **Zephyr** | Infraestructura / DevOps | 🟡 DISPONIBLE | — | — |
 | **Lina** | Documentación | 🟡 DISPONIBLE | — | — |
 | **Cipher** | Seguridad / Pentesting | 🟡 DISPONIBLE | — | — |
-| **Leo** | Trading | 🟡 DISPONIBLE | — | — |
-| **Rebecca** | UGC / Contenido | 🟡 DISPONIBLE | — | — |
 
 ---
 
@@ -88,8 +86,6 @@ Cerebro/Protocolos/AGENT_STATUS_DASHBOARD.md
 | VPS/Docker/Deploy/Infra | **Zephyr** |
 | Documentación | **Lina** |
 | Seguridad/Pentesting | **Cipher** |
-| Trading | **Leo** |
-| UGC/Redes/Fiverr | **Rebecca** |
 
 ---
 

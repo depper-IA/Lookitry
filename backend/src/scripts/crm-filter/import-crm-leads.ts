@@ -26,8 +26,8 @@ interface CRMLead {
   DIRECCION: string;
   REDES_SOCIALES: string;
   SITIO_WEB: string;
-  CAMPAÑA_ENVIADA: string;
-  FECHA_CAMPAÑA: string;
+  CAMPAñA_ENVIADA: string;
+  FECHA_CAMPAñA: string;
   ESTADO_LEAD: string;
   ULTIMO_CONTACTO: string;
   NOTAS: string;
@@ -219,25 +219,25 @@ async function main() {
   const dryRun = args.includes('--dry-run');
   const statsOnly = args.includes('--stats-only');
   
-  console.log('═══════════════════════════════════════════════════════════════');
+  console.log('âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ');
   console.log('           CRM LEAD FILTER - LOOKITRY IMPORTER v1.0           ');
-  console.log('═══════════════════════════════════════════════════════════════\n');
+  console.log('âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ\n');
   
   // Read Excel file
   const excelPath = path.resolve(process.cwd(), 'BASE_CLIENTES_CRM.xlsx');
   
   if (!fs.existsSync(excelPath)) {
-    console.error(`❌ Excel file not found: ${excelPath}`);
+    console.error(`â Excel file not found: ${excelPath}`);
     process.exit(1);
   }
   
-  console.log(`📊 Reading Excel file: ${excelPath}`);
+  console.log(`ð Reading Excel file: ${excelPath}`);
   const workbook = XLSX.readFile(excelPath);
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
   const rawData: CRMLead[] = XLSX.utils.sheet_to_json(worksheet);
   
-  console.log(`✅ Loaded ${rawData.length} records from Excel\n`);
+  console.log(`â Loaded ${rawData.length} records from Excel\n`);
   
   // Classify all leads
   const stats: ImportStats = {
@@ -285,24 +285,24 @@ async function main() {
   }
   
   // Print statistics
-  console.log('📈 CLASSIFICATION STATISTICS');
-  console.log('───────────────────────────────────────────────────────────────');
+  console.log('ð CLASSIFICATION STATISTICS');
+  console.log('———————————————————————————————â');
   console.log(`   Total Records:          ${stats.total.toLocaleString()}`);
-  console.log(`   ✅ Accepted (Fashion):   ${stats.accepted.toLocaleString()} (${(stats.accepted / stats.total * 100).toFixed(1)}%)`);
-  console.log(`   ❌ Rejected (No-Fashion):${stats.rejected.toLocaleString()} (${(stats.rejected / stats.total * 100).toFixed(1)}%)`);
-  console.log(`   ⚠️  Needs Verification:   ${stats.needsVerification.toLocaleString()} (${(stats.needsVerification / stats.total * 100).toFixed(1)}%)`);
+  console.log(`   â Accepted (Fashion):   ${stats.accepted.toLocaleString()} (${(stats.accepted / stats.total * 100).toFixed(1)}%)`);
+  console.log(`   â Rejected (No-Fashion):${stats.rejected.toLocaleString()} (${(stats.rejected / stats.total * 100).toFixed(1)}%)`);
+  console.log(`   â ï¸  Needs Verification:   ${stats.needsVerification.toLocaleString()} (${(stats.needsVerification / stats.total * 100).toFixed(1)}%)`);
   console.log('');
-  console.log('📍 BY COUNTRY:');
+  console.log('ð BY COUNTRY:');
   for (const [country, count] of Object.entries(stats.byCountry).sort((a, b) => b[1] - a[1])) {
     console.log(`   ${country}: ${count.toLocaleString()} (${(count / stats.total * 100).toFixed(1)}%)`);
   }
   console.log('');
-  console.log('⚠️  DATA QUALITY:');
+  console.log('â ï¸  DATA QUALITY:');
   console.log(`   Missing Email:  ${stats.noEmail}`);
   console.log(`   Missing Website: ${stats.noWebsite}`);
   
   if (statsOnly) {
-    console.log('\n✅ Stats-only mode. Exiting.\n');
+    console.log('\nâ Stats-only mode. Exiting.\n');
     return;
   }
   
@@ -312,7 +312,7 @@ async function main() {
   const rejectedLeads = classified.filter(r => r.isFashion === false);
   
   // Show top cities for accepted leads
-  console.log('\n🏙️  TOP CITIES (Accepted Leads):');
+  console.log('\nðï¸  TOP CITIES (Accepted Leads):');
   const acceptedCities: Record<string, number> = {};
   for (const result of acceptedLeads) {
     const city = result.lead.CIUDAD || 'UNKNOWN';
@@ -409,15 +409,15 @@ async function main() {
     XLSX.utils.book_append_sheet(fullLogWb, fullLogWs, 'Full Log');
     XLSX.writeFile(fullLogWb, fullLogPath);
     
-    console.log('\n✅ OUTPUT FILES GENERATED:');
-    console.log(`   📁 Accepted leads:    ${acceptedCsvData.length} records → ${acceptedCsvPath}`);
-    console.log(`   📁 Needs verification: ${verificationCsvData.length} records → ${verificationCsvPath}`);
-    console.log(`   📁 Full classification log → ${fullLogPath}`);
+    console.log('\nâ OUTPUT FILES GENERATED:');
+    console.log(`   ð Accepted leads:    ${acceptedCsvData.length} records â ${acceptedCsvPath}`);
+    console.log(`   ð Needs verification: ${verificationCsvData.length} records â ${verificationCsvPath}`);
+    console.log(`   ð Full classification log â ${fullLogPath}`);
   } else {
-    console.log('\n⚠️  DRY RUN MODE - No files written');
+    console.log('\nâ ï¸  DRY RUN MODE - No files written');
   }
   
-  console.log('\n═══════════════════════════════════════════════════════════════\n');
+  console.log('\nâââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ\n');
   
   // Return data for further processing
   return {

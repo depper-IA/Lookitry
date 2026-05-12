@@ -71,3 +71,33 @@ export const getUnresolvedFeedbackCount = async (_req: Request, res: Response) =
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 0 });
   }
 };
+
+/**
+ * GET /api/admin/generations/:id/feedback
+ * Obtiene todos los feedbacks para una generación específica
+ */
+export const getGenerationFeedback = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const feedbacks = await feedbackService.getFeedbacksByGenerationId(id);
+    return res.status(200).json({ feedbacks });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al obtener feedbacks de la generación') });
+  }
+};
+
+/**
+ * POST /api/admin/feedback/:id/resolve
+ * Marca un feedback como resuelto (versón admin con body opcional)
+ */
+export const resolveFeedbackAdmin = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { comment } = req.body || {};
+    const resolvedBy = req.admin?.email ?? 'admin';
+    await feedbackService.resolveFeedback(id, resolvedBy);
+    return res.status(200).json({ success: true, resolved_by: resolvedBy, comment: comment || null });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al resolver feedback') });
+  }
+};

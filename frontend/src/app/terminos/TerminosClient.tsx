@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import type { PricingConfig } from '@/lib/pricing';
 
@@ -118,7 +118,26 @@ Reglas de facturacion:
   {
     id: 'art10',
     title: 'Articulo 10. Propiedad intelectual',
-    content: 'Plataforma Lookitry:\n- Todos los derechos de propiedad intelectual sobre la plataforma Lookitry, incluyendo pero no limitandose a codigo fuente, diseño, logotipos, marcas, algoritmos y documentacion, son propiedad exclusiva de Samuel Wilkie (NIT 700.403.166-3) o sus licenciantes\n- Queda prohibida la reproduccion, distribucion o modificacion de cualquier elemento protegido sin autorizacion expresa\n\nImagenes del usuario:\n- El usuario conserva todos los derechos sobre las imagenes que sube a la plataforma (selfies, fotos de productos, etc.)\n- Al utilizar el servicio, el usuario otorga a Lookitry una licencia limitada, no exclusiva, revocable y sin regalías para procesar dichas imagenes con el unico fin de prestar el servicio de probador virtual\n\nImagenes generadas por IA:\n- Los resultados del probador virtual son aproximaciones generadas por inteligencia artificial y no constituyen una representacion exacta de como lucira la prenda en la realidad\n- Lookitry no garantiza la precision, exactitud o fidelidad de los resultados generados\n- La calidad de los resultados depende de la calidad de las imagenes de entrada (selfie del usuario y foto del producto)\n\nRestricciones:\n- Las imagenes de los usuarios NO seran compartidas con terceros con fines comerciales\n- Las imagenes de los usuarios NO seran utilizadas para entrenar modelos de inteligencia artificial\n- Las imagenes procesadas (selfies) se eliminan automaticamente despues de la generacion del resultado',
+    content: 'Plataforma Lookitry:\n- Todos los derechos de propiedad intelectual sobre la plataforma Lookitry, incluyendo pero no limitandose a codigo fuente, dise\u00f1o, logotipos, marcas, algoritmos y documentacion, son propiedad exclusiva de Samuel Wilkie (NIT 700.403.166-3) o sus licenciantes\n- Queda prohibida la reproduccion, distribucion o modificacion de cualquier elemento protegido sin autorizacion expresa\n\nImagenes del usuario:\n- El usuario conserva todos los derechos sobre las imagenes que sube a la plataforma (selfies, fotos de productos, etc.)\n- Al utilizar el servicio, el usuario otorga a Lookitry una licencia limitada, no exclusiva, revocable y sin regalías para procesar dichas imagenes con el unico fin de prestar el servicio de probador virtual\n\nImagenes generadas por IA:\n- Los resultados del probador virtual son aproximaciones generadas por inteligencia artificial y no constituyen una representacion exacta de como lucira la prenda en la realidad\n- Lookitry no garantiza la precision, exactitud o fidelidad de los resultados generados\n- La calidad de los resultados depende de la calidad de las imagenes de entrada (selfie del usuario y foto del producto)\n\nRestricciones:\n- Las imagenes de los usuarios NO seran compartidas con terceros con fines comerciales\n- Las imagenes de los usuarios NO seran utilizadas para entrenar modelos de inteligencia artificial\n- Las imagenes procesadas (selfies) se eliminan automaticamente despues de la generacion del resultado',
+  },
+  {
+    id: 'art10-ia',
+    title: 'Articulo 10-B. Generacion Virtual con Inteligencia Artificial',
+    content: `El probador virtual de Lookitry utiliza inteligencia artificial para generar imagenes de personas vistiendo productos de la marca suscrita. Al utilizar esta funcionalidad, el USUARIO (marca/negocio) declara y acepta lo siguiente:
+
+Del uso por el cliente final:
+- El usuario es responsable exclusivo de obtener y verificar que cuenta con los consentimientos necesarios de cualquier persona cuya imagen sea procesada a traves del probador virtual.
+- Lookitry no almacena fotografias de rostros mas alla del tiempo necesario para procesar la generacion, ni las asocia a datos personales.
+- Lookitry no se hace responsable por el uso que el cliente final del usuario haga de las imagenes generadas, incluyendo pero no limitandose a: suplantacion de identidad, difamacion, violation de derechos de imagen, o cualquier uso contrario a la ley.
+
+De la propiedad de las generaciones:
+- Las imagenes generadas mediante el probador virtual son producidas por un modelo de IA. Su uso comercial queda bajo la responsabilidad del usuario (marca) y sus clientes finales.
+- Lookitry se reserva el derecho de utilizar las generaciones de forma anonimizada y agregada para entrenamiento y mejora de sus modelos de IA, sin asociar dichos datos a informacion personal del usuario o sus clientes.
+
+De la limitacion de responsabilidad:
+- La responsabilidad total de Lookitry por cualquier reclamo relacionado con las generaciones de IA no excedera el valor pagado por el usuario en el mes calendario en que ocurra el hecho generador.
+
+Para reportes de uso indebido de la funcionalidad de generacion virtual, escribir a: info@lookitry.com`,
   },
   {
     id: 'art11',
@@ -145,7 +164,7 @@ Reglas de facturacion:
     title: 'Articulo 15. Ley aplicable y jurisdiccion',
     content: 'Estos Terminos y Condiciones se rigen por las leyes de la Republica de Colombia.\n\nResolucion de controversias:\n- Las partes se comprometen a intentar resolver cualquier controversia mediante negociacion directa\n- De no alcanzarse un acuerdo, las controversias se someteran a los jueces competentes de Bogota D.C., Colombia\n\nPara asuntos de consumo:\n- El usuario puede acudir a la Superintendencia de Industria y Comercio (SIC)\n- Portal: www.sic.gov.co\n- La SIC es la autoridad competente en materia de proteccion al consumidor y proteccion de datos personales en Colombia',
   },
-];
+  ];
 }
 
 function IconChevron({ open }: { open: boolean }) {

@@ -149,6 +149,14 @@ export default function MiPaginaPage() {
   const [totalReviews, setTotalReviews] = useState('');
   const [schedule, setSchedule] = useState<any>({});
   const [customDomain, setCustomDomain] = useState('');
+  const [landingSteps, setLandingSteps] = useState<{
+    select_label?: string;
+    select_desc?: string;
+    photo_label?: string;
+    photo_desc?: string;
+    result_label?: string;
+    result_desc?: string;
+  } | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -190,6 +198,7 @@ export default function MiPaginaPage() {
         setRating(b.rating?.toString() || '');
         setTotalReviews(b.total_reviews?.toString() || '');
         setSchedule(b.schedule || {});
+        setLandingSteps(b.landing_steps || null);
         setCustomDomain(b.custom_domain || '');
       } catch (err) {
         setError('No se pudo cargar la información');
@@ -237,6 +246,7 @@ export default function MiPaginaPage() {
         rating: rating ? parseFloat(rating) : null,
         total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
         header_color: headerColor || null,
+        landing_steps: landingSteps,
         schedule: Object.fromEntries(Object.entries(schedule).filter(([, v]) => (v as string).trim())),
       };
 
@@ -294,7 +304,8 @@ export default function MiPaginaPage() {
     total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
     schedule,
     primary_color: primaryColor,
-    secondary_color: secondaryColor
+    secondary_color: secondaryColor,
+    landing_steps: landingSteps,
   };
 
   const previewProps = {
@@ -462,6 +473,7 @@ export default function MiPaginaPage() {
                       primaryColor, setPrimaryColor, secondaryColor, setSecondaryColor, widgetBgColor, setWidgetBgColor, landingFont, setLandingFont,
                       rating, setRating, totalReviews, setTotalReviews,
                       schedule, setSchedule,
+                      landingSteps, setLandingSteps,
                     }}
                   />
                 </div>

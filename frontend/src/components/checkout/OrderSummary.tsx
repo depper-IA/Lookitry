@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { Check, AlertCircle } from 'lucide-react';
 import { PlanKey } from '@/app/checkout/page';
 
@@ -64,23 +65,41 @@ export default function OrderSummary({
         <div className="space-y-6">
           <div className="space-y-4">
             {isLanding && (
-              <div className="flex justify-between items-start">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex justify-between items-start"
+              >
                 <div>
                   <p className="text-sm font-bold text-white">Mini-landing Page</p>
                   <p className="text-[10px] text-[#999]">Un solo pago de por vida</p>
                 </div>
                 <span className="text-sm font-mono text-white">{formatCop(landingPrice)}</span>
-              </div>
+              </motion.div>
             )}
-            <div className="flex justify-between items-start">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="flex justify-between items-start"
+            >
               <div>
                 <p className="text-sm font-bold text-white">{planNames[currentPlanKey]}</p>
                 <p className="text-[10px] text-[#999]">
                   {isTrial ? '7 días de prueba' : `${selectedMonths} mes${selectedMonths > 1 ? 'es' : ''}`}
                 </p>
               </div>
-              <span className="text-sm font-mono text-white">{formatCop(subPlanTotal)}</span>
-            </div>
+              <motion.span
+                key={subPlanTotal}
+                initial={{ scale: 1.2, color: OA }}
+                animate={{ scale: 1, color: 'inherit' }}
+                transition={{ duration: 0.3 }}
+                className="text-sm font-mono text-white"
+              >
+                {formatCop(subPlanTotal)}
+              </motion.span>
+            </motion.div>
           </div>
 
           <div className="h-px bg-[#1f1f1f] w-full" />
@@ -136,24 +155,50 @@ export default function OrderSummary({
 
           <div className="pt-6 border-t border-[#1f1f1f] space-y-1">
             {couponDiscount > 0 && (
-              <div className="flex justify-between items-center text-xs text-[#999] font-medium mb-2 uppercase tracking-tighter">
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-between items-center text-xs text-[#999] font-medium mb-2 uppercase tracking-tighter"
+              >
                 <span>Ahorro Extra</span>
-                <span className="text-emerald-500 font-bold">-{formatCop(couponDiscount)}</span>
-              </div>
+                <motion.span 
+                  initial={{ scale: 1.3, color: '#22c55e' }}
+                  animate={{ scale: 1, color: '#22c55e' }}
+                  className="font-bold"
+                >
+                  -{formatCop(couponDiscount)}
+                </motion.span>
+              </motion.div>
             )}
-            <div className="flex justify-between items-end">
+            <motion.div 
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="flex justify-between items-end"
+            >
               <span className="text-xs font-bold text-[#999] uppercase tracking-wider mb-1.5">Total</span>
               <div className="text-right">
-                <div className="text-3xl font-jakarta font-black text-white leading-none">
+                <motion.div 
+                  key={totalPrice}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="text-3xl font-jakarta font-black text-white leading-none"
+                >
                   {paymentMethod === 'paypal' ? formatUsd(totalPriceUsd) : formatCop(totalPrice)}
-                </div>
-                <div className="text-[9px] font-bold mt-1 uppercase tracking-widest" style={{ color: OA }}>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-[9px] font-bold mt-1 uppercase tracking-widest"
+                  style={{ color: OA }}
+                >
                   {paymentMethod === 'paypal' 
                     ? `${formatCop(totalPrice)} COP · TRM ${formatCop(trm).replace('COP', '').replace('$', '').trim()}` 
                     : `${formatUsd(totalPriceUsd)} USD · REFERENCIA`}
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 pt-6 opacity-50">

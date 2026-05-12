@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type NotificationType =
   | 'new_brand'
@@ -286,7 +287,15 @@ export function AdminNotifications() {
                   </svg>
                 </button>
                 {unreadCount > 0 && (
-                  <button onClick={markAllRead} className="text-xs font-medium transition-colors" style={{ color: '#FF5C3A' }}>Marcar todas</button>
+                  <motion.button
+                    onClick={markAllRead}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="text-xs font-medium transition-colors"
+                    style={{ color: '#FF5C3A' }}
+                  >
+                    Marcar todas
+                  </motion.button>
                 )}
               </div>
             </div>
@@ -299,12 +308,16 @@ export function AdminNotifications() {
                   </svg>
                 </div>
               ) : notifications.length === 0 ? (
-                <div className="py-10 text-center">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="py-10 text-center"
+                >
                   <svg className="w-8 h-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: 'var(--text-muted)' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin notificaciones</p>
-                </div>
+                </motion.div>
               ) : (
                 (() => {
                   // Agrupar por prioridad para mostrar separadores
@@ -316,16 +329,28 @@ export function AdminNotifications() {
                     const showSeparator = priority !== lastPriority;
                     lastPriority = priority;
                     return (
-                      <div key={n.id}>
+                      <motion.div
+                        key={n.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20, height: 0 }}
+                        transition={{ duration: 0.25 }}
+                      >
                         {showSeparator && (
                           <div className="px-4 py-1.5 flex items-center gap-2" style={{ background: 'var(--bg-hover)' }}>
-                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: priorityInfo.color }} />
+                            <motion.span
+                              animate={{ rotate: [0, 10, -10, 0] }}
+                              transition={{ duration: 0.5 }}
+                              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: priorityInfo.color }}
+                            />
                             <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
                               {priorityInfo.label}
                             </span>
                           </div>
                         )}
-                        <div
+                        <motion.div
+                          whileHover={{ scale: 1.01 }}
                           onClick={() => { markOneRead(n.id); setSelected(n); setOpen(false); }}
                           className="flex gap-3 px-4 py-3 cursor-pointer transition-colors border-t"
                           style={{ background: !isRead ? 'rgba(255,92,58,0.04)' : undefined, borderColor: 'var(--border-color)' }}
@@ -343,8 +368,8 @@ export function AdminNotifications() {
                             <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{n.message}</p>
                           </div>
                           {!isRead && <div className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${SEVERITY_DOT[n.severity]}`} />}
-                        </div>
-                      </div>
+                        </motion.div>
+                      </motion.div>
                     );
                   });
                 })()

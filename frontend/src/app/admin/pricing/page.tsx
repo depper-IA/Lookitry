@@ -10,7 +10,7 @@ import {
   Settings,
   TrendingUp,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface PlanConfig {
   precio_mensual_cop: number;
@@ -212,12 +212,23 @@ function Field({
   disabled?: boolean;
 }) {
   return (
-    <div className="space-y-2">
-      <label className="block text-[10px] font-black uppercase tracking-[0.22em]" style={{ color: 'var(--text-muted)' }}>
+    <motion.div
+      className="space-y-2"
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.3 }}
+    >
+      <motion.label
+        className="block text-[10px] font-black uppercase tracking-[0.22em]"
+        style={{ color: 'var(--text-muted)' }}
+        whileHover={{ color: '#FF5C3A' }}
+        transition={{ duration: 0.2 }}
+      >
         {label}
-      </label>
-      <div
-        className="flex items-center gap-2 rounded-[1.15rem] border px-4 py-3 transition-all focus-within:ring-2 focus-within:ring-[var(--accent)]/25"
+      </motion.label>
+      <motion.div
+        className="flex items-center gap-2 rounded-[1.15rem] border px-4 py-3 transition-all focus-within:scale-[1.01] focus-within:border-[#FF5C3A] focus-within:shadow-[0_0_0_3px_rgba(255,92,58,0.15)]"
         style={{
           background: 'var(--bg-base)',
           borderColor: disabled ? 'rgba(255,255,255,0.04)' : 'var(--border-color)',
@@ -234,9 +245,9 @@ function Field({
           style={{ color: 'var(--text-primary)' }}
         />
         {suffix && <span className="text-sm font-bold" style={{ color: 'var(--text-muted)' }}>{suffix}</span>}
-      </div>
+      </motion.div>
       {hint && <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{hint}</p>}
-    </div>
+    </motion.div>
   );
 }
 
@@ -281,10 +292,12 @@ function SaveBtn({
   const isSaved = saved === id;
 
   return (
-    <button
+    <motion.button
       onClick={() => onSave(id, data)}
       disabled={isSaving}
-      className="rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition-all shadow-lg"
+      whileHover={{ scale: isSaving ? 1 : 1.02 }}
+      whileTap={{ scale: isSaving ? 1 : 0.98 }}
+      className="relative overflow-hidden rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-lg"
       style={{
         background: isSaved ? '#10b981' : 'var(--accent)',
         boxShadow: isSaved ? '0 18px 40px rgba(16,185,129,0.18)' : '0 18px 40px rgba(255,92,58,0.22)',
@@ -292,8 +305,47 @@ function SaveBtn({
         cursor: isSaving ? 'not-allowed' : 'pointer',
       }}
     >
-      {isSaving ? 'Guardando…' : isSaved ? 'Guardado' : 'Guardar cambios'}
-    </button>
+      <AnimatePresence mode="wait">
+        {isSaving ? (
+          <motion.span
+            key="saving"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center gap-2"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity }}
+              className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+            />
+            Guardando…
+          </motion.span>
+        ) : isSaved ? (
+          <motion.span
+            key="saved"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            Guardado
+          </motion.span>
+        ) : (
+          <motion.span
+            key="save"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            Guardar cambios
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.button>
   );
 }
 

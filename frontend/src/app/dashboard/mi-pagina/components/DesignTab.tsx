@@ -67,6 +67,8 @@ interface DesignTabProps {
   rating: string; setRating: (v: string) => void;
   totalReviews: string; setTotalReviews: (v: string) => void;
   schedule: Record<string, string>; setSchedule: (v: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
+  landingSteps: { select_label?: string; select_desc?: string; photo_label?: string; photo_desc?: string; result_label?: string; result_desc?: string; } | null;
+  setLandingSteps: (v: { select_label?: string; select_desc?: string; photo_label?: string; photo_desc?: string; result_label?: string; result_desc?: string; } | null) => void;
 }
 
 const itemVariants = {
@@ -85,7 +87,7 @@ export function DesignTab(props: DesignTabProps) {
     cityDisplay, setCityDisplay, nationalShipping, setNationalShipping,
     showBrandName, setShowBrandName,
     primaryColor, setPrimaryColor, secondaryColor, setSecondaryColor, widgetBgColor, setWidgetBgColor, landingFont, setLandingFont, headerColor, setHeaderColor, rating, setRating, totalReviews, setTotalReviews,
-    schedule, setSchedule,
+    schedule, setSchedule, landingSteps, setLandingSteps,
   } = props;
 
   const sectionStyle = "bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-6 md:p-8 xl:p-10 space-y-6 shadow-xl shadow-black/5 hover:border-[#FF5C3A]/30 transition-all duration-700 relative overflow-hidden group";
@@ -204,7 +206,8 @@ export function DesignTab(props: DesignTabProps) {
             { label: 'Primario', val: primaryColor, set: setPrimaryColor, tip: 'Botones y destacados.' },
             { label: 'Secundario', val: secondaryColor, set: setSecondaryColor, tip: 'Bordes y sombras.' },
             { label: 'Probador', val: widgetBgColor || '#0a0a0a', set: setWidgetBgColor, tip: 'Fondo del probador virtual.' },
-            { label: 'Respaldo', val: coverBgColor || '#0a0a0a', set: setCoverBgColor, tip: 'Fondo de secciones.' }
+            { label: 'Respaldo', val: coverBgColor || '#0a0a0a', set: setCoverBgColor, tip: 'Fondo de secciones.' },
+            { label: 'Header', val: headerColor || '#ffffff', set: setHeaderColor, tip: 'Fondo de la barra de navegación sticky.' }
           ].map(c => (
             <div key={c.label} className="space-y-3">
               <div className="flex items-center">
@@ -313,6 +316,88 @@ export function DesignTab(props: DesignTabProps) {
             rows={4} 
             className={`${inputStyle} resize-none`} 
           />
+        </div>
+      </motion.section>
+
+      {/* 4.5 Pasos del Probador */}
+      <motion.section variants={itemVariants} className={sectionStyle}>
+        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+          <MousePointer2 size={45} />
+        </div>
+        <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
+          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
+            <MousePointer2 className="w-5 h-5 text-[#FF5C3A]" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Pasos del Probador</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Personaliza los labels y descripciones de cada paso</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+          {/* Paso 1 */}
+          <div className="space-y-4 p-6 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)]/50">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center text-xs font-black text-[#FF5C3A]">01</div>
+              <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Seleccionar</span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className={labelStyle}>Label</label>
+                <input value={landingSteps?.select_label || ''} onChange={e => setLandingSteps({ ...(landingSteps || {}), select_label: e.target.value })} className={inputStyle} placeholder="Selecciona" />
+              </div>
+              <div>
+                <label className={labelStyle}>Descripción</label>
+                <input value={landingSteps?.select_desc || ''} onChange={e => setLandingSteps({ ...(landingSteps || {}), select_desc: e.target.value })} className={inputStyle} placeholder="Elige una prenda de nuestro catálogo" />
+              </div>
+            </div>
+          </div>
+
+          {/* Paso 2 */}
+          <div className="space-y-4 p-6 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)]/50">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center text-xs font-black text-[#FF5C3A]">02</div>
+              <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Fotografiar</span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className={labelStyle}>Label</label>
+                <input value={landingSteps?.photo_label || ''} onChange={e => setLandingSteps({ ...(landingSteps || {}), photo_label: e.target.value })} className={inputStyle} placeholder="Fotografía" />
+              </div>
+              <div>
+                <label className={labelStyle}>Descripción</label>
+                <input value={landingSteps?.photo_desc || ''} onChange={e => setLandingSteps({ ...(landingSteps || {}), photo_desc: e.target.value })} className={inputStyle} placeholder="Captura una selfie frontal" />
+              </div>
+            </div>
+          </div>
+
+          {/* Paso 3 */}
+          <div className="space-y-4 p-6 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)]/50">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center text-xs font-black text-[#FF5C3A]">03</div>
+              <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Resultado</span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className={labelStyle}>Label</label>
+                <input value={landingSteps?.result_label || ''} onChange={e => setLandingSteps({ ...(landingSteps || {}), result_label: e.target.value })} className={inputStyle} placeholder="Estrena" />
+              </div>
+              <div>
+                <label className={labelStyle}>Descripción</label>
+                <input value={landingSteps?.result_desc || ''} onChange={e => setLandingSteps({ ...(landingSteps || {}), result_desc: e.target.value })} className={inputStyle} placeholder="Nuestra IA renderiza la prenda sobre ti" />
+              </div>
+            </div>
+          </div>
+
+          {/* Reset button */}
+          <div className="flex items-center justify-center">
+            <button
+              onClick={() => setLandingSteps(null)}
+              className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)] hover:text-[#FF5C3A] transition-colors px-4 py-2 rounded-xl border border-[var(--border-color)] hover:border-[#FF5C3A]/30"
+            >
+              Restaurar valores por defecto
+            </button>
+          </div>
         </div>
       </motion.section>
 

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/utils/cn';
+import DOMPurify from 'dompurify';
 import { 
   Calendar, 
   Tag, 
@@ -574,32 +575,49 @@ function InfoBox({ type, title, children }: { type: 'tip' | 'warning' | 'stat' |
 // ============================================================================
 
 function ArticleContent({ html }: { html: string }) {
-  const { isDark } = useTheme();
-  // Strip backend-generated headers (with or without hero image, title, excerpt) and inline TOC to avoid UI duplication
-  // We strip the entire article shell structure since the frontend page renders these elements separately
-  let cleanHtml = html
-    // Remove the article wrapper
-    .replace(/<article class="blog-article">/i, '')
-    // Remove header with hero image (legacy format) - matches any content between header tags
-    .replace(/<header class="blog-header"[^>]*>[\s\S]*?<\/header>\s*/gi, '')
-    // Remove header without hero image (new format - only meta)
-    .replace(/<header class="blog-header-only-meta"[^>]*>[\s\S]*?<\/header>\s*/gi, '')
-    // Remove standalone TOC nav (in case it appears outside header)
-    .replace(/<nav class="blog-toc"[^>]*>[\s\S]*?<\/nav>\s*/gi, '')
-    // Remove blog-layout wrapper div if present
-    .replace(/<div class="blog-layout">/gi, '')
-    // Remove closing blog-layout div
-    .replace(/<\/div>\s*(<div class="blog-content">)/gi, '$1');
+  const processedHtml = React.useMemo(() => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const h2s = doc.querySelectorAll('h2');
+    h2s.forEach((h2) => {
+      if (!h2.id) {
+        const tocTitle = h2.getAttribute('data-toc-title');
+        if (tocTitle) {
+          h2.id = slugify(tocTitle);
+        }
+      }
+    });
+    // Sanitizar el HTML procesado para prevenir XSS
+    const rawHtml = doc.body.innerHTML;
+    if (typeof window === 'undefined') return rawHtml;
+    return DOMPurify.sanitize(rawHtml, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre',
+        'img', 'figure', 'figcaption', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+        'span', 'div', 'hr', 'abbr', 'sub', 'sup', 'del', 'ins', 'mark',
+        'video', 'audio', 'source',
+      ],
+      ALLOWED_ATTR: [
+        'href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height',
+        'class', 'id', 'style', 'loading', 'referrerpolicy',
+        'controls', 'autoplay', 'loop', 'muted', 'playsinline',
+      ],
+      ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.]+(?:[^a-z+.]+|$))/i,
+    });
+  }, [html]);
 
   return (
     <div 
-      className={cn(
-        "blog-content relative prose prose-lg max-w-none transition-colors duration-300",
-        isDark 
-          ? "prose-invert prose-headings:text-white prose-p:text-gray-300 prose-strong:text-white prose-em:text-gray-200 prose-li:text-gray-300" 
-          : "prose-slate prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-em:text-gray-800 prose-li:text-gray-700"
-      )}
-      dangerouslySetInnerHTML={{ __html: cleanHtml }}
+      className="prose prose-invert prose-lg max-w-none
+        prose-headings:text-white prose-headings:font-bold
+        prose-p:text-gray-300 prose-p:leading-relaxed
+        prose-a:text-[#FF5C3A] prose-a:no-underline hover:prose-a:underline
+        prose-blockquote:border-l-[#FF5C3A] prose-blockquote:text-gray-400
+        prose-strong:text-white
+        prose-img:rounded-xl prose-img:shadow-2xl prose-img:border prose-img:border-white/10
+        prose-hr:border-white/10
+        prose-li:text-gray-300"
+      dangerouslySetInnerHTML={{ __html: processedHtml }}
     />
   );
 }

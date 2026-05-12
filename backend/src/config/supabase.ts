@@ -25,7 +25,7 @@ export const supabase = createClient(
 const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!serviceKey) {
-  console.error('[Supabase] ERROR CRÍTICO: No se encontró SUPABASE_SERVICE_KEY ni SUPABASE_SERVICE_ROLE_KEY en el entorno.');
+  console.error('[Supabase] ERROR CRñTICO: No se encontró SUPABASE_SERVICE_KEY ni SUPABASE_SERVICE_ROLE_KEY en el entorno.');
 }
 
 export const supabaseAdmin = createClient(
@@ -739,6 +739,7 @@ export interface Database {
           processing_time: number | null;
           prompt_used: string | null;
           input_fingerprint: string | null;
+          client_fingerprint: string | null;
         };
         Insert: {
           id?: string;
@@ -752,6 +753,7 @@ export interface Database {
           processing_time?: number | null;
           prompt_used?: string | null;
           input_fingerprint?: string | null;
+          client_fingerprint?: string | null;
         };
         Update: {
           id?: string;
@@ -765,6 +767,7 @@ export interface Database {
           processing_time?: number | null;
           prompt_used?: string | null;
           input_fingerprint?: string | null;
+          client_fingerprint?: string | null;
         };
       };
       payment_logs: {
@@ -1359,6 +1362,35 @@ export interface Database {
           ip_address?: string;
           fingerprint?: string | null;
           created_at?: string;
+        };
+      };
+      widget_ip_whitelist: {
+        Row: {
+          id: string;
+          ip_address: string;
+          description: string | null;
+          is_active: boolean;
+          created_at: string | null;
+          created_by: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          ip_address: string;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string | null;
+          created_by?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          ip_address?: string;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string | null;
+          created_by?: string | null;
+          updated_at?: string | null;
         };
       };
     };

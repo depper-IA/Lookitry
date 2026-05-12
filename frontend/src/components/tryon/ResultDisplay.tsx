@@ -2,6 +2,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { getProxiedImageUrl } from '@/utils/imageProxy';
+import { isLightBg } from './templates/shared';
+import { Toast, ToastType } from '@/components/ui/Toast';
+
+// ── Helper para detectar In-App Browsers (Instagram, Facebook, TikTok) ──────────
+const isIAB = () => {
+  if (typeof window === 'undefined') return false;
+  const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+  return /Instagram|FBAN|FBAV|TikTok/i.test(ua);
+};
+
+
 
 // ── Focus Trap Hook ─────────────────────────────────────────────────────────────
 function useFocusTrap(isActive: boolean) {
@@ -59,6 +70,41 @@ function useFocusTrap(isActive: boolean) {
   }, [isActive]);
 
   return containerRef;
+}
+
+// ── Helper para colores del modal de feedback ────────────────────────────────
+function getFeedbackModalStyles(textColor: string, cardBg?: string, cardBorder?: string) {
+  // Si cardBg existe y no es muy transparente, usarlo
+  if (cardBg && cardBg.startsWith('#')) {
+    const alphaMatch = cardBg.match(/^#([0-9a-fA-F]{6})([0-9a-fA-F]{2})?$/);
+    if (alphaMatch) {
+      const alpha = alphaMatch[2] ? parseInt(alphaMatch[2], 16) / 255 : 1;
+      if (alpha >= 0.1) {
+        // cardBg es lo suficientemente opaco, inferir tema de cardBg
+        const lightBg = isLightBg(cardBg);
+        return {
+          backgroundColor: lightBg ? '#ffffff' : '#1a1a1a',
+          borderColor: lightBg ? (cardBorder || 'rgba(0,0,0,0.1)') : 'rgba(255,255,255,0.1)',
+        };
+      }
+    }
+  }
+
+  // Detectar tema basándose en textColor
+  const textIsLight = isLightBg(textColor);
+  if (textIsLight) {
+    // Tema oscuro: texto claro → modal oscuro
+    return {
+      backgroundColor: '#1a1a1a',
+      borderColor: 'rgba(255,255,255,0.1)',
+    };
+  } else {
+    // Tema claro: texto oscuro → modal claro
+    return {
+      backgroundColor: '#ffffff',
+      borderColor: cardBorder || 'rgba(0,0,0,0.1)',
+    };
+  }
 }
 
 // ── Marca de agua dinámica (Visual Overlay) ──────────────────────────────────
@@ -122,7 +168,7 @@ function ResultImage({
     >
       {!loaded && (
         <div 
-          className={`w-full ${aspectRatio ?? 'aspect-[3/4]'} animate-pulse flex flex-col items-center justify-center gap-3`}
+          className={`w-full ${aspectRatio ?? 'aspect-[3/4]'} animate-pulse flex flex-col items-center justify-center gap-3 absolute inset-0`}
           style={{ backgroundColor: cardBg || '#f3f4f6' }}
         >
           <div className="w-10 h-10 rounded-full border-4 border-gray-200 border-t-transparent animate-spin" style={{ borderTopColor: primaryColor }} />
@@ -135,7 +181,7 @@ function ResultImage({
       <img
         src={imageUrl}
         alt={`Prueba virtual de ${productName}`}
-        className={`w-full ${aspectRatio ? `${fit === 'contain' ? 'object-contain' : 'object-cover'} h-full` : 'h-auto'}`}
+        className={`w-full h-full ${aspectRatio ? `${fit === 'contain' ? 'object-contain' : 'object-cover'}` : 'h-auto'}`}
         onLoad={() => setLoaded(true)}
       />
       {loaded && !compact && (
@@ -205,6 +251,18 @@ export function ResultDisplay({
   const [sharing, setSharing]             = useState(false);
   const [shareError, setShareError]       = useState<string | null>(null);
 
+  // Feedback visual (Toast)
+  const [toast, setToast] = useState<{ show: boolean; message: string; type: ToastType }>({
+    show: false,
+    message: '',
+    type: 'info'
+  });
+
+  const showToast = (message: string, type: ToastType = 'info') => {
+    setToast({ show: true, message, type });
+  };
+
+
   // Feedback state
   const [feedbackOpen, setFeedbackOpen]       = useState(false);
   const [feedbackType, setFeedbackType]       = useState<ErrorTypeValue | ''>('');
@@ -216,10 +274,40 @@ export function ResultDisplay({
   const feedbackTrapRef = useFocusTrap(feedbackOpen);
   const lightboxTrapRef = useFocusTrap(lightboxOpen);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const downloadUrl = getProxiedImageUrl(imageUrl, brandPlan, true);
-    window.location.href = downloadUrl;
+    
+    // Si detectamos Instagram/Facebook/TikTok, evitamos el truco del blob/URL.createObjectURL
+    // ya que suele fallar estrepitosamente o bloquear la navegación.
+    if (isIAB()) {
+      showToast('Mantén presionada la imagen para guardarla en tu galería.', 'info');
+      // Intentamos abrir la URL de descarga directa como fallback
+      window.open(downloadUrl, '_blank');
+      return;
+    }
+
+
+    setDownloading(true);
+    try {
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lookitry-${productName?.replace(/\s+/g, '-').toLowerCase() || 'generacion'}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Download error:', e);
+      showToast('No se pudo iniciar la descarga. Intenta abrir en otro navegador.', 'error');
+    } finally {
+      setDownloading(false);
+    }
   };
+
 
   // Mensaje de compartir: usar custom del backend (PRO/ENTERPRISE) o generar dinámicamente
   // Custom message puede usar {producto} y {marca} como variables
@@ -243,38 +331,42 @@ export function ResultDisplay({
     setShareError(null);
     setSharing(true);
     const shareText = getShareText(productName, brandName, brandPlan);
+    const inApp = isIAB();
+
     try {
       const shareTargetUrl = pluginView ? imageUrl : getProxiedImageUrl(imageUrl, brandPlan);
 
-      if (pluginView && !navigator.share) {
-        const popup = window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
-        if (popup) {
-          setShareError('Imagen abierta en una nueva pestaña para compartirla.');
-          return;
-        }
-      }
-
       if (navigator.share) {
         try {
-          if (pluginView) {
-            await navigator.share({
-              title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
-              text: shareText,
-              url: shareTargetUrl,
-            });
-          } else {
-            const res = await fetch(shareTargetUrl);
-            const blob = await res.blob();
-            const file = new File([blob], 'prueba-virtual.jpg', { type: blob.type || 'image/jpeg' });
+          const shareData: ShareData = {
+            title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
+            text: shareText,
+            url: shareTargetUrl,
+          };
 
-            await navigator.share({
-              title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
-              text: shareText,
-              files: [file],
-            });
+          // Compartir archivos en Instagram/IAB suele fallar o bloquearse.
+          // Priorizamos compartir solo Texto + URL en esos entornos.
+          const canShareFiles = !inApp && !pluginView && 
+                                navigator.canShare && 
+                                navigator.canShare({ files: [new File([], 'test.jpg', { type: 'image/jpeg' })] });
+
+          if (canShareFiles) {
+            try {
+              const res = await fetch(shareTargetUrl);
+              const blob = await res.blob();
+              const file = new File([blob], 'prueba-virtual.jpg', { type: blob.type || 'image/jpeg' });
+              if (navigator.canShare({ files: [file] })) {
+                shareData.files = [file];
+              }
+            } catch (fileErr) {
+              console.warn('Error al preparar archivo para compartir:', fileErr);
+            }
           }
+
+          await navigator.share(shareData);
           return;
         } catch (_nativeShareError) {
+          // Si falla con archivos o URL completa, intentamos lo más simple
           try {
             await navigator.share({
               title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
@@ -286,30 +378,30 @@ export function ResultDisplay({
         }
       }
 
-      if (pluginView) {
+      if (inApp || pluginView) {
         const popup = window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
         if (popup) {
-          setShareError('Imagen abierta en una nueva pestaña para compartirla.');
+          showToast('Imagen abierta para compartir.', 'info');
           return;
         }
       }
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        // Copiar texto + URL para que el usuario pueda pegar en WhatsApp u otra red
         const clipboardText = `${shareText}\n\n${shareTargetUrl}`;
         await navigator.clipboard.writeText(clipboardText);
-        setShareError('Mensaje copiado. Pégalo en WhatsApp u otra red social.');
+        showToast('Mensaje copiado. Pégalo en WhatsApp o Instagram.', 'success');
         return;
       }
 
       window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
     } catch (error) {
       console.error('Error al compartir:', error);
-      setShareError('No se pudo compartir en este dispositivo.');
+      showToast('No se pudo compartir en este dispositivo.', 'error');
     } finally {
       setSharing(false);
     }
   };
+
 
   const handleFeedbackSubmit = async () => {
     if (!feedbackType || !generationId || !brandSlug) return;
@@ -376,7 +468,7 @@ export function ResultDisplay({
           <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_280px] lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
             <div 
               className="rounded-[28px] border p-3 shadow-sm md:p-4"
-              style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6' }}
+            style={{ backgroundColor: '#1a1a1a', borderColor: 'rgba(255,255,255,0.1)' }}
             >
               <ResultImage
                 imageUrl={imageUrl}
@@ -499,38 +591,8 @@ export function ResultDisplay({
           />
         </div>
 
-        {selfiePreview && (
-          <div className="grid grid-cols-2 gap-2 md:gap-3 mb-4">
-            <div className="relative">
-              <img 
-                src={selfiePreview} 
-                alt="Tu foto" 
-                className="w-full aspect-[3/4] object-cover rounded-xl md:rounded-2xl shadow-sm border" 
-                style={{ borderColor: cardBorder || '#f3f4f6' }}
-              />
-              <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-white text-[8px] md:text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest">Antes</div>
-            </div>
-            <div className="relative group cursor-pointer" onClick={() => setLightboxOpen(true)}>
-              <div 
-                className="rounded-xl md:rounded-2xl overflow-hidden shadow-sm border h-full"
-                style={{ borderColor: cardBorder || '#f3f4f6' }}
-              >
-                <ResultImage
-                  imageUrl={imageUrl}
-                  productName={productName}
-                  primaryColor={primaryColor}
-                  onOpen={() => setLightboxOpen(true)}
-                  aspectRatio="aspect-[3/4]"
-                  compact
-                  brandPlan={brandPlan}
-                  cardBg={cardBg}
-                  cardBorder={cardBorder}
-                />
-              </div>
-              <div className="absolute bottom-2 left-2 text-white text-[8px] md:text-[10px] px-2 py-0.5 rounded-full pointer-events-none uppercase font-black tracking-widest" style={{ backgroundColor: `${primaryColor}cc` }}>Después</div>
-            </div>
-          </div>
-        )}
+        {/* El usuario ha solicitado eliminar la vista de antes/después para simplificar */}
+
 
         <div className="flex flex-col gap-2 md:gap-3">
 
@@ -547,7 +609,9 @@ export function ResultDisplay({
           {/* WhatsApp - solo en non-plugin view */}
           {!pluginView && whatsappContact && (
             <a
-              href={`https://wa.me/${whatsappContact.replace(/\D/g, '')}`}
+              href={`https://wa.me/${whatsappContact.replace(/\D/g, '')}?text=${encodeURIComponent(
+                `¡Hola! Acabo de usar el probador virtual de ${brandName || 'esta marca'} y me gustaría comprar "${productName}". ¿Me puedes ayudar?`
+              )}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-3 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest border-2 transition-all flex items-center justify-center gap-2 shadow-sm hover:opacity-80 active:scale-95"
@@ -624,7 +688,7 @@ export function ResultDisplay({
             aria-labelledby="feedback-title"
             className="rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden border"
             onClick={e => e.stopPropagation()}
-            style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6' }}
+            style={getFeedbackModalStyles(textColor, cardBg, cardBorder)}
           >
             {!feedbackSent ? (
               <>
@@ -716,7 +780,7 @@ export function ResultDisplay({
             <img src={imageUrl} alt={productName} className="max-w-full max-h-[90vh] object-contain rounded-2xl" />
             <button
               onClick={() => setLightboxOpen(false)}
-              className="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               aria-label="Cerrar pantalla completa"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -726,6 +790,14 @@ export function ResultDisplay({
           </div>
         </div>
       )}
+
+      <Toast 
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast(prev => ({ ...prev, show: false }))}
+      />
     </>
   );
 }
+

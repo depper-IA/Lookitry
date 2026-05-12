@@ -101,7 +101,6 @@ const adminNav = [
     items: [
       { href: '/admin/dashboard', label: 'Mission Control', icon: DashboardIcon },
       { href: '/admin/funnel', label: 'Funnel', icon: FunnelIcon },
-      { href: '/admin/agents', label: 'Agentes', icon: BotIcon },
     ],
   },
   {
@@ -133,6 +132,7 @@ const adminNav = [
       { href: '/admin/reviews', label: 'Reviews', icon: StarIcon },
       { href: '/admin/blog', label: 'Blog', icon: BookOpen },
       { href: '/admin/feedback', label: 'Feedback', icon: BellIcon },
+      { href: '/admin/knowledge', label: 'Knowledge Base', icon: Brain },
     ],
   },
   {
@@ -149,6 +149,7 @@ const adminNav = [
     items: [
       { href: '/admin/payment-settings', label: 'Pagos', icon: PaymentsIcon },
       { href: '/admin/pricing', label: 'Precios', icon: PricingIcon },
+      { href: '/admin/widget-ip-whitelist', label: 'Widget IPs', icon: Shield },
       { href: '/admin/social-api-config', label: 'Social APIs', icon: GlobeIcon },
       { href: '/admin/enterprise', label: 'Enterprise', icon: EnterpriseIcon },
     ],
@@ -185,7 +186,6 @@ const adminNav = [
 
 const pageTitleMap: Record<string, string> = {
   '/admin/dashboard': 'Mission Control',
-  '/admin/agents': 'Agents Activity',
   '/admin/brands': 'Marcas',
   '/admin/subscriptions': 'Suscripciones',
   '/admin/referrals': 'Programa de Referidos',
@@ -223,6 +223,7 @@ const pageTitleMap: Record<string, string> = {
   '/admin/config/contact': 'Contacto y Precios',
   '/admin/config/launch': 'Launch',
   '/admin/config/health': 'Salud del Sistema',
+  '/admin/widget-ip-whitelist': 'Widget IP Whitelist',
 };
 
 // ── Main Layout ───────────────────────────────────────────────────────────────
@@ -521,7 +522,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </header>
 
-          <main className="flex-1 p-5 sm:p-7">{children}</main>
+          <main className="flex-1 p-5 sm:p-7 pb-24 sm:pb-24">{children}</main>
         </div>
 
         <AdminBottomNav />

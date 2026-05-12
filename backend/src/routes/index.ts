@@ -1,4 +1,5 @@
 // backend/src/routes/index.ts
+
 import { Router } from 'express';
 
 import authRoutes from './auth.routes';
@@ -18,13 +19,18 @@ import imageRoutes from './image.routes';
 import blogRoutes from './blog.routes';
 import trialRoutes from './trial.routes';
 import reviewsRoutes from './reviews.routes';
+import reviewsPublicRoutes from './reviewsPublic.routes';
 import adminReviewsRoutes from './adminReviews.routes';
 import couponsRoutes from './coupons.routes';
+import couponsPublicRoutes from './couponsPublic.routes';
 import enterpriseRoutes from './enterprise.routes';
 import agentRoutes from './agent.routes';
-import reviewsPublicRoutes from './reviewsPublic.routes';
 import categoryAttributesRoutes from './categoryAttributes.routes';
 import landingStatsRoutes from './landingStats.routes';
+import homeRoutes from './home.routes';
+import vertexRoutes from './vertex.routes';
+import aiRoutes from './ai.routes';
+import chatRoutes from './chat.routes';
 
 const router = Router();
 
@@ -50,7 +56,12 @@ router.use('/reviews', reviewsRoutes);
 router.use('/admin/reviews', adminReviewsRoutes);
 router.use('/admin/coupons', couponsRoutes);
 router.use('/admin/enterprise', enterpriseRoutes);
+router.use('/coupons', couponsPublicRoutes);
 router.use('/agent', agentRoutes);
 router.use('/category-attributes', categoryAttributesRoutes);
+router.use('/home/tryon', homeRoutes);
+router.use('/vertex', vertexRoutes);
+router.use('/ai', aiRoutes);
+router.use('/chat', chatRoutes);
 
 export default router;

@@ -54,8 +54,14 @@
 | Cipher | Security | 🟢 Disponible | - |
 | Zephyr | Infra | 🟢 Disponible | - |
 | Marlo | Growth | 🟢 Disponible | - |
-| Rebecca | UGC | 🟢 Disponible | - |
-| Leo | Trading | 🟢 Disponible | - |
+| **Sammantha** | Orquestadora | 🟢 Disponible | - |
+| **Pixel** | Frontend | 🟢 Disponible | - |
+| **Kira** | QA/Security | 🟢 Disponible | - |
+| **Nadia** | DB/IA | 🟢 Disponible | - |
+| **Marlo** | Marketing | 🟢 Disponible | - |
+| **Zephyr** | Infra | 🟢 Disponible | - |
+| **Lina** | Docs | 🟢 Disponible | - |
+| **Cipher** | Security | 🟢 Disponible | - |
 | Lina | Docs | 🟢 Disponible | - |
 
 **Melissa Urbano** — Colaboradora de Pixel (Junior Frontend)
@@ -103,8 +109,6 @@
 - `Cerebro/Agentes/architectai.md` - Zephyr
 - `Cerebro/Agentes/docs-writer.md` - Lina
 - `Cerebro/Agentes/security-auditor.md` - Cipher
-- `Cerebro/Agentes/leo.md` - Leo
-- `Cerebro/Agentes/rebecca.md` - Rebecca
 
 ### Config
 - `Cerebro/AGENTS.md` - Configuración agentes v3.0

@@ -22,13 +22,6 @@ export async function GET(request: NextRequest) {
       `&offset=${offset}` +
       (categoryId ? `&category_id=eq.${encodeURIComponent(categoryId)}` : '');
 
-    // Get total count for pagination
-    const countUrl =
-      `${SUPABASE_URL}/rest/v1/blogs` +
-      `?select=id` +
-      `&status=eq.published` +
-      (categoryId ? `&category_id=eq.${encodeURIComponent(categoryId)}` : '');
-
     const [response, countResponse] = await Promise.all([
       fetch(url, {
         headers: {
@@ -38,11 +31,11 @@ export async function GET(request: NextRequest) {
         },
         next: { revalidate: 60 },
       }),
-      fetch(countUrl, {
+      fetch(url.replace(`limit=${limit}&offset=${offset}`, 'limit=0'), {
         headers: {
           apikey: SUPABASE_ANON_KEY,
           Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-          Prefer: 'head',
+          Prefer: 'count=exact',
         },
         next: { revalidate: 60 },
       }),
