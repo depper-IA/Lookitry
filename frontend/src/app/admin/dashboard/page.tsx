@@ -12,6 +12,91 @@ import {
 } from 'lucide-react';
 import { adminApi } from '@/services/adminApi';
 
+// ── Variants ─────────────────────────────────────────────────────────────────
+
+const metricVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.08,
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number]
+    }
+  })
+};
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 22 },
+  visible: (i: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.04, duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
+  })
+};
+
+const cardHoverVariants = {
+  hover: { y: -4, boxShadow: "0 15px 35px -10px rgba(0,0,0,0.3)" }
+};
+
+const valueVariants = {
+  initial: { y: 20, opacity: 0 },
+  animate: { y: 0, opacity: 1 },
+  transition: { type: "spring", stiffness: 300, damping: 20 }
+};
+
+const pulseVariants = {
+  animate: {
+    boxShadow: ["0 0 0 0 rgba(255,58,92,0.5)", "0 0 0 8px rgba(255,58,92,0)", "0 0 0 0 rgba(255,58,92,0.5)"],
+    transition: { duration: 1.5, repeat: Infinity }
+  }
+};
+
+const progressVariants = {
+  hidden: { width: 0 },
+  visible: (w: number) => ({
+    width: `${w}%`,
+    transition: { duration: 0.8, ease: 'easeOut' as const, delay: 0.2 }
+  })
+};
+
+const brandCardVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: (i: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: { delay: i * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
+  }),
+  hover: { y: -4, boxShadow: "0 15px 35px -10px rgba(0,0,0,0.25)" }
+};
+
+const staggerContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.03 }
+  }
+};
+
+const rowVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: i * 0.03, duration: 0.3 }
+  }),
+  hover: { backgroundColor: "rgba(255,255,255,0.02)", x: 3 }
+};
+
+const badgeVariants = {
+  hidden: { scale: 0, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 15 }
+  }
+};
+
 interface GlobalStats {
   totalBrands: number;
   totalProducts: number;
@@ -146,30 +231,39 @@ export default function AdminDashboardPage() {
           {/* Quick Stats */}
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <StatCard
-                icon={<Users className="h-5 w-5" />}
-                label="Total Marcas"
-                value={global.totalBrands}
-                accent="#3b82f6"
-              />
-              <StatCard
-                icon={<Package className="h-5 w-5" />}
-                label="Productos"
-                value={global.totalProducts}
-                accent="#10b981"
-              />
-              <StatCard
-                icon={<ImageIcon className="h-5 w-5" />}
-                label="Generaciones"
-                value={global.totalGenerations}
-                accent="#8b5cf6"
-              />
-              <StatCard
-                icon={<Activity className="h-5 w-5" />}
-                label="Éxito IA"
-                value={`${Math.round(global.successRate)}%`}
-                accent="var(--accent)"
-              />
+              <motion.div custom={0} variants={metricVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                <StatCard
+                  icon={<Users className="h-5 w-5" />}
+                  label="Total Marcas"
+                  value={global.totalBrands}
+                  accent="#3b82f6"
+                />
+              </motion.div>
+              <motion.div custom={1} variants={metricVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                <StatCard
+                  icon={<Package className="h-5 w-5" />}
+                  label="Productos"
+                  value={global.totalProducts}
+                  accent="#10b981"
+                />
+              </motion.div>
+              <motion.div custom={2} variants={metricVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                <StatCard
+                  icon={<ImageIcon className="h-5 w-5" />}
+                  label="Generaciones"
+                  value={global.totalGenerations}
+                  accent="#8b5cf6"
+                />
+              </motion.div>
+              <motion.div custom={3} variants={metricVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                <StatCard
+                  icon={<Activity className="h-5 w-5" />}
+                  label="Éxito IA"
+                  value={`${Math.round(global.successRate)}%`}
+                  accent="var(--accent)"
+                  isCritical={alerts.critical > 0}
+                />
+              </motion.div>
             </div>
 
             {/* Alerts */}
@@ -287,32 +381,49 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Brands Grid */}
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+{/* Brands Grid */}
+        <motion.div
+          className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           <AnimatePresence mode="popLayout">
-            {filteredBrands.slice(0, 9).map((brand) => (
-              <BrandCard key={brand.id} brand={brand} />
+            {filteredBrands.slice(0, 9).map((brand, i) => (
+              <motion.div
+                key={brand.id}
+                custom={i}
+                variants={brandCardVariants}
+                layout
+                initial="hidden"
+                whileInView="visible"
+                whileHover="hover"
+                viewport={{ once: true }}
+              >
+                <BrandCard brand={brand} />
+              </motion.div>
             ))}
           </AnimatePresence>
-          
-          {/* Add New Card */}
-          <motion.div
-            layout
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex min-h-[180px] cursor-pointer items-center justify-center rounded-[1.8rem] border-2 border-dashed border-[var(--border-color)] transition-all hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5"
-          >
-            <a href="/admin/brands" className="flex flex-col items-center gap-3 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent)]/10">
-                <Plus className="h-6 w-6 text-[var(--accent)]" />
-              </div>
-              <div>
-                <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Añadir marca</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Crear nueva cuenta</p>
-              </div>
-            </a>
-          </motion.div>
-        </div>
+        </motion.div>
+
+        {/* Add New Card */}
+        <motion.div
+          layout
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex min-h-[180px] cursor-pointer items-center justify-center rounded-[1.8rem] border-2 border-dashed border-[var(--border-color)] transition-all hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5"
+        >
+          <a href="/admin/brands" className="flex flex-col items-center gap-3 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent)]/10">
+              <Plus className="h-6 w-6 text-[var(--accent)]" />
+            </div>
+            <div>
+              <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Añadir marca</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Crear nueva cuenta</p>
+            </div>
+          </a>
+        </motion.div>
 
         {filteredBrands.length > 9 && (
           <div className="mt-6 text-center">
@@ -362,9 +473,11 @@ export default function AdminDashboardPage() {
                   <div className="w-24 text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{p.label}</div>
                   <div className="flex-1 h-3 overflow-hidden rounded-full" style={{ backgroundColor: 'var(--bg-input)' }}>
                     <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                      custom={pct}
+                      variants={progressVariants}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
                       className="h-full rounded-full"
                       style={{ backgroundColor: p.color }}
                     />
@@ -569,22 +682,43 @@ export default function AdminDashboardPage() {
   );
 }
 
-function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string | number; accent: string }) {
+function StatCard({ icon, label, value, accent, isCritical }: { icon: React.ReactNode; label: string; value: string | number; accent: string; isCritical?: boolean }) {
+  const numValue = typeof value === 'number' ? value : parseInt(String(value).replace(/[^0-9]/g, '')) || 0;
+  const showPulse = isCritical ?? (numValue > 0 && label.toLowerCase().includes('alerta'));
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-[1.6rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-5"
+      custom={0}
+      variants={metricVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      whileHover="hover"
+      className="rounded-[1.6rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-5 relative"
     >
       <div className="flex items-center justify-between">
         <div style={{ color: accent }}>{icon}</div>
+        {showPulse && (
+          <motion.div
+            variants={pulseVariants}
+            animate="animate"
+            className="inline-block w-3 h-3 rounded-full bg-[#FF3A5C]"
+          />
+        )}
       </div>
       <p className="mt-3 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
         {label}
       </p>
-      <p className="mt-1 text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
+      <motion.p
+        key={String(value)}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className="mt-1 text-2xl font-black tracking-tight"
+        style={{ color: 'var(--text-primary)' }}
+      >
         {value}
-      </p>
+      </motion.p>
     </motion.div>
   );
 }
@@ -614,10 +748,7 @@ function BrandCard({ brand }: { brand: Brand }) {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      className="group rounded-[1.8rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:border-[var(--accent)]/30"
+      className="rounded-[1.8rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:border-[var(--accent)]/30"
     >
       <div className="mb-4 flex items-start justify-between">
         <div className="flex items-center gap-3">

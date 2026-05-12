@@ -15,11 +15,11 @@ Este es el catalogo de habilidades reales que los agentes utilizan para construi
 ## 🛡️ Calidad y Control
 - [[./verification-before-completion]]: Garantia de que todo funcione antes de entregarlo.
 - [[./code-reviewer]]: Estandares de limpieza y modularidad de codigo.
+- [[./refactor-and-dead-code-detection]]: Refactorizacion obligatoria + deteccion de codigo muerto.
 
 ## 📱 Marketing y Redes Sociales
 - [[./social-automation-buffer]]: Automatización de publicaciones en Buffer + GCP Imagen.
 - [[./gcp-rate-limits]]: Rate limits y budget tracking para GCP Vertex AI Imagen.
-- [[./rebecca-social-media-expert]]: Skill completo para Rebecca - generación de imágenes + programación.
 
 ## 🏢 Habilidades Propias de la IA
 - [[./mcp-builder]]: Creacion de herramientas personalizadas.

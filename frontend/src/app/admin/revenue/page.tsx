@@ -5,6 +5,43 @@ import { formatCurrency } from '@/utils/currency';
 import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
 
+// ── Animation Variants ─────────────────────────────────────────────────────────
+
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.06 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
+  }
+};
+
+const progressVariants = {
+  hidden: { width: 0 },
+  visible: (w: number) => ({
+    width: `${w}%`,
+    transition: { duration: 0.8, ease: 'easeOut' }
+  })
+};
+
+const kpiVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
+  }),
+  hover: { y: -4, boxShadow: "0 15px 35px -10px rgba(0,0,0,0.2)" }
+};
+
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 interface MonthlyRevenue {
@@ -317,13 +354,30 @@ function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
     stats.planBreakdown.landing.totalRevenue;
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Mes actual" value={formatCurrency(stats.currentMonth.total)} sub={`${stats.currentMonth.paymentsCount} pagos`} />
-        <KpiCard label="Proyección próximo mes" value={formatCurrency(stats.projection.total)} sub={`${stats.projection.activeSubscriptions} suscripciones activas`} color="var(--accent)" />
-        <KpiCard label="Landings activas" value={String(stats.projection.activeLandings)} sub="Total de landings publicadas" color="#10b981" />
-        <KpiCard label="Total histórico" value={formatCurrency(historico)} sub={`${stats.planBreakdown.basic.paymentsCount + stats.planBreakdown.pro.paymentsCount + stats.planBreakdown.landing.paymentsCount} pagos totales`} />
-      </div>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      className="space-y-6"
+    >
+      <motion.div
+        variants={itemVariants}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        <motion.div variants={kpiVariants} custom={0} whileHover="hover">
+          <KpiCard label="Mes actual" value={formatCurrency(stats.currentMonth.total)} sub={`${stats.currentMonth.paymentsCount} pagos`} />
+        </motion.div>
+        <motion.div variants={kpiVariants} custom={1} whileHover="hover">
+          <KpiCard label="Proyección próximo mes" value={formatCurrency(stats.projection.total)} sub={`${stats.projection.activeSubscriptions} suscripciones activas`} color="var(--accent)" />
+        </motion.div>
+        <motion.div variants={kpiVariants} custom={2} whileHover="hover">
+          <KpiCard label="Landings activas" value={String(stats.projection.activeLandings)} sub="Total de landings publicadas" color="#10b981" />
+        </motion.div>
+        <motion.div variants={kpiVariants} custom={3} whileHover="hover">
+          <KpiCard label="Total histórico" value={formatCurrency(historico)} sub={`${stats.planBreakdown.basic.paymentsCount + stats.planBreakdown.pro.paymentsCount + stats.planBreakdown.landing.paymentsCount} pagos totales`} />
+        </motion.div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {(['basic', 'pro', 'landing'] as const).map(planKey => {
@@ -404,9 +458,8 @@ function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
           ))}
         </div>
       </div>
-
       <span className="hidden">{landingPrecio}</span>
-    </div>
+    </motion.div>
   );
 }
 

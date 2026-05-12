@@ -1,5 +1,6 @@
 'use client';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronRight, Building2 } from 'lucide-react';
 import { formatCop } from '@/lib/paymentDisplay';
 import { PlanKey, SubPlan } from '@/app/checkout/page';
@@ -125,8 +126,13 @@ export default function PlanSelectionStep({
 
           const isSelected = selectedPlan === p;
           return (
-            <button
+            <motion.button
               key={p}
+              whileHover={{ 
+                y: -8,
+                boxShadow: "0 30px 60px -15px rgba(0, 0, 0, 0.3)"
+              }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 if (p === 'TRIAL' && isTrialDisabled) {
                   return;
@@ -143,6 +149,10 @@ export default function PlanSelectionStep({
                 setSelectedPlan(p);
               }}
               disabled={isTrialDisabled}
+              animate={isSelected ? {
+                borderColor: OA,
+                boxShadow: "0 0 0 2px rgba(255, 92, 58, 0.3)"
+              } : {}}
               className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-300 ${isTrialDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               style={{
                 borderColor: isSelected ? OA : '#1f1f1f',
@@ -150,40 +160,72 @@ export default function PlanSelectionStep({
                 boxShadow: isSelected ? `0 0 20px rgba(255,92,58,0.08)` : 'none',
               }}
             >
+              {/* Selected indicator */}
+              <AnimatePresence>
+                {isSelected && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    className="absolute -top-3 -right-3 w-8 h-8 bg-[#FF5C3A] rounded-full flex items-center justify-center shadow-lg"
+                  >
+                    <Check className="w-5 h-5 text-white" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold uppercase tracking-wider" style={{ color: isSelected ? OA : '#999' }}>
                   {planNames[p]}
                 </span>
-                <div
+                <motion.div
+                  animate={{ 
+                    borderColor: isSelected ? OA : '#333', 
+                    backgroundColor: isSelected ? OA : 'transparent',
+                    scale: isSelected ? 1.1 : 1
+                  }}
                   className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
-                  style={{ borderColor: isSelected ? OA : '#333', backgroundColor: isSelected ? OA : 'transparent' }}
                 >
                   {isSelected && <Check className="w-3 h-3 text-white" />}
-                </div>
+                </motion.div>
               </div>
 
               <div className="space-y-1">
                 {p === 'LANDING' ? (
                   <>
                     <div className="text-sm text-[#999] line-through font-medium">{formatCop(landingOriginal)}</div>
-                    <div className="text-2xl font-jakarta font-extrabold text-white">{formatCop(landingPrice)}</div>
+                    <motion.div
+                      key={landingPrice}
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                      className="text-2xl font-jakarta font-extrabold text-white"
+                    >
+                      {formatCop(landingPrice)}
+                    </motion.div>
                     <div className="text-[10px] font-bold uppercase" style={{ color: OA }}>Pago único</div>
                   </>
                 ) : (
                   <>
-                    <div className="text-2xl font-jakarta font-extrabold text-white">
+                    <motion.div
+                      key={planBase[p as keyof typeof planBase]}
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                      className="text-2xl font-jakarta font-extrabold text-white"
+                    >
                       {p === 'TRIAL'
                         ? (planBase.TRIAL > 0 ? formatCop(planBase.TRIAL) : 'GRATIS')
                         : formatCop(planBase[p as keyof typeof planBase])
                       }
-                    </div>
+                    </motion.div>
                     <div className="text-[10px] text-[#999] font-bold uppercase mt-0.5">
                       {p === 'TRIAL' ? (planBase.TRIAL > 0 ? 'Pago único' : '7 Días') : 'Mensual'}
                     </div>
                   </>
                 )}
               </div>
-            </button>
+            </motion.button>
           );
         })}
       </div>
@@ -252,10 +294,16 @@ export default function PlanSelectionStep({
           <h3 className="text-sm font-bold text-white mb-4">¿Por cuánto tiempo?</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {discounts.map(d => (
-              <button
+              <motion.button
                 key={d.months}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedMonths(d.months)}
                 className="relative py-4 rounded-xl border-2 transition-all"
+                animate={selectedMonths === d.months ? {
+                  borderColor: OA,
+                  boxShadow: "0 0 15px rgba(255, 92, 58, 0.2)"
+                } : {}}
                 style={{
                   borderColor: selectedMonths === d.months ? OA : '#1f1f1f',
                   backgroundColor: selectedMonths === d.months ? 'rgba(255,92,58,0.05)' : '#0a0a0a',
@@ -266,25 +314,36 @@ export default function PlanSelectionStep({
                   Mes{d.months > 1 ? 'es' : ''}
                 </div>
                 {d.pct > 0 && (
-                  <div className="absolute -top-2.5 right-2 bg-emerald-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                  <motion.div
+                    initial={{ scale: 0, rotate: -10 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    className="absolute -top-2.5 right-2 bg-emerald-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-lg"
+                  >
                     -{d.pct}%
-                  </div>
+                  </motion.div>
                 )}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
       )}
 
       <div className="mt-10">
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02, boxShadow: `0 15px 40px -10px rgba(255,92,58,0.5)` }}
+          whileTap={{ scale: 0.97 }}
           onClick={handleNextStep}
           className="w-full text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 group"
           style={{ backgroundColor: OA, boxShadow: `0 10px 30px -10px rgba(255,92,58,0.4)` }}
         >
           CONTINUAR
-          <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        </button>
+          <motion.span
+            animate={{ x: [0, 5, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </motion.span>
+        </motion.button>
       </div>
     </div>
   );

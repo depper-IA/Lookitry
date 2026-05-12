@@ -24,8 +24,9 @@ function ProgressBar({ value, max }: { value: number; max: number }) {
     <div className="h-4 overflow-hidden rounded-full border border-[var(--border-color)] bg-[var(--bg-input)] p-1 shadow-inner">
       <motion.div
         initial={{ width: 0 }}
-        animate={{ width: `${pct}%` }}
-        transition={{ duration: 1, ease: 'easeOut' }}
+        whileInView={{ width: `${pct}%` }}
+        viewport={{ once: true }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         className={`h-full rounded-full bg-gradient-to-r ${color} shadow-lg shadow-[#FF5C3A]/20`}
       />
     </div>
@@ -130,7 +131,15 @@ export function UsageStats({ stats, isTrial = false, trialEndsAt = null }: Usage
                   animate={{ opacity: 1, y: 0 }}
                   className="flex items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/5 p-4 text-[10px] font-black uppercase tracking-widest text-red-500"
                 >
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <motion.div
+                    animate={{
+                      boxShadow: ["0 0 0 0 rgba(239,68,68,0.4)", "0 0 0 8px rgba(239,68,68,0)", "0 0 0 0 rgba(239,68,68,0.4)"]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="relative"
+                  >
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                  </motion.div>
                   {item.warning}
                 </motion.div>
               )}
@@ -242,6 +251,13 @@ export function UsageStats({ stats, isTrial = false, trialEndsAt = null }: Usage
           <div className="absolute right-0 top-0 rotate-12 p-12 opacity-[0.03] transition-transform duration-1000 group-hover:rotate-45">
             <TrendingUp size={280} strokeWidth={1} />
           </div>
+          <motion.div
+            animate={{
+              boxShadow: ["0 0 0 0 rgba(255,92,58,0.4)", "0 0 0 12px rgba(255,92,58,0)", "0 0 0 0 rgba(255,92,58,0.4)"]
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-0 rounded-[3.5rem] border-2 border-[#FF5C3A]/30 pointer-events-none"
+          />
           <div className="relative z-10 flex flex-col items-center justify-between gap-10 lg:flex-row">
             <div className="space-y-4 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#FF5C3A]/30 bg-[#FF5C3A]/20 px-3 py-1">
@@ -259,12 +275,15 @@ export function UsageStats({ stats, isTrial = false, trialEndsAt = null }: Usage
                 El Plan PRO desbloquea <span className="font-black text-white">1,200 generaciones</span> y soporte prioritario VIP.
               </p>
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
               onClick={() => { window.location.href = '/dashboard/subscription'; }}
-              className="whitespace-nowrap rounded-2xl bg-white px-12 py-6 text-[11px] font-black uppercase tracking-[0.2em] text-black shadow-xl transition-all hover:scale-105 active:scale-95"
+              className="whitespace-nowrap rounded-2xl bg-white px-12 py-6 text-[11px] font-black uppercase tracking-[0.2em] text-black shadow-xl transition-all active:scale-95"
             >
               Mejorar mi plan
-            </button>
+            </motion.button>
           </div>
         </motion.div>
       )}

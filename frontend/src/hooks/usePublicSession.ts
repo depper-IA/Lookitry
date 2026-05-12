@@ -98,13 +98,15 @@ export function usePublicSession() {
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        // Debounce con timeout para evitar múltiples llamadas
+        // Debounce: clear any pending timeout before scheduling a new one
         if (syncTimeoutRef.current) {
           clearTimeout(syncTimeoutRef.current);
+          syncTimeoutRef.current = null;
         }
         syncTimeoutRef.current = setTimeout(() => {
+          syncTimeoutRef.current = null;
           void syncSession();
-        }, 100);
+        }, 500); // Increased from 100ms to reduce frequency of rapid tab switches
       }
     };
 
@@ -126,6 +128,7 @@ export function usePublicSession() {
       document.removeEventListener('visibilitychange', handleVisibility);
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
+        syncTimeoutRef.current = null;
       }
     };
   }, [syncSession]);

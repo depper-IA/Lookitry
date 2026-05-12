@@ -8,7 +8,7 @@ const n8nClient = new N8nClient();
 
 /**
  * GET /api/admin/generations
- * Lista todas las generaciones con filtros
+ * Lista todas las generaciones con filtros y datos relacionados
  */
 export const getGenerations = async (req: any, res: Response) => {
   try {
@@ -17,32 +17,41 @@ export const getGenerations = async (req: any, res: Response) => {
       status,
       start_date,
       end_date,
-      limit = '50',
-      offset = '0'
+      limit = '20',
+      offset = '0',
+      page = '1'
     } = req.query;
 
-    const limitNum = Math.min(parseInt(limit as string) || 50, 100);
-    const offsetNum = parseInt(offset as string) || 0;
+    const limitNum = Math.min(parseInt(limit as string) || 20, 100);
+    const pageNum = Math.max(parseInt(page as string) || 1, 1);
+    const offsetNum = (pageNum - 1) * limitNum;
 
     let query = supabaseAdmin
-      .from('admin_generations_log')
+      .from('generations')
       .select('*', { count: 'exact' });
 
     if (brand_id) {
       query = query.eq('brand_id', brand_id);
     }
     if (status) {
-      query = query.eq('status', status);
+      // Mapear status externo (frontend) a interno (DB)
+      const statusMap: Record<string, string> = {
+        'pending': 'PENDING',
+        'completed': 'SUCCESS',
+        'failed': 'FAILED'
+      };
+      const dbStatus = statusMap[status as string] || status;
+      query = query.eq('status', dbStatus);
     }
     if (start_date) {
-      query = query.gte('created_at', start_date);
+      query = query.gte('generated_at', start_date);
     }
     if (end_date) {
-      query = query.lte('created_at', end_date);
+      query = query.lte('generated_at', end_date);
     }
 
     const { data, error, count } = await query
-      .order('created_at', { ascending: false })
+      .order('generated_at', { ascending: false })
       .range(offsetNum, offsetNum + limitNum - 1);
 
     if (error) {
@@ -50,8 +59,53 @@ export const getGenerations = async (req: any, res: Response) => {
       return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener generaciones' });
     }
 
+    // Obtener brands y products para mostrar nombres
+    const brandIds = [...new Set((data || []).map((g: any) => g.brand_id).filter(Boolean))];
+    const productIds = [...new Set((data || []).map((g: any) => g.product_id).filter(Boolean))];
+
+    const [brandsResult, productsResult] = await Promise.all([
+      brandIds.length > 0
+        ? supabaseAdmin.from('brands').select('id, name, slug').in('id', brandIds)
+        : { data: [], error: null },
+      productIds.length > 0
+        ? supabaseAdmin.from('products').select('id, name').in('id', productIds)
+        : { data: [], error: null },
+    ]);
+
+    const brandsMap: Record<string, any> = {};
+    (brandsResult.data || []).forEach((b: any) => { brandsMap[b.id] = b; });
+
+    const productsMap: Record<string, any> = {};
+    (productsResult.data || []).forEach((p: any) => { productsMap[p.id] = p; });
+
+    // Mapear status interno a status externo (PENDINGâpending, SUCCESSâcompleted, FAILEDâfailed)
+    const mapStatus = (s: string) => {
+      if (s === 'PENDING') return 'pending';
+      if (s === 'SUCCESS') return 'completed';
+      if (s === 'FAILED') return 'failed';
+      return s;
+    };
+
+    // Transformar datos con nombres relacionados
+    const generations = (data || []).map((row: any) => ({
+      id: row.id,
+      brand_id: row.brand_id,
+      brand_name: brandsMap[row.brand_id]?.name || null,
+      brand_slug: brandsMap[row.brand_id]?.slug || null,
+      product_id: row.product_id,
+      product_name: productsMap[row.product_id]?.name || null,
+      status: mapStatus(row.status),
+      model_provider: row.prompt_used ? 'n8n-ai' : null,
+      selfie_url: row.selfie_url,
+      result_url: row.result_image_url,
+      error_message: row.error_message,
+      processing_time_ms: row.processing_time,
+      metadata: null,
+      created_at: row.generated_at,
+    }));
+
     return res.json({
-      data: data || [],
+      generations,
       total: count || 0,
       has_more: (count || 0) > offsetNum + limitNum
     });
@@ -70,7 +124,7 @@ export const getGenerationById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const { data, error } = await supabaseAdmin
-      .from('admin_generations_log')
+      .from('generations')
       .select('*')
       .eq('id', id)
       .single();
@@ -98,7 +152,7 @@ export const retryGeneration = async (req: any, res: Response) => {
 
     // 1. Obtener la generación original
     const { data: generation, error: fetchError } = await supabaseAdmin
-      .from('admin_generations_log')
+      .from('generations')
       .select('*')
       .eq('id', id)
       .single();
@@ -108,67 +162,46 @@ export const retryGeneration = async (req: any, res: Response) => {
     }
 
     // 2. Validar que esté fallida
-    if (generation.status !== 'failed') {
+    if (generation.status !== 'FAILED') {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
-        message: 'Solo se pueden reintentar generaciones con estado failed'
+        message: 'Solo se pueden reintentar generaciones con estado FAILED'
       });
     }
 
-    // 3. Crear nueva entrada para el retry
-    const { data: newGeneration, error: createError } = await supabaseAdmin
-      .from('admin_generations_log')
-      .insert({
-        brand_id: generation.brand_id,
-        product_id: generation.product_id,
-        customer_id: generation.customer_id,
-        selfie_url: generation.selfie_url,
-        status: 'pending',
-        model_used: generation.model_used,
-        retry_count: (generation.retry_count || 0) + 1,
-        original_generation_id: generation.original_generation_id || id,
-        metadata: {
-          ...(generation.metadata || {}),
-          retry_reason: reason || null,
-          retried_by: admin?.email || 'unknown'
-        }
-      })
-      .select()
+    // 3. Obtener brand y product para el webhook
+    const { data: brand } = await supabaseAdmin
+      .from('brands')
+      .select('id, slug')
+      .eq('id', generation.brand_id)
       .single();
 
-    if (createError || !newGeneration) {
-      console.error('[GenerationsAdmin] retryGeneration - create:', createError);
-      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al crear retry' });
+    const { data: product } = await supabaseAdmin
+      .from('products')
+      .select('id, image_url')
+      .eq('id', generation.product_id)
+      .single();
+
+    if (!brand || !product) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Brand o product no encontrados' });
     }
 
-    // 4. Disparar webhook de n8n si tenemos la configuración
+    // 4. Disparar webhook de n8n para re-procesar
     if (n8nClient.isConfigured()) {
-      const { data: brand } = await supabaseAdmin
-        .from('brands')
-        .select('id, slug')
-        .eq('id', generation.brand_id)
-        .single();
-
-      const { data: product } = await supabaseAdmin
-        .from('products')
-        .select('id, image_url')
-        .eq('id', generation.product_id)
-        .single();
-
-      if (brand && product) {
-        try {
-          await n8nClient.callTryOnWebhook({
-            brand_id: generation.brand_id,
-            product_id: generation.product_id,
-            selfie_url: generation.selfie_url,
-            product_image_url: product.image_url,
-            prompt: (generation.metadata as any)?.prompt || 'Try-on virtual'
-          });
-        } catch (n8nErr: any) {
-          console.error('[GenerationsAdmin] n8n retry error:', n8nErr.message);
-          // No fallamos la request, el retry quedó registrado
-        }
+      try {
+        await n8nClient.callTryOnWebhook({
+          brand_id: generation.brand_id,
+          product_id: generation.product_id,
+          selfie_url: generation.selfie_url,
+          product_image_url: product.image_url,
+          prompt: generation.prompt_used || 'Try-on virtual'
+        });
+      } catch (n8nErr: any) {
+        console.error('[GenerationsAdmin] n8n retry error:', n8nErr.message);
+        return res.status(500).json({ error: 'N8N_ERROR', message: 'Error al disparar webhook de retry' });
       }
+    } else {
+      return res.status(500).json({ error: 'N8N_NOT_CONFIGURED', message: 'n8n no está configurado' });
     }
 
     // 5. Registrar en audit log
@@ -178,15 +211,15 @@ export const retryGeneration = async (req: any, res: Response) => {
       action: 'generation.retry' as any,
       target_brand_id: generation.brand_id,
       details: {
-        original_generation_id: id,
-        new_generation_id: newGeneration.id,
+        generation_id: id,
         reason
       }
     });
 
     return res.json({
       success: true,
-      new_generation_id: newGeneration.id
+      generation_id: id,
+      message: 'Retry iniciado correctamente'
     });
   } catch (err: any) {
     console.error('[GenerationsAdmin] retryGeneration:', err);
@@ -224,22 +257,28 @@ export const getBrandGenerations = async (req: Request, res: Response) => {
     const offsetNum = parseInt(offset as string) || 0;
 
     let query = supabaseAdmin
-      .from('admin_generations_log')
+      .from('generations')
       .select('*', { count: 'exact' })
       .eq('brand_id', brandId);
 
     if (status) {
-      query = query.eq('status', status);
+      const statusMap: Record<string, string> = {
+        'pending': 'PENDING',
+        'completed': 'SUCCESS',
+        'failed': 'FAILED'
+      };
+      const dbStatus = statusMap[status as string] || status;
+      query = query.eq('status', dbStatus);
     }
     if (start_date) {
-      query = query.gte('created_at', start_date);
+      query = query.gte('generated_at', start_date);
     }
     if (end_date) {
-      query = query.lte('created_at', end_date);
+      query = query.lte('generated_at', end_date);
     }
 
     const { data, error, count } = await query
-      .order('created_at', { ascending: false })
+      .order('generated_at', { ascending: false })
       .range(offsetNum, offsetNum + limitNum - 1);
 
     if (error) {
@@ -271,8 +310,8 @@ export const getGenerationsStats = async (req: any, res: Response) => {
     const { brand_id } = req.query;
 
     let query = supabaseAdmin
-      .from('admin_generations_log')
-      .select('status, created_at, completed_at');
+      .from('generations')
+      .select('status, generated_at');
 
     if (brand_id) {
       query = query.eq('brand_id', brand_id);
@@ -285,22 +324,33 @@ export const getGenerationsStats = async (req: any, res: Response) => {
       return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener estadísticas' });
     }
 
-    const pending = data.filter(g => g.status === 'pending').length;
-    const processing = data.filter(g => g.status === 'processing').length;
-    const completed = data.filter(g => g.status === 'completed').length;
-    const failed = data.filter(g => g.status === 'failed').length;
+    // Map status to external format
+    const mapStatus = (s: string) => {
+      if (s === 'PENDING') return 'pending';
+      if (s === 'SUCCESS') return 'completed';
+      if (s === 'FAILED') return 'failed';
+      return s;
+    };
+
+    const mappedData = (data || []).map((g: any) => ({
+      ...g,
+      status: mapStatus(g.status)
+    }));
+
+    const pending = mappedData.filter(g => g.status === 'pending').length;
+    const processing = mappedData.filter(g => g.status === 'processing').length;
+    const completed = mappedData.filter(g => g.status === 'completed').length;
+    const failed = mappedData.filter(g => g.status === 'failed').length;
 
     // Calcular tiempo promedio de procesamiento (para completados)
-    const completedWithTime = data.filter(g => 
-      g.status === 'completed' && g.created_at && g.completed_at
+    const completedWithTime = mappedData.filter(g =>
+      g.status === 'completed' && g.generated_at && g.processing_time
     );
 
     let avgProcessingTimeMs = 0;
     if (completedWithTime.length > 0) {
-      const totalTime = completedWithTime.reduce((acc, g) => {
-        const start = new Date(g.created_at).getTime();
-        const end = new Date(g.completed_at).getTime();
-        return acc + (end - start);
+      const totalTime = completedWithTime.reduce((acc: number, g: any) => {
+        return acc + (g.processing_time || 0);
       }, 0);
       avgProcessingTimeMs = Math.round(totalTime / completedWithTime.length);
     }

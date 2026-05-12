@@ -29,46 +29,47 @@ export function MobileBottomNav({ pathname }: { pathname: string }) {
     <nav
       role="navigation"
       aria-label="Navegación principal"
-      className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-safe pt-2 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 px-2 pt-2 md:hidden"
+      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
     >
-      <div className="mx-auto max-w-sm pb-2">
-        <div className="flex items-center justify-center gap-0.5 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0a0a0a] px-1.5 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
-            <Link
-              href="/"
-              aria-current={isActive('/') ? 'page' : undefined}
-              className={`${itemClass} ${
-                isActive('/') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
-              }`}
-            >
+      <div className="mx-auto max-w-sm">
+        <div className="flex items-center justify-center gap-0.5 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-dark px-1.5 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+          <Link
+            href="/"
+            aria-current={isActive('/') ? 'page' : undefined}
+            className={`${itemClass} ${
+              isActive('/') ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
+            }`}
+          >
             <Home size={20} />
             <span className={labelClass}>Inicio</span>
           </Link>
-          
+
           <Link
-            href="/probador-virtual"
-            aria-current={isActive('/probador-virtual') ? 'page' : undefined}
+            href="/#hero"
+            aria-current={isActive('/') ? 'page' : undefined}
             className={`${itemClass} ${
-              isActive('/probador-virtual') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
+              isActive('/') ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
             }`}
           >
             <Sparkles size={20} />
             <span className={labelClass}>Probar</span>
           </Link>
-          
+
           <Link
             href="/contacto"
             aria-current={isActive('/contacto') ? 'page' : undefined}
             className={`${itemClass} ${
-              isActive('/contacto') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
+              isActive('/contacto') ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
             }`}
           >
             <Mail size={20} />
             <span className={labelClass}>Contacto</span>
           </Link>
-          
+
           <Link
             href={getHref()}
-            className={`${itemClass} ${isActive(getHref()) ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'}`}
+            className={`${itemClass} ${isActive(getHref()) ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'}`}
           >
             {getIcon()}
             <span className={labelClass}>{getLabel()}</span>
@@ -78,4 +79,3 @@ export function MobileBottomNav({ pathname }: { pathname: string }) {
     </nav>
   );
 }
-

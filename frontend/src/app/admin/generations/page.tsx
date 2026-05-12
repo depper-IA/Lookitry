@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
-import { Search, RefreshCw, Eye, RotateCcw, X, ChevronLeft, ChevronRight, Image as ImageIcon, AlertCircle, Loader2 } from 'lucide-react';
+import { Search, RefreshCw, Eye, RotateCcw, X, ChevronLeft, ChevronRight, Image as ImageIcon, AlertCircle, Loader2, MessageSquare, CheckCircle, Clock } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -40,6 +40,30 @@ interface Brand {
   id: string;
   name: string;
 }
+
+type ErrorType = 'wrong_clothing_removed' | 'wrong_clothing_kept' | 'body_distortion' | 'color_wrong' | 'product_not_applied' | 'background_changed' | 'other';
+
+interface GenerationFeedback {
+  id: string;
+  generation_id: string;
+  brand_id: string;
+  error_type: ErrorType;
+  description: string | null;
+  product_category: string | null;
+  resolved: boolean;
+  resolved_at: string | null;
+  created_at: string;
+}
+
+const ERROR_TYPE_CONFIG: Record<ErrorType, { bg: string; text: string; label: string }> = {
+  wrong_clothing_removed: { bg: 'rgba(249,115,22,0.15)', text: '#f97316', label: 'Ropa removida incorrecta' },
+  wrong_clothing_kept: { bg: 'rgba(249,115,22,0.15)', text: '#f97316', label: 'Ropa retenida incorrecta' },
+  body_distortion: { bg: 'rgba(239,68,68,0.15)', text: '#ef4444', label: 'Distorsión corporal' },
+  color_wrong: { bg: 'rgba(234,179,8,0.15)', text: '#eab308', label: 'Color incorrecto' },
+  product_not_applied: { bg: 'rgba(168,85,247,0.15)', text: '#a855f7', label: 'Producto no aplicado' },
+  background_changed: { bg: 'rgba(59,130,246,0.15)', text: '#3b82f6', label: 'Fondo modificado' },
+  other: { bg: 'rgba(156,163,175,0.15)', text: '#9ca3af', label: 'Otro' },
+};
 
 const STATUS_CONFIG: Record<GenerationStatus, { bg: string; text: string; label: string }> = {
   pending: { bg: 'rgba(245,158,11,0.12)', text: '#f59e0b', label: 'Pendiente' },
@@ -98,13 +122,16 @@ export default function GenerationsPage() {
   // Detail modal
   const [selectedGeneration, setSelectedGeneration] = useState<Generation | null>(null);
   const [retryLoading, setRetryLoading] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbacks, setFeedbacks] = useState<GenerationFeedback[]>([]);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
 
   // Retry confirm
   const [retryTarget, setRetryTarget] = useState<Generation | null>(null);
 
   const fetchBrands = useCallback(async () => {
     try {
-      const data = await adminApi.get<{ brands: Brand[] }>('/api/admin/brands?limit=1000');
+      const data = await adminApi.get<{ brands: Brand[] }>('/admin/brands?limit=1000');
       setBrands(data.brands || []);
     } catch { /* silent */ }
   }, []);
@@ -115,24 +142,33 @@ export default function GenerationsPage() {
       const params = new URLSearchParams();
       if (filterBrand) params.set('brand_id', filterBrand);
       if (filterStatus) params.set('status', filterStatus);
-      if (searchTerm) params.set('search', searchTerm);
-      if (dateFrom) params.set('from', dateFrom);
-      if (dateTo) params.set('to', dateTo);
+      if (dateFrom) params.set('start_date', dateFrom);
+      if (dateTo) params.set('end_date', dateTo);
       params.set('page', String(page));
       params.set('limit', String(limit));
 
-      const data = await adminApi.get<{ generations: Generation[]; total: number; stats?: GenerationStats }>(
-        `/api/admin/generations?${params.toString()}`
-      );
-      setGenerations(data.generations || []);
-      setTotal(data.total || 0);
-      if (data.stats) setStats(data.stats);
+      const [genData, statsData] = await Promise.all([
+        adminApi.get<{ generations: Generation[]; total: number }>(`/admin/generations?${params.toString()}`),
+        adminApi.get<{ total: number; pending: number; processing: number; completed: number; failed: number }>(
+          `/admin/generations/stats${filterBrand ? `?brand_id=${filterBrand}` : ''}`
+        ),
+      ]);
+
+      setGenerations(genData.generations || []);
+      setTotal(genData.total || 0);
+      setStats({
+        total: statsData.total || 0,
+        pending: statsData.pending || 0,
+        processing: statsData.processing || 0,
+        completed: statsData.completed || 0,
+        failed: statsData.failed || 0,
+      });
     } catch (err: any) {
       setToast({ message: err.message || 'Error al cargar generaciones', type: 'error' });
     } finally {
       setLoading(false);
     }
-  }, [filterBrand, filterStatus, searchTerm, dateFrom, dateTo, page, limit]);
+  }, [filterBrand, filterStatus, dateFrom, dateTo, page, limit]);
 
   useEffect(() => {
     fetchBrands();
@@ -171,6 +207,44 @@ export default function GenerationsPage() {
     } finally {
       setRetryLoading(false);
     }
+  };
+
+  const fetchFeedback = useCallback(async (generationId: string) => {
+    setFeedbackLoading(true);
+    try {
+      const data = await adminApi.get<{ feedbacks: GenerationFeedback[] }>(
+        `/api/admin/generations/${generationId}/feedback`
+      );
+      setFeedbacks(data.feedbacks || []);
+    } catch {
+      setFeedbacks([]);
+    } finally {
+      setFeedbackLoading(false);
+    }
+  }, []);
+
+  const resolveFeedback = async (feedbackId: string) => {
+    setResolvingId(feedbackId);
+    try {
+      await adminApi.post<{ success: boolean }>(
+        `/api/admin/feedback/${feedbackId}/resolve`,
+        {}
+      );
+      setToast({ message: 'Feedback marcado como resuelto', type: 'success' });
+      if (selectedGeneration) {
+        fetchFeedback(selectedGeneration.id);
+      }
+    } catch (err: any) {
+      setToast({ message: err.message || 'Error al resolver feedback', type: 'error' });
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
+  const openDetailModal = (gen: Generation) => {
+    setSelectedGeneration(gen);
+    setFeedbacks([]);
+    fetchFeedback(gen.id);
   };
 
   const showingFrom = total === 0 ? 0 : (page - 1) * limit + 1;
@@ -334,7 +408,7 @@ export default function GenerationsPage() {
                   >
                     <td className="px-5 py-4">
                       <button
-                        onClick={() => setSelectedGeneration(gen)}
+                        onClick={() => openDetailModal(gen)}
                         className="font-mono text-xs text-[var(--accent)] hover:underline truncate block max-w-[120px]"
                         title={gen.id}
                       >
@@ -380,7 +454,7 @@ export default function GenerationsPage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-center gap-1">
                         <button
-                          onClick={() => setSelectedGeneration(gen)}
+                          onClick={() => openDetailModal(gen)}
                           className="rounded-xl bg-white/5 p-2 text-[var(--text-secondary)] transition-colors hover:bg-white/10 hover:text-white"
                           title="Ver detalle"
                         >
@@ -555,6 +629,97 @@ export default function GenerationsPage() {
                   </div>
                 </div>
               )}
+
+              {/* Feedback de IA */}
+              <div className="rounded-xl border border-[var(--border-color)] p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <MessageSquare className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+                  <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Feedback de IA</p>
+                </div>
+
+                {feedbackLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="h-5 w-5 animate-spin" style={{ color: 'var(--accent)' }} />
+                  </div>
+                ) : feedbacks.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-6 text-center">
+                    <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/5">
+                      <MessageSquare className="h-5 w-5" style={{ color: 'var(--text-muted)' }} />
+                    </div>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin reportes de feedback</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                    {feedbacks.map((fb) => (
+                      <div
+                        key={fb.id}
+                        className="rounded-lg border border-[var(--border-color)] p-3 transition-colors hover:bg-[var(--bg-hover)]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <span
+                                className="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold"
+                                style={{
+                                  backgroundColor: ERROR_TYPE_CONFIG[fb.error_type]?.bg || ERROR_TYPE_CONFIG.other.bg,
+                                  color: ERROR_TYPE_CONFIG[fb.error_type]?.text || ERROR_TYPE_CONFIG.other.text,
+                                }}
+                              >
+                                {ERROR_TYPE_CONFIG[fb.error_type]?.label || 'Otro'}
+                              </span>
+                              <span
+                                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                                  fb.resolved
+                                    ? 'bg-emerald-500/15 text-emerald-400'
+                                    : 'bg-amber-500/15 text-amber-400'
+                                }`}
+                              >
+                                {fb.resolved ? (
+                                  <>
+                                    <CheckCircle className="h-3 w-3" /> Resuelto
+                                  </>
+                                ) : (
+                                  <>
+                                    <Clock className="h-3 w-3" /> Pendiente
+                                  </>
+                                )}
+                              </span>
+                            </div>
+                            {fb.description && (
+                              <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
+                                {fb.description}
+                              </p>
+                            )}
+                            <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                              {new Date(fb.created_at).toLocaleDateString('es-CO', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                          </div>
+                          {!fb.resolved && (
+                            <button
+                              onClick={() => resolveFeedback(fb.id)}
+                              disabled={resolvingId === fb.id}
+                              className="flex-shrink-0 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-400 transition-colors hover:bg-emerald-500/20 disabled:opacity-50 flex items-center gap-1"
+                            >
+                              {resolvingId === fb.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <CheckCircle className="h-3 w-3" />
+                              )}
+                              Resolver
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Metadata */}
               {selectedGeneration.metadata && Object.keys(selectedGeneration.metadata).length > 0 && (

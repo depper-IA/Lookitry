@@ -13,6 +13,7 @@
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "husky": "^9.0.0"
   },
   "dependencies": {

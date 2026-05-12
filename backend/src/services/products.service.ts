@@ -33,6 +33,44 @@ export interface UpdateProductDto {
 
 export class ProductsService {
   /**
+   * Normaliza la categoría a español con primera letra mayúscula.
+   * Traduce variantes en inglés o mal escritas a la forma correcta.
+   */
+  private normalizeCategory(raw: string): string {
+    const normalized = raw.trim().toLowerCase();
+    const MAP: Record<string, string> = {
+      // Ropa
+      falda: 'Falda',
+      vestido: 'Vestido', dresses: 'Vestido', dress: 'Vestido',
+      tops: 'Tops', top: 'Tops', tshirt: 'Tops', t_shirt: 'Tops',
+      camisa: 'Camisa',
+      conjunto: 'Conjunto', set: 'Conjunto', suits: 'Conjunto',
+      chaqueta: 'Chaqueta', jackets: 'Chaqueta', jacket: 'Chaqueta',
+     短裤: 'Shorts', shorts: 'Shorts',
+      内裤: 'Ropa Interior', underwear: 'Ropa Interior',
+      calcetines: 'Calcetines', socks: 'Calcetines',
+      gorras: 'Gorras', caps: 'Gorras', hats: 'Gorras',
+      bufandas: 'Bufandas', scarves: 'Bufandas',
+      cinturones: 'Cinturones', belts: 'Cinturones',
+      guantes: 'Guantes', gloves: 'Guantes',
+      // Accesorios
+      accesorios: 'Accesorios', accessory: 'Accesorios', accessories: 'Accesorios',
+      bolso: 'Bolso', bag: 'Bolso', bags: 'Bolso',
+      aretes: 'Aretes', earrings: 'Aretes',
+      pulseras: 'Pulseras', bracelets: 'Pulseras',
+      collares: 'Collares', necklaces: 'Collares',
+      relojes: 'Relojes', watches: 'Relojes',
+      lentes: 'Lentes', glasses: 'Lentes', sunglasses: 'Lentes',
+     包包: 'Bolsos',
+      // Calzado
+      zapatos: 'Zapatos', shoes: 'Zapatos', calzados: 'Zapatos',
+      // Rines
+      rines: 'Rines', wheels: 'Rines', rin: 'Rines',
+    };
+    return MAP[normalized] ?? (raw.trim().charAt(0).toUpperCase() + raw.trim().slice(1).toLowerCase());
+  }
+
+  /**
    * Obtener todos los productos activos de una marca
    */
   async getProductsByBrand(brandId: string): Promise<any[]> {
@@ -210,6 +248,7 @@ export class ProductsService {
     }
 
     // Crear el producto con todos los campos nuevos
+    const normalizedCategory = this.normalizeCategory(productData.category);
     const { data, error } = await supabaseAdmin
       .from('products')
       .insert({
@@ -218,7 +257,7 @@ export class ProductsService {
         description: productData.description?.trim() || null, // IA description - interno
         short_description: productData.short_description?.trim() || null, // Visible para clientes
         image_url: productData.image_url.trim(),
-        category: productData.category.trim(),
+        category: normalizedCategory,
         price: productData.price ?? null,
         badge: productData.badge ?? null,
         external_id: productData.external_id || null,
@@ -292,7 +331,7 @@ export class ProductsService {
     if (updates.description !== undefined) updateData.description = updates.description?.trim() || null;
     if (updates.short_description !== undefined) updateData.short_description = updates.short_description?.trim() || null;
     if (updates.image_url !== undefined) updateData.image_url = updates.image_url.trim();
-    if (updates.category !== undefined) updateData.category = updates.category.trim();
+    if (updates.category !== undefined) updateData.category = this.normalizeCategory(updates.category);
     if (updates.price !== undefined) updateData.price = updates.price ?? null;
     if (updates.badge !== undefined) updateData.badge = updates.badge ?? null;
     if (updates.external_id !== undefined) updateData.external_id = updates.external_id || null;
@@ -523,7 +562,7 @@ export class ProductsService {
                 .update({ description: res.description })
                 .eq('id', p.id);
             }
-          }).catch(err => console.error(`❌ Error descripción IA para ${p.id}:`, err.message));
+          }).catch(err => console.error(`â Error descripción IA para ${p.id}:`, err.message));
         }
       });
     }

@@ -64,6 +64,8 @@ export interface Brand {
   shareMessage?: string | null;
   // Widget playlist (featured products)
   widgetProductIds?: string[];
+  widgetCoverImage?: string | null;
+  whatsappContact?: string | null;
 }
 
 export type ReviewStatus = 'pending' | 'approved' | 'rejected';
@@ -213,6 +215,8 @@ export interface UpdateBrandConfigDto {
   headerColor?: string | null;
   customDomain?: string | null;
   onboardingDismissed?: boolean;
+  widgetCoverImage?: string | null; // PRO: imagen de portada exclusiva del widget
+  whatsappContact?: string | null; // WhatsApp para CTA de compra en resultado
 }
 
 // Widget templates
@@ -249,6 +253,7 @@ export interface TryOnConfigResponse {
     socialLinks?: Record<string, unknown>;
     hasLandingPage?: boolean;
     customDomain?: string | null;
+    widgetCoverImage?: string | null; // PRO: imagen de portada exclusiva del widget
   };
   products: Array<{
     id: string;
@@ -267,6 +272,19 @@ export interface TryOnConfigResponse {
 export interface GenerateTryOnDto {
   productId: string;
   selfieFile: File;
+  clientFingerprint?: string;
+}
+
+export interface GenerateTryOnResponse {
+  success: boolean;
+  generationId: string;
+  imageUrl: string;
+  processingTime: number;
+  reused?: boolean;
+  message?: string;
+  error?: string;
+  attemptsUsed?: number;
+  attemptsLimit?: number;
 }
 
 export interface GenerateTryOnResponse {

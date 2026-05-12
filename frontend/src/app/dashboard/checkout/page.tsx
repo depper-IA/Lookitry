@@ -72,9 +72,12 @@ const MONTH_DISCOUNTS_FALLBACK = [
   { months: 12, pct: 15, label: '12 meses' },
 ];
 
+const MINIMUM_MARGIN_COP = 10000;
+const FALLBACK_TRM = 4000;
+
 function formatPaypalUsd(amountCop: number, trm: number): string {
-  const safeTrm = trm > 0 ? trm : 3900;
-  return String(Math.ceil(amountCop / safeTrm));
+  const safeTrm = trm > 0 ? trm : FALLBACK_TRM;
+  return String(Math.ceil((amountCop + MINIMUM_MARGIN_COP) / safeTrm));
 }
 
 function paymentMethodLabel(method?: PaymentFlowMethod): string {
@@ -581,6 +584,12 @@ function CheckoutContent() {
     setState('error');
   };
 
+  const handleManualCurrencyChange = (c: 'COP' | 'USD') => {
+    setCurrency(c);
+    localStorage.setItem('currency', c);
+    window.dispatchEvent(new Event('currencyChange'));
+  };
+
   useEffect(() => {
     if (!returnMethod) return;
     if (state === 'verifying' || state === 'success') return;
@@ -960,6 +969,32 @@ function CheckoutContent() {
               {actionLabel}
             </h1>
             {currentPlanBadge}
+            {/* Currency selector */}
+            <div
+              className="ml-auto flex items-center gap-1.5 rounded-full border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 px-2.5 py-1"
+              role="group"
+              aria-label="Selector de moneda"
+            >
+              <button
+                onClick={() => handleManualCurrencyChange('COP')}
+                aria-pressed={currency === 'COP'}
+                className={`cursor-pointer text-[10px] font-bold uppercase transition-colors ${
+                  currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/45 hover:text-[#0a0a0a] dark:text-white/50 dark:hover:text-white'
+                }`}
+              >
+                COP
+              </button>
+              <div className="h-3 w-[1px] bg-black/10 dark:bg-white/10" aria-hidden="true" />
+              <button
+                onClick={() => handleManualCurrencyChange('USD')}
+                aria-pressed={currency === 'USD'}
+                className={`cursor-pointer text-[10px] font-bold uppercase transition-colors ${
+                  currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/45 hover:text-[#0a0a0a] dark:text-white/50 dark:hover:text-white'
+                }`}
+              >
+                USD
+              </button>
+            </div>
           </div>
           <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
             {!hasActiveSub

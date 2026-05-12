@@ -8,7 +8,12 @@ import { TemplateLandingEmbed } from './templates/TemplateLandingEmbed';
 import { TemplateShowcase } from './templates/TemplateShowcase';
 import { TemplateModernSidebar } from './templates/TemplateModernSidebar';
 import { TemplateBoldProStudio } from './templates/TemplateBoldProStudio';
+import { LegalDisclaimerModal } from './LegalDisclaimerModal';
 import type { Layout, Product, Step } from './templates/types';
+import { UpgradeModal } from '@/components/ui/UpgradeModal';
+import FingerJS from '@fingerprintjs/fingerprintjs';
+
+const TERMS_STORAGE_KEY = 'tryon_terms_accepted';
 
 interface TryOnWidgetProps {
   brandSlug: string;
@@ -61,10 +66,34 @@ export function TryOnWidget({
   const [notice, setNotice] = useState<string | null>(null);
   const [uploadPrivacyNotice, setUploadPrivacyNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
   // Productos ya generados en esta sesión: productId → imageUrl
   const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
   // Hash de la selfie actual para cachear resultados por selfie específica
   const [selfieHash, setSelfieHash] = useState<string>('');
+  // Términos aceptados en esta sesión
+  const [termsAccepted, setTermsAccepted] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return sessionStorage.getItem(TERMS_STORAGE_KEY) === 'true';
+  });
+
+  // Fingerprint del cliente para límite de intentos por usuario
+  const [clientFingerprint, setClientFingerprint] = useState<string>('');
+
+  // Cargar FingerprintJS al montar el componente
+  useEffect(() => {
+    const loadFingerprint = async () => {
+      try {
+        const fp = await FingerJS.load();
+        const result = await fp.get();
+        setClientFingerprint(result.visitorId);
+      } catch (e) {
+        console.warn('[TryOnWidget] FingerprintJS no disponible:', e);
+      }
+    };
+    loadFingerprint();
+  }, []);
 
   // Generar hash SHA-256 de un archivo
   const generateFileHash = async (file: File): Promise<string> => {
@@ -105,6 +134,7 @@ export function TryOnWidget({
   }, [generatedProducts, brandSlug, selfieHash]);
 
   const loadConfig = useCallback(async () => {
+    if (!brandSlug) return;
     try {
       setLoading(true);
       const data = await tryonService.getConfig(brandSlug);
@@ -126,6 +156,13 @@ export function TryOnWidget({
           // Si estamos inyectando un producto pre-seleccionado, pasamos automáticamente al paso de subida.
           setStep('upload');
         }
+
+        // Auto-select first product if lockProductSelection but no initialProductId
+        // This ensures the widget has something to show even when no product is pre-selected
+        if (isLocked && !initialProductId && !externalId && data.products?.length > 0) {
+          setSelectedProduct(data.products[0]);
+          setStep('upload'); // Jump to upload since product is pre-selected
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Error al cargar');
@@ -134,13 +171,37 @@ export function TryOnWidget({
     }
   }, [brandSlug, initialProductId, externalId]);
 
-  useEffect(() => { loadConfig(); }, [loadConfig]);
+  useEffect(() => {
+    // Don't call API with empty slug
+    if (!brandSlug) return;
+    loadConfig();
+  }, [loadConfig, brandSlug]);
 
   useEffect(() => {
     return () => {
       if (selfiePreview) URL.revokeObjectURL(selfiePreview);
     };
   }, [selfiePreview]);
+
+  const handleSelfieReset = useCallback(() => {
+    setSelfiePreview(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setSelfieFile(null);
+    setSelfieHash('');
+    setResultImageUrl(null);
+    setGenerationId(null);
+    setNotice(null);
+    setGeneratedProducts(new Map());
+    // Volvemos al paso de subida para que pueda elegir otra foto
+    setStep('upload');
+  }, []);
+
+  const handleProductReset = useCallback(() => {
+    setSelectedProduct(null);
+    setStep('select');
+  }, []);
 
   const handleReset = useCallback(() => {
     if (selfieHash) {
@@ -170,7 +231,7 @@ export function TryOnWidget({
     });
     setSelfieFile(file); 
     setNotice(null);
-    setUploadPrivacyNotice('Tu selfie solo se usa en tu navegador y se elimina al subir una nueva foto');
+    setUploadPrivacyNotice('Tu selfie solo se usa en tu navegador y se devuelve al subir una nueva foto');
     
     // Generar hash de la selfie para cachear resultados específicos por selfie
     let newHash = '';
@@ -186,12 +247,7 @@ export function TryOnWidget({
     }
     setGeneratedProducts(new Map());
     
-    if (selectedProduct) {
-      // Si el usuario sube la foto y ya había seleccionado el producto, genera automáticamente.
-      handleGenerate(file, selectedProduct, true);
-    } else {
-      // Como seguridad, si logró subir sin producto (bare), pasa a select,
-      // aunque nuestro nuevo diseño en bare deshabilitará el upload si no hay producto.
+    if (!selectedProduct) {
       setStep('select');
     }
   };
@@ -207,15 +263,16 @@ export function TryOnWidget({
    * Maximum ~135s (15 polls × ~9s average with exponential backoff)
    */
   const pollGeneration = useCallback(async (generationId: string) => {
-    const MAX_POLLS = 15;
+    const MAX_POLLS = 30;
     for (let i = 0; i < MAX_POLLS; i++) {
-      // Espera inicial 3s, luego +1s por cada poll adicional (3s, 4s, 5s…)
-      const delay = (i + 3) * 1000;
+      // Dynamic polling: faster at first, then slower
+      const delay = i < 5 ? 1000 : i < 10 ? 2000 : 3000;
       await new Promise(resolve => setTimeout(resolve, delay));
 
       let status;
       try {
-        status = await tryonService.getGenerationStatus(generationId);
+        // IMPORTANTE: pasar brandSlug para usar la ruta pública de polling
+        status = await tryonService.getGenerationStatus(generationId, brandSlug);
       } catch {
         // Error de red — continuar polleando silenciosamente
         continue;
@@ -230,12 +287,18 @@ export function TryOnWidget({
       // PENDING — seguir esperando
     }
     throw new Error('Timeout esperando resultado. Por favor intenta de nuevo.');
-  }, []);
+  }, [brandSlug]);
 
   const handleGenerate = async (fileOverride?: File, productOverride?: Product, force = false) => {
     const activeFile = fileOverride || selfieFile;
     const activeProduct = productOverride || selectedProduct;
     if (!activeFile || !activeProduct) return;
+
+    // Si términos no aceptados, mostrar modal en lugar de proceder
+    if (!termsAccepted && !force) {
+      setShowDisclaimerModal(true);
+      return;
+    }
 
     const cached = generatedProducts.get(activeProduct.id);
     if (cached && !force) {
@@ -257,15 +320,23 @@ export function TryOnWidget({
       let processingTime: number | undefined;
 
       try {
-        const result = await tryonService.generate(brandSlug, { productId: activeProduct.id, selfieFile: activeFile });
+        const result = await tryonService.generate(brandSlug, { productId: activeProduct.id, selfieFile: activeFile, clientFingerprint });
         imageUrl = result.imageUrl;
         genId = result.generationId ?? null;
         reused = result.reused ?? false;
         processingTime = result.processingTime;
       } catch (err: any) {
         const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
+        const isClientLimit = err.clientAttemptLimit === true;
         setErrorIsService(isService);
-        setError(isService ? 'SERVICE_CREDITS_EXHAUSTED' : (err.message || 'Algo salió mal. Intenta de nuevo.'));
+        if (isService) {
+          setShowUpgradeModal(true);
+          setError('SERVICE_CREDITS_EXHAUSTED');
+        } else if (isClientLimit) {
+          setError(err.message || 'Ya usaste tus 3 intentos para este producto.');
+        } else {
+          setError(err.message || 'Algo salió mal. Intenta de nuevo.');
+        }
         setStep('upload');
         if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, EMBED_ORIGIN);
         return;
@@ -299,11 +370,23 @@ export function TryOnWidget({
       const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
       setErrorIsService(isService);
       setNotice(null);
-      setError(err.message || 'Algo salió mal. Intenta de nuevo.');
+      if (isService) {
+        setShowUpgradeModal(true);
+        setError('SERVICE_CREDITS_EXHAUSTED');
+      } else {
+        setError(err.message || 'Algo salió mal. Intenta de nuevo.');
+      }
       setStep('upload');
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, EMBED_ORIGIN);
     }
   };
+
+  // Handler cuando el usuario acepta los términos
+  const handleTermsAccepted = useCallback(() => {
+    sessionStorage.setItem(TERMS_STORAGE_KEY, 'true');
+    setTermsAccepted(true);
+    setShowDisclaimerModal(false);
+  }, []);
 
   const EMBED_ORIGIN = useMemo(() => {
     if (typeof window === 'undefined' || !document.referrer) return '*';
@@ -324,11 +407,13 @@ export function TryOnWidget({
 
   useEffect(() => {
     if (!isEmbed) return;
+    const container = document.getElementById('tryon-widget-container');
+    if (!container) return;
     const notifyHeight = () =>
-      window.parent?.postMessage({ type: 'TRYON_RESIZE', data: { height: document.documentElement.scrollHeight } }, EMBED_ORIGIN);
+      window.parent?.postMessage({ type: 'TRYON_RESIZE', data: { height: container.scrollHeight } }, EMBED_ORIGIN);
     notifyHeight();
     const observer = new ResizeObserver(notifyHeight);
-    observer.observe(document.body);
+    observer.observe(container);
     return () => observer.disconnect();
   }, [isEmbed, EMBED_ORIGIN]);
 
@@ -392,25 +477,42 @@ export function TryOnWidget({
     generatedProducts,
     lockProductSelection: isLocked,
     onReset: handleReset,
+    onSelfieReset: handleSelfieReset,
     onSelfieUpload: handleSelfieUpload,
     onProductSelect: handleProductSelect,
+    onProductReset: handleProductReset,
     onProceedToUpload: () => setStep('upload'),
     onBack: () => setStep('select'),
     onGenerate: () => handleGenerate(),
     onDismissError: () => setError(null),
     onDismissNotice: () => setNotice(null),
+    termsAccepted,
+    onTermsAccepted: handleTermsAccepted,
   } as const;
 
-  switch (effectiveLayout) {
-    case 'bare':
-      return isEmbed ? <TemplateLandingEmbed {...templateProps} /> : <TemplateBare {...templateProps} />;
-    case 'sidebar':
-      return <TemplateModernSidebar {...templateProps} />;
-    case 'centered':
-      return <TemplateBoldProStudio {...templateProps} />;
-    case 'showcase':
-    default:
-      return <TemplateShowcase {...templateProps} />;
-  }
-}
+  const renderTemplate = () => {
+    switch (effectiveLayout) {
+      case 'bare':
+        return isEmbed ? <TemplateLandingEmbed {...templateProps} /> : <TemplateBare {...templateProps} />;
+      case 'sidebar':
+        return <TemplateModernSidebar {...templateProps} />;
+      case 'centered':
+        return <TemplateBoldProStudio {...templateProps} />;
+      case 'showcase':
+      default:
+        return <TemplateShowcase {...templateProps} />;
+    }
+  };
 
+  return (
+    <div id="tryon-widget-container" className="w-full flex flex-col items-center">
+      <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+      <LegalDisclaimerModal
+        isOpen={showDisclaimerModal}
+        onClose={() => setShowDisclaimerModal(false)}
+        brandPrimaryColor={primaryColor}
+      />
+      {renderTemplate()}
+    </div>
+  );
+}

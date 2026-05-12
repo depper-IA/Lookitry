@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import LandingNav from '@/components/landing/new-landing/LandingNav';
-import LandingFooter from '@/components/landing/new-landing/LandingFooter';
+import LandingNav from '@/components/landing/LandingNav';
+import LandingFooter from '@/components/landing/LandingFooter';
 import { Search, Book, CreditCard, Palette, Code, ShoppingCart, MessageCircle, ExternalLink, ChevronRight, Package, Settings, Zap, Globe } from 'lucide-react';
 
 const ayudaCategories = [

@@ -17,15 +17,16 @@ async function verifyAdmin(req: NextRequest): Promise<boolean> {
 /** PUT /api/admin/promotions/[id] — editar promoción */
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   if (!(await verifyAdmin(req))) {
     return NextResponse.json({ ok: false, error: 'No autorizado' }, { status: 401 });
   }
 
+  const { id } = await context.params;
   const body = await req.json();
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/promotions?id=eq.${params.id}`,
+    `${SUPABASE_URL}/rest/v1/promotions?id=eq.${id}`,
     {
       method: 'PATCH',
       headers: {
@@ -51,14 +52,15 @@ export async function PUT(
 /** DELETE /api/admin/promotions/[id] — eliminar promoción */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   if (!(await verifyAdmin(req))) {
     return NextResponse.json({ ok: false, error: 'No autorizado' }, { status: 401 });
   }
 
+  const { id } = await context.params;
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/promotions?id=eq.${params.id}`,
+    `${SUPABASE_URL}/rest/v1/promotions?id=eq.${id}`,
     {
       method: 'DELETE',
       headers: {

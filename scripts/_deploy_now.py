@@ -137,6 +137,12 @@ if current_sha != remote_sha:
         ssh, f"cd {REPO} && git diff --name-only HEAD..origin/main"
     )
     run(ssh, f"cd {REPO} && git reset --hard origin/main && git clean -fd")
+    # Restore GCP credentials (git clean -fd removes untracked credentials/ dir)
+    run(
+        ssh,
+        f"mkdir -p {REPO}/credentials && cp {REPO}/gen-lang-client-0591001769-06f04cbf5e1a.json {REPO}/credentials/gcs-credentials.json && chmod 600 {REPO}/credentials/gcs-credentials.json",
+        check=False,
+    )
 else:
     print("\nSin commits nuevos en origin/main.")
 
@@ -185,6 +191,14 @@ print("\n=== Preparando pantalla de mantenimiento ===")
 run(ssh, f"cd {REPO} && docker compose -f docker-compose.errors.yml up -d")
 
 if do_backend:
+    print("\n=== Rebuild SAM LOCAL ===")
+    build_cmd_sam = (
+        f"cd {REPO} && docker compose -f vps-docker-compose.yml build {build_flag} sam-local > docker_build_sam.log 2>&1 || "
+        f"{{ tail -20 docker_build_sam.log; exit 1; }}"
+    )
+    run(ssh, build_cmd_sam, timeout=600)
+    run(ssh, f"cd {REPO} && docker compose -f vps-docker-compose.yml up -d sam-local")
+
     print("\n=== Rebuild BACKEND ===")
     # Subir env file de Sammy si no existe en VPS
     sammy_env_local = os.path.join(
@@ -230,7 +244,7 @@ if do_frontend:
             check=False,
         )
         # Extraer solo variables NEXT_PUBLIC_* y permitidas para crear .env que docker-compose usa
-        ALLOWED_SERVER_KEYS = ["SUPABASE_SERVICE_KEY", "TURNSTILE_SECRET_KEY"]
+        ALLOWED_SERVER_KEYS = ["SUPABASE_SERVICE_KEY", "TURNSTILE_SECRET_KEY", "JWT_SECRET"]
         env_lines = []
         for line in frontend_env_content.splitlines():
             line = line.strip()
@@ -252,7 +266,7 @@ if do_frontend:
         f"docker compose -f docker-compose.frontend.yml build {build_flag} > docker_build_frontend.log 2>&1 || "
         f"{{ tail -20 docker_build_frontend.log; exit 1; }}"
     )
-    run(ssh, build_cmd, timeout=600)
+    run(ssh, build_cmd, timeout=360)
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml up -d")
 
 run(ssh, "docker ps --format 'table {{.Names}}\\t{{.Status}}'")

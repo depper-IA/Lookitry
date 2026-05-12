@@ -28,7 +28,7 @@ async function checkProducts() {
     process.exit(1);
   }
 
-  console.log(`\nÚltimas 10 marcas registradas:`);
+  console.log(`\nñltimas 10 marcas registradas:`);
   let targetBrandId: string | null = null;
   
   for (const b of brands) {

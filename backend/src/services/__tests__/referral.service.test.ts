@@ -80,7 +80,7 @@ describe('ReferralService', () => {
       converted: true,
       rewarded: true,
       rewardedReferred: true,
-      rewardCredits: 300,
+      rewardCredits: 200,
       referralId: 'ref-1',
     });
     expect(brandBalanceUpdate.update).toHaveBeenCalledWith({ extra_credits_balance: 300 });

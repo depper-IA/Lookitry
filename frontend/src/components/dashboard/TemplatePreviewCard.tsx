@@ -1,5 +1,6 @@
 'use client';
 
+import { Lock } from 'lucide-react';
 import type { WidgetTemplate } from '@/types';
 
 interface TemplatePreviewCardProps {
@@ -7,7 +8,7 @@ interface TemplatePreviewCardProps {
   label: string;
   description: string;
   isSelected: boolean;
-  isDisabled: boolean;
+  isLocked: boolean;
   isPro: boolean;
   primaryColor: string;
   secondaryColor: string;
@@ -160,29 +161,32 @@ export function TemplatePreviewCard({
   label,
   description,
   isSelected,
-  isDisabled,
+  isLocked,
   isPro,
   primaryColor,
   secondaryColor,
   onSelect,
 }: TemplatePreviewCardProps) {
   const PreviewComponent = TEMPLATE_PREVIEWS[id];
+
+  const handleClick = () => {
+    // Click always opens preview/selection - lock only affects the "Use" action in the modal
+    onSelect(id);
+  };
   
   return (
     <button
       type="button"
-      disabled={isDisabled}
-      onClick={() => !isDisabled && onSelect(id)}
+      onClick={handleClick}
       className={`
         group relative flex flex-col overflow-hidden rounded-2xl border-2 transition-all duration-300 ease-out
         ${isSelected 
           ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-xl shadow-[#FF5C3A]/20' 
           : 'border-[var(--border-color)] bg-[var(--bg-base)] hover:border-[#FF5C3A]/50 hover:shadow-lg hover:shadow-[#FF5C3A]/10'
         }
-        ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        ${!isDisabled && !isSelected ? 'hover:scale-[1.02] active:scale-[0.98]' : ''}
+        ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
+        ${!isLocked && !isSelected ? 'hover:scale-[1.02] active:scale-[0.98]' : ''}
       `}
-      title={isDisabled ? 'Disponible en plan PRO' : undefined}
     >
       {/* Preview thumbnail */}
       <div className="relative h-20 overflow-hidden bg-[var(--bg-card)]">
@@ -205,14 +209,14 @@ export function TemplatePreviewCard({
           </div>
         )}
         
-        {/* Pro badge */}
-        {id !== 'bare' && !isPro && (
-          <span className="absolute top-2 right-2 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#FF5C3A] text-white">
-            PRO
-          </span>
+        {/* Premium lock badge */}
+        {isLocked && (
+          <div className="absolute top-2 right-2 z-10 flex items-center justify-center w-7 h-7 rounded-full" style={{background: '#FF5C3A', color: 'white'}}>
+            <Lock className="w-3.5 h-3.5" />
+          </div>
         )}
       </div>
-      
+
       {/* Card content */}
       <div className="flex flex-col gap-1 p-4 text-left">
         <h4 className={`text-sm font-bold transition-colors ${isSelected ? 'text-[#FF5C3A]' : 'text-[var(--text-primary)]'}`}>
@@ -222,13 +226,13 @@ export function TemplatePreviewCard({
           {description}
         </p>
       </div>
-      
-      {/* Hover overlay for disabled */}
-      {isDisabled && (
+
+      {/* Hover overlay for locked templates - minimal, badge already shows Premium */}
+      {isLocked && (
         <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-base)]/60 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           <div className="text-center p-4">
-            <p className="text-xs font-bold text-[var(--text-primary)] mb-1">Disponible en plan PRO</p>
-            <p className="text-[10px] text-[var(--text-muted)]">Mejora tu plan para desbloquear</p>
+            <p className="text-xs font-bold text-[var(--text-primary)]">Mejora a Pro</p>
+            <p className="text-[10px] text-[var(--text-muted)]">para usar esta plantilla</p>
           </div>
         </div>
       )}

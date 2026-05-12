@@ -1,6 +1,8 @@
 # Tech Stack — Lookitry
 
-Este documento es la **fuente de verdad técnica** y arquitectura del sistema. Debe actualizarse obligatoriamente ante cambios estructurales sin eliminar información previa funcional.
+Este documento es la **fuente de verdad técnica** del sistema. Detalla stack, librerías, infraestructura, schema de DB y arquitectura de flujos IA. La lógica de negocio y flujos están en [[PRD]].
+
+> Última actualización: Mayo 2026
 
 ---
 
@@ -8,32 +10,37 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 
 | Capa | Tecnología | Versión | Uso |
 |------|------------|---------|-----|
-| **Frontend** | Next.js (App Router) | 14.0.4 | UI y renderizado |
+| **Frontend** | Next.js (App Router) | 14.2.35 | UI y renderizado |
 | **Backend** | Node.js + Express | 4.18.2 | API de Negocio |
-| **Base de datos** | Supabase (PostgreSQL + pgvector) | — | Persistencia de datos + RAG embeddings |
-| **Autenticación** | JWT propio (HTTP-only cookies) | — | Seguridad de sesión |
+| **Base de datos** | Supabase (PostgreSQL + pgvector) | — | Persistencia + RAG embeddings |
+| **Autenticación** | Dual JWT propio (HTTP-only) | — | Seguridad de sesión con Key Rotation |
 | **OAuth** | Google Sign-In | — | Login alternativo |
-| **IA / Try-On** | n8n + OpenRouter | — | Orquestación de IA |
+| **IA / Try-On (primario)** | Google Vertex AI (Gemini 2.5 Flash + Imagen 3) | — | Pipeline nativo de Try-On |
+| **IA / Try-On (fallback)** | n8n + OpenRouter | — | Fallback cuando Vertex falla |
+| **Segmentación (SAM)** | MobileSAM (Python/FastAPI) + Vertex AI SAM 2 | — | Generación de máscaras para Try-On |
+| **Descriptor de Productos** | Vertex AI Gemini 2.5 Flash | — | Descripción automática de productos |
+| **RAG / Embeddings** | Gemini Embedding 001 (768-dim) + pgvector | — | Knowledge base de Rebecca |
 | **Styling** | Tailwind CSS | 3.4.0 | Diseño y UI |
 | **Almacenamiento** | MinIO (S3 compatible) | — | Assets e imágenes generadas |
-| **Cache & Queue** | Redis (ioredis) | 5.10.1 | Brand config cache y Job Queue (Try-On) |
+| **Cache & Queue** | Redis (ioredis) | 5.10.1 | Brand config cache, Job Queue, Chat Queue |
 | **Reverse Proxy** | Traefik | — | Routing Docker |
 | **Anti-spam** | Cloudflare Turnstile | — | Protección de formularios |
 | **Analytics** | Google Analytics (GA4) | — | Métricas de tráfico |
 | **Testing** | Vitest (FE) + Jest (BE) + fast-check | — | Testing + property-based |
+| **GCP MCP** | MCP Server GCP (Node.js) | — | Herramienta MCP para GCS y Compute Engine |
 
 ---
 
-## 2. Servicios y Librerías
+## 2. Librerías
 
 ### 2.1 Frontend
 
 | Librería | Versión | Uso |
 |----------|---------|-----|
-| `next` | 14.0.4 | Framework |
-| `react` | 18.2.0 | UI |
-| `react-dom` | 18.2.0 | React DOM |
-| `typescript` | 5.3.3 | Tipado |
+| `next` | 14.2.35 | Framework |
+| `react` | 18.3.1 | UI |
+| `react-dom` | 18.3.1 | React DOM |
+| `typescript` | 5.9.3 | Tipado |
 | `tailwindcss` | 3.4.0 | Estilos |
 | `@supabase/supabase-js` | 2.39.0 | Cliente Supabase |
 | `framer-motion` | 12.38.0 | Animaciones |
@@ -44,18 +51,14 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | `@fingerprintjs/fingerprintjs` | 4.6.2 | Fingerprinting anti-abuso |
 | `country-state-city` | 3.2.1 | Datos de países/ciudades |
 
-**Dev Dependencies (Frontend):**
-| Librería | Versión | Uso |
-|----------|---------|-----|
-| `@next/bundle-analyzer` | ^14.2.0 | Análisis de bundle |
-| `@testing-library/react` | ^16.3.2 | Testing de componentes |
-| `@testing-library/jest-dom` | ^6.9.1 | Matchers de testing |
-| `@vitejs/plugin-react` | ^6.0.1 | Plugin Vitest |
-| `vitest` | ^4.1.0 | Test runner |
-| `jsdom` | ^29.0.1 | DOM simulado |
-| `fast-check` | ^4.6.0 | Property-based testing |
-| `eslint` | ^8.56.0 | Linting |
-| `prettier` | ^3.1.1 | Formateo |
+**Dev Dependencies:**
+| Librería | Versión |
+|----------|---------|
+| `@next/bundle-analyzer` | ^14.2.0 |
+| `@testing-library/react` | ^16.3.2 |
+| `vitest` | ^4.1.0 |
+| `eslint` | ^8.56.0 |
+| `prettier` | ^3.1.1 |
 
 ### 2.2 Backend
 
@@ -68,6 +71,7 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | `cors` | 2.8.5 | CORS |
 | `helmet` | 8.1.0 | Seguridad headers |
 | `express-rate-limit` | 8.3.1 | Rate limiting |
+| `rate-limit-redis` | 4.3.1 | Rate limiting con Redis store |
 | `multer` | 1.4.5-lts.1 | Upload de archivos |
 | `nodemailer` | 8.0.2 | Email SMTP |
 | `node-cron` | 4.2.1 | Cron jobs |
@@ -77,23 +81,28 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | `dotenv` | 16.3.1 | Variables de entorno |
 | `cookie-parser` | ^1.4.7 | Parseo de cookies JWT |
 | `uuid` | ^13.0.0 | Generación de UUIDs |
+| `zod` | ^4.4.1 | Validación de schemas |
+| `@google/genai` | ^1.50.0 | SDK Google Generative AI (Vertex AI) |
+| `@google-cloud/storage` | ^7.19.0 | Google Cloud Storage |
+| `google-auth-library` | — | Auth ADC para Vertex AI |
+| `xlsx` | ^0.18.5 | Exportación Excel |
+| `gtts` | ^0.2.1 | Text-to-speech |
+| `wav` | ^1.0.2 | Audio WAV |
 
-**Dev Dependencies (Backend):**
-| Librería | Versión | Uso |
-|----------|---------|-----|
-| `jest` | ^30.3.0 | Test runner |
-| `ts-jest` | ^29.4.6 | TypeScript + Jest |
-| `@types/jest` | ^30.0.0 | Tipos Jest |
-| `fast-check` | ^4.6.0 | Property-based testing |
-| `supabase` | ^2.78.1 | CLI de Supabase |
-| `pg` | ^8.20.0 | Driver PostgreSQL |
-| `eslint` | ^8.56.0 | Linting |
-| `prettier` | ^3.1.1 | Formateo |
-| `ts-node-dev` | ^2.0.0 | Hot-reload desarrollo |
+**Dev Dependencies:**
+| Librería | Versión |
+|----------|---------|
+| `jest` | ^30.3.0 |
+| `ts-jest` | ^29.4.6 |
+| `fast-check` | ^4.6.0 |
+| `supabase` | ^2.78.1 |
+| `eslint` | ^8.56.0 |
+| `prettier` | ^3.1.1 |
+| `ts-node-dev` | ^2.0.0 |
 
 ---
 
-## 3. Endpoints y URLs del Sistema
+## 3. URLs del Sistema
 
 | Servicio | URL Producción | URL Local |
 |----------|----------------|-----------|
@@ -101,7 +110,7 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | **API Backend** | `https://api.lookitry.com` | `http://localhost:3001` |
 | **n8n Panel** | `https://n8n.wilkiedevs.com` | — |
 | **MinIO Panel** | `https://minio.wilkiedevs.com` | — |
-| **Supabase Project** | `https://vkdooutklowctuudjnkl.supabase.co` | — |
+| **Supabase** | `https://vkdooutklowctuudjnkl.supabase.co` | — |
 
 ---
 
@@ -120,18 +129,15 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | `lookitry-backend` | `node:20-alpine` | API Express |
 | `root-n8n-1` | `n8nio/n8n` | Orquestador de flujos |
 | `minio` | `quay.io/minio/minio` | Almacenamiento local S3 |
-| `lookitry-sammy` | `node:20-alpine` (custom build) | Agente orquestador Sammy (Telegram bot + LLM) |
+| `lookitry-sammy` | `node:20-alpine` (custom build) | Agente Sammy (Telegram bot + LLM) |
+| `lookitry-sam-service` | `python:3.11-slim` (custom build) | MobileSAM FastAPI (puerto 8000) |
 
 ### 4.3 Reverse Proxy (Traefik)
 - **Frontend:** `lookitry.com` y `www.lookitry.com`
 - **Backend:** `api.lookitry.com`
 - **Red externa:** `proxy`
 
-### 4.4 Dockerfiles
-- **Frontend:** Multi-stage build con Node 20 Alpine, standalone output
-- **Backend:** Multi-stage build con Node 20 Alpine
-
-### 4.5 Build Args (Frontend)
+### 4.4 Build Args (Frontend)
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_N8N_DESCRIPTOR_URL`
@@ -139,678 +145,220 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 
 ---
 
-## 5. Base de Datos — Esquema Detallado
+## 5. Base de Datos — Schema Resumido
 
-### 5.1 `brands` (Clientes SaaS)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | Identificador único de la marca |
-| `email` | text UNIQUE | Email de login |
-| `password` | text | Nullable para Google auth |
-| `name` | text | Nombre de la marca |
-| `slug` | text UNIQUE | Para URL pública: `/pruebalo/[slug]` |
-| `plan` | enum | `BASIC`, `PRO`, `TRIAL`, `ENTERPRISE` |
-| `subscription_status` | enum | `active`, `expiring_soon`, `expired`, `suspended`, `trial` |
-| `subscription_end_date` | timestamptz | Fecha de expiración |
-| `logo` | text | URL del logo |
-| `primary_color` | text DEFAULT '#000000' | Color primario |
-| `secondary_color` | text DEFAULT '#ffffff' | Color secundario |
-| `api_key` | uuid UNIQUE | Para integración plugin/API |
-| `external_id` | text | ID de plataforma externa |
-| `contact_name`, `phone`, `address`, `city`, `country` | text | Datos de contacto |
-| `brand_description` | text | Descripción para mini-landing |
-| `whatsapp_contact` | text | WhatsApp de contacto |
-| `cover_image_url` | text | Imagen de portada |
-| `cover_bg_color` | text | Color fallback para hero |
-| `social_links` | jsonb DEFAULT '{}' | Redes sociales |
-| `has_landing_page` | boolean DEFAULT false | Tiene mini-landing |
-| `landing_template` | varchar(20) DEFAULT 'classic' | classic, editorial, moderno |
-| `landing_suspended_at` | timestamptz | NULL = activa |
-| `email_verified` | boolean DEFAULT false | |
-| `email_verification_token` | text | |
-| `trial_end_date` | timestamptz | |
-| `trial_generations_limit` | integer DEFAULT 0 | |
-| `trial_payment_status` | text | NULL, 'pending_payment', 'active', 'expired' |
-| `referral_code` | varchar(50) UNIQUE | Código de referido |
-| `referral_count` | integer DEFAULT 0 | |
-| `extra_credits_balance` | integer DEFAULT 0 | Créditos extra comprados |
-| `google_id` | text UNIQUE | Google OAuth ID |
-| `auth_provider` | text DEFAULT 'email' | 'email' o 'google' |
-| `needs_onboarding` | boolean DEFAULT false | Google onboarding flag |
-| `internal_notes` | text | Notas solo para admin |
-| `internal_notes_updated_at` | timestamptz | |
-| `internal_notes_updated_by` | uuid | Admin que actualizó |
-| `created_at`, `updated_at` | timestamptz | |
+> Schema completo y actualizado en [[PRD]] sección 3 y 6. Aquí solo referencias rápidas.
 
-### 5.2 `products` (Catálogo)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `brand_id` | uuid FK → brands | |
-| `name` | text | |
-| `description` | text | |
-| `image_url` | text | Imagen original del producto |
-| `category` | text | Categoría de ropa |
-| `is_active` | boolean DEFAULT true | Visibilidad en el widget |
-| `external_id` | text | ID WooCommerce/externo |
-| `created_at`, `updated_at` | timestamptz | |
+### Tablas Principales
+| Tabla | Propósito |
+|-------|-----------|
+| `brands` | Clientes SaaS (suscripción, config, branding) |
+| `products` | Catálogo de productos por marca |
+| `generations` | Historial de Try-On |
+| `subscription_payments` | Tracking de pagos |
+| `coupons` | Descuentos |
+| `referrals` | Programa de referidos |
+| `leads` | CRM de prospectos |
+| `generation_feedback` | RAG feedback con pgvector |
+| `lookitry_knowledge` | Knowledge base para Rebecca |
+| `pricing_config` | Configuración dinámica de precios |
+| `addon_packages` | Paquetes de créditos extra |
+| `blog_topics`, `blog_draft_articles`, `blogs` | Blog CMS |
 
-### 5.3 `generations` (Try-On)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `brand_id` | uuid FK → brands | |
-| `product_id` | uuid FK → products | |
-| `selfie_url` | text | URL de la selfie |
-| `result_image_url` | text | Imagen generada |
-| `status` | enum | PENDING, SUCCESS, FAILED |
-| `error_message` | text | |
-| `generated_at` | timestamptz | |
-| `processing_time` | integer | Milisegundos |
-| `input_fingerprint` | text | Hash anti-duplicados |
-| `created_at` | timestamptz | |
+### Tablas de Agentes (Mayo 2026)
+| Tabla | Propósito |
+|-------|-----------|
+| `agent_activities` | Registro de actividad de agentes |
+| `agent_sessions` | Sesiones activas de agentes |
+| `agent_delegations` | Delegaciones entre agentes |
 
-### 5.4 `admins`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `email` | text UNIQUE | |
-| `password` | text | |
-| `name` | text | |
-| `role` | text DEFAULT 'admin' | |
-| `reset_token`, `reset_token_expires_at` | text/timestamptz | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.5 `subscription_payments`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `brand_id` | uuid FK → brands | |
-| `amount` | decimal(10,2) | |
-| `currency` | varchar(3) DEFAULT 'COP' | |
-| `payment_date` | timestamptz | |
-| `payment_method` | varchar(50) | wompi, paypal, transfer, etc. |
-| `status` | enum | pending, completed, failed, refunded |
-| `months_paid` | integer | |
-| `reference`, `transaction_id` | text | |
-| `notes` | text | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.6 `pending_registrations`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `email` | text | |
-| `reference` | text UNIQUE | |
-| `plan` | text | |
-| `months` | integer | |
-| `amount` | numeric DEFAULT 0 | |
-| `status` | text DEFAULT 'pending' | |
-| `payment_id` | text | |
-| `includes_landing` | boolean DEFAULT false | |
-| `reminder_sent_at` | timestamptz | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.7 `trial_campaigns`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `name` | text | |
-| `active` | boolean DEFAULT false | |
-| `trial_days` | integer DEFAULT 7 | |
-| `ends_at` | timestamptz | NULL = sin límite |
-| `require_card_verification` | boolean DEFAULT true | |
-| `price_cop` | integer | Precio del trial |
-| `created_by` | text | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.8 `trial_registrations`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `brand_id` | uuid FK → brands | |
-| `campaign_id` | uuid FK → trial_campaigns | |
-| `ip_address` | text | Anti-abuso |
-| `fingerprint` | text | Anti-abuso |
-| `created_at` | timestamptz | |
-
-### 5.9 `promotions`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `type` | enum | modal_timer, coupon, banner, plan_override, launch_offer |
-| `name` | text | |
-| `config` | jsonb DEFAULT '{}' | |
-| `active` | boolean DEFAULT false | |
-| `starts_at`, `ends_at` | timestamptz | |
-| `created_at` | timestamptz | |
-
-### 5.10 `coupons`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `code` | text UNIQUE | |
-| `discount_type` | enum | pct, fixed |
-| `discount_value` | numeric(10,2) | |
-| `max_uses` | integer | |
-| `uses_count` | integer DEFAULT 0 | |
-| `expires_at` | timestamptz | |
-| `plan_ids` | text[] DEFAULT '{}' | Planes aplicables |
-| `active` | boolean DEFAULT true | |
-| `created_at` | timestamptz | |
-
-### 5.11 `pricing_config`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | text PK | basic, pro, mini_landing, meta, costs, descuentos_duracion, enterprise |
-| `data` | jsonb | Configuración completa del plan |
-| `updated_at` | timestamptz | |
-
-### 5.12 `referrals`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `referrer_brand_id` | uuid FK → brands | |
-| `referred_brand_id` | uuid FK → brands | |
-| `referral_code` | varchar(50) | |
-| `bonus_months` | integer DEFAULT 1 | |
-| `reward_credits` | integer DEFAULT 500 | Reward real aplicado al referente |
-| `bonus_credited` | boolean DEFAULT false | |
-| `bonus_credited_at` | timestamptz | |
-| `referrer_claimed`, `referred_claimed` | boolean DEFAULT false | |
-| `status` | varchar(20) DEFAULT 'pending' | |
-| `converted_at` | timestamptz | Fecha de conversión automática |
-| `conversion_payment_reference` | varchar(255) | Referencia del primer pago elegible |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.13 `notification_preferences`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `brand_id` | uuid FK → brands UNIQUE | |
-| `email_enabled` | boolean DEFAULT true | |
-| `whatsapp_enabled` | boolean DEFAULT false | |
-| `reminder_7days`, `reminder_3days` | boolean DEFAULT true | |
-| `usage_alerts` | boolean DEFAULT true | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.14 `addon_packages`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | text PK | e.g. 'credits_500' |
-| `name` | text | |
-| `credits_amount` | integer | |
-| `price_cop` | integer | |
-| `is_active` | boolean DEFAULT true | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.15 `plan_change_requests`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `brand_id` | uuid FK → brands | |
-| `reference` | text UNIQUE | |
-| `source` | text | wompi, paypal, free_upgrade |
-| `from_plan`, `to_plan` | text | |
-| `months` | integer | |
-| `amount_expected`, `amount_paid` | numeric(12,2) | |
-| `status` | text | pending, processing, completed, failed |
-| `error_message` | text | |
-| `metadata` | jsonb | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.16 `generation_feedback` (RAG)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `generation_id` | uuid FK → generations | |
-| `brand_id` | uuid FK → brands | |
-| `error_type` | enum | wrong_clothing_removed, wrong_clothing_kept, body_distortion, color_wrong, product_not_applied, background_changed, other |
-| `description` | text | |
-| `product_category` | text | |
-| `prompt_used` | text | Para RAG |
-| `embedding` | vector(768) | pgvector para similitud |
-| `resolved` | boolean DEFAULT false | |
-| `resolved_at`, `resolved_by` | timestamptz/text | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.17 `enterprise_sync_configs`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `brand_id` | uuid FK → brands UNIQUE | |
-| `sync_type` | text DEFAULT 'csv' | |
-| `source_url` | text | |
-| `api_key` | text | |
-| `field_map` | jsonb DEFAULT '{}' | |
-| `active` | boolean DEFAULT true | |
-| `last_sync_at`, `last_sync_status`, `last_sync_message` | timestamptz/text | |
-| `products_synced_count` | int DEFAULT 0 | |
-| `notes` | text | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.18 `plugin_telemetry_events`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `brand_id` | uuid FK → brands | |
-| `source` | text DEFAULT 'woocommerce-plugin' | |
-| `event_name`, `endpoint` | text | |
-| `success` | boolean DEFAULT false | |
-| `status_code` | integer | |
-| `duration_ms` | integer DEFAULT 0 | |
-| `retry_count` | integer DEFAULT 0 | |
-| `error_message` | text | |
-| `store_domain`, `product_external_id` | text | |
-| `metadata` | jsonb DEFAULT '{}' | |
-| `created_at` | timestamptz | |
-
-### 5.19 `usage_alerts_log`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `brand_id` | uuid FK → brands | |
-| `threshold` | int | 80 o 100 |
-| `created_at` | timestamptz | |
-
-### 5.20 `paypal_orders`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| (existe por migración `20260325_create_paypal_orders.sql`) | | |
-
-### 5.21 `payment_settings` (singleton, id=1)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | integer PK | Singleton |
-| `wompi_public_key`, `wompi_private_key`, `wompi_integrity_secret` | text | |
-| `wompi_enabled` | boolean | |
-| `paypal_client_id`, `paypal_client_secret` | text | Sandbox |
-| `paypal_prod_client_id`, `paypal_prod_client_secret` | text | Producción |
-| `paypal_sandbox` | boolean | |
-| `paypal_webhook_id` | text | |
-| `modal_promo_config` | jsonb | |
-| `modal_title`, `modal_description`, `modal_image_url` | text | |
-| `mini_landing_preview_seconds` | int DEFAULT 15 | |
-| `bypass_ip_protection` | boolean DEFAULT false | |
-| `footer_brand_url` | text DEFAULT 'https://lookitry.com' | |
-| `ga_measurement_id` | text | Google Analytics |
-
-### 5.22 `admin_notifications`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `type` | text | |
-| `title` | text | |
-| `message` | text | |
-| `severity` | text | `info`, `warning`, `error` |
-| `brand_id` | uuid FK → brands | Nullable |
-| `metadata` | jsonb | |
-| `read` | boolean DEFAULT false | |
-| `created_at` | timestamptz | |
-
-### 5.23 `admin_notification_preferences`
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `admin_id` | uuid FK → admins | |
-| `email_alerts` | boolean DEFAULT true | |
-| `system_errors` | boolean DEFAULT true | |
-| `new_brands` | boolean DEFAULT false | |
-| `payments` | boolean DEFAULT false | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.24 `leads` (Lead Generation CRM)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `business_name` | text | Nombre del negocio |
-| `contact_name` | text | Contacto principal |
-| `email` | text | Email del lead |
-| `phone` | text | Teléfono |
-| `website` | text | Sitio web |
-| `facebook_url` | text | Página de Facebook |
-| `instagram_handle` | text | Instagram |
-| `tiktok_handle` | text | TikTok |
-| `address` | text | Dirección física |
-| `city` | text | Ciudad |
-| `country` | text | País (CO, US, ES) |
-| `latitude`, `longitude` | numeric | Coordenadas |
-| `place_id` | text | Google Place ID |
-| `rating` | numeric | Rating Google |
-| `reviews_count` | integer | Total reviews |
-| `status` | enum | NEW, CONTACTED, QUALIFIED, INTERESTED, CONVERTED, LOST |
-| `score` | integer DEFAULT 0 | Score de interés (0-100) |
-| `notes` | text | Notas internas |
-| `last_outreach_at` | timestamptz | Último outreach |
-| `search_id` | uuid FK → lead_searches | Nullable, cómo fue encontrado |
-| `source` | text | google_places, manual, import |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.25 `lead_searches` (Búsquedas Guardadas)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `name` | text | Nombre de la búsqueda |
-| `query` | text | Término de búsqueda |
-| `city` | text | Ciudad |
-| `country` | text | País |
-| `radius_km` | integer DEFAULT 10 | Radio en km |
-| `min_rating` | numeric DEFAULT 0 | Rating mínimo |
-| `has_website` | boolean DEFAULT false | Solo con website |
-| `has_social` | boolean DEFAULT false | Solo con redes sociales |
-| `status` | enum | ACTIVE, PAUSED, COMPLETED |
-| `leads_found` | integer DEFAULT 0 | Contador |
-| `created_by` | uuid FK → admins | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.26 `lead_outreach_log` (Historial de Outreach)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `lead_id` | uuid FK → leads | |
-| `type` | enum | EMAIL, FACEBOOK_DM, INSTAGRAM_DM, TIKTOK_DM, CALL, NOTE |
-| `subject` | text | Asunto (para emails) |
-| `content` | text | Contenido del mensaje |
-| `status` | enum | PENDING, SENT, DELIVERED, OPENED, REPLIED, FAILED |
-| `sent_at` | timestamptz | |
-| `opened_at`, `replied_at` | timestamptz | |
-| `error_message` | text | |
-| `created_by` | uuid FK → admins | |
-| `created_at` | timestamptz | |
-
-### 5.27 `social_api_configs` (Credenciales Social Media)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `platform` | enum | META, TIKTOK |
-| `app_id` | text | App ID de la plataforma |
-| `app_secret` | text | App Secret |
-| `access_token` | text | Access token activo |
-| `access_token_expires_at` | timestamptz | |
-| `refresh_token` | text | |
-| `account_id` | text | ID de la cuenta de negocio |
-| `account_name` | text | Nombre de la cuenta |
-| `status` | enum | ACTIVE, EXPIRED, INVALID, PENDING |
-| `last_test_at` | timestamptz | |
-| `last_error` | text | |
-| `created_at`, `updated_at` | timestamptz | |
-
-### 5.28 `google_places_quota` (Rate Limiting)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | integer PK | Singleton (id=1) |
-| `daily_used` | integer DEFAULT 0 | Requests hoy |
-| `daily_limit` | integer DEFAULT 500 | Límite diario |
-| `monthly_used` | integer DEFAULT 0 | Requests este mes |
-| `monthly_limit` | integer DEFAULT 28000 | Límite mensual |
-| `last_reset_daily` | date | Último reset diario |
-| `last_reset_monthly` | date | Último reset mensual |
-| `updated_at` | timestamptz | |
-
-### 5.29 `project_knowledge` (RAG — Segundo Cerebro)
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `id` | uuid PK | |
-| `file_path` | text UNIQUE | Ruta del archivo .md |
-| `content` | text | Contenido completo o chunks |
-| `embedding` | vector(768) | pgvector para similitud semántica |
-| `version` | text | Commit SHA o fecha |
-| `updated_at` | timestamptz | Auto-actualizado |
-| **Índices** | IVFFlat (embedding) | Búsqueda por similitud coseno |
-| **RPC** | `upsert_project_knowledge`, `search_project_knowledge` | Procedimientos de upsert/búsqueda |
+### Vistas
+| Vista | Propósito |
+|-------|-----------|
+| `brand_usage_stats` | Stats de uso por marca |
+| `subscription_monitoring` | Monitoreo de suscripciones |
 
 ---
 
-## 6. Arquitectura n8n — El Motor de IA
+## 6. Arquitectura n8n — Flujos y Webhooks
 
-### 6.1 Flujos y Webhooks
-| Función | Webhook Path | ID Workflow | Variable de entorno |
-|---------|--------------|-------------|---------------------|
-| **Try-On Principal** | `/webhook/tryon` | `wPLypk7KhBcFLicX` | `N8N_WEBHOOK_URL` |
-| **Descriptor IA (productos)** | `/webhook/descriptor` | `ZjVTV3QxoPEi60GX` | `N8N_DESCRIPTOR_URL` |
-| **Error Handling** | (Automático como errorWorkflow) | `PNri7NdZYkZhpPnm` | — |
-| **Enterprise Sync** | `/webhook/enterprise-sync` | — | `N8N_ENTERPRISE_SYNC_WEBHOOK_URL` |
-| **Blog Topic Generator** | `/webhook/trigger-topic-generator` | `ryoA7wq7WhXYUckC` | — |
-| **Blog Article Producer** | `/webhook/trigger-article-producer` | `VMAu93Zx4k5qgzdm` | — |
-| **Blog Image Generator** | `/webhook/lookitry-blog-images` | `l4Mb3wMfHUnsbEXH` | — |
-| **Blog Post Creation** | `/api/blog/webhook` (backend) | — | `N8N_BLOG_WEBHOOK_URL` |
-| **Blog Image Upload** | `/api/blog/upload` (backend) | — | — |
-| **Blog Assemble** | `/api/blog/assemble-article` (backend) | — | — |
-| **Feedback Embedding** | Asíncrono vía n8n | — | — |
-| **Project Knowledge RAG** | `/webhook/project-knowledge-rag` | — | — |
-| **NotebookLM Drive Sync** | `/webhook/notebooklm-sync` | — | — |
+| Función | Webhook Path | ID Workflow |
+|---------|--------------|-------------|
+| **Try-On Principal** | `/webhook/tryon` | `wPLypk7KhBcFLicX` |
+| **Error Handling** | (Automático como errorWorkflow) | `PNri7NdZYkZhpPnm` |
+| **Enterprise Sync** | `/webhook/enterprise-sync` | — |
+| **Blog Topic Generator** | `/webhook/trigger-topic-generator` | `ryoA7wq7WhXYUckC` |
+| **Blog Article Producer** | `/webhook/trigger-article-producer` | `VMAu93Zx4k5qgzdm` |
+| **Blog Image Generator** | `/webhook/lookitry-blog-images` | `l4Mb3wMfHUnsbEXH` |
+| **Blog Post Creation** | `/api/blog/webhook` (backend) | — |
+| **Feedback Embedding** | Asíncrono vía n8n | — |
+| **Project Knowledge RAG** | `/webhook/project-knowledge-rag` | — |
+| **NotebookLM Drive Sync** | `/webhook/notebooklm-sync` | — |
 
-### 6.2 Prompt Rules Engine (`prompt-rules.ts`)
+### Prompt Rules Engine (`prompt-rules.ts`)
 Motor de reglas de prompt por categoría de producto con 15+ categorías:
 - vestidos, camisas, pantalones, faldas, zapatos, conjuntos, chaquetas, accesorios, etc.
 - Cada categoría tiene reglas de `replacement` (reemplazar prenda) o `keep` (mantener prenda existente).
 
-### 6.3 RAG (Retrieval-Augmented Generation)
-- **Feedback de usuarios** se almacena con embeddings pgvector (768-dim) en tabla `generation_feedback`.
-- **Project Knowledge (Segundo Cerebro)**: Documentación core indexada en `project_knowledge` con embeddings pgvector (768-dim).
-- **Archivos indexados**: PRD.md, DESIGN.md, TECH_STACK.md, REGLAS_IMPORTANTES.md, CHANGELOG.md (recientes).
-- **Flujo de indexación**: n8n detecta cambios en commits → genera embeddings → upsert a Supabase.
-- **Flujo de búsqueda**: Agentes consultan `/api/agent/rag/search` con query en lenguaje natural → embedding → búsqueda vectorial → resultados ranked.
-- **Sincronización NotebookLM**: En cada push, script `sync_project_knowledge.py` sincroniza archivos .md a Google Drive para research manual.
+### RAG (Retrieval-Augmented Generation)
+- **Feedback** se almacena con embeddings pgvector (1536-dim) en `generation_feedback`
+- **Project Knowledge** indexado en `project_knowledge` con embeddings pgvector (768-dim)
+- **Archivos indexados**: PRD.md, DESIGN.md, TECH_STACK.md, REGLAS_IMPORTANTES.md, CHANGELOG.md
+- **Flujo**: n8n detecta cambios en commits → genera embeddings → upsert a Supabase
+- **Búsqueda**: Agentes consultan `/api/agent/rag/search` → embedding → búsqueda vectorial → resultados ranked
 
 ---
 
-## 7. Arquitectura de Flujos de Negocio
+## 7. Arquitectura de Flujos IA
 
-### 7.1 Flujo de Registro y Trial
-- Registro -> Turnstile -> Creación en DB -> Email Verificación.
-- `TRIAL` automático configurable en `trial_campaigns`.
-- Google OAuth: registro con Google -> onboarding -> dashboard.
-- Guest trial: pago de trial antes de crear cuenta.
+### 7.0 Pipeline de Try-On Nativo (Vertex AI)
 
-### 7.2 Flujo de Pago y Prorrateo (Wompi + PayPal)
-- **Upgrade (BASIC → PRO):** Se aplica crédito proporcional del tiempo no usado.
-- **Webhook:** Valida firma e inicia `renewSubscription`.
-- **PayPal:** Soporta sandbox y producción con credenciales separadas.
-- **Cupones:** Pueden cubrir 100% (free upgrade directo).
-- **Add-on credits:** Compra de generaciones extra.
-
-### 7.3 Flujo de Generación (Try-On Asíncrono)
-1. Usuario sube selfie en el widget -> `POST /api/pruebalo/:slug/generate`.
-2. Backend valida créditos y **encola el trabajo** en Redis usando `generation-queue.service`.
-3. El **Queue Worker** (`setInterval` en `queue.routes.ts`) procesa el siguiente trabajo disponible.
-4. El Worker adquiere un slot de concurrencia (`generation-concurrency.service`) y llama al Webhook n8n.
-5. n8n procesa con IA y actualiza Supabase con el resultado.
-6. Frontend hace **Polling** a `/api/generations/:id` hasta que `status = SUCCESS`.
-7. Usuario puede reportar error (feedback con embedding RAG).
-
-### 7.4 Sistema de Blog Automation (Arquitectura de 3 Workflows)
-
-El sistema de blog automatizado está refactorizado en **3 workflows independientes** en n8n:
-
-#### Arquitectura General
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    BLOG AUTOMATIZATION ARCHITECTURE                          │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌──────────────────────────────┐
-│   TOPIC GENERATOR            │  Workflow: ryoA7wq7WhXYUckC
-│   "Lookitry - Topic         │  Schedule: Lunes 8am
-│    Generator"               │  Webhook: trigger-topic-generator
-│                             │
-│  Google Noticias (RSS)        │
-│         ↓                    │
-│  AI Trend Hunter (LLM)       │→ Genera 3 temas únicos
-│         ↓                    │
-│  Deduplicar vs Supabase      │
-│         ↓                    │
-│  INSERT blog_topics          │→ status = 'pending'
-└──────────────────────────────┘
-              ↓ (cuando hay topics pending)
-┌──────────────────────────────┐
-│   ARTICLE PRODUCER           │  Workflow: VMAu93Zx4k5qgzdm
-│   "Lookitry - Article       │  Webhook: trigger-article-producer
-│    Producer"                │
-│                             │
-│  GET Topic Pending (1)       │
-│         ↓                   │
-│  Marcar 'processing'        │
-│         ↓                   │
-│  Jina Lector (source_url)   │→ Investigación del tema
-│         ↓                   │
-│  Redactor IA (Gemini)       │→ Genera artículo JSON
-│         ↓                   │
-│  POST Article Content        │→ Guarda draft en blog_draft_articles
-│         ↓                   │
-│  Llamar Image Generator     │→ Fire-and-forget (async)
-│         ↓                   │
-│  Marcar 'published'         │
-└──────────────────────────────┘
-              ↓ (async, no espera respuesta)
-┌──────────────────────────────┐
-│   IMAGE GENERATOR            │  Workflow: l4Mb3wMfHUnsbEXH
-│   "Lookitry Blog Images     │  Webhook: lookitry-blog-images
-│    - FIXED Native Polling"   │
-│                             │
-│  Preparar Prompts (4)        │→ hero, body1, body2, body3
-│         ↓                   │
-│  Loop × 4 imágenes          │
-│  ┌──────────────────────┐   │
-│  │ Replicate API (FLUX) │   │
-│  │ Esperar 15s          │   │
-│  │ Verificar/Listo?     │   │──→ [No] → Esperar más
-│  │ Descargar             │   │──→ [Sí] → Continuar
-│  │ POST /upload          │   │→ blog_topic_images
-│  └──────────────────────┘   │
-│         ↓                   │
-│  Ensamblar Artículo          │→ GET draft → Genera HTML → Publica en blogs
-└──────────────────────────────┘
+Usuario sube selfie
+        ↓
+Backend valida créditos y encola en Redis
+        ↓
+Queue Worker procesa el trabajo
+        ↓
+[Opción A] SAM Local (MobileSAM FastAPI en sam-service/)
+        ↓
+[Opción B] Vertex AI SAM 2 Endpoint (si SAM local falla)
+        ↓
+Máscara PNG generada → guardada en MinIO
+        ↓
+Vertex AI Imagen 3 (inpainting con máscara)
+  ó Gemini 2.5 Flash Image (Nano Banana, multimodal)
+        ↓
+Imagen resultado → guardada en MinIO
+        ↓
+Supabase actualizado con status=SUCCESS
+        ↓
+Frontend polling detecta resultado
 ```
 
-#### Tabla: Workflows de Blog
-| Workflow | ID n8n | Trigger | Schedule | Webhook |
-|----------|---------|---------|----------|---------|
-| **Topic Generator** | `ryoA7wq7WhXYUckC` | Manual + Schedule | Lunes 8am | `trigger-topic-generator` |
-| **Article Producer** | `VMAu93Zx4k5qgzdm` | Manual | — | `trigger-article-producer` |
-| **Image Generator** | `l4Mb3wMfHUnsbEXH` | Por Article Producer | — | `lookitry-blog-images` |
+**Variables de entorno:**
+- `VERTEX_PROJECT_ID` — GCP project ID (`gen-lang-client-0591001769`)
+- `VERTEX_LOCATION` — Región (`us-central1`)
+- `VERTEX_SAM2_ENDPOINT` — URL del endpoint SAM 2
+- `VERTEX_IMAGEN_MODEL` — Modelo (`imagen-3.0-generate-002`)
+- `SAM_LOCAL_URL` — URL del servicio MobileSAM local (`http://sam-service:8000`)
+- `GOOGLE_API_KEY` / `GOOGLE_APPLICATION_CREDENTIALS` — Auth GCP
 
-#### Flujo de Ejecución
+**Archivos clave:**
+- `backend/src/services/vertex-ai.service.ts` — Pipeline SAM + Imagen 3 + Nano Banana
+- `backend/src/services/vertex.service.ts` — SDK `@google/genai` para Gemini (con fallback REST)
+- `backend/src/services/image-compression.service.ts` — Compresión sharp antes de enviar a n8n/Vertex
+- `sam-service/main.py` — FastAPI con MobileSAM (CPU, modelo `vit_t`)
+- `backend/src/routes/vertex.routes.ts` — `/api/vertex/generate`, `/api/vertex/stream`, `/api/vertex/models`
 
-1. **Topic Generator** (automático Lunes 8am o manual):
-   - Google Noticias → AI Trend Hunter → Deduplicar → INSERT blog_topics
-   - Crea topics con `status = 'pending'`
+### 7.0b Sistema RAG + Knowledge Base de Rebecca
 
-2. **Article Producer** (manual desde Admin):
-   - Obtiene 1 topic pending → Lo marca `processing`
-   - Investiga con Jina → Redacta con Gemini → Guarda draft
-   - Dispara Image Generator (fire-and-forget) → Marca `published`
+**Tabla:** `lookitry_knowledge`
+**Embeddings:** Gemini Embedding 001 (768-dim), `taskType: RETRIEVAL_DOCUMENT`
+**Búsqueda:** Función RPC `search_lookitry_knowledge` en Supabase
 
-3. **Image Generator** (automático, llamado por Article Producer):
-   - Genera 4 imágenes con Replicate (FLUX Schnell)
-   - Sube a MinIO → Actualiza `blog_topic_images`
-   - Ensambla HTML → Publica en `blogs`
+```
+Admin crea/edita item en /admin/knowledge
+        ↓
+Backend guarda en lookitry_knowledge
+        ↓
+KnowledgeEmbeddingService genera embedding (fire-and-forget)
+        ↓
+Embedding guardado en columna vector(768)
 
-#### Tablas DB Involucradas
-| Tabla | Uso |
-|-------|-----|
-| `blog_topics` | Topics pendientes/processing/published |
-| `blog_draft_articles` | Draft de artículos antes de publicar |
-| `blog_topic_images` | URLs de imágenes generadas (hero, body1-4) |
-| `blogs` | Artículos publicados en el blog |
+--- En tiempo de conversación ---
 
-#### Endpoints Backend de Blog
-| Endpoint | Método | Función |
-|----------|--------|---------|
-| `/api/blog/article-content` | POST | Guarda draft de artículo |
-| `/api/blog/upload` | POST | Upload imagen a MinIO |
-| `/api/blog/assemble-article` | POST | Ensambla y publica artículo |
+n8n recibe mensaje WhatsApp de lead
+        ↓
+POST /api/agent/knowledge/search { query }
+        ↓
+Backend genera embedding de la query (RETRIEIVAL_QUERY)
+        ↓
+Búsqueda vectorial en Supabase → top-5 resultados
+        ↓
+context_block inyectado en system prompt de Rebecca
+        ↓
+Rebecca responde con información precisa
+```
 
-### 7.5 Scheduler (Cron Jobs)
-| Job | Frecuencia | Función |
-|-----|------------|---------|
-| Subscription check | Diario 08:00 | Verifica suscripciones expiradas |
-| Usage alerts | Cada 6h | Alertas de uso al 80%/100% |
-| Temp cleanup | Diario 03:00 | Limpieza de selfies temporales |
+**Endpoints:**
+- `POST /api/agent/knowledge/search` — Búsqueda semántica (con fallback keyword)
+- `GET /api/agent/knowledge/all` — Todo el knowledge base activo
+- `GET /api/admin/knowledge` — CRUD admin
+- `POST /api/admin/knowledge` — Crear item
+- `PATCH /api/admin/knowledge/:id` — Editar / toggle activo
+- `DELETE /api/admin/knowledge/:id` — Eliminar
 
-### 7.6 Servicios del Backend
-| Servicio | Función |
-|----------|---------|
-| `wompi.service` | Pagos Wompi (COP) |
-| `paypal.service` | Pagos PayPal (USD) |
-| `pricing.service` | Configuración dinámica de precios |
-| `subscription.service` | Gestión de suscripciones |
-| `feedback.service` | Feedback + RAG embeddings |
-| `prompt-rag.service` | Motor de prompts con RAG |
-| `prompt-rules.ts` | Reglas de prompt por categoría |
-| `audit.service` | Sistema de auditoría |
-| `email.service` | Envío de emails SMTP (622 líneas de templates) |
-| `notification.service` | Notificaciones (email/WhatsApp) |
-| `adminNotifications.ts` | Alertas para admins |
-| `brandLifecycle.ts` | Transiciones de estado de suscripción |
-| `paymentLedger.ts` | Tracking de pagos |
-| `paymentNormalization.ts` | Normalización de pagos |
-| `brandConfigCache.ts` | Cache de configuración de marcas (Redis) |
-| `blogWebhook.ts` | Autenticación de webhook de blog |
-| `trm.ts` | Fetch de tasa de cambio COP |
-| `wooTelemetry.ts` | Telemetría de WooCommerce |
-| `cleanup.service` | Limpieza de archivos temporales |
-| `generation-queue.service` | Gestión de cola de trabajos Redis |
-| `generation-concurrency.service` | Control de concurrencia por marca |
-| `enterprise.service` | Sync de productos enterprise |
-| `coupon.service` | Validación y redención de cupones |
-| `referral.service` | Conversión automática de referidos y acreditación de 500 créditos extra al referente |
-| `addonCredits.service` | Compra de paquetes de créditos extra (ADDON-{brandId}-PKG-{packageId}-{timestamp}) |
-| `review.service` | Gestión de reviews |
-| `brevo-campaign.service` | Wrapper Brevo SMTP + API tracking |
-| `email-campaign.service` | Lógica de campañas: batching, rate limit, scheduling |
-| `lead.service` | CRUD leads, stats, outreach logging |
-| `lead-search.service` | Gestión búsquedas guardadas |
-| `lead-generation.service` | Google Places con rate limiting |
-| `social-api-config.service` | Gestión credenciales Meta/TikTok |
+**Categorías:** `planes`, `features`, `faq`, `proceso`, `contacto`
 
-### 7.6 Subsistema de Auditoría (`auditor/`)
-- Payments audit
-- Subscriptions audit
-- AI audit
-- Security audit
-- Health audit
+### 7.0c Sistema de Chat WhatsApp
 
-### 7.7 Sistema de Email
-- Templates HTML brandeados (622 líneas).
-- Verificación de email, recovery, notificaciones de pago, alertas de uso.
+```
+WhatsApp (YCloud) → POST /api/chat/webhook
+        ↓
+ChatQueueService.enqueueMessage() → Redis queue:chat_messages
+        ↓
+Worker procesa mensaje → crea/actualiza lead_conversations
+        ↓
+Busca contexto en lookitry_knowledge (RAG)
+        ↓
+Rebecca (MiniMax) genera respuesta
+        ↓
+Admin puede supervisar en /admin/chat
+        ↓
+Admin puede responder manualmente via POST /api/chat/conversations/:id/reply
+```
 
-### 7.8 Sistema de Email Marketing (Campañas Brevo)
-- **Tablas:** `email_campaigns`, `email_campaign_recipients`
-- **Arquitectura:**
-  - `brevo-campaign.service.ts`: Wrapper Brevo SMTP + API de tracking
-  - `email-campaign.service.ts`: Batching, rate limiting (50 emails/10 min), scheduling
-  - `email-campaign.job.ts`: Cron job cada 5 min para procesar campaigns programadas
-- **Admin UI:** `/admin/email-campaigns` para crear, previsualizar, programar y monitorear
-- **Variables de template:** `{{firstName}}`, `{{brandName}}`, `{{email}}`, `{{plan}}`
-- **Límite:** 300 emails/día (free tier Brevo)
+**Endpoints:**
+- `POST /api/chat/webhook` — Recibe mensajes de WhatsApp (YCloud)
+- `GET /api/chat/conversations` — Lista conversaciones (admin)
+- `GET /api/chat/conversations/:id` — Mensajes de una conversación
+- `POST /api/chat/conversations/:id/reply` — Respuesta manual del admin
 
-### 7.9 Sistema de Lead Generation & CRM
-- **Propósito:** Buscar potenciales clientes (tiendas de moda, accesorios, boutiques) y gestionar su ciclo de vida
-- **Fuente:** Google Places API
-- **Scope geográfico:** Colombia (Cali visitas, Medellín/Bogotá marketing), USA (ciudades hispanas), España (Madrid/Barcelona)
-- **Filtro:** Solo negocios con presencia online (website o redes sociales verificadas)
-- **Rate limiting:** 500 requests/día, 28k/mes (free tier Google Places)
-- **Tablas:**
-  - `leads`: Datos del lead (empresa, contacto, ubicación, status, score)
-  - `lead_searches`: Búsquedas guardadas con configuración de ubicación/categoría
-  - `lead_outreach_log`: Historial de outreach (emails, DMs, notas)
-  - `social_api_configs`: Credenciales Meta/TikTok (pendiente activación)
-  - `google_places_quota`: Tracking de uso de quota Google Places
-- **Servicios backend:**
-  - `lead.service.ts`: CRUD leads, stats, outreach logging
-  - `lead-search.service.ts`: Gestión búsquedas guardadas
-  - `lead-generation.service.ts`: Google Places con rate limiting
-  - `social-api-config.service.ts`: Gestión credenciales Meta/TikTok
-- **Admin UI:**
-  - `/admin/leads`: Panel de leads con filtros por status, país, score
-  - `/admin/lead-searches`: Búsquedas guardadas + dashboard de quota Google
-  - `/admin/social-api-config`: Configuración de APIs sociales (Meta/TikTok)
-- **Lead Statuses:** NEW, CONTACTED, QUALIFIED, INTERESTED, CONVERTED, LOST
-- **Integraciones pendientes (requiere usuario):**
-  - Meta Business SDK: Aplicar en https://developers.facebook.com
-  - TikTok Marketing API: Aplicar en https://developers.tiktok.com
-  - Ambas pueden tomar semanas en aprobación
+### 7.0d AI Product Descriptor
+
+Reemplaza el proxy a n8n para descripción de productos. Usa Vertex AI Gemini 2.5 Flash directamente.
+
+**Patrón:** Strategy Pattern con formatters por categoría (Clothing, Accessory, Footwear)
+**Validación:** Zod con unión discriminada por `product_type`
+
+```
+POST /api/ai/describe-product { name, category, brand_description?, image_url? }
+        ↓
+DescriptorService.getFormatter(category) → ClothingFormatter | AccessoryFormatter | FootwearFormatter
+        ↓
+formatter.buildPrompt() → prompt especializado
+        ↓
+vertexService.generateContent(gemini-2.5-flash, responseMimeType: application/json)
+        ↓
+JSON parseado + validado con Zod
+        ↓
+ProductDescription { CLOTHING | ACCESSORY | FOOTWEAR }
+```
+
+**Archivos:**
+- `backend/src/services/ai-descriptor/ai-descriptor.service.ts`
+- `backend/src/services/ai-descriptor/schemas.ts` — Zod schemas
+- `backend/src/services/ai-descriptor/formatters/` — clothing, accessory, footwear
+- `backend/src/routes/ai.routes.ts` — `POST /api/ai/describe-product`
+
+### 7.0e Widget Security
+
+Middleware `widgetSecurity.ts` con dos capas:
+
+1. **Rate Limiting Redis** — 100 requests / 15 min por IP
+2. **Validación de Origin** — Verifica `brands.social_links.allowed_origins`
+   - Cache en Redis por 1 hora (`widget_origins:{brandSlug}`)
+   - Siempre permite dominios de Lookitry y localhost
+   - Permite IPs internas (Next.js SSR)
+
+### 7.0f Leads Públicos
+
+- `POST /api/leads/public` — Captura lead (upsert por email)
+- `GET /api/leads/public/check?email=xxx` — Verifica si email ya existe
+
+**Fuentes:** `organic_contact`, `post_demo_capture`
+**Tipos:** `boutique`, `tienda_online`, `showroom`, `galeria`, `distribuidor`, `otro`
 
 ---
 
@@ -820,32 +368,24 @@ El sistema de blog automatizado está refactorizado en **3 workflows independien
 LOOKITRY/
 ├── frontend/                    # Next.js 14 (App Router)
 │   ├── src/app/                # Páginas y API routes
-│   │   ├── (public routes)     # /, /login, /register, /planes, /blog, etc.
-│   │   ├── dashboard/          # Dashboard de marca
-│   │   ├── admin/              # Panel admin
-│   │   ├── api/                # API routes internas
-│   │   └── pruebalo/, sitio/, embed/, marca/  # Páginas públicas
 │   ├── src/components/         # Componentes reutilizables (40+)
+│   ├── src/lib/seo/            # Generadores de esquemas JSON-LD
 │   └── src/services/           # Clientes HTTP
 ├── backend/                     # Express API
 │   ├── src/controllers/        # Lógica de negocio
-│   │   └── admin/              # Controladores modulares por dominio (Brands, Stats, Payments, etc.)
-│   ├── src/routes/             # 24 archivos de rutas (100+ endpoints)
-│   ├── src/services/           # 23 servicios (wompi, paypal, pricing, etc.)
-│   ├── src/auditor/            # Subsistema de auditoría
-│   ├── src/middleware/         # Auth, rate limiting, CORS
-│   ├── src/utils/              # Utilidades (lifecycle, ledger, trm, etc.)
-│   ├── src/scheduler/          # Cron jobs
-│   ├── src/config/             # Config (redis, supabase, etc.)
-│   └── src/email-templates/    # Templates HTML
+│   ├── src/routes/             # 40+ archivos de rutas (100+ endpoints)
+│   ├── src/services/           # 23 servicios
+│   ├── src/auditor/           # Subsistema de auditoría
+│   ├── src/middleware/        # Auth, rate limiting, CORS
+│   ├── src/utils/              # Utilidades
+│   ├── src/scheduler/         # Cron jobs
+│   └── src/email-templates/   # Templates HTML
 ├── scripts/                    # Deploy (_deploy_now.py)
 ├── lookitry-woocommerce/       # Plugin WordPress/WooCommerce
-│   ├── lookitry-woocommerce.php
-│   ├── includes/               # admin-settings, frontend-hooks
-│   └── assets/                 # JS, CSS, logo
-├── docker-compose.*.yml        # Docker compose files
-├── DATABASE_MIGRATIONS.md      # Migraciones de DB
-└── REGLAS_IMPORTANTES.md       # Reglas operativas
+├── sam-service/               # Python/FastAPI MobileSAM
+├── mission-control/            # Dashboard de agentes IA
+├── mcp-gcp/                  # GCP MCP Server
+└── Lookitry_Brain_Vault/     # Documentación del Cerebro
 ```
 
 ---
@@ -853,12 +393,12 @@ LOOKITRY/
 ## 9. Scripts de Desarrollo
 
 ### Frontend
-- `npm run dev`: Desarrollo local.
-- `npm run build`: Generar build de producción.
+- `npm run dev`: Desarrollo local
+- `npm run build`: Generar build de producción
 
 ### Backend
-- `npm run dev`: Hot-reload con ts-node-dev.
-- `python scripts/_deploy_now.py`: Deploy al VPS.
+- `npm run dev`: Hot-reload con ts-node-dev
+- `python scripts/_deploy_now.py`: Deploy al VPS
 
 ---
 
@@ -881,47 +421,30 @@ LOOKITRY/
 | `NODE_ENV` | development/production |
 | `SUPABASE_URL` | URL de Supabase |
 | `SUPABASE_ANON_KEY` | Key anon de Supabase |
-| `SUPABASE_SERVICE_KEY` | Key service role (acceso admin DB) |
+| `SUPABASE_SERVICE_KEY` | Key service role |
 | `JWT_SECRET` | Secret para firmar JWT |
 | `JWT_EXPIRES_IN` | Expiración del JWT (default 7d) |
 | `N8N_WEBHOOK_URL` | Webhook try-on principal |
 | `N8N_API_KEY` | API key de n8n |
-| `N8N_TIMEOUT` | Timeout de n8n (default 90000ms) |
 | `N8N_BEARER_TOKEN` | Bearer token para n8n |
-| `N8N_HEADER_NAME` | Nombre del header de auth n8n |
-| `N8N_DESCRIPTOR_URL` | Webhook descriptor IA |
-| `N8N_ENTERPRISE_SYNC_WEBHOOK_URL` | Webhook enterprise sync |
-| `OPENROUTER_API_KEY` | API key de OpenRouter |
-| `JULES_API_KEY` | API key de Jules |
-| `MAX_FILE_SIZE` | Tamaño máximo de upload (default 5242880) |
-| `ALLOWED_FILE_TYPES` | MIME types permitidos |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Configuración email |
-| `FRONTEND_URL` | URL del frontend para links en emails |
-| `CORS_ORIGIN` | Orígenes permitidos |
-| `ENTERPRISE_SYNC_TOKEN` | Token para enterprise sync webhook |
 | `MINIO_ENDPOINT` | URL de MinIO S3 |
 | `COOKIE_DOMAIN` | Dominio de cookies (producción) |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key |
-| `WOMPI_PUBLIC_KEY`, `WOMPI_PRIVATE_KEY`, `WOMPI_EVENTS_SECRET`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_ENABLED` | Configuración Wompi |
-| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_SANDBOX`, `PAYPAL_WEBHOOK_ID` | PayPal sandbox |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth |
-| `GOOGLE_PLACES_API_KEY` | API key Google Places (Lead Generation) |
+| `WOMPI_PUBLIC_KEY`, `WOMPI_PRIVATE_KEY`, `WOMPI_INTEGRITY_SECRET` | Wompi |
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_SANDBOX` | PayPal |
+| `GOOGLE_PLACES_API_KEY` | Google Places API |
 | `BREVO_API_KEY` | API key Brevo SMTP |
 
 ---
 
-## 11. Seguridad Reforzada (Abril 2026)
+## Referencias Cruzadas
 
-| Área | Cambio | Estado |
-|------|--------|--------|
-| Docker Compose | Secretos en variables de entorno | ✅ Implementado |
-| JWT Logout | Blacklist en Redis | ⚠️ Pendiente |
-| CSRF Protection | Tokens en formularios | ⚠️ Pendiente |
-| HSTS Frontend | Header Strict-Transport-Security | ⚠️ Pendiente |
+| Documento | Contenido |
+|-----------|-----------|
+| [[PRD]] | Lógica de negocio, flujos, planes, APIs, features |
+| [[DESIGN]] | Sistema de diseño (colores, tipografía, componentes, estados UI) |
+| [[AGENTS]] | Configuración del equipo de agentes IA |
+| [[REGLAS_IMPORTANTES]] | Reglas operativas del proyecto |
 
 ---
 
-##不走
-
-**Última actualización:** Abril 2026.
-Toda modificación en los flujos de n8n debe ser documentada inmediatamente aquí.
+**Última actualización:** Mayo 2026.

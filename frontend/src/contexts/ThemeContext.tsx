@@ -8,7 +8,7 @@ interface ThemeContextValue {
   theme: Theme;
   isDark: boolean;
   toggle: () => void;
-  toggleTheme: () => void; // Aliased for compatibility
+  toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
   colors: {
     bg: string;
@@ -40,28 +40,25 @@ const themes = {
   },
 };
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
+function getInitialTheme(): Theme {
+  if (typeof window === 'undefined') return 'dark';
+  try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
-    if (stored === 'light' || stored === 'dark') {
-      setThemeState(stored);
-    } else if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) {
-       // Only default to light if explicitly preferred, otherwise keep dark as default for Lookitry
-       // However, many users might prefer system. For now, let's keep dark as primary.
-    }
-  }, []);
+    // ONLY respect explicit user choice — dark is the ONLY default
+    if (stored === 'light' || stored === 'dark') return stored;
+  } catch {}
+  // ALWAYS default to dark — site is designed for dark mode
+  // Light mode is only for accessibility, never automatic
+  return 'dark';
+}
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
-    if (mounted) {
-      document.documentElement.classList.remove('light', 'dark');
-      document.documentElement.classList.add(theme);
-      // document.body.style.backgroundColor = themes[theme].bg; // This can cause issues with other layouts, maybe use CSS variables
-    }
-  }, [theme, mounted]);
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(theme);
+  }, [theme]);
 
   const toggle = useCallback(() => {
     setThemeState(prev => {

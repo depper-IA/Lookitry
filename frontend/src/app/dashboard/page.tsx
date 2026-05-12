@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import {
   Activity,
   ArrowRight,
@@ -26,6 +26,40 @@ import { brandsService } from '@/services/brands.service';
 import type { Brand, UsageStats as UsageStatsType } from '@/types';
 import { deriveDashboardAccountState, type WooMetricsSummary } from '@/lib/dashboardAccountState';
 import { getSubscriptionDisplayState } from '@/lib/subscription-display';
+
+// Stagger animation variants for stats cards
+const statsVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number]
+    }
+  })
+};
+
+// Activity timeline variants
+const activityVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.4 }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 interface ReferralSummary {
   hasReferredCode: boolean;
@@ -283,9 +317,21 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {accountState.systemChecks.map((item) => (
-                <div key={item.id} className="rounded-[1.5rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-5">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+            >
+              {accountState.systemChecks.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  custom={i}
+                  variants={statsVariants}
+                  whileHover={{ y: -5, boxShadow: "0 20px 40px -10px rgba(0,0,0,0.3)" }}
+                  className="rounded-[1.5rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-5 transition-all hover:border-[#FF5C3A]/30"
+                >
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">
                     {item.label}
                   </p>
@@ -300,9 +346,9 @@ export default function DashboardPage() {
                   >
                     {item.value}
                   </p>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </motion.section>
 
           <motion.section
@@ -326,7 +372,13 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="mt-6 grid gap-4 sm:grid-cols-2"
+            >
                 <MetricCard
                   icon={<Package size={16} />}
                   label="Productos activos"
@@ -351,7 +403,7 @@ export default function DashboardPage() {
                   value={generationsLimit > 0 ? `${monthlyGenerations}/${generationsLimit}` : String(monthlyGenerations)}
                   helper="Capacidad usada"
                 />
-              </div>
+              </motion.div>
             </div>
 
             <div className="rounded-[2rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-xl">
@@ -369,14 +421,28 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="mt-6 space-y-3">
-                <QuickAction href="/dashboard/subscription" icon={<Sparkles size={16} />} title="Plan y facturación" description="Centraliza renovaciones, upgrades y pagos en una sola pantalla." />
+              <motion.div
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="mt-6 space-y-3"
+              >
+                <motion.div variants={activityVariants}>
+                  <QuickAction href="/dashboard/subscription" icon={<Sparkles size={16} />} title="Plan y facturación" description="Centraliza renovaciones, upgrades y pagos en una sola pantalla." />
+                </motion.div>
                 {(brand?.plan === 'PRO' || accountState.checklist.some(i => i.id === 'store')) && (
-                  <QuickAction href="/dashboard/integrations" icon={<PlugZap size={16} />} title="Conectar tienda" description="Instala el plugin, valida WooCommerce y termina la activación técnica." />
+                  <motion.div variants={activityVariants}>
+                    <QuickAction href="/dashboard/integrations" icon={<PlugZap size={16} />} title="Conectar tienda" description="Instala el plugin, valida WooCommerce y termina la activación técnica." />
+                  </motion.div>
                 )}
-                <QuickAction href="/dashboard/products" icon={<Package size={16} />} title="Gestionar productos" description="Carga catálogo, activa prendas y prepara el primer lanzamiento." />
-                <QuickAction href="/dashboard/mi-pagina" icon={<LayoutTemplate size={16} />} title="Sitio de marca" description="Ajusta landing, dominio y la experiencia pública del probador." />
-              </div>
+                <motion.div variants={activityVariants}>
+                  <QuickAction href="/dashboard/products" icon={<Package size={16} />} title="Gestionar productos" description="Carga catálogo, activa prendas y prepara el primer lanzamiento." />
+                </motion.div>
+                <motion.div variants={activityVariants}>
+                  <QuickAction href="/dashboard/mi-pagina" icon={<LayoutTemplate size={16} />} title="Sitio de marca" description="Ajusta landing, dominio y la experiencia pública del probador." />
+                </motion.div>
+              </motion.div>
 
             </div>
           </motion.section>
@@ -858,19 +924,25 @@ function QuickAction({
   description: string;
 }) {
   return (
-    <Link
-      href={href}
-      className="flex items-start gap-4 rounded-[1.4rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-4 transition-all hover:border-[#FF5C3A]/30"
+    <motion.div
+      whileHover={{ scale: 1.02, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
-      <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#FF5C3A]/10 text-[#FF5C3A]">
-        {icon}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-[var(--text-primary)]">{title}</p>
-        <p className="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">{description}</p>
-      </div>
-      <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#FF5C3A]" />
-    </Link>
+      <Link
+        href={href}
+        className="flex items-start gap-4 rounded-[1.4rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-4 transition-all hover:border-[#FF5C3A]/30"
+      >
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#FF5C3A]/10 text-[#FF5C3A]">
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-[var(--text-primary)]">{title}</p>
+          <p className="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">{description}</p>
+        </div>
+        <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#FF5C3A]" />
+      </Link>
+    </motion.div>
   );
 }
 

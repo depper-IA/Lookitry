@@ -42,7 +42,8 @@ export function formatPrice(
   
   if (isUSD) {
     const safeTrm = trm > 0 ? trm : 3900;
-    const amountInUSD = Math.ceil(amountInCOP / safeTrm);
+    const MINIMUM_MARGIN_COP = 10000;
+    const amountInUSD = Math.ceil((amountInCOP + MINIMUM_MARGIN_COP) / safeTrm);
     return formatCurrency(amountInUSD, 'USD');
   }
   

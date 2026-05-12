@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import type { Product } from '@/types';
-import { getProxiedUrl } from '@/utils/imageProxy';
+import { ImageWithFallback } from './ImageWithFallback';
 
 interface WidgetPreviewProps {
   products: Product[];
@@ -35,66 +36,75 @@ export function WidgetPreview({ products, maxProducts }: WidgetPreviewProps) {
         )}
       </div>
 
-      {/* Preview Grid */}
-      <div
-        className="relative aspect-square rounded-2xl overflow-hidden p-3 transition-all duration-300"
-        style={{
-          background: 'var(--bg-card)',
-          border: `2px solid ${borderColor}`,
-          boxShadow: isWarning ? '0 0 20px rgba(255,92,58,0.2)' : isFull ? '0 0 20px rgba(239,68,68,0.2)' : 'none',
-        }}
+      {/* Preview Grid with hover float */}
+      <motion.div
+        whileHover={{ y: -8, rotateY: 5 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+        className="relative perspective-1000"
       >
-        {products.length === 0 ? (
-          /* Empty State */
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-xl border-2 border-dashed border-[var(--card-border)] flex items-center justify-center">
-              <span className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>?</span>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* 2x2 Grid */}
-            <div className="grid grid-cols-2 gap-2 h-full">
-              {products.slice(0, 4).map((product, index) => (
-                <div
-                  key={product.id}
-                  className="relative rounded-lg overflow-hidden border border-[var(--card-border)]"
-                >
-                  <img
-                    src={getProxiedUrl(product.imageUrl)}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-black/60 to-transparent" />
-                </div>
-              ))}
-              {/* Fill empty slots */}
-              {products.length < 4 &&
-                Array.from({ length: 4 - products.length }).map((_, i) => (
-                  <div
-                    key={`empty-${i}`}
-                    className="rounded-lg border border-dashed border-[var(--card-border)] bg-[var(--bg-card-elevated)]"
-                  />
-                ))}
-            </div>
-
-            {/* Overflow Badge */}
-            {overflow > 0 && (
-              <div className="absolute bottom-3 right-3 px-2 py-1 rounded-full bg-black/70 backdrop-blur-sm">
-                <span className="text-[9px] font-bold text-white">+{overflow} más</span>
+        <div
+          className="relative aspect-square rounded-2xl overflow-hidden p-3 transition-all duration-300"
+          style={{
+            background: 'var(--bg-card)',
+            border: `2px solid ${borderColor}`,
+            boxShadow: isWarning ? '0 0 20px rgba(255,92,58,0.2)' : isFull ? '0 0 20px rgba(239,68,68,0.2)' : 'none',
+          }}
+        >
+          {products.length === 0 ? (
+            /* Empty State */
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-xl border-2 border-dashed border-[var(--card-border)] flex items-center justify-center">
+                <span className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>?</span>
               </div>
-            )}
-          </>
-        )}
-      </div>
+            </div>
+          ) : (
+            <>
+              {/* 2x2 Grid */}
+              <div className="grid grid-cols-2 gap-2 h-full">
+                {products.slice(0, 4).map((product) => (
+                  <div
+                    key={product.id}
+                    className="relative rounded-lg overflow-hidden border border-[var(--card-border)]"
+                  >
+                    <ImageWithFallback
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-full h-full"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
+                ))}
+                {/* Fill empty slots */}
+                {products.length < 4 &&
+                  Array.from({ length: 4 - products.length }).map((_, i) => (
+                    <div
+                      key={`empty-${i}`}
+                      className="rounded-lg border border-dashed border-[var(--card-border)] bg-[var(--bg-card-elevated)]"
+                    />
+                  ))}
+              </div>
+
+              {/* Overflow Badge */}
+              {overflow > 0 && (
+                <div className="absolute bottom-3 right-3 px-2 py-1 rounded-full bg-black/70 backdrop-blur-sm">
+                  <span className="text-[9px] font-bold text-white">+{overflow} más</span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </motion.div>
 
       {/* Progress Bar */}
       <div className="space-y-1.5">
         <div className="h-1.5 rounded-full overflow-hidden bg-[var(--bg-card)]">
-          <div
+          <motion.div
+            initial={{ width: 0 }}
+            whileInView={{ width: `${Math.min(percentage, 100)}%` }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="h-full rounded-full transition-all duration-500"
             style={{
-              width: `${Math.min(percentage, 100)}%`,
               background: isFull
                 ? '#EF4444'
                 : isWarning

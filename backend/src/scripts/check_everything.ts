@@ -16,7 +16,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function checkEverything() {
-  console.log('--- DIAGNÓSTICO GLOBAL DE SINCRONIZACIÓN ---');
+  console.log('--- DIAGNñSTICO GLOBAL DE SINCRONIZACIñN ---');
 
   // 1. Buscar TODOS los productos sincronizados (external_id no nulo)
   const { data: syncedProds, error: syncError } = await supabase
@@ -43,7 +43,7 @@ async function checkEverything() {
     .limit(20);
 
   if (recentBrands) {
-    console.log(`\nÚltimas 20 marcas:`);
+    console.log(`\nñltimas 20 marcas:`);
     recentBrands.forEach(b => console.log(`- ${b.name} (${b.slug}) | ID: ${b.id} | Creada: ${b.created_at}`));
   }
 }

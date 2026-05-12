@@ -104,9 +104,9 @@ async function getActiveCampaign() {
 
 /**
  * Busca o crea una marca a partir de datos de Google
- * - Si existe por google_id → login directo
- * - Si existe por email → vincula google_id y login
- * - Si no existe → crea marca con needs_onboarding=true
+ * - Si existe por google_id â login directo
+ * - Si existe por email â vincula google_id y login
+ * - Si no existe â crea marca con needs_onboarding=true
  */
 export async function findOrCreateBrandFromGoogle(
   payload: GoogleTokenPayload
@@ -165,7 +165,7 @@ export async function findOrCreateBrandFromGoogle(
     };
   }
 
-  // 3. Usuario nuevo → Crear registro pendiente en pending_registrations (NO crear marca aún)
+  // 3. Usuario nuevo â Crear registro pendiente en pending_registrations (NO crear marca aún)
   // Esto evita "marcas fantasma" si el usuario abandona antes de pagar
   const contactName = [payload.given_name, payload.family_name]
     .filter(Boolean)
@@ -205,7 +205,7 @@ export async function findOrCreateBrandFromGoogle(
     isNewBrand: true,
     accountLinked: false,
     pendingRegistrationId: pendingReg.id,
-    redirectTo: '/checkout', // NUEVO: usuario nuevo va directo al funnel de pago
+    redirectTo: '/trial-checkout', // NUEVO: usuario nuevo va al flujo trial
   };
 }
 

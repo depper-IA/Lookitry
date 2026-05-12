@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import Script from 'next/script';
 import { Mail, ChevronLeft, ChevronRight, CreditCard, LayoutPanelLeft, AlertCircle } from 'lucide-react';
 import { api } from '@/services/api';
 import { authService } from '@/services/auth.service';
@@ -11,10 +12,44 @@ import { StepProgress, Step } from '@/components/payments/StepProgress';
 import { clearCheckoutDraft, loadCheckoutDraft, saveCheckoutDraft } from '@/lib/checkoutDraft';
 import { formatCop, formatUsd, priceInUsd } from '@/lib/paymentDisplay';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 const OA = '#FF5C3A';
 const TRIAL_DRAFT_KEY = 'lookitry:trial-checkout-draft';
+
+// Emil Kowalski Design System - Custom Easing & Motion
+const CSS_VARS = `
+  :root {
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-fast: 160ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px -15px rgba(255, 92, 58, 0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(0) scale(0.97);
+    }
+    .input-field:hover {
+      border-color: #333;
+    }
+    .input-field:focus {
+      border-color: #FF5C3A;
+      box-shadow: 0 0 0 3px rgba(255, 92, 58, 0.1), 0 0 20px rgba(255, 92, 58, 0.15);
+    }
+    .payment-option:hover {
+      border-color: rgba(255, 92, 58, 0.4);
+      background: rgba(255, 92, 58, 0.03);
+    }
+  }
+`;
 
 function IconCheck() {
   return (
@@ -31,7 +66,7 @@ export default function TrialCheckoutPage() {
   const [error, setError] = useState('');
   const [campaign, setCampaign] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
-  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
+  const { currency, setCurrency } = useCurrency();
   const [trm, setTrm] = useState(3900);
   const [guestEmail, setGuestEmail] = useState('');
   const [guestName, setGuestName] = useState('');
@@ -48,6 +83,17 @@ export default function TrialCheckoutPage() {
   // Email check states
   const [emailChecking, setEmailChecking] = useState(false);
   const [emailExists, setEmailExists] = useState<{ exists: boolean; name?: string; plan?: string } | null>(null);
+
+  // Inject Emil Kowalski CSS Variables
+  useEffect(() => {
+    const styleId = 'emil-kowalski-css';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = CSS_VARS;
+      document.head.appendChild(style);
+    }
+  }, []);
 
   // Guard: si el usuario ya tiene trial activo o plan pago, redirigir al dashboard
   useEffect(() => {
@@ -114,12 +160,6 @@ export default function TrialCheckoutPage() {
       })
       .catch(err => console.error('Error loading checkout data:', err));
 
-    const savedCurrency = localStorage.getItem('currency') as 'COP' | 'USD';
-    if (savedCurrency) {
-      setCurrency(savedCurrency);
-      if (savedCurrency === 'USD') setPaymentMethod('paypal');
-    }
-
     const draft = loadCheckoutDraft(TRIAL_DRAFT_KEY);
     if (draft?.email) setGuestEmail(draft.email);
     if (draft?.brandName) setGuestName(draft.brandName);
@@ -148,18 +188,6 @@ export default function TrialCheckoutPage() {
   }, []);
 
   useEffect(() => {
-    const handleCurrencyChange = () => {
-      const saved = localStorage.getItem('currency') as 'COP' | 'USD';
-      if (saved && saved !== currency) {
-        setCurrency(saved);
-        setPaymentMethod(saved === 'USD' ? 'paypal' : 'wompi');
-      }
-    };
-    window.addEventListener('currencyChange', handleCurrencyChange);
-    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
-  }, [currency]);
-
-  useEffect(() => {
     saveCheckoutDraft(TRIAL_DRAFT_KEY, {
       plan: 'TRIAL',
       months: 1,
@@ -182,9 +210,7 @@ export default function TrialCheckoutPage() {
   const toggleCurrency = () => {
     const newCurrency = currency === 'COP' ? 'USD' : 'COP';
     setCurrency(newCurrency);
-    localStorage.setItem('currency', newCurrency);
     setPaymentMethod(newCurrency === 'USD' ? 'paypal' : 'wompi');
-    window.dispatchEvent(new Event('currencyChange'));
   };
 
   // Check email existence
@@ -221,6 +247,7 @@ export default function TrialCheckoutPage() {
       setGuestName(data.name || '');
       setEmailError('');
       setEmailExists({ exists: false });
+      setCurrentStep(3);
     } else {
       localStorage.setItem('brand', JSON.stringify(data.brand));
       if (data.token) localStorage.setItem('token', data.token);
@@ -343,6 +370,8 @@ export default function TrialCheckoutPage() {
 
   return (
     <main className="min-h-screen bg-[#030303] text-white selection:bg-[#FF5C3A]/30">
+      {/* Google Identity Services — solo en páginas de auth */}
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       <nav className="border-b border-white/5 bg-black/50 backdrop-blur-xl px-4 md:px-8 h-16 flex items-center justify-between sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-2.5">
           <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
@@ -612,18 +641,15 @@ export default function TrialCheckoutPage() {
                 <div className="space-y-4 mb-8">
                   <button
                     onClick={() => {
-                      if (currency === 'USD') return;
                       setPaymentMethod('wompi');
                       setCurrency('COP');
                       localStorage.setItem('currency', 'COP');
+                      window.dispatchEvent(new Event('currencyChange'));
                     }}
-                    disabled={currency === 'USD'}
                     className={`w-full flex items-center justify-between rounded-2xl border p-5 transition-all ${
-                      currency === 'USD'
-                        ? 'opacity-30 cursor-not-allowed border-[#1f1f1f] bg-[#0a0a0a]'
-                        : paymentMethod === 'wompi'
-                          ? 'border-[#FF5C3A] bg-[#FF5C3A]/5'
-                          : 'border-[#1f1f1f] bg-[#0a0a0a] hover:border-[#FF5C3A]/30'
+                      paymentMethod === 'wompi'
+                        ? 'border-[#FF5C3A] bg-[#FF5C3A]/5'
+                        : 'border-[#1f1f1f] bg-[#0a0a0a] hover:border-[#FF5C3A]/30'
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -635,7 +661,7 @@ export default function TrialCheckoutPage() {
                         <span className="text-[11px] text-[#999]">Tarjetas, PSE, Nequi · COP</span>
                       </div>
                     </div>
-                    <Image src="/wompi-logo.svg" alt="Wompi" width={60} height={20} className="object-contain opacity-70" />
+                    <img src="/wompi-logo.svg" alt="Wompi" className="h-5 w-auto object-contain opacity-70" />
                   </button>
 
                   <button
@@ -657,7 +683,7 @@ export default function TrialCheckoutPage() {
                         <span className="text-[11px] text-[#999]">Tarjetas globales · USD</span>
                       </div>
                     </div>
-                    <Image src="/payment-paypal.svg" alt="PayPal" width={60} height={20} className="object-contain opacity-70" />
+                    <img src="/payment-paypal.svg" alt="PayPal" className="h-5 w-auto object-contain opacity-70" />
                   </button>
                 </div>
 
@@ -719,10 +745,10 @@ export default function TrialCheckoutPage() {
               <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 delay-100">
                 <div className="flex items-center gap-2">
                   {paymentMethod === 'paypal' ? (
-                    <Image src="/payment-paypal.svg" alt="PayPal" width={55} height={20} className="object-contain opacity-90" />
+                    <img src="/payment-paypal.svg" alt="PayPal" className="h-5 w-auto object-contain opacity-90" />
                   ) : (
                     <div className="relative">
-                      <Image src="/wompi-logo.svg" alt="Wompi" width={55} height={20} className={`object-contain ${currency === 'USD' ? 'opacity-30' : 'opacity-90'}`} />
+                      <img src="/wompi-logo.svg" alt="Wompi" className={`h-5 w-auto object-contain ${currency === 'USD' ? 'opacity-30' : 'opacity-90'}`} />
                       {currency === 'USD' && (
                         <span className="absolute -top-1 -right-1 text-[7px] font-black text-[#FF5C3A] bg-[#0d0d0d] px-1 rounded">USD</span>
                       )}

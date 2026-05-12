@@ -1,10 +1,11 @@
 import dynamic from 'next/dynamic';
 import { getPricingConfig, type PricingConfig } from '@/lib/pricing';
+import { organizationSchema, websiteSchema } from '@/lib/seo';
 
-// Carga dinámica para evitar errores de GSAP/Window en el build de servidor
+// Carga dinámica para code splitting (SSR habilitado para buen FCP/LCP)
 const PremiumLanding = dynamic(
-  () => import('@/components/landing/new-landing/PremiumLanding'),
-  { ssr: false }
+  () => import('@/components/landing/PremiumLanding'),
+  { ssr: true }
 );
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
@@ -35,21 +36,12 @@ export default async function HomePage() {
   const proPrice = pricing?.pro?.precio_mensual_cop ?? 350000;
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-  
-  let dynamicReviews: any[] = [];
-  try {
-    const res = await fetch(`${API_URL}/api/reviews/public`, { 
-        next: { revalidate: 3600 } 
-    });
-    if (res.ok) {
-        const data = await res.json();
-        if (data.reviews && data.reviews.length > 0) {
-            dynamicReviews = data.reviews;
-        }
-    }
-  } catch (err) {
-    console.error("Error fetching reviews", err);
-  }
+
+  // Reviews: fetch asíncrono NO bloqueante
+  const reviewsData = await fetch(`${API_URL}/api/reviews/public`, {
+    next: { revalidate: 1800 }
+  }).then(res => res.ok ? res.json().catch(() => ({ reviews: [] })) : { reviews: [] }).catch(() => ({ reviews: [] }));
+  const dynamicReviews = reviewsData?.reviews ?? [];
 
   // Testimonios curados para la home premium como fallback si falla la bd o hay pocas
   const mockReviews = [
@@ -90,16 +82,15 @@ export default async function HomePage() {
       finalReviews.push(...mockReviews.slice(0, 5 - finalReviews.length));
   }
 
+  const baseOrgSchema = organizationSchema();
+  const baseWebSchema = websiteSchema();
+
   const jsonLd = {
-    // ... (rest of jsonLd remains the same)
     '@context': 'https://schema.org',
     '@graph': [
       {
-        '@type': 'Organization',
+        ...baseOrgSchema,
         '@id': `${BASE_URL}/#organization`,
-        name: 'Lookitry',
-        url: BASE_URL,
-        logo: { '@type': 'ImageObject', url: `${BASE_URL}/logo.svg` },
         contactPoint: {
           '@type': 'ContactPoint',
           telephone: '+57-310-543-6281',
@@ -109,10 +100,8 @@ export default async function HomePage() {
         },
       },
       {
-        '@type': 'WebSite',
+        ...baseWebSchema,
         '@id': `${BASE_URL}/#website`,
-        url: BASE_URL,
-        name: 'Lookitry',
         publisher: { '@id': `${BASE_URL}/#organization` },
         inLanguage: 'es',
       },

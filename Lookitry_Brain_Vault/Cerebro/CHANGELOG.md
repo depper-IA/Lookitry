@@ -2,6 +2,137 @@
 
 ---
 
+## 2026-05-02
+
+### refactor(ai): Reemplazo de n8n por Vertex AI directo para el Descriptor IA
+
+**Resumen:** Se refactorizó la arquitectura del descriptor de productos, eliminando la dependencia del webhook de n8n e integrando directamente Vertex AI.
+
+**Cambios clave:**
+1. Nuevo endpoint `/api/ai/describe-product` que reemplaza el webhook `/webhook/descriptor` de n8n.
+2. Implementación de **Strategy Pattern** usando `BaseFormatter` y clases concretas (`ClothingFormatter`, `AccessoryFormatter`, `FootwearFormatter`).
+3. Uso de **Zod discriminated union** (`product_type` = CLOTHING | ACCESSORY | FOOTWEAR) para validar el output de la IA de forma estricta.
+4. El controlador de productos (`products.controller.ts`) ahora llama directamente a `ai-descriptor.service.ts` en lugar de usar n8n.
+
+---
+
+## 2026-04-28
+
+### fix(landing): Replace megamenu promo image with rebeca.webp
+
+**Archivo modificado:** `frontend/src/components/landing/LandingNav.tsx`
+
+---
+
+## 2026-04-27
+
+### fix(try-on): Prevent body shape alteration in generated images
+
+**Problema reportado:** La IA estaba alterando la forma del cuerpo del usuario (ej: cintura más delgada, cuerpo más curvado) — especialmente en personas con cuerpo más grande.
+
+**Solución:** Actualizadas las reglas de `prompt-rules.ts` para incluir `CRITICAL — DO NOT ALTER BODY SHAPE` en todas las categorías que afectan el cuerpo completo:
+
+| Categoría | Cambio |
+|-----------|--------|
+| VESTIDO | Añadido `body SHAPE, waist size, hip size, shoulder width, arm thickness, leg thickness, overall silhouette` |
+| DRESS | Mismo cambio |
+| CONJUNTO | Mismo cambio |
+| SET | Mismo cambio |
+| OUTFIT | Mismo cambio |
+
+**Regla aplicada:**
+> "ONLY change the clothing — do NOT slim, thicken, curve, waist-train, or reshape the body in any way"
+
+---
+
+### feat(n8n): Workflow de Feedback Embedding RAG `j5EG0OcxMMSpzxVu`
+
+**Resumen:** Workflow de n8n para generar embeddings de feedback de usuarios y almacenarlos en Supabase pgvector para el motor RAG de mejora de prompts.
+
+#### Detalles
+
+| Componente | Descripción |
+|------------|-------------|
+| **Workflow ID** | `j5EG0OcxMMSpzxVu` |
+| **Webhook** | `/webhook/feedback-embedding` |
+| **Modelo** | OpenAI `text-embedding-3-small` (1536 dims) via OpenRouter |
+| **Trigger** | Async desde `feedback.service.ts` → `triggerEmbeddingAsync()` |
+
+#### Flujo
+
+1. `feedback.service.createFeedback()` inserta registro en `generation_feedback`
+2. `triggerEmbeddingAsync()` hace fire-and-forget POST a `/webhook/feedback-embedding`
+3. n8n prepara texto del error (tipo, categoría, descripción) — máximo 1000 chars
+4. OpenRouter genera embedding de 1536 dimensiones
+5. n8n actualiza `generation_feedback.embedding` con el vector
+6. `prompt-rag.service` usa el embedding para buscar feedbacks similares y enriquecer prompts futuros
+
+#### Archivos Modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `Lookitry_Brain_Vault/Cerebro/Docs/Guias/Integracion_n8n.md` | Actualizado con webhook #8 (Feedback Embedding RAG) |
+| `Lookitry_Brain_Vault/Cerebro/TECH_STACK.md` | Actualizada sección 6.3 RAG con workflow ID y dims 1536 |
+
+---
+
+## 2026-04-26
+
+### docs(brain-vault): Actualización completa de documentación del Cerebro
+
+**Resumen:** Se actualizaron los documentos principales del Cerebro para reflejar la arquitectura actual del sistema.
+
+#### Archivos Actualizados
+
+| Archivo | Cambios Principales |
+|---------|---------------------|
+| **PRD.md** | Añadido sistema de Blog Automation (3 workflows), Email Marketing (Brevo), Social OS, Sistema de Agentes v3.0, Account Lockout, estados de leads/outreach |
+| **DESIGN.md** | Nuevos componentes (Mission Control, AgentDetailModal, LoginAuditTable, EmailCampaignManager), 6 templates de widget, estados de agentes/outreach/blog |
+| **TECH_STACK.md** | Sistema de Agentes v3.0, Lookitry Social OS, Account Lockout, Seguridad reforzada con campos `failed_login_attempts` y `locked_until` |
+| **REGLAS_IMPORTANTES.md** | Nueva sección 14 (Account Lockout, Login Audit, Session Security, Cookie Security) |
+| **Esquema_Base_Datos.md** | Añadidas tablas `email_campaigns`, `email_campaign_recipients`, campos de seguridad en brands |
+| **Integracion_n8n.md** | Actualizados webhooks de blog (Topic Generator, Article Producer, Image Generator), añadido problema de n8n Task Runner |
+
+#### Nueva Arquitectura Documentada
+
+- **Blog Automation**: 3 workflows n8n independientes (Topic Generator → Article Producer → Image Generator)
+- **Email Marketing**: Brevo SMTP con batching (50 emails/10 min), límite 300/día
+- **Sistema de Agentes v3.0**: Sammantha orquestadora, 10 agentes especializados, tracking automático
+- **Seguridad**: Account lockout (5 intentos = 15 min), login audit, session TTL 7 días
+
+---
+
+## 2026-04-22
+
+### refactor(brain-vault): Auditoría de integridad + limpieza de archivos obsoletos
+
+**Resumen:** Auditoría completa de base de datos y archivos del Brain Vault. Se actualizó documentación y eliminaron archivos que ya no reflejan la realidad del proyecto.
+
+#### Base de Datos — Verificación de Integridad
+
+**Tablas verificadas y OK:** `brands`, `products`, `generations`, `coupons`, `leads`, `promotions`, `trial_campaigns`, `admin_notifications`, `pending_registrations`, `plugin_telemetry_events`, `enterprise_sync_configs`, `google_places_quota`, `lead_searches`
+
+**Discrepancias corregidas en `Esquema_Base_Datos.md`:**
+- Eliminada tabla inexistente `api_keys`
+- Eliminada tabla inexistente `payment_logs`
+- Corregido `landing_template` de enum a varchar(20)
+- Agregados campos faltantes: `google_id`, `auth_provider`, `needs_onboarding`, `internal_notes`, `logo_light`, `logo_dark` (brands)
+- Agregados campos faltantes: `badge` (products)
+- Agregado campo `prompt_used` (generations)
+- Actualizado esquema completo con todas las tablas reales
+
+#### Archivos Eliminados (Obsoletos)
+
+| Archivo | Razón |
+|---------|-------|
+| `Docs/design/RUNPOD_SETUP.md` | RunPod ya no se usa (n8n + OpenRouter) |
+| `Docs/design/RUNPOD_IDM_VTON_WORKFLOW_DESIGN.md` | RunPod ya no se usa |
+| `PITCH_DECK_LOOKITRY.md` | Pitch deck obsoleto |
+| `PITCH_DECK_LOOKITRY_ES.md` | Pitch deck obsoleto |
+| `Docs/SHOPIFY_INTEGRATION.md` | WooCommerce es el plugin actual |
+| `Docs/WOOCOMMERCE_QA_E2E.md` | Testing E2E desactualizado |
+| `Docs/research/social-verification-api-research.md` | Research desactualizado |
+
 ---
 
 ## 2026-04-20
@@ -143,8 +274,6 @@ Sammantha ahora spawnea agentes bajo demanda. Nunca hace trabajo de otros agente
 | "Docker no arranca" | Docker/Infra | Zephyr |
 | "Hay vulnerabilidades en el código" | Seguridad/Auditoría | Cipher |
 | "Quiero hacer pentesting" | Seguridad | Cipher |
-| "El trading automatizado falló" | Trading | Leo |
-| "Crear posts para Instagram" | UGC/Contenido | Rebecca |
 | "El CHANGELOG está desactualizado" | Documentación | Lina |
 | "Necesito documentar X" | Documentación | Lina |
 
@@ -263,8 +392,6 @@ Sammantha ahora spawnea agentes bajo demanda. Nunca hace trabajo de otros agente
 | Infra / VPS / Docker | Zephyr |
 | Documentación | Lina |
 | Seguridad / Pentesting | Cipher |
-| Trading | Leo |
-| UGC / Contenido | Rebecca |
 | Pagos / Auth / Webhooks | Kira |
 
 **Modelo:**
@@ -283,94 +410,9 @@ Sammantha ahora spawnea agentes bajo demanda. Nunca hace trabajo de otros agente
 
 ---
 
-## 2026-04-18 (Tarde)
-
-### Lookitry Social OS - Sistema Completo de Automatización
-
-**Descripción:**
-Sistema completo para automatizar contenido de Instagram + TikTok con música AI.
-
-**Stack tecnológico:**
-| Servicio | Función | Costo |
-|----------|---------|-------|
-| GCP Vertex AI (imagen-3.0) | Generación imágenes | $5 credits |
-| Pillow | Overlays, marca | $0 |
-| Canva Pro | Fallback edición | $0 (cliente tiene) |
-| SonAuto AI | Música TikTok | ~$0.02/canción |
-| Buffer MCP | Scheduling | $0 |
-
-**Archivos creados:**
-- `social-os/README.md` - Documentación principal
-- `social-os/DOCUMENTACION_COMPLETA.md` - Documentación técnica completa
-- `social-os/create_tiktok_content.py` - Script TikTok completo (slides + música)
-- `social-os/slideshows/generator.py` - Clase generadora de carousels
-- `social-os/slideshows/create_brand_carousel.py` - Crear carousel con marca
-- `social-os/slideshows/add_brand.py` - Añadir marca a imágenes
-- `social-os/slideshows/rebecca_carousel.py` - Script simple para Rebecca
-- `social-os/slideshows/templates_tiktok.json` - 5 templates TikTok
-- `social-os/music/music_generator.py` - Generador SonAuto
-- `social-os/music/output/test_song.ogg` - Canción de prueba (1.2MB)
-- `social-os/canva/canva_enhancer.py` - Integración Canva (fallback)
-- `social-os/canva/README.md` - Documentación Canva
-- `social-os/calendar/scheduler.py` - Gestor calendario
-- `social-os/calendar/content_calendar.json` - Posts planificados
-- `social-os/analytics/tracker.py` - Log de posts
-- `social-os/analytics/database.sql` - Schema Supabase
-- `social-os/hooks/hook_library.json` - 8 viral hooks
-
-**Modificaciones:**
-- `backend/scripts/gcp_image_generator.py` - Actualizado para JWT auth
-- `backend/.env` - Añadido SONAUTO_API_KEY
-- `Cerebro/Agentes/rebecca.md` - Actualizada con nuevos workflows
-
-**GCP Authentication:**
-- Método: JWT + OAuth2 token exchange
-- Service Account: `lookitry-67844@appspot.gserviceaccount.com`
-- Key file: `/home/travis/Lookitry/Lookitry/google/permiso-abril.json`
-- Modelo: `imagen-3.0-generate-001`
-
-**SonAuto Music:**
-- API Key: `sksonauto_wrlgeFuh0RI9Ajb7I8yMfg132qj_PBIFJn55_hWP74IrnJid`
-- Primera canción generada exitosamente
-- Tags válidos: electronic, dance, ambient, chill, pop, 2020s, etc.
-- ⚠️ Tags inválidos: upbeat, fashion, luxury, trending, viral
-
-**Brand Elements:**
-- Color primario: #FF5C3A (Naranja)
-- Color secundario: #111111 (Negro)
-- Logo: `/home/travis/Lookitry/Lookitry/Content/Graphics/lookitry_logo_real.png`
-
-**Costo por post:** ~$0.20 (1 imagen GCP + 1 canción SonAuto)
-
----
-
 ## 2026-04-18 (Mañana)
 
 ### Nuevas Funcionalidades
-
-#### Rebecca - Automatización de Redes Sociales con Buffer
-
-**Archivos creados:**
-- `Cerebro/Skills/social-automation-buffer.md` - Nueva skill para automatización
-
-**Archivos modificados:**
-- `Cerebro/Skills/Skills.md` - Indexada la nueva skill
-
-**Descripción:**
-- Rebecca ahora puede generar contenido para Twitter, Facebook, Instagram y LinkedIn
-- Contenido se envía a Buffer API para programación automática
-- Flujo: Sam solicita → Rebecca genera → Sam aprueba → Buffer programa
-
-**Plataformas soportadas:**
-- Twitter/X
-- Facebook Pages
-- Instagram (Business)
-- LinkedIn Pages
-
-**Tecnología:**
-- Buffer API para programación
-- MiniMax-M2.7 para generación de contenido
-- Telegram como interfaz de aprobación
 
 ---
 
@@ -381,9 +423,7 @@ Sistema completo para automatizar contenido de Instagram + TikTok con música AI
 **Cambios principales:**
 - 10 agentes con nombres nuevos
 - Modelo default: MiniMax-M2.7 (Groq/DeepSeek removidos)
-- Rebecca v3.0 con foco en MONEY
 - Melissa como colaboradora de Pixel
-- Leo como agente de trading
 - Regla 6: Notificación obligatoria de tareas
 
 **Archivos actualizados:**
@@ -439,4 +479,26 @@ Sistema completo para automatizar contenido de Instagram + TikTok con música AI
 
 ---
 
-_Last updated: 2026-04-19 12:45 UTC-5_
+## 2026-04-22
+
+### docs(brain-vault): Limpieza de archivos obsoletos
+
+**Archivos ELIMINADOS (duplicados o claramente obsoletos):**
+- `Cerebro/Config/openclaw_MASTER_*.json` (17 archivos) — Backups temporales de configuración openclaw
+- `Cerebro/Logs/CHANGELOG.md` — Duplicado de `Cerebro/CHANGELOG.md`
+- `Cerebro/Logs/CHANGELOG_ARCHIVE_2026_Q1.md` — Histórico antiguo, info cubierta en CHANGELOG principal
+- `Cerebro/Logs/CHANGELOG_ARCHIVE_2026_04_06.md` — Histórico antiguo duplicado
+- `Cerebro/Logs/gcp_usage_log.md` — Pricing antiguo de GCP (ya no se usa imagen-3.0)
+- `Cerebro/Docs/n8n_guide.md` — Duplicado de `Cerebro/Docs/Guias/n8n_guide.md`
+- `Cerebro/Docs/PENDING_uptime_monitoring.md` — Configuración completada, sin valor actual
+- `Cerebro/Docs/PENDING_whatsapp_bot.md` — Solo planning, nunca implementado
+- `Cerebro/PARRILLA_REDES_SOCIALES.md` — Parrilla antigua de contenido (reemplazada por procesos actuales de Rebecca)
+
+**Archivos MANTENIDOS (Sam los leerá después):**
+- `Cerebro/Docs/design/RUNPOD_*.md` — Documentación RunPod para lectura posterior
+- `Cerebro/Docs/SHOPIFY_INTEGRATION.md` — Integración Shopify para lectura posterior
+- `Cerebro/Archive/` — Carpeta con archivos archive (sin cambios)
+
+---
+
+_Last updated: 2026-04-22 12:00 UTC-5_

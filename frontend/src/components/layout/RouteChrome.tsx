@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { CookieConsent } from '@/components/ui/CookieConsent';
+import { CookieConsentModal } from '@/components/ui/CookieConsentModal';
 import { MobileBottomNav } from '@/components/ui/MobileBottomNav';
 
 export function RouteChrome() {
@@ -13,7 +13,11 @@ export function RouteChrome() {
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/embed/') ||
     pathname.startsWith('/sitio/') ||
-    pathname.startsWith('/marca/')
+    pathname.startsWith('/marca/') ||
+    pathname.startsWith('/trial-checkout') ||
+    pathname.startsWith('/onboarding-post-pago') ||
+    pathname.startsWith('/pago-exitoso') ||
+    pathname.startsWith('/checkout')
   ) {
     return null;
   }
@@ -21,7 +25,7 @@ export function RouteChrome() {
   return (
     <>
       <MobileBottomNav pathname={pathname} />
-      <CookieConsent pathname={pathname} />
+      <CookieConsentModal />
     </>
   );
 }

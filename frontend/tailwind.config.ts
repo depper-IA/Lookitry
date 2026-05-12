@@ -71,7 +71,7 @@ const config: Config = {
         text: {
           primary: '#F0F0F0',
           secondary: '#888888',
-          muted: '#555555',
+          muted: '#666666',
           accent: '#FF5C3A',
           positive: '#00E5A0',
           negative: '#FF3A5C',

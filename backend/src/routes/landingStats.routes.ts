@@ -1,24 +1,48 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase';
+import { redis } from '../config/redis';
+
+const CACHE_KEY = 'landing_stats';
+const CACHE_TTL = 15 * 60; // 15 minutes
 
 const router = Router();
 
 router.get('/', async (_req, res) => {
   try {
-    // Count active brands (subscription_status = 'active' or 'trial')
+    // Try cache first (graceful Redis fallback — don't let Redis errors kill the endpoint)
+    let cached: string | null = null;
+    if (redis) {
+      try {
+        cached = await redis.get(CACHE_KEY);
+      } catch (redisError) {
+        console.warn('[LandingStats] Redis get failed, proceeding without cache:', redisError instanceof Error ? redisError.message : redisError);
+      }
+    }
+    if (cached) {
+      return res.status(200).json(JSON.parse(cached));
+    }
+
+    // Count brands with ACTIVE subscription status only
     const { count: brandsCount, error: brandsError } = await supabaseAdmin
       .from('brands')
       .select('id', { count: 'exact', head: true })
-      .in('subscription_status', ['active', 'trial']);
+      .in('subscription_status', ['active', 'expiring_soon', 'trial']);
 
-    if (brandsError) throw brandsError;
+    if (brandsError) {
+      console.error('[LandingStats] Brands Error:', brandsError);
+      throw brandsError;
+    }
 
-    // Count total generations (all statuses)
+    // Count successful generations only
     const { count: generationsCount, error: generationsError } = await supabaseAdmin
       .from('generations')
-      .select('id', { count: 'exact', head: true });
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'SUCCESS');
 
-    if (generationsError) throw generationsError;
+    if (generationsError) {
+      console.error('[LandingStats] Generations Error:', generationsError);
+      throw generationsError;
+    }
 
     // Calculate average rating from approved brand_reviews
     const { data: reviewsData, error: reviewsError } = await supabaseAdmin
@@ -26,24 +50,46 @@ router.get('/', async (_req, res) => {
       .select('rating')
       .eq('status', 'approved');
 
-    if (reviewsError) throw reviewsError;
+    if (reviewsError) {
+      console.error('[LandingStats] Reviews Error:', reviewsError);
+      throw reviewsError;
+    }
 
-    const avgRating = reviewsData && reviewsData.length > 0
-      ? reviewsData.reduce((sum, r) => sum + r.rating, 0) / reviewsData.length
-      : 0;
+    let avgRating = 0;
+    let reviewsCount = 0;
+    if (reviewsData && reviewsData.length > 0) {
+      const sum = reviewsData.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
+      avgRating = sum / reviewsData.length;
+      reviewsCount = reviewsData.length;
+    }
 
     // Round to 1 decimal
     const satisfaction = Math.round(avgRating * 10) / 10;
 
-    return res.status(200).json({
-      active_brands: brandsCount ?? 0,
+    const result = {
+      total_brands: brandsCount ?? 0,
       total_generations: generationsCount ?? 0,
-      satisfaction_rating: satisfaction,
-      reviews_count: reviewsData?.length ?? 0,
-    });
+      satisfaction_rating: satisfaction || null, // null if no reviews (no fake fallback)
+      reviews_count: reviewsCount,
+    };
+
+    // Cache result (graceful Redis fallback)
+    if (redis) {
+      try {
+        await redis.setex(CACHE_KEY, CACHE_TTL, JSON.stringify(result));
+      } catch (redisError) {
+        console.warn('[LandingStats] Redis setex failed, stats served without cache:', redisError instanceof Error ? redisError.message : redisError);
+      }
+    }
+
+    return res.status(200).json(result);
   } catch (error: any) {
-    console.error('Error fetching landing stats:', error);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener las estadísticas.' });
+    console.error('CRITICAL: Error fetching landing stats:', error);
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Error al obtener las estadísticas.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

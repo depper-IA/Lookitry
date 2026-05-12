@@ -20,17 +20,13 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
-    ],
-    shortcut: ['/favicon.ico'],
-    apple: [{ url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' }],
-  },
   title: {
     default: 'Lookitry — Probador virtual con IA para tu tienda online',
     template: '%s | Lookitry',
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
   description:
     'Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica. Intégralo en tu tienda en 10 minutos. Sin apps, sin desarrollo.',
@@ -63,7 +59,13 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
-    googleBot: { index: true, follow: true },
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
   },
   openGraph: {
     type: 'website',
@@ -92,15 +94,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: BASE_URL,
-    languages: {
-      'es': BASE_URL,
-      'es-CO': BASE_URL,
-      'es-MX': BASE_URL,
-      'es-AR': BASE_URL,
-      'es-CL': BASE_URL,
-      'es-PE': BASE_URL,
-      'es-VE': BASE_URL,
-    },
   },
 };
 
@@ -108,6 +101,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Analytics } from '@/components/analytics/Analytics';
 import { RouteChrome } from '@/components/layout/RouteChrome';
 import { Toaster } from 'sonner';
+import { ExitIntentProvider } from '@/components/landing/ExitIntentProvider';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
@@ -115,32 +109,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="es"
-      className={`${inter.variable} ${outfit.variable} scroll-smooth antialiased`}
+      className={`dark ${inter.variable} ${outfit.variable} scroll-smooth antialiased`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
-      style={
-        {
-          '--font-jakarta': '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
-          '--font-dm-sans': '"Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
-          '--font-tech': '"Consolas", "SFMono-Regular", "Courier New", monospace',
-          '--font-playfair': '"Georgia", "Times New Roman", serif',
-        } as React.CSSProperties
-      }
+style={
+          {
+            '--font-jakarta': 'var(--font-outfit), "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+            '--font-dm-sans': 'var(--font-inter), "Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+            '--font-tech': '"Consolas", "SFMono-Regular", "Courier New", monospace',
+            '--font-playfair': '"Georgia", "Times New Roman", serif',
+          } as React.CSSProperties
+        }
     >
       <head>
         {/* fb:app_id requerido por Facebook/WhatsApp scraper */}
         <meta property="fb:app_id" content="966242223397117" />
         <meta name="google-site-verification" content="F-LW3EGCNrjEhNaAT56Qrioyo4-UD2CRWYyqgS-sExE" />
+        {/* Bing verification via BingSiteAuth.xml */}
         {/* OG fallback explícito para scrapers que no ejecutan JS */}
         <meta property="og:site_name" content="Lookitry" />
         <meta property="og:locale" content="es_CO" />
         <meta name="twitter:site" content="@lookitry" />
+        {/* DNS Prefetch y Preconnect para的性能优化 */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://api.lookitry.com" />
+        <link rel="dns-prefetch" href="https://vkdooutklowctuudjnkl.supabase.co" />
         
-        {/* Script de tema bloqueante: aplica dark/light ANTES del primer paint para evitar flash */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark');}else if(t==='light'){document.documentElement.classList.remove('dark');}else if(window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){}})();`,
-          }}
-        />
+        {/* Script de tema: aplica user preference (light) DESPUES del primer paint — dark ya viene por defecto en html class */}
+        {/* dark es el UNICO default — light solo si el usuario lo elige explicitamente */}
+        <Script id="theme-init" strategy="afterInteractive">
+          {`(function(){try{var t=localStorage.getItem('theme');if(t==='light'){document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');}else{document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');}}catch(e){document.documentElement.classList.add('dark');}})();`}
+        </Script>
       </head>
 
       <body className="font-sans" suppressHydrationWarning>
@@ -155,36 +155,65 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             ></iframe>
           </noscript>
         )}
-        {/* Google Tag Manager (script) */}
+        {/* Google Tag Manager (script) — afterInteractive para no bloquear LCP mobile */}
         {GTM_ID && (
           <Script
             id="gtm-script"
             strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID}');`,
-            }}
+            src={`https://www.googletagmanager.com/gtag.js?id=${GTM_ID}`}
           />
         )}
-        {/* Google Identity Services — afterInteractive funciona correctamente en App Router */}
-        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
+
+        {/* Meta Pixel Code */}
+        <Script id="meta-pixel" strategy="afterInteractive">
+          {`
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', '1496054805555549');
+            fbq('track', 'PageView');
+          `}
+        </Script>
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            height="1"
+            width="1"
+            style={{ display: 'none' }}
+            src="https://www.facebook.com/tr?id=1496054805555549&ev=PageView&noscript=1"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </noscript>
+        {/* End Meta Pixel Code */}
         <ThemeProvider>
           <Suspense fallback={null}>
-            <Analytics />
+            <ExitIntentProvider>
+              <Suspense fallback={null}>
+                <Analytics />
+              </Suspense>
+              {children}
+              <Suspense fallback={null}>
+                <RouteChrome />
+              </Suspense>
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  style: {
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)',
+                  },
+                }}
+              />
+            </ExitIntentProvider>
           </Suspense>
-          {children}
-          <Suspense fallback={null}>
-            <RouteChrome />
-          </Suspense>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-primary)',
-              },
-            }}
-          />
         </ThemeProvider>
       </body>
     </html>

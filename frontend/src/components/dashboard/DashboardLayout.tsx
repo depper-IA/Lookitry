@@ -97,7 +97,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
       <div className={`flex h-[80px] flex-shrink-0 items-center bg-[var(--bg-sidebar)] px-6 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
         <Link href="/dashboard" className="group flex items-center gap-3">
           <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-lg transition-all duration-500 group-hover:border-[#FF5C3A]/50">
-            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain transition-transform duration-500 group-hover:rotate-12" priority />
+                <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain transition-transform duration-500 group-hover:rotate-12" style={{ width: 'auto', height: 'auto' }} priority />
           </div>
           {!isCollapsed && (
             <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="block shrink-0 text-lg leading-none lg:hidden xl:block">
@@ -131,22 +131,31 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         {visibleNavigation.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (
-            <Link
+            <div
               key={item.name}
-              href={item.href}
-              onClick={() => setSidebarOpen(false)}
-              title={isCollapsed ? item.name : ''}
-              className={`group flex items-center rounded-2xl py-3.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
-                isCollapsed ? 'justify-center' : 'gap-3 px-5'
-              } ${isActive ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
+              className="group/nav relative"
             >
-              <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-600 group-hover:text-[#FF5C3A]'}`} />
-              {!isCollapsed && (
-                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="block leading-none lg:hidden xl:block">
-                  {item.name}
-                </motion.span>
+              {isActive && (
+                <div
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF5C3A] rounded-r-full"
+                />
               )}
-            </Link>
+              <Link
+                href={item.href}
+                onClick={() => setSidebarOpen(false)}
+                title={isCollapsed ? item.name : ''}
+                className={`flex items-center rounded-2xl py-3.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                  isCollapsed ? 'justify-center' : 'gap-3 px-5'
+                } ${isActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
+              >
+                <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover/nav:scale-110 ${isActive ? 'text-white' : 'text-gray-400 group-hover/nav:text-[#FF5C3A]'}`} />
+                {!isCollapsed && (
+                  <span className="block leading-none lg:hidden xl:block">
+                    {item.name}
+                  </span>
+                )}
+              </Link>
+            </div>
           );
         })}
       </nav>
@@ -220,7 +229,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
           <div className="flex h-[80px] flex-shrink-0 items-center justify-between px-6 bg-[#0a0a0a]">
             <Link href="/dashboard" className="group flex items-center gap-3">
               <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-lg transition-all duration-500 group-hover:border-[#FF5C3A]/50">
-                <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain transition-transform duration-500 group-hover:rotate-12" priority />
+            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain transition-transform duration-500 group-hover:rotate-12" style={{ width: 'auto', height: 'auto' }} priority />
               </div>
               <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="block shrink-0 text-lg leading-none">
                 <LookitryLogoText className="text-white" />
@@ -240,17 +249,26 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
             {visibleNavigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
               return (
-                <Link
+                <div
                   key={item.name}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`group flex items-center gap-3 rounded-2xl px-5 py-3.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
-                    isActive ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                  }`}
+                  className="group/nav-mobile relative"
                 >
-                  <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-600 group-hover:text-[#FF5C3A]'}`} />
-                  <span className="block leading-none">{item.name}</span>
-                </Link>
+                  {isActive && (
+                    <div
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF5C3A] rounded-r-full"
+                    />
+                  )}
+                  <Link
+                    href={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center gap-3 rounded-2xl px-5 py-3.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                      isActive ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover/nav-mobile:scale-110 ${isActive ? 'text-white' : 'text-gray-400 group-hover/nav-mobile:text-[#FF5C3A]'}`} />
+                    <span className="block leading-none">{item.name}</span>
+                  </Link>
+                </div>
               );
             })}
           </nav>
@@ -296,9 +314,10 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         </div>
       </div>
 
-      <div className={`flex h-screen flex-col overflow-hidden transition-all duration-300 ${sidebarOpen ? 'blur-[2px]' : ''} ${isCollapsed ? 'lg:pl-[88px] xl:pl-[96px]' : 'lg:pl-[96px] xl:pl-[240px] 2xl:pl-[280px]'}`}>
+      <div className={`flex h-screen flex-col overflow-hidden transition-all duration-300 ${sidebarOpen ? 'opacity-50 pointer-events-none' : ''} ${isCollapsed ? 'lg:pl-[88px] xl:pl-[96px]' : 'lg:pl-[96px] xl:pl-[240px] 2xl:pl-[280px]'}`}>
         {showVerificationBanner && (
-          <div className="flex w-full flex-shrink-0 items-center justify-between gap-4 border-b px-6 py-3 animate-in fade-in slide-in-from-top duration-500" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <div className="fixed left-0 right-0 top-16 z-50 flex w-full flex-shrink-0 items-center justify-between gap-4 border-b px-4 py-3 animate-in fade-in slide-in-from-top duration-500 md:static md:top-auto md:z-auto md:border-b md:px-6 lg:static lg:z-auto"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
             <div className="min-w-0 flex items-center gap-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FF5C3A]/10">
                 <svg className="h-4 w-4 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -355,7 +374,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
             </button>
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 dark:bg-black/5">
               <Image src="/Lookitry-logo-dark.svg" alt="L" width={18} height={18} className="object-contain dark:hidden" priority />
-              <Image src="/logo.svg" alt="L" width={18} height={18} className="object-contain hidden dark:block" priority />
+              <Image src="/logo.svg" alt="L" width={18} height={18} className="object-contain hidden dark:block" style={{ width: 'auto', height: 'auto' }} priority />
             </div>
           </div>
 
@@ -372,7 +391,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
           </div>
         </header>
 
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 pt-16 sm:p-4 sm:pt-20 md:p-6 md:pt-6 md:pb-6 xl:p-8 xl:pt-10 pb-24 sm:pb-24 md:pb-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 pt-16 sm:p-4 sm:pt-20 md:p-6 md:pt-6 md:pb-24 xl:p-8 xl:pt-10 pb-28 sm:pb-28 md:pb-24">
           {!isDashboardHome && <DashboardNotifications />}
           {!isDashboardHome && <TrialBanner />}
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">{children}</div>

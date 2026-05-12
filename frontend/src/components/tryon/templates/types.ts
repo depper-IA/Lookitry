@@ -43,13 +43,19 @@ export interface TryOnTemplateProps {
   generatedProducts: Map<string, string>;
 
   onReset: () => void;
+  onSelfieReset?: () => void;
   onSelfieUpload: (file: File, preview: string) => void;
   onProductSelect: (p: Product) => void;
+  onProductReset?: () => void;
   onProceedToUpload?: () => void;
   onBack?: () => void;
   onGenerate: () => void;
   onDismissError: () => void;
   onDismissNotice: () => void;
+
+  // Terms acceptance (legal disclaimer)
+  termsAccepted: boolean;
+  onTermsAccepted: () => void;
 }
 
 

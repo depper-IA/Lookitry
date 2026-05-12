@@ -293,10 +293,11 @@ export function margenPorCliente(
   return precioPlan - costoIA - costoFijoProrrateado;
 }
 
-/** Precio en USD usando TRM */
+/** Precio en USD usando TRM con margen mínimo de 10,000 COP */
 export function precioEnUSD(precioCop: number, trm: number): number {
   const safeTrm = trm > 0 ? trm : 3900;
-  return Math.ceil(precioCop / safeTrm);
+  const MINIMUM_MARGIN_COP = 10000;
+  return Math.ceil((precioCop + MINIMUM_MARGIN_COP) / safeTrm);
 }
 
 /**

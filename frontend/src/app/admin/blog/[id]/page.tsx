@@ -11,6 +11,7 @@ import {
   BlogCategory,
 } from '@/services/blog.service';
 import { motion } from 'framer-motion';
+import SanitizedHtml from '@/components/blog/SanitizedHtml';
 
 const panelStyle = { backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' };
 const fieldStyle = { backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' };
@@ -260,10 +261,10 @@ export default function BlogEditorPage() {
                 <h1 className="text-4xl font-extrabold mb-8" style={{ color: 'var(--text-primary)' }}>
                   {post?.title}
                 </h1>
-                <div
+                <SanitizedHtml
+                  html={post?.content || '<p>Sin contenido para previsualizar</p>'}
                   className="blog-content"
-                  style={{ color: 'var(--text-primary)' }}
-                  dangerouslySetInnerHTML={{ __html: post?.content || '<p>Sin contenido para previsualizar</p>' }}
+                  style={{ color: 'var(--text-primary)' } as React.CSSProperties}
                 />
               </article>
             </div>
