@@ -165,8 +165,9 @@ class VertexService {
     } catch (error: any) {
       console.error(`[VertexService] Error generating content with @google/genai, falling back to REST:`, error?.message || error);
 
-      // Fallback to Gemini REST API using GOOGLE_API_KEY if Vertex fails
-      const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+      // Fallback to Gemini REST API — GOOGLE_API_KEY has AIza format (valid for REST);
+      // GEMINI_API_KEY uses AQ. format (OAuth token, invalid for this endpoint)
+      const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
       if (apiKey) {
         try {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
