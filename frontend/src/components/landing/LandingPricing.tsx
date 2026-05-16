@@ -7,6 +7,7 @@ import { Check, Sparkles, ShieldCheck } from 'lucide-react';
 import { PricingConfig } from '@/lib/pricing';
 import { formatCurrency, formatPrice as formatDynamicPrice } from '@/utils/currency';
 import { useActivePromotions } from '@/hooks/useActivePromotions';
+import { LANDING_COPY } from './LandingCopy';
 
 interface LandingPricingProps {
   pricing: PricingConfig;
@@ -244,12 +245,12 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
           transition={{ duration: 0.6, ease: EASING_OUT }}
           className="text-center mb-12 sm:mb-16 md:mb-20 lg:mb-24"
         >
-          <SectionTag text="Planes de Crecimiento" light />
+          <SectionTag text={LANDING_COPY.trust.badge} />
           <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6">
-            Precios claros, <span className="text-accent">sin sorpresas.</span>
+            {LANDING_COPY.pricing.title}, <span className="text-accent">sin sorpresas.</span>
           </h2>
           <p className="font-dm-sans text-base sm:text-lg text-text-muted dark:text-white/70 max-w-xl mx-auto">
-            Activa tu plan en minutos con pasarelas 100% seguras y soporte en español.
+            {LANDING_COPY.trust.guarantee}
           </p>
         </motion.div>
 
@@ -273,9 +274,9 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
             period="mes"
             features={[
               '5 productos activos',
-              `${pricing.basic.generaciones_mensuales} IA generations / mes`,
-              'Widget embebible',
-              'Soporte vía correo',
+              `${pricing.basic.generaciones_mensuales} pruebas virtuales / mes`,
+              'Link para Instagram',
+              'Link para tu web',
             ]}
             ctaText="Contratar Básico"
             ctaHref={`/checkout?plan=BASIC&currency=${currency}`}
@@ -296,9 +297,10 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
             isPro
             features={[
               '15 productos activos',
-              `${pricing.pro.generaciones_mensuales} IA generations / mes`,
-              'Multi-templates avanzados',
-              'Prioridad y Config Asistida',
+              `${pricing.pro.generaciones_mensuales} pruebas virtuales / mes`,
+              'Tienda Virtual Premium',
+              'Plugin WooCommerce',
+              'Soporte prioritario',
             ]}
             ctaText="Activar Plan Pro"
             ctaHref={`/checkout?plan=PRO&currency=${currency}`}

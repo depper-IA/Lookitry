@@ -19,7 +19,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
     title: 'Ecosistema',
     links: [
       { name: 'Probador Virtual', href: '/probador-virtual' },
-      { name: 'Mini-Landing Pro', href: '/mini-landing' },
+      { name: 'Tienda Virtual', href: '/mini-landing' },
       { name: 'Plugin WooCommerce', href: '/plugin-woocommerce' },
       { name: 'API Developer', href: '/api-developer' },
       { name: 'Planes', href: '/planes' },

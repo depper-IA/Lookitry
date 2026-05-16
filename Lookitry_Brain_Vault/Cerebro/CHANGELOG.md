@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-05-15
+
+### refactor(ai): Removido código muerto de Imagen 3
+
+**Resumen:** Eliminada función `generateTryOn()` y código relacionado con Imagen 3 ya que nunca se usaba activamente. El pipeline actual usa Nano Banana (Gemini 2.5 Flash) para generación.
+
+**Cambios:**
+1. Removida función `generateTryOn()` de `vertex-ai.service.ts` (~90 líneas de código muerto)
+2. Removida del export `vertexAIService` la referencia a `generateTryOn`
+3. Actualizado docstring del archivo para reflejar el motor real (Nano Banana, no Imagen 3)
+4. Actualizado `Motor_IA_TryOn.md` con modelos activos y costos reales
+
+**Costo por generación actualizado:** ~$0.02-0.07 USD (antes $0.22-0.37 con Imagen 3)
+
+---
+
 ## 2026-05-02
 
 ### refactor(ai): Reemplazo de n8n por Vertex AI directo para el Descriptor IA
