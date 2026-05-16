@@ -550,9 +550,7 @@ export class StatsAdminService {
 
     const COST_PER_GEN_OPENROUTER = 0.039;
 
-    const COST_PER_GEN_REPLICATE = 0.05;
-
-    const estimatedCostPerGen = (COST_PER_GEN_OPENROUTER + COST_PER_GEN_REPLICATE) / 2;
+    const estimatedCostPerGen = COST_PER_GEN_OPENROUTER;
 
 
 
