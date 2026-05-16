@@ -1,681 +1,121 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, RotateCcw, ImageIcon } from 'lucide-react';
-import { UpgradeModal } from '@/components/ui/UpgradeModal';
-import { PostDemoModal } from '@/components/landing/PostDemoModal';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShieldCheck, Clock, Sparkles } from 'lucide-react';
 import { LANDING_COPY } from './LandingCopy';
 
-const staggerContainer = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      delay: i * 0.1,
-      duration: 0.7,
-      ease: [0.22, 1, 0.36, 1] as const,
-    },
-  }),
-};
-
-const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
-  <div
-    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[9px] font-medium uppercase tracking-[0.15em] shadow-sm transition-all sm:mb-8 sm:px-4 sm:py-2 sm:text-[10px] sm:tracking-[0.2em] ${light
-      ? 'bg-black/5 border-black/10 text-black/40 dark:bg-white/5 dark:border-white/10 dark:text-white/60'
-      : 'bg-accent/5 border-accent/20 text-accent'
-      } mb-6`}
-  >
-    <span
-      className={`h-1.5 w-1.5 rounded-full animate-pulse ${light ? 'bg-black/20 dark:bg-white/40' : 'bg-accent'}`}
-      aria-hidden="true"
-    />
-    {text}
-  </div>
-);
-
-interface Product {
-  id: string;
-  name: string;
-  short_description: string | null;
-  image_url: string;
-  category: string;
-  price: number | null;
-}
-
-// Memoized product item to prevent re-renders on unrelated state changes
-const ProductItem = React.memo(({ prod, selectedProduct, onSelect }: {
-  prod: Product;
-  selectedProduct: Product | null;
-  onSelect: (p: Product) => void;
-}) => {
-  const isSelected = selectedProduct?.id === prod.id;
-  return (
-    <div
-      onClick={() => onSelect(prod)}
-      className={`group/item flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all duration-200 sm:gap-3 sm:rounded-xl sm:p-3 ${isSelected
-        ? 'border-accent bg-accent/10 shadow-lg shadow-accent/5'
-        : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-        }`}
-      role="button"
-      tabIndex={0}
-      aria-label={`Seleccionar ${prod.name}`}
-    >
-      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-border-active sm:h-14 sm:w-14">
-        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className={`truncate text-[9px] font-bold sm:text-[11px] ${isSelected ? 'text-white' : 'text-white/60'}`}>
-          {prod.name}
-        </span>
-        <span className="text-[7px] capitalize text-white/30 sm:text-[8px] truncate">{prod.category}</span>
-        {prod.price && (
-          <span className="text-[7px] font-bold text-accent sm:text-[9px]">
-            ${prod.price.toLocaleString('es-CO')}
-          </span>
-        )}
-      </div>
-      {isSelected && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-accent sm:h-5 sm:w-5"
-          aria-hidden="true"
-        >
-          <Check size={8} className="text-white sm:text-xs" />
-        </motion.div>
-      )}
-    </div>
-  );
-});
-ProductItem.displayName = 'ProductItem';
-
-interface HomeTryonConfig {
-  brand: { id: string; name: string; slug: string };
-  products: Product[];
-}
-
-type TryOnStep = 'select' | 'selfie' | 'loading' | 'result';
+const EASING = [0.22, 1, 0.36, 1] as const;
 
 export default function LandingHero() {
-  const [config, setConfig] = useState<HomeTryonConfig | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [step, setStep] = useState<TryOnStep>('select');
-  const [selfie, setSelfie] = useState<string | null>(null);
-  const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
-  const [resultImage, setResultImage] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [showPostDemoModal, setShowPostDemoModal] = useState(false);
-  const [hasUsedTrial, setHasUsedTrial] = useState<boolean | undefined>(undefined);
+  const [wordIndex, setWordIndex] = useState(0);
+  const words = LANDING_COPY.hero.rotating_words;
 
-  // Config loading deferred to let main thread breathe after initial render
   useEffect(() => {
-    const loadConfig = async () => {
-      try {
-        const res = await fetch('/api/home/tryon/config');
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const data = await res.json();
-        if (!data || !data.products) {
-          throw new Error('No se pudieron cargar los productos de prueba.');
-        }
-        setConfig(data);
-        if (data.products.length > 0) {
-          setSelectedProduct(data.products[0]);
-        }
-      } catch (err: any) {
-        console.warn('[HomeTryon] Error loading config:', err.message);
-        setError(err.message || 'Error al conectar con el servidor.');
-      }
-    };
-
-    // Schedule config loading after initial render completes
-    const timer1 = setTimeout(loadConfig, 0);
-
-    return () => {
-      clearTimeout(timer1);
-    };
-  }, []);
-
-  // Post-demo modal trigger: show 2s after result is ready
-  useEffect(() => {
-    if (step === 'result' && resultImage) {
-      const captured = localStorage.getItem('lead_captured');
-      if (!captured) {
-        const timer = setTimeout(() => setShowPostDemoModal(true), 2000);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [step, resultImage]);
-
-  // Handle lead captured callback
-  const handleLeadCaptured = useCallback(() => {
-    localStorage.setItem('lead_captured', 'true');
-    setShowPostDemoModal(false);
-  }, []);
-
-  // Fetch trial status only when needed (on user interaction)
-  const fetchTrialStatus = useCallback(async () => {
-    if (!selectedProduct) return false;
-    if (hasUsedTrial !== undefined) return hasUsedTrial;
-    try {
-      const res = await fetch(`/api/home/tryon/check?productId=${selectedProduct.id}`);
-      const data = await res.json();
-      setHasUsedTrial(data.hasTrialed);
-      return data.hasTrialed;
-    } catch (err) {
-      console.warn('[HomeTryon] Error checking trial:', err);
-      setHasUsedTrial(false);
-      return false;
-    }
-  }, [selectedProduct, hasUsedTrial]);
-
-  const handleProductSelect = useCallback((product: Product) => {
-    setSelectedProduct(product);
-  }, []);
-
-  const handleSelfieChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const base64 = ev.target?.result as string;
-      setSelfie(base64.split(',')[1]);
-      setSelfiePreview(base64);
-      setStep('selfie'); // Auto-avanzar al paso de previsualización
-    };
-    reader.readAsDataURL(file);
-  }, []);
-
-  const handleGenerate = useCallback(async () => {
-    if (!selfie || !selectedProduct) return;
-
-    setIsGenerating(true);
-    setError(null);
-    setStep('loading');
-
-    try {
-    const formData = new FormData();
-      formData.append('productId', selectedProduct.id);
-      if (selfie) {
-        // Convert data URL back to Blob for binary upload (no base64)
-        const base64Data = selfie.split(',')[1] || selfie;
-        const binaryData = Buffer.from(base64Data, 'base64');
-        const blob = new Blob([binaryData], { type: 'image/jpeg' });
-        formData.append('selfie', blob, 'selfie.jpg');
-      }
-
-      const res = await fetch('/api/home/tryon/generate', {
-        method: 'POST',
-        body: formData,
-        // No Content-Type header — browser sets it with boundary for FormData
-      });
-
-      const data = await res.json();
-
-      if (res.status === 429 || data.error === 'TRIAL_LIMIT_EXCEEDED') {
-        setShowUpgradeModal(true);
-        setStep('select');
-        setHasUsedTrial(true);
-        return;
-      }
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Error generando prueba');
-      }
-
-      setResultImage(data.resultImageUrl);
-      setStep('result');
-    } catch (err: any) {
-      console.warn('[HomeTryon] Generation error:', err.message);
-      setError(err.message || 'Error en el servicio');
-      setStep('selfie');
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [selfie, selectedProduct]);
-
-  const handleBack = useCallback(() => {
-    setStep('select');
-    // Keep selfie when going back to change product
-    setResultImage(null);
-    setError(null);
-  }, []);
-
-  // Separate handler for changing product (preserves selfie)
-  const handleChangeProduct = useCallback(() => {
-    setStep('select');
-    setResultImage(null);
-    setError(null);
-  }, []);
-
-  // Memoized product list to prevent recreating items on every render
-  const productItems = useMemo(() => config ? config.products.map((prod) => (
-    <ProductItem
-      key={prod.id}
-      prod={prod}
-      selectedProduct={selectedProduct}
-      onSelect={handleProductSelect}
-    />
-  )) : [], [config, selectedProduct, handleProductSelect]);
-
-  // Memoized CTA handler to avoid inline function recreation on each render
-  const handleCTA = useCallback(async () => {
-    // Priority 1: No selfie? → Go take selfie (even if trial exhausted)
-    if (!selfie) {
-      setStep('selfie');
-      return;
-    }
-    // Priority 2: Check trial status if not yet fetched
-    if (hasUsedTrial === undefined) {
-      const hasTrialed = await fetchTrialStatus();
-      if (hasTrialed) {
-        setShowUpgradeModal(true);
-        return;
-      }
-    } else if (hasUsedTrial) {
-      setShowUpgradeModal(true);
-      return;
-    }
-    // Priority 3: Has product + selfie? → Generate directly
-    if (selectedProduct) {
-      handleGenerate();
-    }
-  }, [selfie, hasUsedTrial, selectedProduct, fetchTrialStatus, handleGenerate]);
-
-  // Memoized CTA section to prevent recreation on every render and isolate paint
-  const ctaSection = useMemo(() => (
-    <div className="flex flex-col items-center gap-2" style={{ contain: 'layout style' }}>
-      <button
-        onClick={handleCTA}
-        disabled={!hasUsedTrial && !selectedProduct}
-        className="flex items-center justify-center gap-2 rounded-xl bg-accent py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
-      >
-        <Sparkles size={16} />
-        {selfie ? 'Generar Prueba' : 'Ver Probador IA'}
-      </button>
-      {!hasUsedTrial && (
-        <span className="flex items-center gap-1 rounded-full bg-text-muted/10 px-3 py-1 text-[9px] font-semibold text-text-primary">
-          <Sparkles size={10} />
-          1 generación gratis
-        </span>
-      )}
-    </div>
-  ), [handleCTA, selfie, hasUsedTrial, selectedProduct]);
-
-  // Memoized generate button content to avoid conditional renders inside button
-  const generateButtonContent = useMemo(() => (
-    isGenerating ? (
-      <>
-        <Loader2 size={16} className="animate-spin" />
-        Generando...
-      </>
-    ) : (
-      <>
-        <Sparkles size={16} />
-        Ver Probador IA
-      </>
-    )
-  ), [isGenerating]);
+    const interval = setInterval(() => {
+      setWordIndex((i) => (i + 1) % words.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [words.length]);
 
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen items-start overflow-hidden bg-white px-4 pt-20 pb-16 dark:bg-black sm:px-6 sm:pt-24 sm:pb-24 md:px-12 hero-gradient"
-      aria-label="Seccion principal"
+      className="relative flex min-h-screen items-end overflow-hidden bg-black pb-20 sm:pb-28"
+      aria-label="Sección principal"
     >
-      {/* Static gradient background replaces expensive animated blobs - same visual effect, zero GPU overhead */}
+      {/* ── Video Background ─────────────────────────────────────────── */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <iframe
+          title="Video de fondo decorativo"
+          src="https://www.youtube.com/embed/1ap0baidLVo?autoplay=1&mute=1&loop=1&playlist=1ap0baidLVo&controls=0&disablekb=1&playsinline=1&modestbranding=1&rel=0"
+          className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 border-0"
+          allow="autoplay; encrypted-media"
+          loading="lazy"
+        />
+        {/* Dark overlay — heavier on left, fades right (Shopify style) */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.2) 100%)',
+          }}
+        />
+        {/* Fallback gradient shown when iframe fails to load */}
+        <div
+          className="absolute inset-0 -z-10"
+          style={{
+            background: 'linear-gradient(135deg, #1a0e0a 0%, #080810 50%, #0a0808 100%)',
+          }}
+        />
+      </div>
 
-      <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        {/* LEFT: Text Content */}
+      {/* ── Content — bottom-left, Shopify style ────────────────────── */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 sm:px-10 md:px-16">
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={staggerContainer}
-          className="text-center lg:text-left"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: EASING }}
+          className="max-w-2xl"
         >
-          <motion.div custom={0} variants={fadeInUp}>
-            <SectionTag text="Revolucion Visual con IA" />
-          </motion.div>
-
-          <motion.h1
-            custom={1}
-            variants={fadeInUp}
-            className="mb-6 font-jakarta text-3xl font-black leading-[1.1] tracking-[-0.03em] sm:mb-8 sm:text-[44px] sm:tracking-[-0.04em] md:text-[56px] lg:text-[64px]"
+          {/* Headline */}
+          <h1
+            className="mb-5 font-jakarta font-black leading-[1.05] tracking-[-0.03em] text-white sm:mb-7"
+            style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
           >
-            <span className="block text-dark dark:text-white">Vende más ropa online</span>
-            <span className="block text-accent">con tu propio</span>
-            <span className="block text-dark dark:text-white">Espejo Digital.</span>
-          </motion.h1>
+            <span className="block">{LANDING_COPY.hero.title}</span>
+            {/* Cycling word */}
+            <span className="relative block h-[1.15em] overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={wordIndex}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -14 }}
+                  transition={{ duration: 0.45, ease: EASING }}
+                  className="absolute left-0 top-0 text-white"
+                >
+                  {words[wordIndex]}
+                </motion.span>
+              </AnimatePresence>
+            </span>
+          </h1>
 
-          <motion.p
-            custom={2}
-            variants={fadeInUp}
-            className="mx-auto mb-8 max-w-xl font-dm-sans text-base font-light leading-[1.6] text-text-muted dark:text-white/80 sm:mb-12 sm:text-lg lg:mx-0"
-          >
+          {/* Subtitle */}
+          <p className="mb-9 max-w-lg font-dm-sans text-base font-light leading-[1.65] text-white/65 sm:mb-11 sm:text-lg">
             {LANDING_COPY.hero.subtitle}
-          </motion.p>
+          </p>
 
-          <motion.div
-            custom={3}
-            variants={fadeInUp}
-            className="flex flex-wrap justify-center gap-3 sm:gap-5 lg:justify-start"
-          >
+          {/* CTAs */}
+          <div className="flex flex-wrap items-center gap-4">
             <Link
-              href="/trial-checkout"
-              className="group relative flex items-center gap-2 rounded-xl bg-accent px-6 py-4 text-sm font-bold text-white shadow-xl shadow-accent/20 transition-all hover:scale-[1.03] hover:-translate-y-0.5 hover:bg-accent-bright active:scale-[0.97] sm:gap-3 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base overflow-hidden duration-200"
+              href="/demo"
+              className="flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-black text-dark shadow-xl transition-all hover:scale-[1.03] hover:-translate-y-0.5 hover:bg-white/90 active:scale-[0.97] sm:text-base"
             >
-              <span className="relative z-10">{LANDING_COPY.hero.cta}</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-              <ArrowRight size={18} className="relative z-10 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+              {LANDING_COPY.hero.cta_primary}
             </Link>
-
             <Link
-              href="/casos-de-exito"
-              className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-6 py-4 text-sm font-bold text-dark transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:bg-black/10 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base duration-200"
+              href="/planes"
+              className="flex items-center gap-2 rounded-full border-2 border-white/50 px-8 py-[14px] text-sm font-bold text-white transition-all hover:border-white hover:bg-white/5 active:scale-[0.97] sm:text-base"
             >
-              {LANDING_COPY.hero.secondary_cta}
+              {LANDING_COPY.hero.cta_secondary}
             </Link>
-          </motion.div>
+          </div>
 
-          <motion.div
-            custom={4}
-            variants={fadeInUp}
-            className="mt-12 flex flex-wrap items-center justify-center gap-6 font-bold uppercase tracking-[0.2em] text-text-muted dark:text-white/80 sm:mt-16 sm:gap-10 sm:text-[10px] sm:tracking-[0.25em] lg:justify-start"
-          >
-            <div className="flex items-center gap-2 transition-colors duration-200 hover:text-accent sm:gap-2.5">
-              <ShieldCheck size={14} className="shrink-0 text-accent" aria-hidden="true" /> 100% Seguro
+          {/* Trust pills */}
+          <div className="mt-10 flex flex-wrap items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white/55 sm:gap-10">
+            <div className="flex items-center gap-2 hover:text-white/80 transition-colors">
+              <ShieldCheck size={13} className="shrink-0 text-accent" aria-hidden="true" /> 100% Seguro
             </div>
-            <div className="flex items-center gap-2 transition-colors duration-200 hover:text-accent sm:gap-2.5">
-              <Clock size={14} className="shrink-0 text-accent" aria-hidden="true" /> Activación 10min
+            <div className="flex items-center gap-2 hover:text-white/80 transition-colors">
+              <Clock size={13} className="shrink-0 text-accent" aria-hidden="true" /> Activación 10min
             </div>
-            <div className="flex items-center gap-2 transition-colors duration-200 hover:text-accent sm:gap-2.5">
-              <Sparkles size={14} className="shrink-0 text-accent" aria-hidden="true" /> IA Generativa
+            <div className="flex items-center gap-2 hover:text-white/80 transition-colors">
+              <Sparkles size={13} className="shrink-0 text-accent" aria-hidden="true" /> IA Generativa
             </div>
-          </motion.div>
-        </motion.div>
-
-        {/* RIGHT: PROBADOR FUNCIONAL - Matching Wideframe Style */}
-        {/* Notice - CTA to try */}
-
-        <motion.div
-          initial={{ opacity: 0, x: 50, scale: 0.95 }}
-          whileInView={{ opacity: 1, x: 0, scale: 1 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="flex w-full items-center justify-center lg:justify-end"
-        >
-          <div className="group/widget relative z-10 w-full max-w-[400px] overflow-hidden rounded-2xl border border-white/10 bg-dark-surface p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] transition-all duration-300 hover:shadow-[0_50px_120px_rgba(0,0,0,0.9)] sm:max-w-[500px] sm:rounded-[2rem] sm:p-4 lg:max-w-[620px]">
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="mb-3 flex items-center justify-center gap-2 rounded-full bg-text-muted/10 px-4 py-2 text-center transition-all duration-300 group-hover/widget:bg-accent/10 sm:mb-6 sm:gap-3"
-            >
-              <Sparkles size={15} className="text-accent transition-colors duration-300 group-hover/widget:text-accent" aria-hidden="true" />
-              <span className="text-[15px] font-bold uppercase tracking-wider text-accent transition-colors duration-300 group-hover/widget:text-accent">Pruébalo ahora mismo</span>
-            </motion.div>
-
-            {/* Browser Chrome */}
-            <div className="mb-4 flex items-center gap-2 sm:mb-6 sm:gap-3" aria-hidden="true">
-              <div className="flex gap-1 sm:gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-500 sm:h-2 sm:w-2"></span>
-                <span className="h-1.5 w-1.5 rounded-full bg-yellow-500 sm:h-2 sm:w-2"></span>
-                <span className="h-1.5 w-1.5 rounded-full bg-accent sm:h-2 sm:w-2"></span>
-              </div>
-              <div className="flex-1 truncate rounded-md border border-white/5 bg-dark-card px-2 py-1 text-center font-dm-sans text-[7px] uppercase tracking-widest text-text-muted sm:px-4 sm:text-[9px]">
-                lookitry.com/marca/tu-marca
-              </div>
-            </div>
-
-            {/* STEP: SELECT - Wideframe layout: left selfie, right products */}
-            {step === 'select' && config && (
-              <div className="flex flex-col gap-3 sm:gap-4">
-                {/* Left: Selfie Upload Area */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                  className="relative flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-dark-card p-4 text-center transition-all duration-300 hover:border-white/20 sm:p-6"
-                >
-                  <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-white/20 sm:top-3 sm:left-6 sm:text-[8px]">
-                    Tu Foto
-                  </div>
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-white/10 bg-white/5 overflow-hidden transition-all duration-300 hover:border-white/20 sm:h-16 sm:w-16">
-                    {selfiePreview ? (
-                      <img src={selfiePreview} alt="Preview" className="h-full w-full object-cover" loading="lazy" decoding="async" />
-                    ) : (
-                      <Camera size={24} strokeWidth={1} className="text-white/20" aria-hidden="true" />
-                    )}
-                  </div>
-
-                  <div className="mt-3 flex gap-2">
-                    <label className="cursor-pointer rounded-lg bg-accent/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-accent transition-all hover:bg-accent/30 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
-                      <Camera size={14} strokeWidth={2} aria-hidden="true" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        capture="user"
-                        onChange={handleSelfieChange}
-                        className="hidden"
-                      />
-                      Tomar foto
-                    </label>
-                    <label className="cursor-pointer rounded-lg bg-white/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white/70 transition-all hover:bg-white/20 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
-                      <ImageIcon size={14} strokeWidth={2} aria-hidden="true" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleSelfieChange}
-                        className="hidden"
-                      />
-                      Subir foto
-                    </label>
-                  </div>
-                  <p className="text-[8px] font-bold capitalize tracking-widest text-white/40 sm:text-[10px]">
-                    preferiblemente cuerpo completo
-                  </p>
-                </motion.div>
-
-                {/* Right: Product Grid */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.5 }}
-                  className="flex flex-col gap-2 sm:gap-3"
-                >
-                  <div className="px-0.5 text-[7px] font-bold uppercase tracking-[0.15em] text-white/30 sm:mb-1 sm:px-1 sm:text-[8px] sm:tracking-[0.2em]">
-                    Elige un Producto
-                  </div>
-                  {productItems}
-                </motion.div>
-
-                {/* CTA Button - using memoized section */}
-                {ctaSection}
-              </div>
-            )}
-
-            {/* STEP: SELFIE (with selected product) */}
-            {step === 'selfie' && selectedProduct && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="flex flex-col gap-3 sm:gap-4"
-              >
-                {/* Left: Selfie Preview */}
-                <div className="flex flex-col items-center rounded-xl border border-white/10 bg-dark-card p-4 text-center transition-all duration-300 hover:border-white/20 sm:p-6">
-                  <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-white/20 sm:top-3 sm:left-6 sm:text-[8px]">
-                    Tu Foto
-                  </div>
-                  {selfiePreview ? (
-                    <div className="relative mb-3 h-32 w-32 overflow-hidden rounded-xl transition-all duration-300 sm:h-40 sm:w-40">
-                      <img src={selfiePreview} alt="Tu selfie" className="h-full w-full object-cover" loading="lazy" decoding="async" />
-                      <button
-                        onClick={() => { setSelfie(null); setSelfiePreview(null); }}
-                        className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/30 hover:scale-110"
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="mb-3 flex h-32 w-32 items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/5 transition-all duration-300 sm:h-40 sm:w-40">
-                      <Camera size={32} className="text-white/20" />
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <label className="cursor-pointer rounded-lg bg-accent/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-accent transition-all hover:bg-accent/30 min-h-11 flex items-center justify-center gap-2">
-                      <Camera size={14} strokeWidth={2} aria-hidden="true" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        capture="user"
-                        onChange={handleSelfieChange}
-                        className="hidden"
-                      />
-                      {selfiePreview ? 'Tomar otra' : 'Tomar foto'}
-                    </label>
-                    <label className="cursor-pointer rounded-lg bg-white/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white/70 transition-all hover:bg-white/20 min-h-11 flex items-center justify-center gap-2">
-                      <ImageIcon size={14} strokeWidth={2} aria-hidden="true" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleSelfieChange}
-                        className="hidden"
-                      />
-                      {selfiePreview ? 'Cambiar' : 'Subir foto'}
-                    </label>
-                  </div>
-                </div>
-
-                {/* Right: Selected Product */}
-                <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-dark-card p-3 transition-all duration-300 hover:border-white/20">
-                  <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-border-active">
-                    <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" />
-                  </div>
-                  <div className="flex min-w-0 flex-1">
-                    <div>
-                      <p className="text-[11px] font-bold text-white truncate">{selectedProduct.name}</p>
-                      <p className="text-[9px] capitalize text-white/40 truncate">{selectedProduct.category}</p>
-                      {selectedProduct.short_description && (
-                        <p className="mt-1 text-[8px] text-white/30 line-clamp-2 hidden sm:block">{selectedProduct.short_description}</p>
-                      )}
-                      {selectedProduct.price && (
-                        <p className="mt-1 text-[10px] font-bold text-accent">${selectedProduct.price.toLocaleString('es-CO')}</p>
-                      )}
-                    </div>
-                  </div>
-                  <button onClick={handleChangeProduct} className="rounded-full p-1.5 text-white/40 transition-all duration-200 hover:bg-white/10 hover:text-white">
-                    <X size={14} />
-                  </button>
-                </div>
-
-                {/* Generate Button - using memoized content */}
-                <button
-                  onClick={handleGenerate}
-                  disabled={!selfie || isGenerating}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-accent py-3.5 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
-                >
-                  {generateButtonContent}
-                </button>
-
-                {error && (
-                  <p className="text-center text-[10px] text-red-400">{error}</p>
-                )}
-              </motion.div>
-            )}
-
-            {/* STEP: LOADING */}
-            {step === 'loading' && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/5 py-12"
-              >
-                <div className="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-accent/20 border-t-accent" />
-                <p className="text-[11px] font-bold uppercase tracking-widest text-white/60">
-                  Generando tu prueba...
-                </p>
-                <p className="mt-2 text-[9px] text-white/30">
-                  Puede tomar hasta 20 segundos
-                </p>
-              </motion.div>
-            )}
-
-            {/* STEP: RESULT */}
-            {step === 'result' && resultImage && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="flex flex-col gap-3 sm:gap-4"
-              >
-                {/* Solo imagen generada - sin selfie original */}
-                <div className="relative overflow-hidden rounded-xl border border-accent/30 shadow-lg shadow-accent/10 aspect-square transition-all duration-300 hover:shadow-accent/20">
-                  <img src={resultImage} alt="Resultado del probador" className="h-full w-full object-cover" loading="lazy" decoding="async" />
-                  <div className="absolute top-2 left-2 rounded-full bg-accent px-2 py-0.5 text-[6px] font-black uppercase tracking-tighter text-white shadow-xl sm:text-[8px]">
-                    IA
-                  </div>
-                  <button
-                    onClick={handleBack}
-                    className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm transition-all duration-200 hover:bg-black/60 hover:text-white"
-                    aria-label="Limpiar"
-                  >
-                    <RotateCcw size={12} />
-                  </button>
-                </div>
-
-                {/* Botones: Ver planes (gris) + Trial (naranja) */}
-                <div className="flex gap-2">
-                  <Link
-                    href="/planes"
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-white/60 transition-all duration-200 hover:bg-white/10 hover:text-white"
-                  >
-                    Ver planes
-                  </Link>
-                  <Link
-                    href="/trial-checkout"
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent py-2.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-xl shadow-accent/10 transition-all duration-200 hover:brightness-110"
-                  >
-                    <Sparkles size={12} />
-                    Obtén Trial
-                  </Link>
-                </div>
-              </motion.div>
-            )}
           </div>
         </motion.div>
       </div>
-
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-      />
-
-      <PostDemoModal
-        isOpen={showPostDemoModal}
-        onClose={() => setShowPostDemoModal(false)}
-        onLeadCaptured={handleLeadCaptured}
-      />
     </section>
   );
 }
