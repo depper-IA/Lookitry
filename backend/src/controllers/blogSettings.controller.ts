@@ -134,7 +134,7 @@ export const blogSettingsController = {
 
         openrouter_image_model: data?.openrouter_image_model || 'openai/dall-e-3',
 
-        image_generation_provider: data?.image_generation_provider || 'replicate',
+        image_generation_provider: data?.image_generation_provider || 'openrouter',
 
         image_generator_webhook: data?.image_generator_webhook || null,
 
@@ -260,7 +260,7 @@ export const blogSettingsController = {
 
           openrouter_image_model: data?.openrouter_image_model || 'openai/dall-e-3',
 
-          image_generation_provider: data?.image_generation_provider || 'replicate',
+          image_generation_provider: data?.image_generation_provider || 'openrouter',
 
           webhook_secret: undefined,
 
@@ -352,7 +352,7 @@ export const blogSettingsController = {
 
           openrouter_image_model: settings.openrouter_image_model || 'openai/dall-e-3',
 
-          image_provider: settings.image_generation_provider || 'replicate',
+          image_provider: settings.image_generation_provider || 'openrouter',
 
         });
 

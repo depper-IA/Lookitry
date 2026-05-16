@@ -28,7 +28,7 @@ import {
   getFeedbacks, getFeedbackStats, resolveFeedback, deleteFeedback, 
   getUnresolvedFeedbackCount,
   // System
-  getSystemStats, getOpenRouterCredits, getReplicateCredits,
+  getSystemStats, getOpenRouterCredits,
   // Woo Integration
   getWooBrandsSummary, getWooBrandProducts, setWooProductActive
 } from '../controllers/admin.controller';
@@ -180,7 +180,6 @@ router.delete('/feedback/:id', requirePermission('brands'), deleteFeedback);
 
 // Monitor de créditos e IA
 router.get('/openrouter-credits', requirePermission('settings'), getOpenRouterCredits);
-router.get('/replicate-credits', requirePermission('settings'), getReplicateCredits);
 
 // Estadísticas del sistema (RAM, Uptime)
 router.get('/system/stats', requirePermission('settings'), getSystemStats);
