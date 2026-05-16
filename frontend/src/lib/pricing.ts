@@ -44,7 +44,7 @@ export interface MetaConfig {
 export interface CostsConfig {
   costo_vps_cop: number;
   costo_dominio_cop_mensual: number;
-  costo_openrouter_por_gen_cop: number;
+  costo_ia_por_gen_cop: number;
   notas?: string;
 }
 
@@ -159,7 +159,7 @@ const DEFAULTS: PricingConfig = {
   costs: {
     costo_vps_cop: 37000,
     costo_dominio_cop_mensual: 5000,
-    costo_openrouter_por_gen_cop: 25,
+    costo_ia_por_gen_cop: 25,
   },
   descuentos_duracion: {
     meses_1: 0,

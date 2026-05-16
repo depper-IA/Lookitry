@@ -9,7 +9,6 @@ function isCreditsExhaustedErrorPayload(payload: any): boolean {
   const combined = `${message} ${details}`;
 
   return (
-    errorCode.includes('OPENROUTER') ||
     message === 'service_credits_exhausted' ||
     combined.includes('service_credits_exhausted') ||
     combined.includes('credits') ||

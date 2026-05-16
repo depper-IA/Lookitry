@@ -64,7 +64,7 @@ interface RevenueStats {
 interface CostsConfig {
   costo_vps_cop: number;
   costo_dominio_cop_mensual: number;
-  costo_openrouter_por_gen_cop: number;
+  costo_ia_por_gen_cop: number;
   notas?: string;
 }
 interface MetaConfig {
@@ -240,8 +240,8 @@ function TabConfig({
           />
           <Field
             label="Costo por generación IA (COP)" type="number" prefix="$"
-            value={costs.costo_openrouter_por_gen_cop}
-            onChange={v => onCostsChange({ ...costs, costo_openrouter_por_gen_cop: Number(v) })}
+            value={costs.costo_ia_por_gen_cop}
+            onChange={v => onCostsChange({ ...costs, costo_ia_por_gen_cop: Number(v) })}
             hint="Se multiplica por clientes × 400 gen/mes estimadas"
           />
           <Field
@@ -483,12 +483,12 @@ function TabROI({
 
   const costoVps    = costs?.costo_vps_cop ?? 37000;
   const costoDom    = costs?.costo_dominio_cop_mensual ?? 5000;
-  const costoGenCop = costs?.costo_openrouter_por_gen_cop ?? 25;
+  const costoGenCop = costs?.costo_ia_por_gen_cop ?? 25;
 
-  const genEstimadas    = clientesActivos * 400;
-  const costoOpenRouter = genEstimadas * costoGenCop;
+  const genEstimadas = clientesActivos * 400;
+  const costoIA      = genEstimadas * costoGenCop;
   const costosFijos     = costoVps + costoDom;
-  const costosOperativos = costosFijos + costoOpenRouter;
+  const costosOperativos = costosFijos + costoIA;
 
   const totalNecesario = costosOperativos + gastosPers;
   const gananciaReal   = ingresosMes - totalNecesario;
@@ -568,7 +568,7 @@ function TabROI({
         <CostRow label="Servidor VPS" valor={costoVps} tipo="Fijo" />
         <CostRow label="Dominio y SSL" valor={costoDom} tipo="Fijo" />
         <CostRow
-          label="API IA (OpenRouter)" valor={costoOpenRouter} tipo="Variable"
+          label="API IA (Vertex AI)" valor={costoIA} tipo="Variable"
           sub={`${clientesActivos} clientes × 400 usos × ${formatCurrency(costoGenCop)}/uso`}
         />
         <div className="flex justify-between text-sm font-medium py-2 mb-4" style={{ color: 'var(--text-secondary)' }}>
@@ -677,7 +677,7 @@ export default function RevenuePage() {
   const [tab, setTab]         = useState<'ingresos' | 'roi' | 'config'>('ingresos');
 
   // Estados de edición para TabConfig (separados para no romper cálculos mientras se edita)
-  const [costsEdit, setCostsEdit]     = useState<CostsConfig>({ costo_vps_cop: 37000, costo_dominio_cop_mensual: 5000, costo_openrouter_por_gen_cop: 25 });
+  const [costsEdit, setCostsEdit]     = useState<CostsConfig>({ costo_vps_cop: 37000, costo_dominio_cop_mensual: 5000, costo_ia_por_gen_cop: 25 });
   const [metaEdit, setMetaEdit]       = useState<MetaConfig>({ gastos_personales_cop: 1400000, meta_ingreso_cop: 2000000 });
   const [trmEdit, setTrmEdit]         = useState(3700);
   const [trmAutoEdit, setTrmAutoEdit] = useState(true);

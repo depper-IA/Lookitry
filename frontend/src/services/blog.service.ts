@@ -48,8 +48,7 @@ export interface BlogSettings {
   next_run: string;
   last_run: string | null;
   webhook_url: string;
-  openrouter_article_model?: string;
-  image_generation_provider?: 'vertex' | 'openrouter';
+  image_generation_provider?: 'vertex';
   updated_at: string;
   has_webhook_secret?: boolean;
   webhook_auth_mode?: 'none' | 'header' | 'basic' | 'bearer';
