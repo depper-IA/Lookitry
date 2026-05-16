@@ -19,7 +19,7 @@ interface Generation {
   product_id: string | null;
   product_name: string | null;
   status: GenerationStatus;
-  model_provider: 'openrouter' | 'replicate' | null;
+  model_provider: string | null;
   selfie_url: string | null;
   result_url: string | null;
   error_message: string | null;

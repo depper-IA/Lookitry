@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { EmbeddedPlaybook } from '@/components/admin/EmbeddedPlaybook';
 
 interface ProviderCredits {
-  provider: 'openrouter' | 'replicate';
+  provider: 'openrouter';
   status: 'ok' | 'partial' | 'not_configured';
   label: string | null;
   usage: number | null;
@@ -30,7 +30,6 @@ interface PaymentSettings {
 
 export default function AdminIACostsPage() {
   const [openRouterCredits, setOpenRouterCredits] = useState<ProviderCredits | null>(null);
-  const [replicateCredits, setReplicateCredits] = useState<ProviderCredits | null>(null);
   const [loadingCredits, setLoadingCredits] = useState(true);
   const [aiPromptMaster, setAiPromptMaster] = useState('');
   const [aiPromptNegative, setAiPromptNegative] = useState('');
@@ -41,12 +40,8 @@ export default function AdminIACostsPage() {
   const loadCredits = useCallback(async () => {
     setLoadingCredits(true);
     try {
-      const [orData, repData] = await Promise.all([
-        adminApi.get('/admin/openrouter-credits'),
-        adminApi.get('/admin/replicate-credits'),
-      ]);
+      const orData = await adminApi.get('/admin/openrouter-credits');
       if (!orData.error) setOpenRouterCredits(orData);
-      if (!repData.error) setReplicateCredits(repData);
     } catch { /* silencioso */ }
     finally { setLoadingCredits(false); }
   }, []);
@@ -80,9 +75,9 @@ export default function AdminIACostsPage() {
     finally { setSavingAI(false); }
   }
 
-  const totalBalance = (openRouterCredits?.balance || 0) + (replicateCredits?.balance || 0);
-  const totalUsage = (openRouterCredits?.usage || 0) + (replicateCredits?.usage || 0);
-  const hasAlert = openRouterCredits?.critical_balance_alert || openRouterCredits?.low_balance_alert || replicateCredits?.critical_balance_alert || replicateCredits?.low_balance_alert;
+  const totalBalance = openRouterCredits?.balance || 0;
+  const totalUsage = openRouterCredits?.usage || 0;
+  const hasAlert = openRouterCredits?.critical_balance_alert || openRouterCredits?.low_balance_alert;
 
   return (
     <motion.div
@@ -125,11 +120,11 @@ export default function AdminIACostsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {[openRouterCredits, replicateCredits].filter(Boolean).map((credits: any) => (
+        {[openRouterCredits].filter(Boolean).map((credits: any) => (
           <div key={credits.provider} className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--accent)' }}>{credits.provider === 'openrouter' ? 'OpenRouter' : 'Replicate'}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--accent)' }}>OpenRouter</p>
                 <h3 className="text-sm font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>Créditos y consumo</h3>
               </div>
               <button onClick={loadCredits} disabled={loadingCredits}

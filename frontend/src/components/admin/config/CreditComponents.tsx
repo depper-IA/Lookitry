@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 interface ProviderCredits {
-  provider: 'openrouter' | 'replicate';
+  provider: 'openrouter';
   status: 'ok' | 'partial' | 'not_configured';
   label: string | null;
   usage: number | null;
@@ -32,7 +32,7 @@ interface CreditProviderCardProps {
   provider: ProviderCredits | null;
   loading: boolean;
   onRefresh: () => void;
-  fallbackProvider: 'openrouter' | 'replicate';
+  fallbackProvider: 'openrouter';
 }
 
 export function CreditMetric({ label, value, sub, color }: CreditMetricProps) {
@@ -53,9 +53,8 @@ function IconExternalLink({ className }: { className?: string }) {
 }
 
 export function CreditProviderCard({ provider, loading, onRefresh, fallbackProvider }: CreditProviderCardProps) {
-  const providerKey = provider?.provider || fallbackProvider;
-  const providerName = providerKey === 'replicate' ? 'Replicate' : 'OpenRouter';
-  const providerAction = providerKey === 'replicate' ? 'Ir a billing de Replicate' : 'Ir a créditos de OpenRouter';
+  const providerName = 'OpenRouter';
+  const providerAction = 'Ir a créditos de OpenRouter';
   const balanceColor = provider?.critical_balance_alert
     ? '#ef4444'
     : provider?.low_balance_alert
@@ -159,7 +158,7 @@ export function CreditProviderCard({ provider, loading, onRefresh, fallbackProvi
         </div>
       ) : (
         <p style={{ color: 'var(--text-muted)' }} className="text-sm py-4 text-center">
-          {fallbackProvider === 'openrouter' ? 'OpenRouter' : 'Replicate'} no está configurado.
+          OpenRouter no está configurado.
         </p>
       )}
     </div>
