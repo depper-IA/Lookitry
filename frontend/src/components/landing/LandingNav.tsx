@@ -70,11 +70,13 @@ const DEFAULT_TRIAL_PRICE_COP = 20000;
 const DEFAULT_BASIC_PRICE_COP = 180000;
 
 interface LandingNavProps {
+  transparent?: boolean;
   currency?: 'COP' | 'USD';
   onCurrencyChange?: (c: 'COP' | 'USD') => void;
 }
 
 export default function LandingNav({
+  transparent,
   currency: externalCurrency,
   onCurrencyChange: externalOnCurrencyChange
 }: LandingNavProps) {
@@ -84,6 +86,7 @@ export default function LandingNav({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [navVisible, setNavVisible] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const megaMenuRef = useRef<HTMLDivElement>(null);
   const { session } = usePublicSession();
@@ -109,6 +112,13 @@ export default function LandingNav({
     if (nav) observer.observe(nav);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!transparent) return;
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [transparent]);
 
   const fetchTrialDataIfNeeded = () => {
     if (trialDataFetched) return;
@@ -218,12 +228,14 @@ export default function LandingNav({
     { title: 'Contacto', href: '/contacto' }
   ];
 
-  const navBg = 'bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-black/5 dark:border-white/5';
+  const navBg = transparent && !scrolled
+    ? 'bg-transparent border-b border-transparent'
+    : 'bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-black/5 dark:border-white/5';
 
   return (
     <>
       <nav
-        className={`sticky top-0 left-0 right-0 z-[70] w-full px-4 py-4 sm:px-6 sm:py-5 md:px-12 ${navBg}`}
+        className={`sticky top-0 left-0 right-0 z-[70] w-full px-4 py-4 sm:px-6 sm:py-5 md:px-12 transition-all duration-300 ${navBg} ${transparent && !scrolled ? 'text-white [&_.nav-logo]:text-white' : ''}`}
         role="navigation"
         aria-label="Navegacion principal"
         style={{
