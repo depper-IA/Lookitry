@@ -506,3 +506,25 @@ Ver: `Cerebro/Skills/code-sync-checker.md`
 ### Cookie Security
 - **COOKIE_DOMAIN**: Configurado en producción para cookies HTTP-only
 - **Flag**: `COOKIE_DOMAIN` en `.env` del backend
+
+---
+
+## 15. Gestión Segura de Dependencias (MANDATORIO)
+
+**ALERTA DE SEGURIDAD (Mayo 2026):** Se han detectado múltiples ataques de cadena de suministro (Supply Chain Attacks) masivos en el registro oficial de NPM (ataques como *Mini Shai-Hulud* y *PromptMink*). Estos ataques inyectan malware en paquetes populares para robar credenciales, secretos de entorno (.env) y llaves SSH.
+
+### 15.1 Prohibición de NPM Install
+- **REGLA DE ORO**: Está **ESTRICTAMENTE PROHIBIDO** ejecutar `npm install` o `npm update` en cualquier parte del proyecto (local, VPS o agentes).
+- **Razón**: El cliente oficial de NPM es actualmente vulnerable a la ejecución de scripts maliciosos en la fase de pre-instalación que han comprometido a más de 25,000 repositorios.
+
+### 15.2 Uso Obligatorio de PNPM
+- Para toda gestión de paquetes, se debe usar **`pnpm`**.
+- **Beneficios de Seguridad**: `pnpm` utiliza un almacenamiento direccionable por contenido (Content-Addressable Store) que evita la dependencia fantasma (phantom dependencies) y dificulta que paquetes maliciosos se "oculten" en el árbol de `node_modules`.
+- **Comandos permitidos**:
+  - `pnpm install`
+  - `pnpm add [package]`
+  - `pnpm dev`
+- **Bloqueo**: Si un agente intenta usar `npm install`, Sammantha o el Orquestador deben detener la operación inmediatamente.
+
+### 15.3 Auditoría de Seguridad
+- Antes de agregar cualquier librería nueva, se debe verificar en [Socket.dev](https://socket.dev) o herramientas similares para asegurar que no tenga comportamientos sospechosos (telemetría oculta, acceso a red no declarado).

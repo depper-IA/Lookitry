@@ -393,11 +393,13 @@ LOOKITRY/
 ## 9. Scripts de Desarrollo
 
 ### Frontend
-- `npm run dev`: Desarrollo local
-- `npm run build`: Generar build de producción
+- `pnpm install`: Instalar dependencias
+- `pnpm dev`: Desarrollo local
+- `pnpm build`: Generar build de producción
 
 ### Backend
-- `npm run dev`: Hot-reload con ts-node-dev
+- `pnpm install`: Instalar dependencias
+- `pnpm dev`: Hot-reload con ts-node-dev
 - `python scripts/_deploy_now.py`: Deploy al VPS
 
 ---

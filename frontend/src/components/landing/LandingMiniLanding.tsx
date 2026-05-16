@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Globe, Box, Sparkles, MessageCircle } from 'lucide-react';
+import { LANDING_COPY } from './LandingCopy';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -46,14 +47,14 @@ const ctaVariants = {
 
 export default function LandingMiniLanding() {
   const features = [
-    { title: "Página pública propia", desc: "URL en lookitry.com/tu-marca. Compártela en redes o tu bio.", icon: <Globe size={20} aria-hidden="true" /> },
-    { title: "Catálogo visual", desc: "Tus productos con foto, precio y badge. Listos en segundos.", icon: <Box size={20} aria-hidden="true" /> },
-    { title: "Probador IA integrado", desc: "El widget de prueba virtual está embebido directamente.", icon: <Sparkles size={20} aria-hidden="true" /> },
-    { title: "WhatsApp flotante", desc: "Botón de contacto siempre visible para cerrar ventas con un clic.", icon: <MessageCircle size={20} aria-hidden="true" /> }
+    { title: "Link propio", desc: "URL en lookitry.com/tu-marca. Compártela en tu bio de Instagram.", icon: <Globe size={20} aria-hidden="true" /> },
+    { title: "Catálogo interactivo", desc: "Tus productos con probador virtual integrado. Listos en segundos.", icon: <Box size={20} aria-hidden="true" /> },
+    { title: "Espejo Digital", desc: "Tus clientas se prueban la ropa desde su celular antes de comprar.", icon: <Sparkles size={20} aria-hidden="true" /> },
+    { title: "Venta por WhatsApp", desc: "Botón directo para cerrar ventas y resolver dudas con un clic.", icon: <MessageCircle size={20} aria-hidden="true" /> }
   ];
 
   return (
-    <section id="mini-landing" className="bg-white dark:bg-black py-16 sm:py-20 px-4 sm:px-6 overflow-hidden" aria-label="Mini Landing Pro">
+    <section id="mini-landing" className="bg-white dark:bg-black py-16 sm:py-20 px-4 sm:px-6 overflow-hidden" aria-label={LANDING_COPY.virtual_shop.title}>
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div>
@@ -64,7 +65,7 @@ export default function LandingMiniLanding() {
               transition={{ duration: 0.4, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] bg-accent/5 border border-accent/20 text-accent"
             >
-              Tu propia página
+              On-demand E-commerce
             </motion.div>
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -73,8 +74,8 @@ export default function LandingMiniLanding() {
               transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6 leading-tight"
             >
-              Tu tienda online, <br />
-              <span className="text-accent">sin pagar un diseñador.</span>
+              {LANDING_COPY.virtual_shop.title}, <br />
+              <span className="text-accent">sin complicaciones técnicas.</span>
             </motion.h2>
 
             <motion.div
@@ -106,8 +107,8 @@ export default function LandingMiniLanding() {
               viewport={{ once: true, margin: '-100px' }}
               className="flex flex-wrap gap-3 sm:gap-4"
             >
-              <Link href="/checkout?plan=LANDING" className="bg-accent text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-accent/20">
-                Crear mi página ahora
+              <Link href="/checkout?plan=PRO" className="bg-accent text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-accent/20">
+                Activar mi tienda ahora
               </Link>
               <Link href="/planes" className="bg-white dark:bg-dark text-dark dark:text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:bg-accent dark:hover:bg-accent dark:hover:text-white">
                 Ver planes y precios

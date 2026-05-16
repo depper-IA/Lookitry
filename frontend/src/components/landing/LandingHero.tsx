@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check, Loader2, X, RotateCcw, ImageIcon } from 'lucide-react';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
 import { PostDemoModal } from '@/components/landing/PostDemoModal';
+import { LANDING_COPY } from './LandingCopy';
 
 const staggerContainer = {
   hidden: {},
@@ -359,9 +360,9 @@ export default function LandingHero() {
             variants={fadeInUp}
             className="mb-6 font-jakarta text-3xl font-black leading-[1.1] tracking-[-0.03em] sm:mb-8 sm:text-[44px] sm:tracking-[-0.04em] md:text-[56px] lg:text-[64px]"
           >
-            <span className="block text-dark dark:text-white">Vende más con el</span>
-            <span className="block text-accent">Probador Virtual</span>
-            <span className="block text-dark dark:text-white">N.1 de Latinoamerica.</span>
+            <span className="block text-dark dark:text-white">Vende más ropa online</span>
+            <span className="block text-accent">con tu propio</span>
+            <span className="block text-dark dark:text-white">Espejo Digital.</span>
           </motion.h1>
 
           <motion.p
@@ -369,7 +370,7 @@ export default function LandingHero() {
             variants={fadeInUp}
             className="mx-auto mb-8 max-w-xl font-dm-sans text-base font-light leading-[1.6] text-text-muted dark:text-white/80 sm:mb-12 sm:text-lg lg:mx-0"
           >
-            Tu tienda online, <span className="font-bold text-accent">sin pagar un diseñador.</span> Permite que tus clientes se prueben tu catálogo en segundos con IA.
+            {LANDING_COPY.hero.subtitle}
           </motion.p>
 
           <motion.div
@@ -381,16 +382,16 @@ export default function LandingHero() {
               href="/trial-checkout"
               className="group relative flex items-center gap-2 rounded-xl bg-accent px-6 py-4 text-sm font-bold text-white shadow-xl shadow-accent/20 transition-all hover:scale-[1.03] hover:-translate-y-0.5 hover:bg-accent-bright active:scale-[0.97] sm:gap-3 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base overflow-hidden duration-200"
             >
-              <span className="relative z-10">Obtén Acceso Premium</span>
+              <span className="relative z-10">{LANDING_COPY.hero.cta}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               <ArrowRight size={18} className="relative z-10 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Link>
 
             <Link
-              href="#como-funciona"
+              href="/casos-de-exito"
               className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-6 py-4 text-sm font-bold text-dark transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:bg-black/10 active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base duration-200"
             >
-              Ver cómo funciona
+              {LANDING_COPY.hero.secondary_cta}
             </Link>
           </motion.div>
 
