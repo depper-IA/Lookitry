@@ -85,7 +85,7 @@ export default function LandingNav({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
-  const [navVisible, setNavVisible] = useState(false);
+  const [navVisible, setNavVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const megaMenuRef = useRef<HTMLDivElement>(null);
@@ -228,30 +228,32 @@ export default function LandingNav({
     { title: 'Contacto', href: '/contacto' }
   ];
 
-  const navBg = transparent && !scrolled
+  const isHeroMode = transparent && !scrolled;
+  const navBg = isHeroMode
     ? 'bg-transparent border-b border-transparent'
-    : 'bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-black/5 dark:border-white/5';
+    : 'bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-black/8 dark:border-white/5 shadow-sm dark:shadow-none';
 
   return (
     <>
       <nav
-        className={`sticky top-0 left-0 right-0 z-[70] w-full px-4 py-4 sm:px-6 sm:py-5 md:px-12 transition-all duration-300 ${navBg} ${transparent && !scrolled ? 'text-white [&_.nav-logo]:text-white' : ''}`}
+        className={`${transparent ? 'fixed' : 'sticky'} top-0 left-0 right-0 z-[70] w-full px-4 py-4 sm:px-6 sm:py-5 md:px-12 transition-all duration-300 ${navBg} ${isHeroMode ? '[&_.nav-link]:!text-white/80 [&_.nav-products-btn]:!text-white/80 [&_.nav-login-link]:!text-white/80 [&_.nav-currency-btn]:!text-white/50 [&_.nav-theme-btn]:!text-white/60 [&_.nav-theme-btn]:!border-white/20 [&_.nav-theme-btn]:!bg-white/10 [&_.nav-logo-text]:!text-white [&_.nav-mobile-menu-btn]:!text-white/80' : ''}`}
         role="navigation"
         aria-label="Navegacion principal"
         style={{
-          opacity: navVisible ? 1 : 0,
-          transform: navVisible ? 'translateY(0)' : 'translateY(-10px)',
+          opacity: (transparent || navVisible) ? 1 : 0,
+          transform: (transparent || navVisible) ? 'translateY(0)' : 'translateY(-10px)',
           transition: `opacity 0.5s cubic-bezier(${EASING_OUT.join(',')}), transform 0.5s cubic-bezier(${EASING_OUT.join(',')})`,
+          top: transparent ? bannerHeight : undefined,
         }}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-2 md:gap-5">
             <Link href="/" className="nav-logo flex shrink-0 items-center gap-2.5 group" aria-label="Lookitry - Inicio">
               <div className="relative h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110">
-                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
-                <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
+                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className={`object-contain transition-opacity duration-300 ${isHeroMode ? 'opacity-0' : 'dark:opacity-0 opacity-100'}`} priority />
+                <Image src="/logo.svg" alt="Lookitry" fill className={`object-contain transition-opacity duration-300 ${isHeroMode ? 'opacity-100' : 'dark:opacity-100 opacity-0'}`} priority />
               </div>
-              <span className="font-jakarta text-xl font-bold tracking-tighter text-black dark:text-white sm:text-2xl transition-colors duration-300 group-hover:text-dark dark:group-hover:text-white">
+              <span className="nav-logo-text font-jakarta text-xl font-bold tracking-tighter text-black dark:text-white sm:text-2xl transition-colors duration-300 group-hover:text-dark dark:group-hover:text-white">
                 Look<span className="text-accent">itry</span>
               </span>
             </Link>
@@ -476,6 +478,16 @@ export default function LandingNav({
                 Ingresar
               </Link>
             )}
+
+            {/* Theme toggle — desktop */}
+            <button
+              onClick={toggleTheme}
+              className="nav-theme-btn flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-black/5 text-black/60 transition-all duration-300 hover:scale-110 hover:border-accent/40 hover:text-accent dark:border-white/10 dark:bg-white/5 dark:text-white/60 dark:hover:text-accent"
+              aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              title={isDark ? 'Modo claro' : 'Modo oscuro'}
+            >
+              {isDark ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
 
             <Link
               href="/trial-checkout"
