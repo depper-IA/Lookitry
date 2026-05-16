@@ -39,6 +39,7 @@ const LandingPlugin = dynamic(() => import('./LandingPlugin'), { ssr: false });
 // New Components (Onboarding & Social Proof)
 const LandingOnboardingSteps = dynamic(() => import('./LandingOnboardingSteps'), { ssr: false });
 const LandingSocialProof = dynamic(() => import('./LandingSocialProof'), { ssr: false });
+const LandingSteps = dynamic(() => import('./LandingSteps'), { ssr: false });
 
 // PromoBanner: carga inmediata
 const PromoBanner = dynamic(() => import('./PromoBanner').then(m => ({ default: m.PromoBanner })), { ssr: true });
@@ -107,6 +108,7 @@ export default function PremiumLanding({
         <main className="relative">
           <LandingHero />
           <LandingStats />
+          <LandingSteps />
           <LandingOnboardingSteps />
           <LandingMiniLanding />
           <LandingPlugin />
