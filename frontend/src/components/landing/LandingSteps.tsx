@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { LANDING_COPY } from './LandingCopy';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 50, scale: 0.9, rotateX: 10 },
@@ -40,34 +41,9 @@ const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) 
   </div>
 );
 
-const STEPS = [
-  {
-    n: '01',
-    title: 'Elige el producto',
-    desc: 'Selecciona la prenda, accesorio o calzado del catálogo de tu marca.',
-    img: '/steps/paso-2.webp',
-    alt: 'Seleccion de producto en el catalogo del probador virtual',
-    pos: 'object-center'
-  },
-  {
-    n: '02',
-    title: 'Sube la foto',
-    desc: 'El cliente toma una selfie o sube una imagen desde su celular o computador.',
-    img: '/steps/paso-1.webp',
-    alt: 'Cliente subiendo una selfie al probador virtual',
-    pos: 'object-top'
-  },
-  {
-    n: '03',
-    title: 'Ve el resultado',
-    desc: 'Nuestra tecnología de IA genera una imagen realista del producto puesto en tiempo real.',
-    img: '/steps/paso-3.webp',
-    alt: 'Resultado generado por IA del probador virtual de ropa',
-    pos: 'object-top'
-  },
-];
-
 export default function LandingSteps() {
+  const { title, subtitle, steps } = LANDING_COPY.customer_journey;
+
   return (
     <section id="como-funciona" className="bg-white dark:bg-black py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Como funciona">
       <div className="max-w-7xl mx-auto">
@@ -79,21 +55,21 @@ export default function LandingSteps() {
           className="text-center mb-12 sm:mb-16 md:mb-24"
         >
           <motion.div variants={cardVariants} custom={0}>
-            <SectionTag text="Proceso impecable" />
+            <SectionTag text="Cómo lo vive tu cliente" />
           </motion.div>
           <motion.h2
             variants={cardVariants}
             custom={1}
             className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6 md:mb-8"
           >
-            Tus clientes lo aman,<br /><span className="text-accent">tu vendes más.</span>
+            {title}
           </motion.h2>
           <motion.p
             variants={cardVariants}
             custom={2}
             className="font-dm-sans text-base sm:text-lg text-text-muted dark:text-white/60 max-w-2xl mx-auto font-light leading-relaxed"
           >
-            Una experiencia de 3 pasos diseñada para eliminar la fricción técnica y maximizar el deleite del cliente final.
+            {subtitle}
           </motion.p>
         </motion.div>
 
@@ -105,7 +81,7 @@ export default function LandingSteps() {
           className="steps-grid grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 md:gap-10"
           style={{ perspective: 1000 }}
         >
-          {STEPS.map((step, i) => (
+          {steps.map((step, i) => (
             <motion.div
               key={i}
               custom={i}
@@ -115,10 +91,10 @@ export default function LandingSteps() {
               {/* Card image container */}
               <div className="relative aspect-[3/4] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] overflow-hidden mb-6 sm:mb-8 border border-gray-200 dark:border-border-active bg-gray-100 dark:bg-dark-input shadow-sm transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-accent/10 group-hover:-translate-y-2 group-hover:border-accent/30">
                 <Image
-                  src={step.img}
-                  alt={step.alt}
+                  src={`/steps/paso-${i + 1}.webp`}
+                  alt={step.title}
                   fill
-                  className={`object-cover ${step.pos} transition-transform duration-500 group-hover:scale-105`}
+                  className={`object-cover object-center transition-transform duration-500 group-hover:scale-105`}
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
                 {/* Overlay gradient on hover */}
@@ -126,11 +102,11 @@ export default function LandingSteps() {
 
                 {/* Step number badge */}
                 <div className="absolute top-4 sm:top-6 md:top-8 left-4 sm:left-6 md:left-8 w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 bg-accent text-white rounded-xl sm:rounded-2xl flex items-center justify-center font-jakarta font-bold text-lg sm:text-xl shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  {step.n}
+                  {step.id}
                 </div>
 
                 {/* Arrow connector (except last) */}
-                {i < STEPS.length - 1 && (
+                {i < steps.length - 1 && (
                   <div className="hidden md:block absolute -right-[calc(2.5rem+1.5rem)] top-1/2 -translate-y-1/2 z-20 w-12 h-12">
                     <motion.svg
                       viewBox="0 0 48 48"
@@ -158,7 +134,7 @@ export default function LandingSteps() {
 
               {/* Step description */}
               <p className="font-dm-sans text-text-muted dark:text-white/60 leading-relaxed text-sm font-light transition-colors duration-300 group-hover:text-text-muted dark:group-hover:text-white/80">
-                {step.desc}
+                {step.description}
               </p>
 
               {/* Decorative line */}

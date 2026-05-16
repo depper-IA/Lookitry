@@ -1390,3 +1390,21 @@ Todas las pÃ¡ginas ahora leen precios desde `pricing_config` en Supabase via `ge
 - La API de sesiones de OpenClaw no expone endpoint REST pÃºblico (solo UI web)
 - Sistema operando con MOCK_AGENTS hasta que se configure acceso real a sesiones
 - Si se necesita integraciÃ³n real con sesiones, requiere modificar OpenClaw Gateway
+
+## 15 de Mayo 2026 — Propuesta Rediseño Landing Page Conversión Premium
+
+### Descripción
+Creación de propuesta SDD (.sdd/proposals/premium-conversion-landing-redesign.md) para rediseñar la landing page.
+
+### Cambios
+- Humanización del lenguaje (Business benefits sobre términos técnicos).
+- Clarificación de flujo "Pay-to-Enter".
+- Adición de sección "3 Simple Steps".
+- Inclusión de casos de uso social (Instagram Bio, WhatsApp).
+- Garantía de instalación/soporte.
+
+### Archivos
+- .sdd/proposals/premium-conversion-landing-redesign.md
+
+### Motivo
+Mejorar la conversión de usuarios no técnicos eliminando fricción terminológica y clarificando el proceso de pago.

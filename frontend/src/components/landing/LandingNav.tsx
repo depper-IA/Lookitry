@@ -196,8 +196,8 @@ export default function LandingNav({
       href: 'https://lookitry.com/probador-virtual'
     },
     {
-      title: 'Mini-Landing Pro',
-      desc: 'Tu tienda online pro sin código.',
+      title: 'Tienda Virtual',
+      desc: 'Tu vitrina interactiva lista para vender.',
       href: '/mini-landing'
     },
     {
@@ -280,7 +280,7 @@ export default function LandingNav({
                 className={`nav-products-btn flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${megaMenuOpen ? 'text-accent' : 'text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white'
                   }`}
               >
-                Productos Pro
+                Descubre Lookitry
                 <ChevronDown size={12} className={`transition-transform duration-300 ${megaMenuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
 

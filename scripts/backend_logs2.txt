@@ -1,0 +1,30 @@
+  "message": "Connection is closed.",
+  "stack": "Error: Connection is closed.\n    at EventEmitter.sendCommand (/app/node_modules/ioredis/built/Redis.js:333:28)\n    at EventEmitter.<anonymous> (/app/node_modules/ioredis/built/utils/Commander.js:90:25)\n    at RedisStore.sendCommand (/app/dist/middleware/rateLimiter.js:93:53)\n    at RedisStore.sendCommand (/app/node_modules/rate-limit-redis/dist/index.cjs:85:49)\n    at RedisStore.loadIncrementScript (/app/node_modules/rate-limit-redis/dist/index.cjs:102:31)\n    at RedisStore.retryableIncrement (/app/node_modules/rate-limit-redis/dist/index.cjs:147:38)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async RedisStore.increment (/app/node_modules/rate-limit-redis/dist/index.cjs:200:21)\n    at async /app/node_modules/express-rate-limit/dist/index.cjs:853:33\n    at async /app/node_modules/express-rate-limit/dist/index.cjs:830:5",
+  "method": "GET",
+  "path": "/api/brands/me",
+  "body": {},
+  "query": {},
+  "params": {},
+  "ip": "161.18.88.222"
+}
+[2026-05-07T03:55:22.935Z] GET /api/brands/me (500) - 2ms
+â Error del Sistema: {
+  "timestamp": "2026-05-07T03:55:22.934Z",
+  "message": "Connection is closed.",
+  "stack": "Error: Connection is closed.\n    at EventEmitter.sendCommand (/app/node_modules/ioredis/built/Redis.js:333:28)\n    at EventEmitter.<anonymous> (/app/node_modules/ioredis/built/utils/Commander.js:90:25)\n    at RedisStore.sendCommand (/app/dist/middleware/rateLimiter.js:93:53)\n    at RedisStore.sendCommand (/app/node_modules/rate-limit-redis/dist/index.cjs:85:49)\n    at RedisStore.loadIncrementScript (/app/node_modules/rate-limit-redis/dist/index.cjs:102:31)\n    at RedisStore.retryableIncrement (/app/node_modules/rate-limit-redis/dist/index.cjs:147:38)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async RedisStore.increment (/app/node_modules/rate-limit-redis/dist/index.cjs:200:21)\n    at async /app/node_modules/express-rate-limit/dist/index.cjs:853:33\n    at async /app/node_modules/express-rate-limit/dist/index.cjs:830:5",
+  "method": "GET",
+  "path": "/api/brands/me",
+  "body": {},
+  "query": {},
+  "params": {},
+  "ip": "161.18.88.222"
+}
+[HealthCheck] Redis error: Connection is closed.
+[Email] Conexión SMTP verificada correctamente
+[2026-05-07T03:55:34.305Z] GET /health (503) - 720ms
+[HealthCheck] Redis error: Connection is closed.
+[Email] Conexión SMTP verificada correctamente
+[2026-05-07T03:55:44.392Z] GET /health (503) - 722ms
+[HealthCheck] Redis error: Connection is closed.
+[Email] Conexión SMTP verificada correctamente
+[2026-05-07T03:56:05.084Z] GET /health (503) - 722ms

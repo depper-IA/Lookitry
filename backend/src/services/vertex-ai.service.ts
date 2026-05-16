@@ -1,7 +1,7 @@
 /**
  * Servicio de Vertex AI para Try-On
  *
- * Motor principal: SAM 2 (máscara) + Imagen 3 / Nano Banana 2 (generación)
+ * Motor principal: SAM 2 (máscara) + Nano Banana / Gemini 2.5 Flash (generación)
  * Fallback automático: n8n cuando Vertex falla
  *
  * Auth GCP: Bearer token via GOOGLE_API_KEY o ADC via GOOGLE_APPLICATION_CREDENTIALS
@@ -420,99 +420,6 @@ export async function generateMaskWithSAM2(selfieUrl: string): Promise<MaskGener
   }
 }
 
-// ============== GENERACIÓN DE TRY-ON (IMAGEN 3) ==============
-
-/**
- * Genera imagen de Try-On usando Imagen 3 en Vertex AI
- *
- * @param selfieUrl URL de la selfie en MinIO
- * @param maskUrl URL de la máscara de SAM 2 en MinIO
- * @param optimizedPrompt Prompt con instrucciones de iluminación y porosidad
- * @returns URL de la imagen generada en MinIO
- */
-export async function generateTryOn(
-  selfieUrl: string,
-  maskUrl: string,
-  optimizedPrompt: string
-): Promise<TryOnGenerationResult> {
-  const startTime = Date.now();
-
-  if (!optimizedPrompt || optimizedPrompt.trim().length === 0) {
-    throw new VertexAIError(
-      VertexAIErrorCode.INVALID_PROMPT,
-      'Prompt no puede estar vacío para generación de Try-On'
-    );
-  }
-
-  console.log(`[VertexAI] Generando Try-On con Imagen 3`);
-
-  const [selfieBuffer, maskBuffer] = await Promise.all([
-    downloadImageFromURL(selfieUrl),
-    downloadImageFromURL(maskUrl),
-  ]);
-
-  const base64Selfie = selfieBuffer.toString('base64');
-  const base64Mask = maskBuffer.toString('base64');
-
-  const enhancedPrompt = `${optimizedPrompt}
-
-IMPORTANTE: Respeta estrictamente los bordes de la máscara de segmentación.
-No modifiques el cuerpo de la persona. La prenda debe integrarse naturalmente
-con la imagen original, respetando sombras, iluminación y profundidad.
-Evita efectos de "calcomanía" (sticker overlay).`;
-
-  const region = VERTEX_LOCATION || 'us-central1';
-  const modelId = VERTEX_IMAGEN_MODEL || 'imagen-3.0-generate-002';
-  const endpointUrl = `https://${region}-aiplatform.googleapis.com/v1beta2/projects/${VERTEX_PROJECT_ID}/locations/${region}/publishers/google/models/${modelId}:predict`;
-
-  try {
-    const response = await vertexAIRequest<{ predictions: Array<{ bytesBase64Encoded?: string }> }>(
-      endpointUrl,
-      {
-        instances: [
-          {
-            prompt: enhancedPrompt,
-            image: { bytesBase64Encoded: base64Selfie },
-            mask: { bytesBase64Encoded: base64Mask },
-          },
-        ],
-        parameters: {
-          sampleCount: 1,
-          aspectRatio: { width: 1024, height: 1024 },
-          safetySetting: 'block_some',
-          personGeneration: 'allow_adult',
-        },
-      }
-    );
-
-    const predictions = response.predictions || [];
-    const imageBase64 = predictions[0]?.bytesBase64Encoded;
-
-    if (!imageBase64) {
-      throw new VertexAIError(
-        VertexAIErrorCode.GENERATION_FAILED,
-        'Imagen 3 no devolvió imagen. Respuesta inesperada.'
-      );
-    }
-
-    const resultFilename = `tryon_${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
-    const resultBuffer = Buffer.from(imageBase64, 'base64');
-    const resultImageUrl = await saveImageToMinIO(resultBuffer, resultFilename, 'image/png');
-
-    const processingTimeMs = Date.now() - startTime;
-    console.log(`[VertexAI] Try-On generado: ${resultImageUrl} (${processingTimeMs}ms)`);
-
-    return { resultImageUrl, processingTimeMs };
-  } catch (error) {
-    if (error instanceof VertexAIError) throw error;
-    throw new VertexAIError(
-      VertexAIErrorCode.GENERATION_FAILED,
-      `Error en generateTryOn: ${(error as Error).message}`,
-      error
-    );
-  }
-}
-
 // ============== GENERACIÓN DE TRY-ON (NANO BANANA / GEMINI) ==============
 
 /**
@@ -655,7 +562,6 @@ export function validateVertexAIConfig(): { valid: boolean; errors: string[] } {
 
 export const vertexAIService = {
   generateMaskWithSAM2,
-  generateTryOn,
   generateWithNanoBanana,
   validateConfig: validateVertexAIConfig,
   VertexAIError,

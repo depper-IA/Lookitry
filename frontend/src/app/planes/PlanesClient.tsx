@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
 import { motion, useInView } from 'framer-motion';
+import { LANDING_COPY } from '@/components/landing/LandingCopy';
 import type { PricingConfig, PlanPriceOverride } from '@/lib/pricing';
 import { precioConDescuento } from '@/lib/pricing';
 import { formatPrice as formatPriceUtil } from '@/utils/currency';
@@ -174,19 +175,17 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
           className="theme-bg-base pt-6 pb-12 px-6 md:px-8 text-center"
         >
           <div className="max-w-2xl mx-auto">
-            {/* Urgency Badge */}
+            {/* Trust Badge */}
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-[#FF5C3A]/10 border border-[#FF5C3A]/30 text-[#FF5C3A] text-[11px] font-bold tracking-widest uppercase px-4 py-2 rounded-full mb-6">
               <span className="w-2 h-2 bg-[#FF5C3A] rounded-full animate-pulse" />
-              Precios exclusivos por tiempo limitado
+              {LANDING_COPY.trust.badge}
             </motion.div>
             
             <motion.h1 variants={fadeUp} className="font-jakarta font-extrabold text-4xl md:text-6xl lg:text-7xl theme-text tracking-tight leading-[1.05] mb-6">
-              Elige tu plan y<br />
-              <span className="text-[#FF5C3A]">empieza hoy.</span>
+              {LANDING_COPY.pricing.title}
             </motion.h1>
             <motion.p variants={fadeUp} className="theme-text-muted text-lg md:text-xl max-w-lg mx-auto font-dm-sans leading-relaxed">
-              Sin contratos. Cancela cuando quieras. Paga por adelantado y ahorra hasta un{' '}
-              <span className="text-[#FF5C3A] font-bold">{descuentos_duracion.meses_12}%</span>.
+              {LANDING_COPY.trust.guarantee}
             </motion.p>
           </div>
         </motion.section>
