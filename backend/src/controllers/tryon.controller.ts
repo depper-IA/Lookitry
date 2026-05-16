@@ -2,9 +2,10 @@
  * Controlador de Try-On con circuito fallback: Vertex AI → n8n
  *
  * Estrategia:
- * 1. Si VERTEX_AI_ENABLED=true → intentar Vertex AI (SAM 2 + Imagen 3)
- * 2. Si Vertex falla (cualquier error) → fallback automático a n8n
- * 3. Si ambos fallan → marcar generación como FAILED en Supabase
+ * 1. Si SAM_LOCAL_URL existe → generar máscara con SAM local (independiente de Vertex)
+ * 2. Si VERTEX_AI_ENABLED=true → intentar Vertex AI (NanoBanana/Gemini) con máscara
+ * 3. Si Vertex falla o está deshabilitado → fallback a n8n con máscara incluida
+ * 4. Si ambos fallan → marcar generación como FAILED en Supabase
  *
  * El frontend NUNCA sabe qué motor generó la imagen — transparencia total.
  */
@@ -65,10 +66,24 @@ export async function executeTryOnPipeline(
 
   const startTime = Date.now();
   const vertexEnabled = process.env.VERTEX_AI_ENABLED === 'true';
+  const samLocalUrl = process.env.SAM_LOCAL_URL;
 
-  console.log(`[TryOnPipeline] Iniciando — generationId: ${generationId}, vertexEnabled: ${vertexEnabled}`);
+  console.log(`[TryOnPipeline] Iniciando — generationId: ${generationId}, vertexEnabled: ${vertexEnabled}, samLocal: ${!!samLocalUrl}`);
 
-  // Si Vertex AI está deshabilitado, ir directo a n8n
+  // ========== PASO 0: Generar máscara con SAM local (si está configurado) ==========
+  // Corre independientemente de VERTEX_AI_ENABLED — mejora n8n y Vertex por igual
+  if (samLocalUrl) {
+    try {
+      console.log('[TryOnPipeline] Paso 0: Generando máscara con SAM local...');
+      const maskResult = await vertexAIService.generateMaskWithSAM2(selfieUrl);
+      payload.maskUrl = maskResult.maskUrl;
+      console.log(`[TryOnPipeline] Máscara SAM generada: ${maskResult.maskUrl} (${maskResult.processingTimeMs}ms)`);
+    } catch (samError) {
+      console.warn(`[TryOnPipeline] SAM local falló, continuando sin máscara: ${(samError as Error).message}`);
+    }
+  }
+
+  // Si Vertex AI está deshabilitado, ir directo a n8n (con máscara si SAM funcionó)
   if (!vertexEnabled) {
     console.log('[TryOnPipeline] VERTEX_AI_ENABLED=false — ejecutando n8n directamente');
     return executeN8nFallback(payload);
@@ -76,16 +91,20 @@ export async function executeTryOnPipeline(
 
   // ========== PASO 1: Intentar Vertex AI ==========
 
-  let maskUrl: string | null = null;
+  let maskUrl: string | null = payload.maskUrl ?? null;
   let resultImageUrl: string | null = null;
 
   try {
-    // 1a. Generar máscara con SAM 2
-    console.log('[TryOnPipeline] Paso 1: Generando máscara con SAM 2...');
-    const maskResult = await vertexAIService.generateMaskWithSAM2(selfieUrl);
-    maskUrl = maskResult.maskUrl;
-    payload.maskUrl = maskUrl; // Guardamos para pasarlo a n8n si Gemini falla
-    console.log(`[TryOnPipeline] Máscara generada: ${maskUrl} (${maskResult.processingTimeMs}ms)`);
+    // 1a. Si no hay máscara de SAM local, intentar con SAM 2 de Vertex
+    if (!maskUrl) {
+      console.log('[TryOnPipeline] Paso 1: Generando máscara con SAM 2 (Vertex)...');
+      const maskResult = await vertexAIService.generateMaskWithSAM2(selfieUrl);
+      maskUrl = maskResult.maskUrl;
+      payload.maskUrl = maskUrl;
+      console.log(`[TryOnPipeline] Máscara generada: ${maskUrl} (${maskResult.processingTimeMs}ms)`);
+    } else {
+      console.log(`[TryOnPipeline] Paso 1: Usando máscara SAM local ya generada: ${maskUrl}`);
+    }
 
     // 1b. Generar Try-On con Nano Banana (Gemini)
     console.log('[TryOnPipeline] Paso 2: Generando Try-On con Nano Banana (Gemini)...');
