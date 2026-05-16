@@ -7,7 +7,6 @@ inclusion: always
 
 > ### Navegacion del Cerebro
 > - Volver al [[MAPA_MAESTRO|Mapa Maestro de Conocimiento]]
-> - Consultar Roles de [[AGENTS|Agentes del Equipo]]
 > - Ver Estado de Producto en [[PRD]]
 
 ---
@@ -26,7 +25,7 @@ inclusion: always
 ## 0. Documentacion Viva (Regla de Sincronicidad)
 
 **TODA VEZ que se realicen cambios estructurales en la arquitectura, componentes base, o diseño, es OBLIGATORIO:**
-1. **Usar el agente docs-writter (Lina)** para documentar los cambios y mantener actualizados los archivos: [[PRD]], [[DESIGN]], [[TECH_STACK]] y [[REGLAS_IMPORTANTES]]
+1. **Usar el agente docs-writter (Lina)** para documentar los cambios y mantener actualizados los archivos: [[REGLAS_IMPORTANTES]] y [[ARCHITECTURE_OVERVIEW]]
 2. Estos documentos deben reflejar inmediatamente la realidad del sistema. Los documentos nunca deben quedar obsoletos.
 
 **REGLA DE ORO: NO ELIMINAR informacion tecnica que siga siendo valida o funcional (versiones de librerias, estructuras de carpetas, reglas previas). Solo se debe incluir la informacion que falta o se actualiza, manteniendo el historial y contexto previo.**
@@ -53,7 +52,7 @@ inclusion: always
 
 ### 1.1 Deploy
 
-- **SIEMPRE usar el script _deploy_now.py** Located in `C:\Users\Matt\Lookitry\scripts\_deploy_now.py`
+- **SIEMPRE usar el script _deploy_now.py** Located in `scripts/_deploy_now.py` (raíz del proyecto: `/home/travis/Lookitry/Lookitry/scripts/_deploy_now.py`)
 - **NUNCA usar GitHub Actions CI/CD** para deploys
 - Para ejecutar: `python _deploy_now.py` desde la carpeta `scripts/` o usar `--force` para forzar rebuild
 
@@ -87,8 +86,7 @@ Cada vez que se realice cualquier cambio en el codigo, la IA DEBE documentarlo e
 ### 3.1 Modelo Default
 
 ```yaml
-modelo_default: "gemini-1.5-pro-customtools"
-fallback: "minimax/MiniMax-M2.7"
+modelo_default: "minimax/MiniMax-M2.7"
 
 regla: "Todos los agentes usan este modelo por defecto"
 excepcion: "Solo usar otro modelo si AGENTS.md lo especifica explícitamente"
@@ -281,8 +279,10 @@ Para evitar corrupciones de codigo y caidas del sistema:
 - Usar maybeSingle() o validaciones manuales en lugar de .single()
 
 ### 5.4 Gestion de APIs de IA
-- **GROQ**: API oficial directa, NO via OpenRouter
-- **OpenRouter**: Exclusivo para GENERACION DE IMAGENES del WIDGET (Try-On). PROHIBIDO usar sus creditos para otras tareas.
+- **Vertex AI (GCP)**: Pipeline PRIMARIO de Try-On e imágenes. Usa Gemini 2.5 Flash + Imagen 3 vía `@google-cloud/vertexai`. TODA generación de imágenes pasa por aquí.
+- **MobileSAM (Python/FastAPI)**: Servicio LOCAL para generación de máscaras antes del pipeline Try-On. Corre en Docker. PROHIBIDO reemplazar por llamada externa sin autorización explícita.
+- **OpenRouter**: SOLO accesible vía n8n como FALLBACK cuando Vertex AI falla. PROHIBIDO llamar directamente desde el backend — la integración directa fue eliminada (ver commits `2bb94eb6`, `e281c8a8`).
+- **GROQ**: ~~API directa~~ → **ELIMINADO del proyecto**. No referenciar ni reinstalar.
 
 ### 5.5 Blindaje contra Overload de MiniMax (CRÍTICO)
 
@@ -408,11 +408,13 @@ Los agentes ya NO necesitan notificar por Telegram cuando completan tareas. Esta
 
 ---
 
-**Ultima actualizacion:** Abril 2026 - Sistema de Agentes v3.1
+**Ultima actualizacion:** Mayo 2026 - Sistema de Agentes v3.1 / AI Stack actualizado
 **Cambios principales:**
 - Regla 10: Refactorización obligatoria por tamaño de archivo (600 líneas)
 - Regla 10.3: Detección y reporte de código muerto obligatorio
 - Renumeración de secciones para acomodar nueva regla
+- Regla 5.4: Actualizada — Vertex AI como primario, OpenRouter solo vía n8n fallback, GROQ eliminado, MobileSAM local documentado
+- Regla 1.1: Path de deploy script corregido (era path Windows incorrecto)
 
 ---
 

@@ -104,7 +104,7 @@ const DEFAULTS: PricingConfig = {
     boton_texto: 'Contratar ahora',
     features: [
       'Hasta 15 productos activos',
-      '1.200 pruebas virtuales / mes',
+      '1.000 pruebas virtuales / mes',
       'Plugin WooCommerce',
       'Logo y colores de marca',
       'Diseños personalizados',
