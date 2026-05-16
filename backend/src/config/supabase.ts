@@ -207,7 +207,6 @@ export interface Database {
           updated_at: string;
           openrouter_article_model: string | null;
           image_generation_provider: string | null;
-          openrouter_image_model: string | null;
           image_generator_webhook: string | null;
         };
         Insert: {
@@ -222,7 +221,6 @@ export interface Database {
           updated_at?: string;
           openrouter_article_model?: string | null;
           image_generation_provider?: string | null;
-          openrouter_image_model?: string | null;
           image_generator_webhook?: string | null;
         };
         Update: {
@@ -237,7 +235,6 @@ export interface Database {
           updated_at?: string;
           openrouter_article_model?: string | null;
           image_generation_provider?: string | null;
-          openrouter_image_model?: string | null;
           image_generator_webhook?: string | null;
         };
       };
