@@ -315,12 +315,12 @@ export class ProductsController {
         });
       }
 
-      // 3. Call descriptorService (replaces n8n webhook)
-      // image_url is intentionally NOT passed — the descriptor uses text-only prompts
+      // 3. Call descriptorService
+      // brand_description comes from the authenticated brand (DB), not the request body
       const descriptionObj = await descriptorService.describeProduct({
         name: product_name,
         category,
-        brand_description,
+        brand_description: req.brand.brand_description || brand_description || undefined,
         image_url: req.body.image_url,
       });
 
