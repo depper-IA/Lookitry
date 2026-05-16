@@ -50,7 +50,7 @@ interface MetaConfig {
 interface CostsConfig {
   costo_vps_cop: number;
   costo_dominio_cop_mensual: number;
-  costo_openrouter_por_gen_cop: number;
+  costo_ia_por_gen_cop: number;
   notas?: string;
 }
 
@@ -418,7 +418,7 @@ function PlanSection({
   const margen = margenEstimado(
     plan.precio_mensual_cop,
     plan.generaciones_mensuales,
-    costs.costo_openrouter_por_gen_cop,
+    costs.costo_ia_por_gen_cop,
     costosFijos,
     clientes,
   );
@@ -605,7 +605,7 @@ export default function PricingAdminPage() {
   const costsObj = costs || {
     costo_vps_cop: 37000,
     costo_dominio_cop_mensual: 5000,
-    costo_openrouter_por_gen_cop: 25,
+    costo_ia_por_gen_cop: 25,
   };
   const metaCop = meta?.meta_ingreso_cop ?? 2000000;
   const lastUpdated = rows.length > 0 ? new Date(rows[0].updated_at).toLocaleString('es-CO') : 'Sin registro';

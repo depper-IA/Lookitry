@@ -205,7 +205,6 @@ export interface Database {
           webhook_secret: string;
           created_at: string;
           updated_at: string;
-          openrouter_article_model: string | null;
           image_generation_provider: string | null;
           image_generator_webhook: string | null;
         };
@@ -219,7 +218,6 @@ export interface Database {
           webhook_secret?: string;
           created_at?: string;
           updated_at?: string;
-          openrouter_article_model?: string | null;
           image_generation_provider?: string | null;
           image_generator_webhook?: string | null;
         };
@@ -233,7 +231,6 @@ export interface Database {
           webhook_secret?: string;
           created_at?: string;
           updated_at?: string;
-          openrouter_article_model?: string | null;
           image_generation_provider?: string | null;
           image_generator_webhook?: string | null;
         };
