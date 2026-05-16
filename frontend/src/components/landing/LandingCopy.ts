@@ -6,10 +6,15 @@
 
 export const LANDING_COPY = {
   hero: {
-    title: "Vende más ropa online con tu propio Espejo Digital",
+    title: "Tu tienda puede ser",
+    rotating_words: [
+      "una marca que vende.",
+      "un probador digital.",
+      "más que un catálogo.",
+    ],
     subtitle: "Tus clientas se prueban tu ropa desde Instagram o WhatsApp usando solo su celular. Reduce devoluciones y aumenta la confianza.",
-    cta: "Prueba Lookitry por 7 días — $20.000",
-    secondary_cta: "Ver casos de éxito",
+    cta_primary: "Pruébalo ahora gratis",
+    cta_secondary: "Ver planes",
   },
 
   onboarding: {
