@@ -66,6 +66,28 @@ export const LANDING_COPY = {
     ]
   },
 
+  customer_journey: {
+    title: "Tus clientes lo aman, tu vendes más",
+    subtitle: "Una experiencia de 3 pasos diseñada para que tus clientas compren con la seguridad de un probador real.",
+    steps: [
+      {
+        id: "01",
+        title: "Eligen el producto",
+        description: "Tus clientas navegan por tu catálogo interactivo y eligen la prenda que les encanta."
+      },
+      {
+        id: "02",
+        title: "Suben su foto",
+        description: "Se toman una selfie o suben una foto desde su celular. Es rápido y privado."
+      },
+      {
+        id: "03",
+        title: "Ven el resultado",
+        description: "Nuestra IA les muestra instantáneamente cómo les queda la prenda puesta. ¡Magia pura!"
+      }
+    ]
+  },
+
   trust: {
     badge: "Instalación Humana Incluida",
     guarantee: "Si no sabes cómo configurarlo, nuestro equipo lo hace por ti sin costo adicional.",
