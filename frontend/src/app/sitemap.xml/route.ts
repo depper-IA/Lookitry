@@ -16,6 +16,7 @@ export async function GET() {
   const staticRoutes = [
     { url: BASE_URL, changeFrequency: 'weekly', priority: 1.0, lastmod: new Date().toISOString().split('T')[0] },
     { url: `${BASE_URL}/planes`, changeFrequency: 'weekly', priority: 0.9, lastmod: new Date().toISOString().split('T')[0] },
+    { url: `${BASE_URL}/demo`, changeFrequency: 'monthly', priority: 0.9, lastmod: new Date().toISOString().split('T')[0] },
     { url: `${BASE_URL}/blog`, changeFrequency: 'daily', priority: 0.9, lastmod: new Date().toISOString().split('T')[0] },
     { url: `${BASE_URL}/casos-de-exito`, changeFrequency: 'monthly', priority: 0.8, lastmod: new Date().toISOString().split('T')[0] },
     { url: `${BASE_URL}/contacto`, changeFrequency: 'monthly', priority: 0.8, lastmod: new Date().toISOString().split('T')[0] },
