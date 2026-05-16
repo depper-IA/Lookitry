@@ -5,12 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Zap, RefreshCw, Settings, Download } from 'lucide-react';
+import { LANDING_COPY } from './LandingCopy';
 
 export default function LandingPlugin() {
   const features = [
     {
       title: "Instalación One-Click",
-      desc: "Descarga nuestro archivo .zip e instálalo directamente desde tu panel de WordPress. Sin complicaciones técnicas.",
+      desc: "Descarga nuestro archivo .zip e instálalo directamente desde tu panel de WordPress. Sin tocar una línea de código.",
       icon: <Zap size={24} aria-hidden="true" />
     },
     {
@@ -19,8 +20,8 @@ export default function LandingPlugin() {
       icon: <RefreshCw size={24} aria-hidden="true" />
     },
     {
-      title: "Personalización Total",
-      desc: "Ajusta la posición, colores y estilos del widget para que combine con tu plantilla, Elementor o Divi.",
+      title: "Integración Visual",
+      desc: "Ajusta la posición, colores y estilos del probador para que combine con tu plantilla, Elementor o Divi.",
       icon: <Settings size={24} aria-hidden="true" />
     }
   ];
@@ -36,7 +37,7 @@ export default function LandingPlugin() {
             Potencia tu tienda <span className="text-accent">WooCommerce</span>
           </h3>
           <p className="text-text-muted dark:text-white/60 text-base sm:text-lg font-dm-sans max-w-2xl leading-relaxed">
-            Integra el probador virtual líder de Latinoamérica en tu E-commerce sin tocar una sola línea de código.
+            Integra el Espejo Digital líder de Latinoamérica en tu E-commerce sin complicaciones. 
             Instalación profesional en menos de 5 minutos.
           </p>
         </div>

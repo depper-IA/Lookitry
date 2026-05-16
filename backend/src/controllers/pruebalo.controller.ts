@@ -2545,7 +2545,7 @@ export class PruebaloController {
 
       const contentType = response.headers['content-type'];
 
-      if (contentType) {
+      if (contentType && typeof contentType === 'string') {
 
         res.setHeader('Content-Type', contentType);
 

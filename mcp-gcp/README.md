@@ -23,7 +23,7 @@ Model Context Protocol server for Google Cloud Platform integration. Provides to
 ## Installation
 
 ```bash
-npm install
+pnpm install
 npm run build
 ```
 
@@ -183,7 +183,7 @@ register{Service}Tools(server);
 ### 3. Add the SDK dependency
 
 ```bash
-npm install @google-cloud/{service}
+pnpm install @google-cloud/{service}
 ```
 
 ## GCP SDK Reference

@@ -13,7 +13,7 @@ const FAQ_TABS = [
     items: [
       { q: '¿Cómo funciona el probador virtual?', a: 'El cliente sube una foto suya (selfie o foto de cuerpo completo), selecciona el producto que quiere probar y la IA genera en segundos una imagen realista mostrando cómo le quedaría la prenda o accesorio.' },
       { q: '¿Qué tipos de productos soporta el probador?', a: 'Ropa (camisas, vestidos, pantalones, chaquetas), accesorios (bolsos, cinturones, sombreros) y calzado. La calidad del resultado depende de la claridad de la foto del producto.' },
-      { q: '¿Cómo integro el probador en mi tienda o web?', a: 'Tienes dos opciones: usar tu mini-landing (sin código) o copiar el widget embebible desde tu dashboard y pegarlo en tu sitio web. Funciona en Shopify, WordPress, Wix, etc.' },
+      { q: '¿Cómo integro el probador en mi tienda o web?', a: 'Tienes dos opciones: usar tu propia Tienda Virtual de Lookitry (sin código) o conectar el probador directamente en tu sitio web. Funciona en Shopify, WordPress, Wix, etc.' },
       { q: '¿Mis clientes necesitan crear una cuenta?', a: 'No. El probador es completamente público. Tus clientes solo necesitan subir una foto y elegir el producto. Sin registro, sin apps, sin fricción.' },
       { q: '¿Las fotos de mis clientes se almacenan?', a: 'Las selfies se procesan de forma temporal y se eliminan automáticamente después de generar el resultado. No almacenamos imágenes de los clientes permanentemente.' },
       { q: '¿Cuántos productos puedo tener?', a: 'El Plan Básico permite hasta 5 productos activos. El Plan Pro permite hasta 15 productos. Puedes editarlos desde tu dashboard en cualquier momento.' },
@@ -21,15 +21,15 @@ const FAQ_TABS = [
   },
   {
     id: 'mini-landing',
-    label: 'Mini-Landing',
+    label: 'Tienda Virtual',
     icon: <Store size={16} aria-hidden="true" />,
     items: [
-      { q: '¿Qué es la mini-landing y para qué sirve?', a: 'Es una página pública profesional en lookitry.com/tu-marca. Incluye tu catálogo con probador virtual integrado, botón de WhatsApp flotante y hasta 3 templates de diseño. Ideal para compartir en redes o bio de Instagram.' },
-      { q: '¿Cuánto cuesta y cuánto tarda en activarse?', a: 'Es un pago único y no tiene mensualidad adicional. La activación es inmediata: en minutos después de confirmar el pago, tu página ya está disponible.' },
-      { q: '¿Puedo cambiar el diseño de mi mini-landing?', a: 'Sí. Desde tu dashboard puedes elegir entre 3 templates: Clásico, Editorial y Probador. También puedes actualizar tu logo, colores, slogan y horarios.' },
-      { q: '¿Incluye el probador virtual?', a: 'Sí, el probador de IA está integrado directamente en tu página. Tus clientes pueden probarse productos sin salir de tu mini-landing.' },
-      { q: '¿Necesito saber programar?', a: 'No. Todo se configura desde tu dashboard con formularios simples. No necesitas tocar código ni contratar desarrolladores.' },
-      { q: '¿Se paga mensualidad?', a: 'No. El precio de la mini-landing es un pago único de por vida. Solo requiere que mantengas tu suscripción de Lookitry activa para que el probador siga funcionando.' },
+      { q: '¿Qué es la Tienda Virtual y para qué sirve?', a: 'Es una página profesional en lookitry.com/tu-marca. Incluye tu catálogo con probador virtual integrado, botón de WhatsApp directo y diseños elegantes. Ideal para compartir en tu bio de Instagram.' },
+      { q: '¿Cuánto cuesta y cuánto tarda en activarse?', a: 'Es un pago único y no tiene mensualidad adicional. La activación es inmediata: en minutos después de confirmar el pago, tu tienda ya está disponible.' },
+      { q: '¿Puedo cambiar el diseño de mi tienda?', a: 'Sí. Desde tu dashboard puedes elegir entre varios estilos. También puedes actualizar tu logo, colores, slogan y horarios.' },
+      { q: '¿Incluye el probador virtual?', a: 'Sí, el probador de IA está integrado directamente. Tus clientes pueden probarse productos sin salir de tu página.' },
+      { q: '¿Necesito saber programar?', a: 'No. Todo se configura con formularios simples. No necesitas tocar código ni contratar desarrolladores.' },
+      { q: '¿Se paga mensualidad?', a: 'No. El precio de la Tienda Virtual es un pago único. Solo requiere que mantengas tu suscripción de Lookitry activa para que el probador siga funcionando.' },
     ]
   },
   {
@@ -63,9 +63,9 @@ const FAQ_TABS = [
     icon: <LayoutGrid size={16} aria-hidden="true" />,
     items: [
       { q: '¿Tienen plugin para WooCommerce?', a: 'Sí, contamos con un plugin oficial para WordPress/WooCommerce que permite integrar el probador en minutos sin tocar código.' },
-      { q: '¿Funciona en Shopify o Wix?', a: 'Sí. Aunque no sea vía plugin directo, puedes usar nuestro widget embebible (Iframe) que se copia y pega en la sección de descripción o liquid de cualquier plataforma.' },
-      { q: '¿El plugin tiene costo adicional?', a: 'No. El uso del plugin o el widget está incluido en cualquiera de nuestros planes de suscripción (Básico o Pro).' },
-      { q: '¿Es compatible con mi plantilla actual?', a: 'Nuestra tecnología es agnóstica al diseño. Se adapta al contenedor donde lo coloque, manteniendo siempre un aspecto limpio y profesional.' }
+      { q: '¿Funciona en Shopify o Wix?', a: 'Sí. Aunque no sea vía plugin directo, puedes conectar el probador que se copia y pega en la sección de descripción o liquid de cualquier plataforma.' },
+      { q: '¿El plugin tiene costo adicional?', a: 'No. El uso del plugin o la conexión directa está incluido en cualquiera de nuestros planes de suscripción (Básico o Pro).' },
+      { q: '¿Es compatible con mi plantilla actual?', a: 'Nuestra tecnología se adapta al diseño de tu tienda, manteniendo siempre un aspecto limpio y profesional.' }
     ]
   }
 ];
