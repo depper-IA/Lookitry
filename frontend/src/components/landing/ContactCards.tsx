@@ -64,7 +64,7 @@ export function ContactCards() {
           </div>
           <div>
             <p className="text-accent text-xs uppercase tracking-wider">Soporte técnico</p>
-            <p className="text-text-secondary text-sm mt-1">Acompañamiento en integración y configuración del widget.</p>
+            <p className="text-text-secondary text-sm mt-1">Acompañamiento en integración y configuración del probador.</p>
           </div>
         </div>
       </motion.div>

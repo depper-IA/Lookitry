@@ -1,0 +1,50 @@
+  "method": "GET",
+  "path": "/api/home/tryon/config",
+  "body": {},
+  "query": {},
+  "params": {},
+  "ip": "172.19.0.1"
+}
+[2026-05-06T23:01:37.534Z] GET /api/home/tryon/config (500) - 3ms
+â Error del Sistema: {
+  "timestamp": "2026-05-06T23:01:37.657Z",
+  "message": "Connection is closed.",
+  "stack": "Error: Connection is closed.\n    at EventEmitter.sendCommand (/app/node_modules/ioredis/built/Redis.js:333:28)\n    at EventEmitter.<anonymous> (/app/node_modules/ioredis/built/utils/Commander.js:90:25)\n    at RedisStore.sendCommand (/app/dist/middleware/rateLimiter.js:93:53)\n    at RedisStore.sendCommand (/app/node_modules/rate-limit-redis/dist/index.cjs:85:49)\n    at RedisStore.loadIncrementScript (/app/node_modules/rate-limit-redis/dist/index.cjs:102:31)\n    at RedisStore.retryableIncrement (/app/node_modules/rate-limit-redis/dist/index.cjs:147:38)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async RedisStore.increment (/app/node_modules/rate-limit-redis/dist/index.cjs:200:21)\n    at async /app/node_modules/express-rate-limit/dist/index.cjs:853:33\n    at async /app/node_modules/express-rate-limit/dist/index.cjs:830:5",
+  "method": "GET",
+  "path": "/api/promotions",
+  "body": {},
+  "query": {},
+  "params": {},
+  "ip": "172.19.0.1"
+}
+[2026-05-06T23:01:37.658Z] GET /api/promotions (500) - 1ms
+[HealthCheck] Redis error: Connection is closed.
+[Email] Conexión SMTP verificada correctamente
+[2026-05-06T23:01:39.516Z] GET /health (503) - 718ms
+[HealthCheck] Redis error: Connection is closed.
+[Email] Conexión SMTP verificada correctamente
+[2026-05-06T23:01:52.661Z] GET /health (503) - 692ms
+[HealthCheck] Redis error: Connection is closed.
+[Email] Conexión SMTP verificada correctamente
+[2026-05-06T23:01:59.003Z] GET /health (503) - 716ms
+â Error del Sistema: {
+  "timestamp": "2026-05-06T23:02:11.304Z",
+  "message": "Connection is closed.",
+  "stack": "Error: Connection is closed.\n    at EventEmitter.sendCommand (/app/node_modules/ioredis/built/Redis.js:333:28)\n    at EventEmitter.<anonymous> (/app/node_modules/ioredis/built/utils/Commander.js:90:25)\n    at RedisStore.sendCommand (/app/dist/middleware/rateLimiter.js:93:53)\n    at RedisStore.sendCommand (/app/node_modules/rate-limit-redis/dist/index.cjs:85:49)\n    at RedisStore.loadIncrementScript (/app/node_modules/rate-limit-redis/dist/index.cjs:102:31)\n    at RedisStore.retryableIncrement (/app/node_modules/rate-limit-redis/dist/index.cjs:147:38)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async RedisStore.increment (/app/node_modules/rate-limit-redis/dist/index.cjs:200:21)\n    at async /app/node_modules/express-rate-limit/dist/index.cjs:853:33\n    at async /app/node_modules/express-rate-limit/dist/index.cjs:830:5",
+  "method": "GET",
+  "path": "/api/pricing-config",
+  "body": {},
+  "query": {},
+  "params": {},
+  "ip": "172.19.0.1"
+}
+[2026-05-06T23:02:11.305Z] GET /api/pricing-config (500) - 2ms
+[HealthCheck] Redis error: Connection is closed.
+[Email] Conexión SMTP verificada correctamente
+[2026-05-06T23:02:23.432Z] GET /health (503) - 716ms
+[HealthCheck] Redis error: Connection is closed.
+[Email] Conexión SMTP verificada correctamente
+[2026-05-06T23:02:54.238Z] GET /health (503) - 751ms
+[HealthCheck] Redis error: Connection is closed.
+[Email] Conexión SMTP verificada correctamente
+[2026-05-06T23:03:25.028Z] GET /health (503) - 722ms

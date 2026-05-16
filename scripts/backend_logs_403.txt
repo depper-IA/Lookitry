@@ -1,0 +1,50 @@
+  reset_token: null,
+  reset_token_expires_at: null,
+  cover_bg_color: '#f9ecec',
+  cover_overlay_opacity: 1,
+  show_brand_name: false,
+  upgrade_requested_at: null,
+  landing_font: 'font-playfair',
+  widget_bg_color: '#240000',
+  api_key: 'e66211b2-9931-4155-b499-c33e7a69183a',
+  state_province: 'Valle del Cauca',
+  postal_code: '',
+  billing_email: 'samwilkiedevs@gmail.com',
+  extra_credits_balance: 1000,
+  review_prompt_shown_at: '2026-03-29T18:16:21.336+00:00',
+  internal_notes: null,
+  google_id: '115867528537848582447',
+  auth_provider: 'google',
+  needs_onboarding: false,
+  referral_code: '6CEZ4DZB',
+  referral_count: 1,
+  custom_domain: null,
+  onboarding_dismissed: true,
+  landing_steps: {
+    photo_desc: 'Una foto clara funciona mejor',
+    photo_label: 'Sube tu foto',
+    result_desc: 'Así te verías con esta prenda',
+    select_desc: 'Elige el look que más te guste',
+    result_label: '¡Tu resultado!',
+    select_label: 'Selecciona un estilo'
+  },
+  header_color: '#ffffff',
+  widget_product_ids: [
+    '219f8a80-c7a2-46fd-bf4a-42c31621cede',
+    'ee5bf4ec-da9b-4cd5-b8da-2484797d0a71',
+    '4087e22b-1e22-4078-83cd-2beb74f6dc6f',
+    '2b603588-bedb-4308-91df-ce486073841e',
+    '055e4c46-ffea-4bf2-a1a3-c1e902b0565c'
+  ],
+  share_message: '',
+  failed_login_attempts: 0,
+  locked_until: null,
+  widget_cover_image: 'https://minio.wilkiedevs.com/images/products/1776879681313-94dbf20cffac.webp'
+}
+[2026-05-07T04:09:24.248Z] GET /api/pruebalo/wilkie-devs (403) - 115ms
+[Email] Conexión SMTP verificada correctamente
+[2026-05-07T04:09:49.003Z] GET /api/pruebalo/wilkie-devs (403) - 2ms
+[Email] Conexión SMTP verificada correctamente
+[EmailCampaign Job] Verificando campañas programadas...
+[Email] Conexión SMTP verificada correctamente
+[Email] Conexión SMTP verificada correctamente
