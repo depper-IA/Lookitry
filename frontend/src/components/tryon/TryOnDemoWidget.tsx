@@ -44,21 +44,21 @@ const ProductItem = React.memo(({ prod, selectedProduct, onSelect }: {
   return (
     <div
       onClick={() => onSelect(prod)}
-      className={`group/item flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all duration-200 sm:gap-3 sm:rounded-xl sm:p-3 ${isSelected ? 'border-accent bg-accent/10 shadow-lg shadow-accent/5' : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}
+      className={`group/item flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all duration-200 sm:gap-3 sm:rounded-xl sm:p-3 ${isSelected ? 'border-[var(--accent)] bg-[var(--accent)]/5 shadow-lg shadow-[var(--accent)]/5' : 'border-[var(--border-color)] bg-[var(--bg-card)] hover:border-[var(--text-muted)] hover:bg-[var(--bg-hover)]'}`}
       role="button"
       tabIndex={0}
       aria-label={`Seleccionar ${prod.name}`}
     >
-      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-border-active sm:h-14 sm:w-14">
+      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[var(--border-color)] sm:h-14 sm:w-14">
         <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className={`truncate text-[9px] font-bold sm:text-[11px] ${isSelected ? 'text-white' : 'text-white/60'}`}>{prod.name}</span>
-        <span className="text-[7px] capitalize text-white/30 sm:text-[8px] truncate">{prod.category}</span>
-        {prod.price && <span className="text-[7px] font-bold text-accent sm:text-[9px]">${prod.price.toLocaleString('es-CO')}</span>}
+        <span className={`truncate text-[9px] font-bold sm:text-[11px] ${isSelected ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>{prod.name}</span>
+        <span className="text-[7px] capitalize text-[var(--text-muted)] sm:text-[8px] truncate">{prod.category}</span>
+        {prod.price && <span className="text-[7px] font-bold text-[var(--accent)] sm:text-[9px]">${prod.price.toLocaleString('es-CO')}</span>}
       </div>
       {isSelected && (
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-accent sm:h-5 sm:w-5" aria-hidden="true">
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="ml-auto flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[var(--accent)] sm:h-5 sm:w-5" aria-hidden="true">
           <Check size={8} className="text-white sm:text-xs" />
         </motion.div>
       )}
@@ -198,13 +198,13 @@ export default function TryOnDemoWidget({ onResult, showBrowserChrome = true }: 
       <button
         onClick={handleCTA}
         disabled={!hasUsedTrial && !selectedProduct}
-        className="flex items-center justify-center gap-2 rounded-xl bg-accent py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+        className="flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] py-3 px-6 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
       >
         <Sparkles size={16} />
         {selfie ? 'Generar Prueba' : 'Ver Probador IA'}
       </button>
       {!hasUsedTrial && (
-        <span className="flex items-center gap-1 rounded-full bg-text-muted/10 px-3 py-1 text-[9px] font-semibold text-text-primary">
+        <span className="flex items-center gap-1 rounded-full bg-[var(--bg-card)] px-3 py-1 text-[9px] font-semibold text-[var(--text-secondary)]">
           <Sparkles size={10} /> 1 generación gratis
         </span>
       )}
@@ -213,15 +213,15 @@ export default function TryOnDemoWidget({ onResult, showBrowserChrome = true }: 
 
   return (
     <>
-      <div className="group/widget relative z-10 w-full overflow-hidden rounded-2xl border border-white/10 bg-dark-surface p-3 shadow-[0_40px_100px_rgba(0,0,0,0.8)] sm:rounded-[2rem] sm:p-4">
+      <div className="group/widget relative z-10 w-full overflow-hidden rounded-2xl bg-[var(--bg-card)] p-3 shadow-[0_40px_100px_rgba(0,0,0,0.3)] sm:rounded-[2rem] sm:p-4">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="mb-3 flex items-center justify-center gap-2 rounded-full bg-text-muted/10 px-4 py-2 text-center sm:mb-6 sm:gap-3"
+          className="mb-3 flex items-center justify-center gap-2 rounded-full bg-[var(--bg-base)] px-4 py-2 text-center sm:mb-6 sm:gap-3"
         >
-          <Sparkles size={15} className="text-accent" aria-hidden="true" />
-          <span className="text-[15px] font-bold uppercase tracking-wider text-accent">Pruébalo ahora mismo</span>
+          <Sparkles size={15} className="text-[var(--accent)]" aria-hidden="true" />
+          <span className="text-[15px] font-bold uppercase tracking-wider text-[var(--accent)]">Pruébalo ahora mismo</span>
         </motion.div>
 
         {/* Browser Chrome */}
@@ -230,9 +230,9 @@ export default function TryOnDemoWidget({ onResult, showBrowserChrome = true }: 
             <div className="flex gap-1 sm:gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-red-500 sm:h-2 sm:w-2" />
               <span className="h-1.5 w-1.5 rounded-full bg-yellow-500 sm:h-2 sm:w-2" />
-              <span className="h-1.5 w-1.5 rounded-full bg-accent sm:h-2 sm:w-2" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] sm:h-2 sm:w-2" />
             </div>
-            <div className="flex-1 truncate rounded-md border border-white/5 bg-dark-card px-2 py-1 text-center font-dm-sans text-[7px] uppercase tracking-widest text-text-muted sm:px-4 sm:text-[9px]">
+            <div className="flex-1 truncate rounded-md border border-[var(--border-color)] bg-[var(--bg-base)] px-2 py-1 text-center font-dm-sans text-[7px] uppercase tracking-widest text-[var(--text-muted)] sm:px-4 sm:text-[9px]">
               lookitry.com/demo
             </div>
           </div>
@@ -242,28 +242,28 @@ export default function TryOnDemoWidget({ onResult, showBrowserChrome = true }: 
         {step === 'select' && config && (
           <div className="flex flex-col gap-3 sm:gap-4">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}
-              className="relative flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-dark-card p-4 text-center hover:border-white/20 sm:p-6"
+              className="relative flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--border-color)] bg-[var(--bg-base)] p-4 text-center hover:border-[var(--text-muted)] sm:p-6"
             >
-              <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-white/20 sm:text-[8px]">Tu Foto</div>
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-white/10 bg-white/5 overflow-hidden sm:h-16 sm:w-16">
-                {selfiePreview ? <img src={selfiePreview} alt="Preview" className="h-full w-full object-cover" loading="lazy" decoding="async" /> : <Camera size={24} strokeWidth={1} className="text-white/20" aria-hidden="true" />}
+              <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-[var(--text-muted)] sm:text-[8px]">Tu Foto</div>
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden sm:h-16 sm:w-16">
+                {selfiePreview ? <img src={selfiePreview} alt="Preview" className="h-full w-full object-cover" loading="lazy" decoding="async" /> : <Camera size={24} strokeWidth={1} className="text-[var(--text-muted)]" aria-hidden="true" />}
               </div>
               <div className="mt-3 flex gap-2">
-                <label className="cursor-pointer rounded-lg bg-accent/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-accent/30 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
+                <label className="cursor-pointer rounded-lg bg-[var(--accent)]/15 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--accent)] hover:bg-[var(--accent)]/25 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
                   <Camera size={14} strokeWidth={2} aria-hidden="true" />
                   <input type="file" accept="image/*" capture="user" onChange={handleSelfieChange} className="hidden" />
                   Tomar foto
                 </label>
-                <label className="cursor-pointer rounded-lg bg-white/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:bg-white/20 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
+                <label className="cursor-pointer rounded-lg bg-[var(--bg-hover)] px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] hover:bg-[var(--border-color)] sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
                   <ImageIcon size={14} strokeWidth={2} aria-hidden="true" />
                   <input type="file" accept="image/*" onChange={handleSelfieChange} className="hidden" />
                   Subir foto
                 </label>
               </div>
-              <p className="text-[8px] font-bold capitalize tracking-widest text-white/40 sm:text-[10px]">preferiblemente cuerpo completo</p>
+              <p className="text-[8px] font-bold capitalize tracking-widest text-[var(--text-muted)] sm:text-[10px]">preferiblemente cuerpo completo</p>
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.5 }} className="flex flex-col gap-2 sm:gap-3">
-              <div className="px-0.5 text-[7px] font-bold uppercase tracking-[0.15em] text-white/30 sm:text-[8px]">Elige un Producto</div>
+              <div className="px-0.5 text-[7px] font-bold uppercase tracking-[0.15em] text-[var(--text-muted)] sm:text-[8px]">Elige un Producto</div>
               {productItems}
             </motion.div>
             {ctaSection}
@@ -273,46 +273,46 @@ export default function TryOnDemoWidget({ onResult, showBrowserChrome = true }: 
         {/* Step: SELFIE */}
         {step === 'selfie' && selectedProduct && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col gap-3 sm:gap-4">
-            <div className="flex flex-col items-center rounded-xl border border-white/10 bg-dark-card p-4 text-center hover:border-white/20 sm:p-6">
+            <div className="flex flex-col items-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] p-4 text-center hover:border-[var(--text-muted)] sm:p-6">
               {selfiePreview ? (
                 <div className="relative mb-3 h-32 w-32 overflow-hidden rounded-xl sm:h-40 sm:w-40">
                   <img src={selfiePreview} alt="Tu selfie" className="h-full w-full object-cover" loading="lazy" decoding="async" />
-                  <button onClick={() => { setSelfie(null); setSelfiePreview(null); }} className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30">
+                  <button onClick={() => { setSelfie(null); setSelfiePreview(null); }} className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--bg-card)] text-[var(--text-primary)] backdrop-blur-sm hover:bg-[var(--bg-hover)]">
                     <X size={12} />
                   </button>
                 </div>
               ) : (
-                <div className="mb-3 flex h-32 w-32 items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/5 sm:h-40 sm:w-40">
-                  <Camera size={32} className="text-white/20" />
+                <div className="mb-3 flex h-32 w-32 items-center justify-center rounded-xl border border-dashed border-[var(--border-color)] bg-[var(--bg-card)] sm:h-40 sm:w-40">
+                  <Camera size={32} className="text-[var(--text-muted)]" />
                 </div>
               )}
               <div className="flex gap-2">
-                <label className="cursor-pointer rounded-lg bg-accent/20 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-accent hover:bg-accent/30 min-h-11 flex items-center justify-center gap-2">
+                <label className="cursor-pointer rounded-lg bg-[var(--accent)]/15 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--accent)] hover:bg-[var(--accent)]/25 min-h-11 flex items-center justify-center gap-2">
                   <Camera size={14} strokeWidth={2} aria-hidden="true" />
                   <input type="file" accept="image/*" capture="user" onChange={handleSelfieChange} className="hidden" />
                   {selfiePreview ? 'Tomar otra' : 'Tomar foto'}
                 </label>
-                <label className="cursor-pointer rounded-lg bg-white/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:bg-white/20 min-h-11 flex items-center justify-center gap-2">
+                <label className="cursor-pointer rounded-lg bg-[var(--bg-hover)] px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] hover:bg-[var(--border-color)] min-h-11 flex items-center justify-center gap-2">
                   <ImageIcon size={14} strokeWidth={2} aria-hidden="true" />
                   <input type="file" accept="image/*" onChange={handleSelfieChange} className="hidden" />
                   {selfiePreview ? 'Cambiar' : 'Subir foto'}
                 </label>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-dark-card p-3 hover:border-white/20">
-              <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-border-active">
+            <div className="flex items-center gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] p-3 hover:border-[var(--text-muted)]">
+              <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-[var(--border-color)]">
                 <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" />
               </div>
               <div className="flex min-w-0 flex-1">
                 <div>
-                  <p className="text-[11px] font-bold text-white truncate">{selectedProduct.name}</p>
-                  <p className="text-[9px] capitalize text-white/40 truncate">{selectedProduct.category}</p>
+                  <p className="text-[11px] font-bold text-[var(--text-primary)] truncate">{selectedProduct.name}</p>
+                  <p className="text-[9px] capitalize text-[var(--text-muted)] truncate">{selectedProduct.category}</p>
                 </div>
               </div>
-              <button onClick={handleChangeProduct} className="rounded-full p-1.5 text-white/40 hover:bg-white/10 hover:text-white"><X size={14} /></button>
+              <button onClick={handleChangeProduct} className="rounded-full p-1.5 text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"><X size={14} /></button>
             </div>
             <button onClick={handleGenerate} disabled={!selfie || isGenerating}
-              className="flex items-center justify-center gap-2 rounded-xl bg-accent py-3.5 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 hover:brightness-110 active:scale-[0.98]"
+              className="flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] py-3.5 text-[11px] font-bold uppercase tracking-widest text-white disabled:opacity-50 hover:brightness-110 active:scale-[0.98]"
             >
               {isGenerating ? <><Loader2 size={16} className="animate-spin" /> Generando...</> : <><Sparkles size={16} /> Ver Probador IA</>}
             </button>
@@ -322,26 +322,26 @@ export default function TryOnDemoWidget({ onResult, showBrowserChrome = true }: 
 
         {/* Step: LOADING */}
         {step === 'loading' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/5 py-12">
-            <div className="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-accent/20 border-t-accent" />
-            <p className="text-[11px] font-bold uppercase tracking-widest text-white/60">Generando tu prueba...</p>
-            <p className="mt-2 text-[9px] text-white/30">Puede tomar hasta 20 segundos</p>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] py-12">
+            <div className="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-[var(--accent)]/20 border-t-[var(--accent)]" />
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">Generando tu prueba...</p>
+            <p className="mt-2 text-[9px] text-[var(--text-muted)]">Puede tomar hasta 20 segundos</p>
           </motion.div>
         )}
 
         {/* Step: RESULT */}
         {step === 'result' && resultImage && (
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="flex flex-col gap-3 sm:gap-4">
-            <div className="relative overflow-hidden rounded-xl border border-accent/30 shadow-lg shadow-accent/10 aspect-square">
-              <img src={resultImage} alt="Resultado del probador" className="h-full w-full object-cover" loading="lazy" decoding="async" />
-              <div className="absolute top-2 left-2 rounded-full bg-accent px-2 py-0.5 text-[6px] font-black uppercase text-white shadow-xl sm:text-[8px]">IA</div>
+            <div className="relative overflow-hidden rounded-xl shadow-lg shadow-[var(--accent)]/10 aspect-square">
+              <img src={selfiePreview || ''} alt="Tu foto original" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+              <div className="absolute top-2 left-2 rounded-full bg-[var(--text-muted)] px-2 py-0.5 text-[6px] font-black uppercase text-white shadow-xl sm:text-[8px]">Antes</div>
               <button onClick={handleBack} className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm hover:bg-black/60 hover:text-white" aria-label="Limpiar">
                 <RotateCcw size={12} />
               </button>
             </div>
             <div className="flex gap-2">
-              <Link href="/planes" className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:bg-white/10 hover:text-white">Ver planes</Link>
-              <Link href="/trial-checkout" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent py-2.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-xl shadow-accent/10 hover:brightness-110">
+              <Link href="/planes" className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] py-2.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]">Ver planes</Link>
+              <Link href="/trial-checkout" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] py-2.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-xl shadow-[var(--accent)]/10 hover:brightness-110">
                 <Sparkles size={12} /> Obtén Trial
               </Link>
             </div>

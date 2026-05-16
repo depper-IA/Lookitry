@@ -42,6 +42,17 @@ service-account*.json
 *.pem
 *.key
 
+# Secrets locales del backend
+backend/secrets/
+backend/test-vertex.json
+backend/output.json
+
+# Credenciales GCP legacy
+google/
+
+# MCP GCP service account (local runtime)
+mcp-gcp/service-account.json
+
 # Coverage
 coverage/
 .nyc_output/
