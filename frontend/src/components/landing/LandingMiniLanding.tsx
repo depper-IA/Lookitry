@@ -54,7 +54,7 @@ export default function LandingMiniLanding() {
   ];
 
   return (
-    <section id="mini-landing" className="bg-white dark:bg-black py-16 sm:py-20 px-4 sm:px-6 overflow-hidden" aria-label={LANDING_COPY.virtual_shop.title}>
+    <section id="mini-landing" className="bg-black dark:bg-white py-16 sm:py-20 px-4 sm:px-6 overflow-hidden" aria-label={LANDING_COPY.virtual_shop.title}>
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div>
@@ -63,7 +63,7 @@ export default function LandingMiniLanding() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.4, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] bg-accent/5 border border-accent/20 text-accent"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] bg-accent/10 border border-accent/30 text-accent"
             >
               On-demand E-commerce
             </motion.div>
@@ -72,7 +72,7 @@ export default function LandingMiniLanding() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6 leading-tight"
+              className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white dark:text-black mb-4 sm:mb-6 leading-tight"
             >
               {LANDING_COPY.virtual_shop.title}, <br />
               <span className="text-accent">sin complicaciones técnicas.</span>
@@ -89,13 +89,13 @@ export default function LandingMiniLanding() {
                 <motion.div
                   key={idx}
                   variants={itemVariants}
-                  className="dark:bg-dark-input bg-warm border border-white/5 dark:border-border-active p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl hover:bg-dark-surface dark:hover:bg-dark-surface hover:shadow-xl transition-all group"
+                  className="bg-white/10 dark:bg-warm border border-white/10 dark:border-black/5 p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl hover:bg-white/15 dark:hover:bg-neutral-100 hover:shadow-xl transition-all group"
                 >
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
                     {feat.icon}
                   </div>
-                  <h4 className="font-jakarta font-bold text-sm sm:text-base text-black dark:text-white mb-1.5 sm:mb-2">{feat.title}</h4>
-                  <p className="text-text-muted dark:text-white/60 text-xs leading-relaxed">{feat.desc}</p>
+                  <h4 className="font-jakarta font-bold text-sm sm:text-base text-white dark:text-black mb-1.5 sm:mb-2">{feat.title}</h4>
+                  <p className="text-white/60 dark:text-text-muted text-xs leading-relaxed">{feat.desc}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -110,7 +110,7 @@ export default function LandingMiniLanding() {
               <Link href="/checkout?plan=PRO" className="bg-accent text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-accent/20">
                 Activar mi tienda ahora
               </Link>
-              <Link href="/planes" className="bg-white dark:bg-dark text-dark dark:text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:bg-accent dark:hover:bg-accent dark:hover:text-white">
+              <Link href="/planes" className="bg-white/10 dark:bg-neutral-100 border border-white/20 dark:border-black/10 text-white dark:text-dark px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:bg-accent hover:text-white hover:border-accent">
                 Ver planes y precios
               </Link>
             </motion.div>

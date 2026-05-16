@@ -28,13 +28,13 @@ const nextConfig = {
     const csp = [
       "default-src 'self'",
       // Turnstile necesita 'unsafe-eval'. Facebook Pixel carga desde connect.facebook.net
-      `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://checkout.wompi.co https://accounts.google.com https://www.google.com https://apis.google.com https://www.googletagmanager.com https://connect.facebook.net https://www.facebook.com`,
+      `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://checkout.wompi.co https://accounts.google.com https://www.google.com https://apis.google.com https://www.googletagmanager.com https://connect.facebook.net https://www.facebook.com https://www.youtube.com`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com",
       // Facebook Pixel noscript img + pixel de tracking
       "img-src 'self' data: blob: https: http:",
       `connect-src 'self' ${isProd ? '' : 'http://localhost:3001 http://100.85.125.102:3001'} https://*.lookitry.com https://*.supabase.co https://*.wilkiedevs.com https://minio.wilkiedevs.com https://checkout.wompi.co https://accounts.google.com https://www.googleapis.com https://www.google.com https://challenges.cloudflare.com https://www.google-analytics.com https://analytics.google.com https://freeipapi.com https://ipapi.co https://www.facebook.com https://connect.facebook.net`,
       "font-src 'self' https://fonts.gstatic.com",
-      "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://accounts.google.com https://www.google.com https://www.facebook.com",
+      "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://accounts.google.com https://www.google.com https://www.facebook.com https://www.youtube.com https://www.youtube-nocookie.com",
       "object-src 'none'",
     ].join('; ');
 

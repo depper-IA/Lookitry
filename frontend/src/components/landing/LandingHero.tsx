@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, Clock, Sparkles } from 'lucide-react';
@@ -10,6 +10,8 @@ const EASING = [0.22, 1, 0.36, 1] as const;
 
 export default function LandingHero() {
   const [wordIndex, setWordIndex] = useState(0);
+  const [videoReady, setVideoReady] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const words = LANDING_COPY.hero.rotating_words;
 
   useEffect(() => {
@@ -19,6 +21,15 @@ export default function LandingHero() {
     return () => clearInterval(interval);
   }, [words.length]);
 
+  // Si el video ya tiene datos suficientes al montar (cache del navegador), marcarlo listo de inmediato
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.readyState >= 3) {
+      setVideoReady(true);
+    }
+  }, []);
+
   return (
     <section
       id="hero"
@@ -27,26 +38,29 @@ export default function LandingHero() {
     >
       {/* ── Video Background ─────────────────────────────────────────── */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <iframe
-          title="Video de fondo decorativo"
-          src="https://www.youtube.com/embed/1ap0baidLVo?autoplay=1&mute=1&loop=1&playlist=1ap0baidLVo&controls=0&disablekb=1&playsinline=1&modestbranding=1&rel=0"
-          className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 border-0"
-          allow="autoplay; encrypted-media"
-          loading="lazy"
-        />
-        {/* Dark overlay — heavier on left, fades right (Shopify style) */}
+        {/* Fallback gradient — always visible, shown while iframe loads */}
         <div
           className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.2) 100%)',
-          }}
+          style={{ background: 'linear-gradient(135deg, #1a0e0a 0%, #080810 50%, #0a0808 100%)' }}
         />
-        {/* Fallback gradient shown when iframe fails to load */}
+        {/* Local video — no YouTube UI, no play buttons, loops cleanly */}
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          onCanPlay={() => setVideoReady(true)}
+          style={{ transition: 'opacity 0.6s ease', opacity: videoReady ? 1 : 0 }}
+          className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 object-cover"
+        >
+          <source src="/videos/hero.webm" type="video/webm" />
+        </video>
+        {/* Dark overlay — heavier on left, fades right */}
         <div
-          className="absolute inset-0 -z-10"
-          style={{
-            background: 'linear-gradient(135deg, #1a0e0a 0%, #080810 50%, #0a0808 100%)',
-          }}
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.2) 100%)' }}
         />
       </div>
 
@@ -58,13 +72,11 @@ export default function LandingHero() {
           transition={{ duration: 0.8, ease: EASING }}
           className="max-w-2xl"
         >
-          {/* Headline */}
           <h1
             className="mb-5 font-jakarta font-black leading-[1.05] tracking-[-0.03em] text-white sm:mb-7"
             style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
           >
             <span className="block">{LANDING_COPY.hero.title}</span>
-            {/* Cycling word */}
             <span className="relative block h-[1.15em] overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.span
@@ -73,7 +85,7 @@ export default function LandingHero() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -14 }}
                   transition={{ duration: 0.45, ease: EASING }}
-                  className="absolute left-0 top-0 text-white"
+                  className="absolute left-0 top-0 text-accent"
                 >
                   {words[wordIndex]}
                 </motion.span>
@@ -81,12 +93,10 @@ export default function LandingHero() {
             </span>
           </h1>
 
-          {/* Subtitle */}
           <p className="mb-9 max-w-lg font-dm-sans text-base font-light leading-[1.65] text-white/65 sm:mb-11 sm:text-lg">
             {LANDING_COPY.hero.subtitle}
           </p>
 
-          {/* CTAs */}
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href="/demo"
@@ -102,7 +112,6 @@ export default function LandingHero() {
             </Link>
           </div>
 
-          {/* Trust pills */}
           <div className="mt-10 flex flex-wrap items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white/55 sm:gap-10">
             <div className="flex items-center gap-2 hover:text-white/80 transition-colors">
               <ShieldCheck size={13} className="shrink-0 text-accent" aria-hidden="true" /> 100% Seguro
