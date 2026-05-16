@@ -211,6 +211,7 @@ export interface UpdateBrandConfigDto {
   widgetTemplate?: string;
   buttonText?: string;
   welcomeMessage?: string;
+  brandDescription?: string | null; // Used by AI descriptor to generate product descriptions
   shareMessage?: string; // Custom share text for social media (PRO/ENTERPRISE)
   headerColor?: string | null;
   customDomain?: string | null;

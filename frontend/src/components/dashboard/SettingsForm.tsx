@@ -65,6 +65,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     widgetTemplate: isPro ? (brand.widgetTemplate || 'bare') : 'bare',
     buttonText: brand.buttonText || 'Probarme esto',
     welcomeMessage: brand.welcomeMessage || '',
+    brandDescription: (brand as any).brand_description || '',
     shareMessage: brand.shareMessage || '',
     widgetCoverImage: brand.widgetCoverImage || '',
     whatsappContact: brand.whatsappContact || '',
@@ -372,6 +373,18 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Texto del botón central</label>
                 <input name="buttonText" value={formData.buttonText || ''} onChange={handleChange} className={inputClass} placeholder="Probarme esto" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Descripción de tu marca</label>
+                <p className="mb-2 text-[10px] text-[var(--text-muted)]">La IA la usa para generar descripciones de productos más precisas. Incluí estilo, público objetivo y diferencial.</p>
+                <textarea
+                  name="brandDescription"
+                  value={formData.brandDescription || ''}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[#FF5C3A] resize-none"
+                  placeholder="Ej: Marca de moda femenina colombiana, estilo bohemio, dirigida a mujeres de 25 a 45 años. Usamos telas naturales y diseños exclusivos."
+                />
               </div>
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Mensaje de bienvenida</label>

@@ -90,6 +90,7 @@ class BrandsService {
       widget_template: data.widgetTemplate,
       button_text: data.buttonText,
       welcome_message: data.welcomeMessage,
+      brand_description: data.brandDescription !== undefined ? (data.brandDescription || null) : undefined,
       share_message: data.shareMessage,
       header_color: data.headerColor,
       widget_cover_image: data.widgetCoverImage !== undefined ? (data.widgetCoverImage || null) : undefined,
