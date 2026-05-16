@@ -54,18 +54,18 @@ export default function LandingSteps() {
           variants={staggerContainer}
           className="text-center mb-12 sm:mb-16 md:mb-24"
         >
-          <motion.div variants={fadeUp} custom={0}>
+          <motion.div variants={cardVariants} custom={0}>
             <SectionTag text="Cómo lo vive tu cliente" />
           </motion.div>
           <motion.h2
-            variants={fadeUp}
+            variants={cardVariants}
             custom={1}
             className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6 md:mb-8"
           >
             {title}
           </motion.h2>
           <motion.p
-            variants={fadeUp}
+            variants={cardVariants}
             custom={2}
             className="font-dm-sans text-base sm:text-lg text-text-muted dark:text-white/60 max-w-2xl mx-auto font-light leading-relaxed"
           >
