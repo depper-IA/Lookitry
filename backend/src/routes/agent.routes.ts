@@ -7,6 +7,12 @@ import { rebeccaIdentityService } from '../services/rebecca-identity.service';
 
 const router = Router();
 
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; magA += a[i] * a[i]; magB += b[i] * b[i]; }
+  return dot / (Math.sqrt(magA) * Math.sqrt(magB) + 1e-9);
+}
+
 // === RAG: Lookitry Knowledge Search (Rebecca WhatsApp Agent) ===
 
 const GEMINI_API_KEY_AGENT = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY ?? '';
@@ -77,6 +83,57 @@ router.post('/knowledge/search', async (req: Request, res: Response) => {
         }
       } catch (embErr: any) {
         console.warn('[Knowledge Search] Embedding falló, usando keyword fallback:', embErr.message);
+      }
+    }
+
+    // 1b. In-process similarity search if RPC failed (vector type mismatch)
+    if (results.length === 0 && GEMINI_API_KEY_AGENT) {
+      searchType = 'semantic-js';
+      try {
+        const embRes = await fetch(
+          `${GEMINI_BASE_AGENT}/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY_AGENT}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'models/text-embedding-004',
+              content: { parts: [{ text: query }] },
+              taskType: 'RETRIEVAL_QUERY',
+            }),
+          }
+        );
+        if (!embRes.ok) throw new Error('Embedding API failed');
+        const embJson = await embRes.json() as { embedding?: { values?: number[] } };
+        const qEmbedding = embJson?.embedding?.values;
+        if (!qEmbedding || qEmbedding.length !== 768) throw new Error('Invalid embedding');
+
+        const { data: kbItems } = await supabaseAdmin
+          .from('lookitry_knowledge')
+          .select('id, category, title, content, embedding')
+          .eq('is_active', true)
+          .not('embedding', 'is', null);
+
+        if (kbItems && kbItems.length > 0) {
+          const scored = kbItems
+            .map((item: any) => {
+              try {
+                const stored = typeof item.embedding === 'string'
+                  ? JSON.parse(item.embedding)
+                  : Array.isArray(item.embedding) ? item.embedding : null;
+                if (!stored || stored.length !== 768) return null;
+                const sim = cosineSimilarity(qEmbedding, stored);
+                return { ...item, similarity: sim };
+              } catch { return null; }
+            })
+            .filter(Boolean)
+            .sort((a: any, b: any) => b.similarity - a.similarity)
+            .slice(0, Math.min(match_count, 10))
+            .filter((item: any) => item.similarity >= min_similarity);
+
+          if (scored.length > 0) results = scored;
+        }
+      } catch (embErr: any) {
+        console.warn('[Knowledge Search] In-process search failed:', embErr.message);
       }
     }
 

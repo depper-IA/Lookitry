@@ -4,10 +4,7 @@
   "small_model": "groq/llama-3.3-70b-versatile",
   "provider": {
     "minimax": {
-      "npm": "@ai-sdk/anthropic",
       "options": {
-        "baseURL": "https://api.minimax.io/anthropic",
-        "timeout": 300000,
         "apiKey": "***REMOVED-SECRET***"
       },
       "models": {
