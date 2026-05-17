@@ -39,7 +39,7 @@ function ChatWidgetInner() {
             alt="Rebecca"
             width={44}
             height={44}
-            className="object-cover object-[50%_5%] scale-125 w-full h-full"
+            className="object-cover object-top w-full h-full"
           />
         </div>
         <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-[#1a1a1a]" aria-hidden="true" />
