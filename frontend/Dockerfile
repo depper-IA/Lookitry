@@ -20,11 +20,12 @@ ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
 ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
 ENV NEXT_PUBLIC_REBECCA_WIDGET_ENABLED=$NEXT_PUBLIC_REBECCA_WIDGET_ENABLED
 ENV SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY
-COPY package*.json ./
+COPY package*.json pnpm-lock.yaml ./
 RUN apk add --no-cache vips-dev
-RUN npm install
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npx next build
+RUN pnpm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
