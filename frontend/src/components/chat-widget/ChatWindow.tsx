@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import type { Message } from './chat-widget.types';
@@ -25,9 +26,23 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
     <div className="fixed bottom-6 right-6 z-[9999] flex w-80 flex-col rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
       style={{ height: '480px' }}>
       <header className="flex items-center justify-between bg-accent px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-white/70 animate-pulse" />
-          <span className="text-sm font-semibold text-white">Rebecca</span>
+        <div className="flex items-center gap-3">
+          <div className="relative flex-shrink-0">
+            <div className="h-9 w-9 rounded-xl overflow-hidden ring-2 ring-white/30">
+              <Image
+                src="/rebecca-avatar.png"
+                alt="Rebecca"
+                width={36}
+                height={36}
+                className="object-cover object-top w-full h-full"
+              />
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-accent" aria-hidden="true" />
+          </div>
+          <div className="leading-tight">
+            <p className="text-sm font-bold text-white tracking-tight">Rebecca</p>
+            <p className="text-[11px] text-white/70">Asesora de Lookitry</p>
+          </div>
         </div>
         <button
           type="button"
