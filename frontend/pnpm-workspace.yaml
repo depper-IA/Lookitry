@@ -1,3 +1,6 @@
+packages:
+  - '.'
+
 allowBuilds:
   '@ampproject/toolbox-optimizer': true
   es5-ext: true
