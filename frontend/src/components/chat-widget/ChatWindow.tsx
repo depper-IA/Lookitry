@@ -34,7 +34,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
                 alt="Rebecca"
                 width={40}
                 height={40}
-                className="object-cover object-[50%_5%] scale-125 w-full h-full"
+                className="object-cover object-top w-full h-full"
               />
             </div>
             <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-accent" aria-hidden="true" />
