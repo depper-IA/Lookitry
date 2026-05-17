@@ -617,13 +617,13 @@
             },
             {
               "name": "X-API-Key",
-              "value": "={{ $env.YCLOUD_API_KEY }}"
+              "value": "4465e9492cdfd61cc5826337d68783a6"
             }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"to\": \"{{ $('Normalize Payload').item.json.phone }}\",\n  \"from\": \"{{ $env.LOOKITRY_WHATSAPP_NUMBER ?? '5491155555555' }}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"{{ $json.output ?? $json.text ?? $json.response }}\"\n  }\n}",
+        "jsonBody": "={\n  \"to\": \"{{ $('Normalize Payload').item.json.phone }}\",\n  \"from\": \"573248507947\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"{{ $json.output ?? $json.text ?? $json.response }}\"\n  }\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -785,7 +785,7 @@
           "parameters": [
             {
               "name": "eventTypeId",
-              "value": "={{ $env.LOOKITRY_CAL_EVENT_TYPE_ID }}"
+              "value": ""
             },
             {
               "name": "start",
@@ -806,7 +806,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "={{ 'Bearer ' + $env.LOOKITRY_CAL_API_KEY }}"
+              "value": ""
             },
             {
               "name": "cal-api-version",
@@ -834,7 +834,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "={{ 'Bearer ' + $env.LOOKITRY_CAL_API_KEY }}"
+              "value": ""
             },
             {
               "name": "cal-api-version",
@@ -847,7 +847,7 @@
           "parameters": [
             {
               "name": "eventTypeId",
-              "value": "={{ $env.LOOKITRY_CAL_EVENT_TYPE_ID }}"
+              "value": ""
             },
             {
               "name": "start",
@@ -859,7 +859,7 @@
             },
             {
               "name": "attendee.email",
-              "value": "={{ $env.LOOKITRY_BOOKING_EMAIL ?? 'hola@lookitry.com' }}"
+              "value": "contacto@lookitry.com"
             },
             {
               "name": "attendee.timeZone",
