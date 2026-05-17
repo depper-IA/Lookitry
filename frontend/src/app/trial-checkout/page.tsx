@@ -463,7 +463,7 @@ export default function TrialCheckoutPage() {
                       '1 producto activo en el catálogo',
                       '15 generaciones con IA',
                       'Widget personalizable para tu sitio',
-                      'Acceso a todas las funciones PRO',
+                      'Logo y colores de tu marca',
                     ].map((item) => (
                       <div key={item} className="flex items-center gap-3">
                         <IconCheck />

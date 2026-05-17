@@ -210,7 +210,7 @@ export default function OrderSummaryAdapter(props: OrderSummaryAdapterProps) {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-sm font-bold text-white">Mini-landing Page</p>
-                  <p className="text-[10px] text-[#999]">Un solo pago de por vida</p>
+                  <p className="text-[10px] text-[#999]">Pago único (requiere plan activo)</p>
                 </div>
                 <span className="text-sm font-mono text-white">{formatCOP(landingPrice)}</span>
               </div>
@@ -286,13 +286,13 @@ export default function OrderSummaryAdapter(props: OrderSummaryAdapterProps) {
             <div className="flex items-start gap-2">
               <Check className="w-3 h-3 mt-0.5" style={{ color: OA }} />
               <span className="text-[9px] font-bold text-[#999] leading-tight uppercase tracking-tight">
-                Activación<br />Instantánea
+                {isLanding ? <>Activación<br />&lt;48h hábiles</> : <>Activación<br />Instantánea</>}
               </span>
             </div>
             <div className="flex items-start gap-2">
               <Check className="w-3 h-3 mt-0.5" style={{ color: OA }} />
               <span className="text-[9px] font-bold text-[#999] leading-tight uppercase tracking-tight">
-                Sin Letra<br />Pequeña
+                Sin Cobros<br />Ocultos
               </span>
             </div>
           </div>

@@ -266,7 +266,7 @@ function CheckoutContent() {
   // ── Cálculos ───────────────────────────────────────────────────────────────
 
   const landingPrice    = pricing?.landingPrice         ?? 650000;
-  const landingOriginal = pricing?.landingOriginalPrice ?? 900000;
+  const landingOriginal = pricing?.landingOriginalPrice ?? 850000;
 
   const isLanding = selectedPlan === 'LANDING';
   const isTrial   = selectedPlan === 'TRIAL';
