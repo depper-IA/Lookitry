@@ -85,7 +85,7 @@ export default function LandingMiniLanding() {
               transition={{ duration: 0.45, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white dark:text-black mb-4 sm:mb-5 leading-[1.1]"
             >
-              {copy.title},{' '}
+              {copy.title}{' '}
               <span className="text-accent">{copy.titleAccent}</span>
             </motion.h2>
 
@@ -134,7 +134,7 @@ export default function LandingMiniLanding() {
               className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
             >
               <Link
-                href="/mini-landing"
+                href="/checkout"
                 className="inline-flex items-center justify-center gap-2 bg-accent text-white px-7 py-4 rounded-xl font-bold text-sm sm:text-base transition-all hover:translate-y-[-1px] hover:shadow-xl hover:shadow-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-black dark:focus-visible:ring-offset-white"
               >
                 {copy.cta_primary}
