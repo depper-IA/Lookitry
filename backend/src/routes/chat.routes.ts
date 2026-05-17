@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { receiveWebhook, getConversations, getConversationMessages, replyToConversation, updateConversationStatus, widgetReply, trackPage } from '../controllers/chat.controller';
+import { receiveWebhook, getConversations, getConversationMessages, replyToConversation, updateConversationStatus, widgetReply, trackPage, whatsappReply } from '../controllers/chat.controller';
 import { adminAuthMiddleware } from '../middleware/adminAuth';
 import { rebeccaRateLimitBySession, rebeccaRateLimitByIP } from '../middleware/rebecca-rate-limit';
 
@@ -14,7 +14,8 @@ router.post('/track-page', trackPage);
 // Webhook for incoming WhatsApp messages
 router.post('/webhook', receiveWebhook);
 
-// n8n WhatsApp workflow endpoint — no auth, called server-to-server
+// n8n WhatsApp workflow endpoints — no auth, called server-to-server
+router.post('/whatsapp', whatsappReply);
 router.patch('/conversations/:id/status', updateConversationStatus);
 
 // Admin endpoints

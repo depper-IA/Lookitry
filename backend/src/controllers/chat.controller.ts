@@ -3,6 +3,58 @@ import { supabaseAdmin } from '../config/supabase';
 import { rebeccaChatService } from '../services/rebecca-chat.service';
 import { rebeccaIdentityService } from '../services/rebecca-identity.service';
 
+const WHATSAPP_HISTORY_TTL = 86400; // 24h
+const WHATSAPP_HISTORY_MAX = 20;
+
+/**
+ * POST /api/chat/whatsapp
+ * Called by n8n instead of running AI Agent in-workflow.
+ * Manages conversation history in Redis keyed by phone.
+ */
+export const whatsappReply = async (req: Request, res: Response) => {
+  try {
+    const { phone, message } = req.body as { phone?: unknown; message?: unknown };
+
+    if (typeof phone !== 'string' || !phone.trim()) {
+      return res.status(400).json({ error: 'phone required' });
+    }
+    if (typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ error: 'message required' });
+    }
+    if (message.length > 4000) {
+      return res.status(400).json({ error: 'message too long' });
+    }
+
+    const { redis } = await import('../config/redis');
+    const historyKey = `whatsapp:history:${phone}`;
+
+    let history: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+    if (redis) {
+      const raw = await redis.get(historyKey);
+      if (raw) {
+        try { history = JSON.parse(raw); } catch { /* corrupt cache, start fresh */ }
+      }
+    }
+
+    const locale = rebeccaIdentityService.detectLocale(message);
+    const reply = await rebeccaChatService.replyForChannel('whatsapp', phone, message, history, locale);
+
+    if (redis) {
+      history.push({ role: 'user', content: message });
+      history.push({ role: 'assistant', content: reply });
+      if (history.length > WHATSAPP_HISTORY_MAX) {
+        history = history.slice(-WHATSAPP_HISTORY_MAX);
+      }
+      await redis.set(historyKey, JSON.stringify(history), 'EX', WHATSAPP_HISTORY_TTL);
+    }
+
+    return res.status(200).json({ reply });
+  } catch (error: any) {
+    console.error('[Chat] whatsappReply:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 type ConversationStatus = 'new' | 'in_progress' | 'classified' | 'resolved' | 'escalated';
 
 interface UpdateConversationStatusBody {
