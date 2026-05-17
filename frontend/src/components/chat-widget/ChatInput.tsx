@@ -5,9 +5,10 @@ import { useRef, type KeyboardEvent } from 'react';
 interface ChatInputProps {
   onSend: (message: string) => void;
   isLoading: boolean;
+  isExpanded?: boolean;
 }
 
-export function ChatInput({ onSend, isLoading }: ChatInputProps) {
+export function ChatInput({ onSend, isLoading, isExpanded }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>): void {
@@ -32,7 +33,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
         placeholder="Escribí tu mensaje..."
         onKeyDown={handleKeyDown}
         disabled={isLoading}
-        className="flex-1 resize-none rounded-xl border border-gray-200 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-50 max-h-24 overflow-y-auto"
+        className={`flex-1 resize-none rounded-xl border border-gray-200 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-50 max-h-24 overflow-y-auto ${isExpanded ? 'text-base py-3' : 'text-sm'}`}
         style={{ scrollbarWidth: 'none' }}
       />
       <button
