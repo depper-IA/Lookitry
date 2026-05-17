@@ -2,7 +2,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@11 --activate
 
 COPY package*.json pnpm-lock.yaml ./
 RUN pnpm install
@@ -17,7 +17,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=512
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@11 --activate
 
 COPY package*.json pnpm-lock.yaml ./
 RUN pnpm install --prod
