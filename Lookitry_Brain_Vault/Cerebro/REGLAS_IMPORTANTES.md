@@ -54,7 +54,18 @@ inclusion: always
 
 - **SIEMPRE usar el script _deploy_now.py** Located in `scripts/_deploy_now.py` (raíz del proyecto: `/home/travis/Lookitry/Lookitry/scripts/_deploy_now.py`)
 - **NUNCA usar GitHub Actions CI/CD** para deploys
-- Para ejecutar: `python _deploy_now.py` desde la carpeta `scripts/` o usar `--force` para forzar rebuild
+- Para ejecutar: `python3 scripts/_deploy_now.py` desde la raíz del proyecto
+
+**Flags disponibles:**
+| Flag | Efecto |
+|------|--------|
+| (sin flags) | Deploy inteligente: detecta qué cambió (frontend/backend) |
+| `--force` | Fuerza rebuild aunque no haya cambios detectados |
+| `--frontend` | Solo rebuild y deploy del frontend |
+| `--backend` | Solo rebuild y deploy del backend |
+| `--no-cache` | Build Docker sin cache (útil cuando cambia package.json) |
+
+**REGLA:** Usar flags específicos (`--frontend` o `--backend`) cuando el cambio es solo en un servicio. No lanzar un deploy completo por un cambio en un solo Dockerfile.
 
 ### 1.2 Pasos para Deploy (Commit -> Push -> Verificar -> Deploy)
 
@@ -408,13 +419,13 @@ Los agentes ya NO necesitan notificar por Telegram cuando completan tareas. Esta
 
 ---
 
-**Ultima actualizacion:** Mayo 2026 - Sistema de Agentes v3.1 / AI Stack actualizado
+**Ultima actualizacion:** 2026-05-17 - Sistema de Agentes v3.1 / pnpm@9.15.9 / Node 22 backend
 **Cambios principales:**
+- Regla 15.2: Versión pnpm@9.15.9 especificada, compatibilidad Node documentada, configuración shamefully-hoist y workspace
+- Regla 1.1: Deploy flags documentados (`--frontend`, `--backend`, `--force`, `--no-cache`)
 - Regla 10: Refactorización obligatoria por tamaño de archivo (600 líneas)
 - Regla 10.3: Detección y reporte de código muerto obligatorio
-- Renumeración de secciones para acomodar nueva regla
-- Regla 5.4: Actualizada — Vertex AI como primario, OpenRouter solo vía n8n fallback, GROQ eliminado, MobileSAM local documentado
-- Regla 1.1: Path de deploy script corregido (era path Windows incorrecto)
+- Regla 5.4: Vertex AI primario, OpenRouter solo vía n8n fallback, GROQ eliminado, MobileSAM local documentado
 
 ---
 
@@ -520,13 +531,25 @@ Ver: `Cerebro/Skills/code-sync-checker.md`
 - **Razón**: El cliente oficial de NPM es actualmente vulnerable a la ejecución de scripts maliciosos en la fase de pre-instalación que han comprometido a más de 25,000 repositorios.
 
 ### 15.2 Uso Obligatorio de PNPM
+
 - Para toda gestión de paquetes, se debe usar **`pnpm`**.
-- **Beneficios de Seguridad**: `pnpm` utiliza un almacenamiento direccionable por contenido (Content-Addressable Store) que evita la dependencia fantasma (phantom dependencies) y dificulta que paquetes maliciosos se "oculten" en el árbol de `node_modules`.
+- **Versión obligatoria**: `pnpm@9.15.9`
+  - **Razón**: pnpm@11 requiere Node ≥22.13. El backend Docker usa Node 22 pero pnpm@9.15.9 es más estable y compatible con ambos Node 20 (frontend) y Node 22 (backend).
+  - **Instalación en Docker**: `corepack enable && corepack prepare pnpm@9.15.9 --activate` (NO usar `npm install -g pnpm`)
 - **Comandos permitidos**:
   - `pnpm install`
   - `pnpm add [package]`
   - `pnpm dev`
 - **Bloqueo**: Si un agente intenta usar `npm install`, Sammantha o el Orquestador deben detener la operación inmediatamente.
+
+**Configuración pnpm en el proyecto:**
+- `shamefully-hoist=true` en `frontend/.npmrc` y `backend/.npmrc` — aplana node_modules para TypeScript
+- `pnpm-workspace.yaml` en ambos proyectos DEBE incluir `packages: ['.']`
+- Lockfiles (`pnpm-lock.yaml`) deben estar trackeados en git en ambos proyectos
+
+**Compatibilidad Node / Docker:**
+- **Frontend Docker**: `node:20-alpine` — pnpm@9.15.9 ✓
+- **Backend Docker**: `node:22-alpine` — requerido por `@supabase/realtime-js@2.105.4` (necesita `globalThis.WebSocket` nativo)
 
 ### 15.3 Auditoría de Seguridad
 - Antes de agregar cualquier librería nueva, se debe verificar en [Socket.dev](https://socket.dev) o herramientas similares para asegurar que no tenga comportamientos sospechosos (telemetría oculta, acceso a red no declarado).

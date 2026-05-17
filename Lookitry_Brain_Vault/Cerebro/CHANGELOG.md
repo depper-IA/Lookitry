@@ -2,6 +2,62 @@
 
 ---
 
+## 2026-05-17
+
+### fix(docker): Migración completa npm → pnpm@9.15.9 + Node 22 en backend
+
+**Contexto:** Alerta de seguridad §15 de REGLAS_IMPORTANTES. npm bloqueado por Supply Chain Attacks (Mini Shai-Hulud, PromptMink). Adicionalmente, `@supabase/realtime-js@2.105.4` requiere Node 22+ para `globalThis.WebSocket` nativo.
+
+**Cambios:**
+
+1. **`backend/Dockerfile`**: `npm install` → `corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install`. Node 20 → **Node 22** (para WebSocket nativo de Supabase).
+2. **`frontend/Dockerfile`**: `npm install` → `pnpm@9.15.9`. Agrega `pnpm-lock.yaml .npmrc` al primer `COPY`. Reordenado runner stage: `COPY standalone` primero, luego overwrite sharp/img (evita conflicto symlink vs directorio).
+3. **`backend/.npmrc`** (nuevo): `shamefully-hoist=true` — expone `google-auth-library` y otras dependencias transitivas al TypeScript resolver.
+4. **`frontend/.npmrc`**: Agrega `shamefully-hoist=true` — expone `@img/sharp-*` al runner stage de Docker.
+5. **`backend/tsconfig.json`**: `declaration: false, declarationMap: false` — elimina 20+ errores TS2742 en Express routers (pnpm aísla `@types/express-serve-static-core` en paths no portables).
+6. **`backend/pnpm-workspace.yaml`**: Agrega `packages: ['.']` — sin este campo pnpm falla con `packages field missing or empty` cuando el archivo existe en el contexto Docker.
+7. **`frontend/pnpm-workspace.yaml`**: Idéntico fix que backend.
+8. **`frontend/.gitignore`**: Remueve `pnpm-lock.yaml` del ignore — el lockfile debe estar en git para que el `COPY pnpm-lock.yaml` en Dockerfile no falle en VPS.
+
+**Archivos modificados:**
+- `backend/Dockerfile`, `frontend/Dockerfile`
+- `backend/.npmrc` (creado), `frontend/.npmrc` (modificado)
+- `backend/tsconfig.json`
+- `backend/pnpm-workspace.yaml`, `frontend/pnpm-workspace.yaml`
+- `frontend/.gitignore`, `frontend/pnpm-lock.yaml` (ahora trackeado)
+
+---
+
+### feat(rebecca): Reescritura del sistema prompt + habilitación del widget
+
+**Contexto:** Rebecca es la asesora de ventas IA de Lookitry. Objetivo: cerrar ventas en lookitry.com, resolver dudas, capturar leads (nombre, email, tienda, plataforma).
+
+**Cambios:**
+
+1. **`backend/src/services/rebecca-identity.service.ts`**: SYSTEM_PROMPT_TEMPLATE completamente reescrito:
+   - `## RESTRICCIONES ABSOLUTAS`: prohibición explícita de términos técnicos ("virtual try-on", "IA", "widget", "algoritmo", "tecnología", "integración", "onboarding", "conversión", "dashboard")
+   - `## VOCABULARIO PERMITIDO`: reemplazos obligatorios (ej: "widget" → "un botón en tu tienda")
+   - `## QUÉ ES LOOKITRY`: descripción en lenguaje simple, sin jerga
+   - `## MENTALIDAD DE VENTAS`: conecta features con dolores reales (devoluciones, clientes indecisos, diferenciación)
+   - `## TONO Y ESTILO`: tuteo adaptado al acento detectado ("vos" Argentina, "tú" resto)
+   - `## FLUJO RECOLECCIÓN DE DATOS`: captura natural de datos, uno por mensaje, sin sonar a formulario
+
+2. **`frontend/Dockerfile`**: `ARG NEXT_PUBLIC_REBECCA_WIDGET_ENABLED` + `ENV` declarados para que el flag se bake en el build de Next.js (las vars `NEXT_PUBLIC_*` se resuelven en build-time, no runtime).
+
+3. **`docker-compose.frontend.yml`**: Ya tenía `NEXT_PUBLIC_REBECCA_WIDGET_ENABLED: ${NEXT_PUBLIC_REBECCA_WIDGET_ENABLED:-true}`.
+
+---
+
+### fix(auth): Middleware no intercepta rutas /admin
+
+**Problema:** `middleware.ts` incluía `/admin/:path*` en el matcher y verificaba el cookie `token` (de usuarios), redirigiendo el login de admin al login de usuarios.
+
+**Solución:** `frontend/src/middleware.ts` — matcher reducido a `['/dashboard/:path*']` únicamente. Las rutas `/admin` tienen su propia autenticación client-side vía localStorage (`adminUser` + cookie `admin_token`).
+
+**Archivo modificado:** `frontend/src/middleware.ts`
+
+---
+
 ## 2026-05-15
 
 ### refactor(ai): Removido código muerto de Imagen 3
