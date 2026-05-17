@@ -10,6 +10,7 @@ import { CheckoutStepper, Step } from '@/components/checkout/CheckoutStepper';
 import { clearCheckoutDraft, loadCheckoutDraft, saveCheckoutDraft } from '@/lib/checkoutDraft';
 import { formatCop, formatUsd, priceInUsd } from '@/lib/paymentDisplay';
 import { authService } from '@/services/auth.service';
+import { trackPageEvent, getRebeccaSessionId } from '@/lib/rebecca-tracking';
 
 export type PlanKey = 'BASIC' | 'PRO' | 'LANDING' | 'TRIAL';
 export type SubPlan = 'BASIC' | 'PRO';
@@ -242,6 +243,24 @@ function CheckoutContent() {
     if (draft.paymentMethod) setPaymentMethod(draft.paymentMethod);
     if (draft.currency) setCurrency(draft.currency);
     if (typeof draft.trm === 'number' && draft.trm > 0) setTrm(draft.trm);
+  }, []);
+
+  // ── Rebecca tracking: checkout_start ──────────────────────────────────────────
+  // Spec: Rebecca 2.0 §6.4 — Track when lead arrives at checkout
+  useEffect(() => {
+    // Generar/compartir session_id con pago-exitoso via sessionStorage
+    const sessionId = getRebeccaSessionId();
+    if (!sessionId) return;
+
+    fetch('/api/chat/track-page', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: sessionId,
+        page_url: '/checkout',
+        event: 'checkout_start',
+      }),
+    }).catch(() => {});
   }, []);
 
   // ── Cálculos ───────────────────────────────────────────────────────────────
