@@ -4,7 +4,7 @@ import axios from 'axios';
 import { GoogleAuth } from 'google-auth-library';
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-process.env.GOOGLE_APPLICATION_CREDENTIALS = 'C:\\Users\\Matt\\Lookitry\\gen-lang-client-0591001769-06f04cbf5e1a.json';
+process.env.GOOGLE_APPLICATION_CREDENTIALS = '/home/travis/Lookitry/Lookitry/backend/secrets/vertex-key.json';
 
 const googleAuth = new GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/cloud-platform']
@@ -18,7 +18,7 @@ async function testImagenV2() {
     const projectId = 'gen-lang-client-0591001769';
     const region = 'us-central1';
     
-    const modelId = 'imagegeneration';
+    const modelId = 'imagen-3.0-generate-002';
     const url = `https://${region}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/google/models/${modelId}:predict`;
 
     console.log(`URL: ${url}`);
