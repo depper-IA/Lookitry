@@ -209,7 +209,7 @@ export class RebeccaIdentityService {
     }
 
     let pageContextBlock = '';
-    if (context && context.page_url) {
+    if (pageContext && pageContext.page_url) {
       const pageContextMap: Record<string, string> = {
         '/demo': 'El lead está en la página de DEMO. Aún no conoce Lookitry. Explicá qué es Lookitry de forma simple y destacá el beneficio principal.',
         '/plans': 'El lead está comparando planes y precios. Ayudalo a elegir el plan adecuado preguntando sobre su tienda.',
@@ -217,16 +217,15 @@ export class RebeccaIdentityService {
         '/how-it-works': 'El lead quiere saber cómo funciona Lookitry. Explicá el proceso de forma simple.',
       };
 
-      const pageKey = Object.keys(pageContextMap).find(key => context.page_url?.startsWith(key));
+      const pageKey = Object.keys(pageContextMap).find(key => pageContext.page_url?.startsWith(key));
       const pageInstruction = pageKey ? pageContextMap[pageKey] : null;
 
-      if (pageInstruction || context.source === 'demo') {
+      if (pageInstruction || pageContext.source === 'demo') {
         pageContextBlock = `
 
 ## CONTEXTO DE PÁGINA
 ${pageInstruction || 'El lead está en la página de DEMO. Aún no conoce Lookitry.'}`;
       }
-    }
     }
 
     return SYSTEM_PROMPT_TEMPLATE
