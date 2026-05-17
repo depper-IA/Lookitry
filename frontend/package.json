@@ -5,15 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:analyze": "ANALYZE=true npm run build",
-    "build:prod": "npm run lint && next build",
+    "build:analyze": "ANALYZE=true pnpm run build",
+    "build:prod": "pnpm run lint && next build",
     "start": "next start",
     "start:prod": "cross-env NODE_ENV=production next start",
     "lint": "next lint",
     "test": "vitest --run",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "clean": "rimraf .next",
-    "prebuild": "npm run clean"
+    "prebuild": "pnpm run clean"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

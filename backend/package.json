@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
-    "build:prod": "npm run lint && npm run test && tsc",
+    "build:prod": "pnpm run lint && pnpm run test && tsc",
     "start": "node dist/index.js",
     "start:prod": "cross-env NODE_ENV=production node dist/index.js",
     "lint": "eslint . --ext .ts",
@@ -16,7 +16,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "clean": "rimraf dist",
-    "prebuild": "npm run clean",
+    "prebuild": "pnpm run clean",
     "migration:subscription": "ts-node src/scripts/run-subscription-migration.ts",
     "subscription:check": "ts-node src/scripts/daily-subscription-check.ts",
     "create-admin": "ts-node src/scripts/create-admin.ts",
@@ -47,6 +47,7 @@
     "sharp": "^0.34.5",
     "uuid": "^13.0.0",
     "wav": "^1.0.2",
+    "ws": "^8.20.1",
     "xlsx": "^0.18.5",
     "zod": "^4.4.1"
   },
