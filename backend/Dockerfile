@@ -17,13 +17,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=512
 
-RUN corepack enable && corepack prepare pnpm@11 --activate
-
-COPY package*.json pnpm-lock.yaml ./
-RUN pnpm install --prod
-
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/assets ./assets
+COPY package*.json ./
 
 EXPOSE 3001
 CMD ["node", "dist/index.js"]
