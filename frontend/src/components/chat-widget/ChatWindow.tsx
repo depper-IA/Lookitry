@@ -28,13 +28,13 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
       <header className="flex items-center justify-between bg-accent px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="relative flex-shrink-0">
-            <div className="h-9 w-9 rounded-xl overflow-hidden ring-2 ring-white/30">
+            <div className="h-10 w-10 rounded-xl overflow-hidden ring-2 ring-white/30">
               <Image
                 src="/rebecca-avatar.png"
                 alt="Rebecca"
-                width={36}
-                height={36}
-                className="object-cover object-top w-full h-full"
+                width={40}
+                height={40}
+                className="object-cover object-[center_8%] scale-150 w-full h-full"
               />
             </div>
             <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-accent" aria-hidden="true" />

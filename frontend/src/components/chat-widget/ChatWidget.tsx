@@ -33,13 +33,13 @@ function ChatWidgetInner() {
     >
       {/* Avatar con indicador online */}
       <div className="relative flex-shrink-0">
-        <div className="h-10 w-10 rounded-xl overflow-hidden ring-2 ring-accent/20">
+        <div className="h-11 w-11 rounded-xl overflow-hidden ring-2 ring-accent/20">
           <Image
             src="/rebecca-avatar.png"
             alt="Rebecca"
-            width={40}
-            height={40}
-            className="object-cover object-top w-full h-full"
+            width={44}
+            height={44}
+            className="object-cover object-[center_8%] scale-150 w-full h-full"
           />
         </div>
         <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-[#1a1a1a]" aria-hidden="true" />
