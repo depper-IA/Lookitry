@@ -13,16 +13,19 @@ export async function GET() {
     supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 
+  const today = new Date().toISOString().split('T')[0];
   const staticRoutes = [
-    { url: BASE_URL, changeFrequency: 'weekly', priority: 1.0, lastmod: new Date().toISOString().split('T')[0] },
-    { url: `${BASE_URL}/planes`, changeFrequency: 'weekly', priority: 0.9, lastmod: new Date().toISOString().split('T')[0] },
-    { url: `${BASE_URL}/demo`, changeFrequency: 'monthly', priority: 0.9, lastmod: new Date().toISOString().split('T')[0] },
-    { url: `${BASE_URL}/blog`, changeFrequency: 'daily', priority: 0.9, lastmod: new Date().toISOString().split('T')[0] },
-    { url: `${BASE_URL}/casos-de-exito`, changeFrequency: 'monthly', priority: 0.8, lastmod: new Date().toISOString().split('T')[0] },
-    { url: `${BASE_URL}/contacto`, changeFrequency: 'monthly', priority: 0.8, lastmod: new Date().toISOString().split('T')[0] },
-    { url: `${BASE_URL}/ayuda`, changeFrequency: 'monthly', priority: 0.7, lastmod: new Date().toISOString().split('T')[0] },
-    { url: `${BASE_URL}/terminos`, changeFrequency: 'yearly', priority: 0.5, lastmod: new Date().toISOString().split('T')[0] },
-    { url: `${BASE_URL}/privacidad`, changeFrequency: 'yearly', priority: 0.5, lastmod: new Date().toISOString().split('T')[0] },
+    { url: BASE_URL,                              changeFrequency: 'weekly',  priority: 1.0, lastmod: today },
+    { url: `${BASE_URL}/planes`,                  changeFrequency: 'weekly',  priority: 0.9, lastmod: today },
+    { url: `${BASE_URL}/demo`,                    changeFrequency: 'monthly', priority: 0.9, lastmod: today },
+    { url: `${BASE_URL}/probador-virtual`,        changeFrequency: 'monthly', priority: 0.8, lastmod: today },
+    { url: `${BASE_URL}/mini-landing`,            changeFrequency: 'monthly', priority: 0.8, lastmod: today },
+    { url: `${BASE_URL}/casos-de-exito`,          changeFrequency: 'monthly', priority: 0.8, lastmod: today },
+    { url: `${BASE_URL}/contacto`,                changeFrequency: 'monthly', priority: 0.8, lastmod: today },
+    { url: `${BASE_URL}/blog`,                    changeFrequency: 'daily',   priority: 0.8, lastmod: today },
+    { url: `${BASE_URL}/ayuda`,                   changeFrequency: 'monthly', priority: 0.7, lastmod: today },
+    { url: `${BASE_URL}/terminos`,                changeFrequency: 'yearly',  priority: 0.5, lastmod: today },
+    { url: `${BASE_URL}/privacidad`,              changeFrequency: 'yearly',  priority: 0.5, lastmod: today },
   ];
 
   let dynamicRoutes: { url: string; changeFrequency: string; priority: number; lastmod?: string }[] = [];

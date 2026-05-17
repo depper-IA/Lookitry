@@ -42,33 +42,52 @@ export const LANDING_COPY = {
   },
 
   virtual_shop: {
-    title: "Tu Pequeña Tienda Virtual", // Antes: Mini-landing
-    description: "No necesitas una web compleja. Te entregamos una vitrina interactiva lista para recibir tráfico de tus redes sociales.",
+    badge: "Complemento · Pago único",
+    title: "Tu Pequeña Tienda Virtual",
+    titleAccent: "lista para vender en 10 minutos.",
+    description: "Te entregamos un link propio donde tus clientas eligen una prenda, suben su foto y se ven puestas la ropa antes de comprarte. Sin instalar nada, sin saber de tecnología.",
     features: [
-      "Link personalizado para tu biografía de Instagram.",
-      "Catálogo interactivo con probador virtual integrado.",
-      "Sin aplicaciones que descargar — funciona en cualquier celular.",
-      "Botón directo de compra por WhatsApp."
-    ]
+      {
+        title: "Un link que reemplaza tu web",
+        desc: "Pegalo en tu bio de Instagram. Tus seguidores entran y compran sin salir del celular."
+      },
+      {
+        title: "Tus clientas se prueban la ropa solas",
+        desc: "Suben una foto y la IA les muestra cómo les queda. Dejás de responder ¿me quedará bien?"
+      },
+      {
+        title: "Hasta 30% menos devoluciones",
+        desc: "Compran con la seguridad de un probador real. Menos cambios, más ventas que se quedan."
+      },
+      {
+        title: "Cierre por WhatsApp en un clic",
+        desc: "Botón directo a tu chat. La venta llega caliente, lista para confirmar."
+      }
+    ],
+    cta_primary: "Quiero mi tienda virtual",
+    cta_secondary: "Ver planes y precios"
   },
 
   social_proof: {
-    title: "Tu mejor aliado en redes sociales",
+    label: "Social OS",
+    title: "Tus redes ya tienen clientas.",
+    titleAccent: "Lookitry las cierra.",
     instagram: {
-      title: "Bio de Instagram",
-      description: "Convierte tus seguidores en clientes. Un solo link en tu bio para que todos se prueben tu ropa.",
+      title: "Link en bio que convierte",
+      description: "Un solo link para todo tu catálogo. Tus seguidoras entran, se prueban la ropa y te escriben para comprar sin salir de Instagram.",
+      tag: "@Lookitry"
+    },
+    tiktok: {
+      title: "Del video a la venta",
+      description: "Tus fans ven la prenda en el video y la prueban antes de comprarte. Del scroll a la compra confirmada.",
       tag: "@Lookitry"
     },
     whatsapp: {
-      title: "Ventas por WhatsApp",
-      description: "Deja de responder '¿cómo me quedará?'. Envía el link del probador y deja que la IA responda por ti.",
+      title: "Donde tus clientas confirman la compra",
+      description: "Dejá de responder '¿cómo me quedará?'. Enviá el link del probador y tus clientas llegan listas para confirmar. Menos dudas, menos cambios.",
+      stat: "Hasta 30% menos devoluciones",
       tag: "+57 Ventas"
-    },
-    metrics: [
-      { label: "Reducción de devoluciones", value: "hasta 30%" },
-      { label: "Marcas en testing", value: "6+" },
-      { label: "Confianza del cliente", value: "NPS 45+" }
-    ]
+    }
   },
 
   customer_journey: {
