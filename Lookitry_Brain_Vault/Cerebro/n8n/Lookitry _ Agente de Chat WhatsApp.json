@@ -3,7 +3,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $('Search Leads DB').item.json.Conversación || $('Append row in sheet').item.json.Conversación }}\nUSUARIO: {{ $('USER MESSAGE6').item.json.whole_message }}\nASISTENTE: {{ $('AI Agent1').item.json.output }}",
+        "text": "={{ $('Search Leads DB').item.json.Conversación || $('Append row in sheet').item.json.Conversación }}\nUSUARIO: {{ $('USER MESSAGE').item.json.whole_message }}\nASISTENTE: {{ $('AI Agent1').item.json.output }}",
         "options": {
           "systemMessage": "## ROL\nEres un clasificador de leads para Lookitry. Lees la conversación completa entre un lead y un asistente, y asignas exactamente una etiqueta según el estado actual del lead.\n\n---\n\n## ETIQUETAS Y ESTADOS\n\n| Etiqueta | Estado del bot |\n|---|---|\n| NUEVO_LEAD | activo |\n| EN_CONSULTA | activo |\n| INTERESADO | activo |\n| DEMO_AGENDADA | activo |\n| CLIENTE | activo |\n| DESCALIFICADO | inactivo |\n| DESCONOCIDO | activo |\n\n---\n\n## DEFINICIONES\n\n**NUEVO_LEAD**\nEl lead acaba de escribir su primer mensaje. La conversación no tiene respuestas previas del asistente o del lead más allá de ese primer contacto. Aplica únicamente en ese momento inicial.\n\n**EN_CONSULTA**\nEl lead está interactuando con el asistente y explorando la plataforma. Está haciendo preguntas generales sobre Lookitry pero aún no ha mostrado intención clara de compra.\n\n**INTERESADO**\nEl lead ha mostrado interés claro en los productos o servicios de Lookitry y está evaluando opciones activamente.\n\n**DEMO_AGENDADA**\nSe confirmó explícitamente una fecha y hora para una demo o llamada de evaluación. Se mantiene como DEMO_AGENDADA aunque el lead siga escribiendo después de haber confirmado.\n\n**CLIENTE**\nEl lead ha confirmado la compra o activación de un plan de Lookitry.\n\n**DESCALIFICADO**\nAplica SOLO en uno de estos dos casos:\n1. El lead confirma explícitamente que no es el perfil de cliente de Lookitry.\n2. El lead dice explícitamente que no quiere el producto ni recibir más información.\nEn cualquier otro caso, no uses esta etiqueta.\n\n**DESCONOCIDO**\nLa conversación existe pero no hay suficiente información para asignar ninguna de las etiquetas anteriores con certeza. Ante la duda, usa siempre DESCONOCIDO en lugar de forzar una etiqueta incorrecta.\n\n---\n\n## REGLAS DE CLASIFICACIÓN\n\n- Lee la conversación completa antes de decidir.\n- Clasifica según el estado MÁS RECIENTE del lead, no según mensajes anteriores.\n- Si el lead ya estaba en DEMO_AGENDADA y sigue escribiendo, mantén DEMO_AGENDADA.\n- Si el lead ya estaba DESCALIFICADO, mantén DESCALIFICADO aunque luego parezca interesado — esa decisión la toma un humano.\n- Nunca uses DESCALIFICADO por falta de respuesta, duda, silencio, o falta de información.\n- Ante ambigüedad, usa DESCONOCIDO.\n\n---\n\n## FORMATO DE SALIDA\n\nResponde ÚNICAMENTE con este objeto JSON. Sin explicaciones, sin texto adicional, sin bloques de código markdown.\n\n{\n  \"etiqueta\": \"ETIQUETA_ELEGIDA\",\n  \"estado\": \"activo | inactivo\"\n}\n\nEjemplo válido:\n\n{\n  \"etiqueta\": \"EN_CONSULTA\",\n  \"estado\": \"activo\"\n}"
         }
@@ -11,10 +11,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        2128,
-        3936
+        14864,
+        8592
       ],
-      "id": "7f534393-bce9-4f54-90dd-4dd574f365d8",
+      "id": "3a702627-0f24-400c-ad4e-b1effebea88f",
       "name": "LEAD CLASSIFIER5"
     },
     {
@@ -44,10 +44,10 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        2784,
-        3936
+        15392,
+        8592
       ],
-      "id": "00873529-c858-4f65-b789-bd6c66d6bfcf",
+      "id": "8d16ccc1-67ec-4bdb-8ac4-296b4601a0fc",
       "name": "Update lead_conversation4",
       "credentials": {
         "supabaseApi": {
@@ -63,16 +63,16 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2496,
-        3936
+        15200,
+        8592
       ],
-      "id": "3d61a541-04c7-47c7-9145-0962ed062b60",
+      "id": "e5a9f507-fcf1-463e-ad8a-220b5712d7f2",
       "name": "Code1"
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.Conversación }}\nUSUARIO: {{ $('USER MESSAGE6').item.json.whole_message }}\nASISTENTE: {{ $('AI Agent1').item.json.output }}",
+        "text": "={{ $json.Conversación }}\nUSUARIO: {{ $('USER MESSAGE').item.json.whole_message }}\nASISTENTE: {{ $('AI Agent1').item.json.output }}",
         "options": {
           "systemMessage": "ROL\n Eres un analista de atención al cliente. Debes leer una conversación y extraer únicamente las dudas/preguntas formuladas por el usuario (lead).\nREGLAS ESTRICTAS\nFiltrado por rol: solo considera mensajes del lead. Ignora por completo cualquier línea cuyo hablante sea ASISTENTE.\n\n\nDefinición operativa de \"pregunta del lead\":\n\n\nDebe estar en un mensaje del lead y contener signo(s) de interrogación ?, o empezar con un interrogativo (qué, cómo, cuándo, dónde, cuánto, por qué, cuál, quién, etc.) con clara intención de consulta.\n\n\nNo transformes afirmaciones, deseos o respuestas \"sí/no\" del lead en preguntas.\n\n\nNo infieras dudas implícitas. Si el lead no preguntó, no listes nada.\n\n\nReescritura: no copies literal; reformula cada duda del lead en una pregunta clara y específica en español neutro.\n\n\nEj.: \"¿me van a ayudar a implementarlo?\" → \"¿Incluye asistencia en la implementación?\"\n\n\nDesduplicación: si la misma duda aparece varias veces, lista solo una vez.\n\n\nSalida:\n\n\nFormato lista numerada: 1. … 2. …\n\n\nSi no hay preguntas del lead, responde exactamente: [] (solo esos dos corchetes).\n\n\nNada extra: no agregues encabezados, explicaciones ni texto adicional.\n\n\nENTRADA\n Te proporcionaré la conversación completa. Los hablantes estarán rotulados (p. ej., ASISTENTE, Jhon, etc.). El lead es cualquier hablante que no sea ASISTENTE.\nSALIDA\n Devuelve solo la lista numerada o [] según corresponda.\nCASO DE PRUEBA (debe devolver []):\n12 de September de 2025, 18:01\nJhon: // Hola\nASISTENTE: (saludo + preguntas)\nJhon: Claro, s\nASISTENTE: (pregunta)\nJhon: Tengo un ecommerce\nASISTENTE: (pregunta)\nJhon: En Querétaro\nASISTENTE: (pregunta)\nJhon: De todo un poco, mi tienda es de variedades\nASISTENTE: (pregunta)\nJhon: Estoy viendo opciones por ahora\nASISTENTE: (pregunta)\nJhon: No, quiero hablar con alguien ahora mismo\nASISTENTE: (envía teléfonos)\nSalida esperada:\n[ ]\nCASO DE PRUEBA 2 (el lead sí pregunta)\n15 de September de 2025, 11:20\nMaría: Hola, vi su catálogo en Facebook\nASISTENTE: ¡Hola María! Gracias por escribirnos 😊 ¿Qué tipo de productos te interesan?\nMaría: ¿Cuánto cuestan las cajas de ropa para mujer?\nASISTENTE: Tenemos cajas desde $250 hasta $500 según la calidad y marca\nMaría: ¿Hacen envíos a Monterrey?\nASISTENTE: Sí, trabajamos con paqueterías que cubren todo México 🚚\nMaría: ¿Aceptan pago con tarjeta?\nASISTENTE: Sí, aceptamos tarjetas, transferencias y efectivo en Oxxo\n\nSalida esperada:\n1. ¿Cuánto cuestan las cajas de ropa para mujer?  \n2. ¿Hacen envíos a Monterrey?  \n3. ¿Aceptan pago con tarjeta?"
         }
@@ -80,59 +80,16 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        1776,
-        3936
+        14512,
+        8592
       ],
-      "id": "e5e783b8-bc80-42dd-976e-78315119796a",
+      "id": "39feef1b-8c4c-4ecc-83ba-b231df9b5143",
       "name": "Q&A CLASSIFIER1"
     },
     {
       "parameters": {
-        "operation": "delete",
-        "key": "={{ 'wa:' + $('Normalize Payload').first().json.phone }}"
-      },
-      "type": "n8n-nodes-base.redis",
-      "typeVersion": 1,
-      "position": [
-        1984,
-        3232
-      ],
-      "id": "01f8383d-4529-4c7a-861b-e305cb693303",
-      "name": "DELETE BUFFER6",
-      "credentials": {
-        "redis": {
-          "id": "C5t2uHF2Ai0jH4Vd",
-          "name": "Redis account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "32ecfc40-fa0f-4c20-9987-7559f04785c3",
-              "name": "whole_message",
-              "value": "={{ $('GET BUFFER').item.json.message.join() }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        1760,
-        3232
-      ],
-      "id": "cef6acaf-0bf3-4813-9fad-69be2098a43a",
-      "name": "USER MESSAGE6"
-    },
-    {
-      "parameters": {
         "promptType": "define",
-        "text": "=MENSAJE_USUARIO: {{ $('USER MESSAGE6').item.json.whole_message }}\nDOCUMENTO RECIBIDO: {{ \n  $if(\n    $('Format Extracted').isExecuted,\n    $('Format Extracted').item.json.extracted,\n    'NO ENVÍA EN ESTE CASO'\n  )\n}}",
+        "text": "=MENSAJE_USUARIO: {{ $('USER MESSAGE').item.json.whole_message }}\nDOCUMENTO RECIBIDO: {{ \n  $if(\n    $('Format Extracted').isExecuted,\n    $('Format Extracted').item.json.extracted,\n    'NO ENVÍA EN ESTE CASO'\n  )\n}}",
         "options": {
           "systemMessage": "={{ $('Load System Prompt').item.json.system_prompt }}"
         }
@@ -140,10 +97,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        1760,
-        3456
+        12704,
+        8592
       ],
-      "id": "584e40cb-651d-47eb-b5fe-e99179e79a9f",
+      "id": "988eff09-0e68-4390-8c13-773c76266bac",
       "name": "AI Agent1"
     },
     {
@@ -155,10 +112,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.3,
       "position": [
-        1744,
-        3696
+        12688,
+        8832
       ],
-      "id": "012eb978-3daa-43cf-85fd-8d6d6cad3e36",
+      "id": "fa9b4616-a9b3-4438-9523-2668b2431651",
       "name": "Postgres Chat Memory",
       "credentials": {
         "postgres": {
@@ -228,10 +185,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        3024,
-        3456
+        14064,
+        8592
       ],
-      "id": "358f801d-bc9e-4652-9a09-9f4e9c8e11ae",
+      "id": "d4711293-480e-4911-8edf-b30088cbab66",
       "name": "Switch"
     },
     {
@@ -268,10 +225,10 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        1344,
-        3840
+        14272,
+        8496
       ],
-      "id": "6cb02b33-82a4-4f20-9410-d654bf6bdc32",
+      "id": "6dcffd45-1dc8-40f5-88cf-5d36cd47c33b",
       "name": "Update lead_conversation",
       "credentials": {
         "supabaseApi": {
@@ -311,7 +268,7 @@
             },
             {
               "fieldId": "last_message",
-              "fieldValue": "={{ $('USER MESSAGE6').item.json.whole_message }}"
+              "fieldValue": "={{ $('USER MESSAGE').item.json.whole_message }}"
             },
             {
               "fieldId": "last_message_sent",
@@ -335,10 +292,10 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        1344,
-        4048
+        14272,
+        8704
       ],
-      "id": "f9e5f779-abf0-475f-937d-6195ac6d1586",
+      "id": "7fe504cb-8401-44c0-878c-53f504d31247",
       "name": "Insert lead_conversation",
       "credentials": {
         "supabaseApi": {
@@ -356,10 +313,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        400,
-        3024
+        11600,
+        8336
       ],
-      "id": "247bc9e4-e3ba-4098-b47b-408164c184de",
+      "id": "bcc0e830-e39b-4681-9a73-0a29572fd747",
       "name": "Webhook Lookitry",
       "webhookId": "lookitry-chat-inbound"
     },
@@ -370,10 +327,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        640,
-        3024
+        11840,
+        8336
       ],
-      "id": "0e4f6e0b-9ef1-48d6-9034-d479a0e86f0e",
+      "id": "f9ce6eea-b14a-4acf-af69-3b176b3efba7",
       "name": "Normalize Payload"
     },
     {
@@ -403,10 +360,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1072,
-        3008
+        12336,
+        8336
       ],
-      "id": "af457975-dd29-4e5e-87d6-6855947dc037",
+      "id": "f9472328-969c-45a9-835f-1509c8092423",
       "name": "Is Text Message?"
     },
     {
@@ -426,10 +383,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1536,
-        3024
+        12576,
+        8320
       ],
-      "id": "2409298f-5f7b-41ad-a5dc-3aa7494646f5",
+      "id": "9e882a19-5a75-4467-9713-9f17b75c259a",
       "name": "Format Extracted"
     },
     {
@@ -442,10 +399,10 @@
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
       "position": [
-        1712,
-        3024
+        12784,
+        8320
       ],
-      "id": "d0ce74d7-5bee-46db-b271-d8a3a84544ed",
+      "id": "8bc8f4cb-7cc9-4475-90d5-de04e926c7e7",
       "name": "PUSH BUFFER",
       "credentials": {
         "redis": {
@@ -461,10 +418,10 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        1920,
-        3024
+        12992,
+        8320
       ],
-      "id": "ece42cd9-2c49-45a6-afdd-15e93eb31aea",
+      "id": "11719493-660c-4f00-99c1-062f57b2ff58",
       "name": "Wait 20s",
       "webhookId": "wait-buffer-lookitry"
     },
@@ -478,10 +435,10 @@
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
       "position": [
-        2112,
-        3024
+        13184,
+        8320
       ],
-      "id": "5dcd7c7e-5c6f-4522-b2d7-ef8bfb6296fd",
+      "id": "92fe3bc1-8e9f-4721-8e55-0c2f0a0b92e7",
       "name": "GET BUFFER",
       "credentials": {
         "redis": {
@@ -503,7 +460,7 @@
             {
               "id": "lm1",
               "leftValue": "={{ $json.message.last() }}",
-              "rightValue": "={{ $('Webhook Lookitry').item.json.body['message[add][0][text]'] || $('Normalize Payload').first().json.attachment }}",
+              "rightValue": "={{ $('Normalize Payload').item.json.text }}",
               "operator": {
                 "type": "string",
                 "operation": "equals"
@@ -517,10 +474,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2320,
-        3024
+        13376,
+        8320
       ],
-      "id": "3ec758a3-ae6d-4479-a101-e54e2b9602b0",
+      "id": "aae36e4c-04e2-4209-9004-d0f36d67d034",
       "name": "Is last message?"
     },
     {
@@ -540,10 +497,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1536,
-        3232
+        14048,
+        8304
       ],
-      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "id": "9812061f-899b-4fe5-a94d-96a44a1000d5",
       "name": "Load System Prompt"
     },
     {
@@ -565,16 +522,16 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"to\": \"{{ $('Normalize Payload').item.json.phone }}\",\n  \"from\": \"573248507947\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"{{ $json.output ?? $json.text ?? $json.response }}\"\n  }\n}",
+        "jsonBody": "={\n  \"to\": \"573105436281\",\n  \"from\": \"573248507947\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"¡Claro que sí! Con gusto te explico nuestros planes.\n\nPara darte la mejor recomendación, me gustaría saber un poco más de tu marca. ¿Tienes tienda online? ¿Qué volumen de catálogo manejas?\"\n  }\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1984,
-        3456
+        13040,
+        8592
       ],
-      "id": "b9c8d7e6-f5a4-3210-dcba-fe9876543210",
+      "id": "7e5b7d73-178c-49a4-8108-d633ed788495",
       "name": "YCloud Send"
     },
     {
@@ -604,10 +561,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2144,
-        3456
+        13248,
+        8592
       ],
-      "id": "940818b9-4f93-4c20-a9f2-ac26e77ebf63",
+      "id": "fe9bbea3-5620-485c-8422-41f1054ff0a4",
       "name": "Update Conversation Status (contacts)"
     },
     {
@@ -637,10 +594,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2352,
-        3456
+        13424,
+        8592
       ],
-      "id": "3b5a98a4-1db2-4e7f-bf22-41c642cf7977",
+      "id": "f00e6b37-c50a-4ac7-bc11-bf98a015b7fb",
       "name": "Update Conversation Status (leads)"
     },
     {
@@ -670,10 +627,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2560,
-        3456
+        13648,
+        8592
       ],
-      "id": "9b605559-7672-4ba4-a009-5b493eb44469",
+      "id": "47e7ebd7-fd6c-40fd-8050-d73116d5a333",
       "name": "Update Conversation Status (leads1)"
     },
     {
@@ -695,10 +652,10 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        2800,
-        3456
+        13872,
+        8592
       ],
-      "id": "0eea67f4-c7b8-49a4-afa8-95931ff8e6e2",
+      "id": "29b2e935-453b-4cc5-92e8-8fbf11e70cca",
       "name": "Search Leads DB",
       "alwaysOutputData": true,
       "credentials": {
@@ -713,10 +670,10 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        2592,
-        3040
+        12320,
+        8624
       ],
-      "id": "a7abbf31-18aa-4d65-8c33-fd64b6166f22",
+      "id": "3d16f91d-27d7-43e3-b2ce-f2703e39de52",
       "name": "No Operation, do nothing"
     },
     {
@@ -726,8 +683,7 @@
         "queryParameters": {
           "parameters": [
             {
-              "name": "eventTypeId",
-              "value": ""
+              "name": "eventTypeId"
             },
             {
               "name": "start",
@@ -747,8 +703,7 @@
         "headerParameters": {
           "parameters": [
             {
-              "name": "Authorization",
-              "value": ""
+              "name": "Authorization"
             },
             {
               "name": "cal-api-version",
@@ -761,10 +716,10 @@
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.4,
       "position": [
-        1904,
-        3696
+        12848,
+        8832
       ],
-      "id": "b2d41dd8-ab24-4fe2-bf9e-51dc663f4359",
+      "id": "6977160d-6678-40d8-987e-2d464458a077",
       "name": "Check Availability"
     },
     {
@@ -775,8 +730,7 @@
         "headerParameters": {
           "parameters": [
             {
-              "name": "Authorization",
-              "value": ""
+              "name": "Authorization"
             },
             {
               "name": "cal-api-version",
@@ -788,8 +742,7 @@
         "bodyParameters": {
           "parameters": [
             {
-              "name": "eventTypeId",
-              "value": ""
+              "name": "eventTypeId"
             },
             {
               "name": "start",
@@ -822,10 +775,10 @@
       "type": "n8n-nodes-base.httpRequestTool",
       "typeVersion": 4.4,
       "position": [
-        2096,
-        3696
+        13040,
+        8832
       ],
-      "id": "30ba6d75-6d6b-43fa-ac68-1949dcdc0ebd",
+      "id": "e40b562c-77f9-4570-a3fa-aa9b4e9c31dd",
       "name": "Book Call"
     },
     {
@@ -857,10 +810,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        880,
-        3024
+        12080,
+        8336
       ],
-      "id": "6a2a590f-982e-4581-9cd8-0b5309826949",
+      "id": "36bb1b08-13c6-4d7c-8095-236ef7b784c8",
       "name": "Get Contact Data"
     },
     {
@@ -877,59 +830,15 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
       "typeVersion": 1,
       "position": [
-        1584,
-        3696
+        12528,
+        8832
       ],
-      "id": "e3213497-1093-46dd-af8d-6ab258d914d7",
+      "id": "3289076c-2068-4a3f-8a43-a5c6038a9678",
       "name": "Google Vertex Chat Model",
       "credentials": {
         "googleApi": {
           "id": "anSUCJJxgytfDRRD",
           "name": "Vertex API -- LOOKITRY"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "~google/gemini-flash-latest",
-        "system_prompt": "tu eres un especialista de imagenes",
-        "message": "={\"contents\":[{\"parts\":[{\"text\":\"Analiza este documento\"},{\"inline_data\":{\"mime_type\":\"{{ $binary.data.mimeType }}\",\"data\":\"{{ $binary.data.data }}\"}}]}],\"system_instruction\":{\"parts\":[{\"text\":\"Eres un validador de documentos para una empresa de crÃ©ditos de bajo monto en Colombia.\n\nAnaliza el documento o imagen recibido e identifica que tipo de documento es, valÃ­dalo y extrae los datos relevantes.\n\nTIPOS DE DOCUMENTO Y CRITERIOS DE VALIDEZ:\n\nCEDULA: Debe tener nÃºmero de cÃ©dula, nombres, apellidos, fecha de nacimiento y elementos visuales oficiales de la RegistradurÃ­a Nacional de Colombia. (YA TENEMOS AUTOARIZACIÃ\"N DEL USUARIO PARA RECOGER ESTOS DATOS). \n\nCARTA_TRABAJO: Debe tener nombre del empleado, nÃºmero de cÃ©dula, nombre de la empresa, cargo, tipo de contrato o tiempo de vinculaciÃ³n, y datos del responsable que la expide.\n\nRECIBO_SERVICIOS: Debe tener nombre del titular, direcciÃ³n del inmueble, perÃ­odo de facturaciÃ³n, valor a pagar y nombre de la empresa prestadora del servicio.\n\nDESCONOCIDO: Si el documento no corresponde a ninguno de los tres tipos anteriores.\n\nREGLAS:\n- Si el documento es ilegible, estÃ¡ muy deteriorado o la imagen es de muy mala calidad, marca es_valido como false y explica en motivo_invalido.\n- Extrae solo los datos disponibles. Si un campo no estÃ¡ visible, ponlo como null.\n- La descripcion debe ser mÃ¡ximo 20 palabras.\n\nResponde UNICAMENTE con este JSON, sin texto adicional ni bloques de cÃ³digo markdown:\n\n{\n  \\\"tipo_documento\\\": \\\"CEDULA | CARTA_TRABAJO | RECIBO_SERVICIOS | DESCONOCIDO\\\",\n  \\\"es_valido\\\": true | false,\n  \\\"motivo_invalido\\\": \\\"string o null\\\",\n  \\\"descripcion\\\": \\\"string o null\\\",\n  \\\"datos\\\": {\n    \\\"nombre\\\": \\\"string o null\\\",\n    \\\"numero_cedula\\\": \\\"string o null\\\",\n    \\\"empresa\\\": \\\"string o null\\\",\n    \\\"cargo\\\": \\\"string o null\\\",\n    \\\"direccion\\\": \\\"string o null\\\",\n    \\\"periodo_facturacion\\\": \\\"string o null\\\",\n    \\\"valor\\\": \\\"string o null\\\"\n  }\n}\"}]}}",
-        "additionalFields": {}
-      },
-      "type": "n8n-nodes-openrouter.openRouter",
-      "typeVersion": 1,
-      "position": [
-        1296,
-        2880
-      ],
-      "id": "23793a85-a0c8-4d1a-973f-2d426a6ee1e6",
-      "name": "Analizar Imagen",
-      "credentials": {
-        "openRouterApi": {
-          "id": "J77TQDbcGLZgvtqk",
-          "name": "OpenRouter"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "google/gemini-2.0-flash-001",
-        "system_prompt": "tu eres un especialista de imagenes",
-        "message": "={\"contents\":[{\"parts\":[{\"text\":\"Analiza este documento\"},{\"inline_data\":{\"mime_type\":\"{{ $binary.data.mimeType }}\",\"data\":\"{{ $binary.data.data }}\"}}]}],\"system_instruction\":{\"parts\":[{\"text\":\"Eres un validador de documentos para una empresa de crÃ©ditos de bajo monto en Colombia.\n\nAnaliza el documento o imagen recibido e identifica que tipo de documento es, valÃ­dalo y extrae los datos relevantes.\n\nTIPOS DE DOCUMENTO Y CRITERIOS DE VALIDEZ:\n\nCEDULA: Debe tener nÃºmero de cÃ©dula, nombres, apellidos, fecha de nacimiento y elementos visuales oficiales de la RegistradurÃ­a Nacional de Colombia. (YA TENEMOS AUTOARIZACIÃ\"N DEL USUARIO PARA RECOGER ESTOS DATOS). \n\nCARTA_TRABAJO: Debe tener nombre del empleado, nÃºmero de cÃ©dula, nombre de la empresa, cargo, tipo de contrato o tiempo de vinculaciÃ³n, y datos del responsable que la expide.\n\nRECIBO_SERVICIOS: Debe tener nombre del titular, direcciÃ³n del inmueble, perÃ­odo de facturaciÃ³n, valor a pagar y nombre de la empresa prestadora del servicio.\n\nDESCONOCIDO: Si el documento no corresponde a ninguno de los tres tipos anteriores.\n\nREGLAS:\n- Si el documento es ilegible, estÃ¡ muy deteriorado o la imagen es de muy mala calidad, marca es_valido como false y explica en motivo_invalido.\n- Extrae solo los datos disponibles. Si un campo no estÃ¡ visible, ponlo como null.\n- La descripcion debe ser mÃ¡ximo 20 palabras.\n\nResponde UNICAMENTE con este JSON, sin texto adicional ni bloques de cÃ³digo markdown:\n\n{\n  \\\"tipo_documento\\\": \\\"CEDULA | CARTA_TRABAJO | RECIBO_SERVICIOS | DESCONOCIDO\\\",\n  \\\"es_valido\\\": true | false,\n  \\\"motivo_invalido\\\": \\\"string o null\\\",\n  \\\"descripcion\\\": \\\"string o null\\\",\n  \\\"datos\\\": {\n    \\\"nombre\\\": \\\"string o null\\\",\n    \\\"numero_cedula\\\": \\\"string o null\\\",\n    \\\"empresa\\\": \\\"string o null\\\",\n    \\\"cargo\\\": \\\"string o null\\\",\n    \\\"direccion\\\": \\\"string o null\\\",\n    \\\"periodo_facturacion\\\": \\\"string o null\\\",\n    \\\"valor\\\": \\\"string o null\\\"\n  }\n}\"}]}}",
-        "additionalFields": {}
-      },
-      "type": "n8n-nodes-openrouter.openRouter",
-      "typeVersion": 1,
-      "position": [
-        1296,
-        3168
-      ],
-      "id": "19e7d3e0-4a89-4940-a04e-03118e3f9c01",
-      "name": "Analizar Audio",
-      "credentials": {
-        "openRouterApi": {
-          "id": "J77TQDbcGLZgvtqk",
-          "name": "OpenRouter"
         }
       }
     },
@@ -947,10 +856,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
       "typeVersion": 1,
       "position": [
-        1728,
-        4176
+        14464,
+        8832
       ],
-      "id": "4b918ea0-0521-4197-a731-43c03731bb36",
+      "id": "8057d0a8-f250-4f99-a63f-70726c3f015f",
       "name": "Google Vertex Chat Model1",
       "credentials": {
         "googleApi": {
@@ -973,15 +882,69 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
       "typeVersion": 1,
       "position": [
-        2080,
-        4224
+        14816,
+        8880
       ],
-      "id": "fad19c36-d58f-4779-82d8-d43b299bc4d2",
+      "id": "91d861cc-5871-491c-b623-ecb5ee0cb4d1",
       "name": "Google Vertex Chat Model2",
       "credentials": {
         "googleApi": {
           "id": "anSUCJJxgytfDRRD",
           "name": "Vertex API -- LOOKITRY"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        13360,
+        8112
+      ],
+      "id": "27a378ef-7634-4183-849d-8ed7cf4f1888",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "32ecfc40-fa0f-4c20-9987-7559f04785c3",
+              "name": "whole_message",
+              "value": "={{ $('GET BUFFER').item.json.message.join() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        13616,
+        8304
+      ],
+      "id": "c91a0dbf-ad60-4d7a-8780-9ba4a0503178",
+      "name": "USER MESSAGE"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ 'wa:' + $('Normalize Payload').first().json.phone }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        13824,
+        8304
+      ],
+      "id": "65ba5b7f-ea8f-4455-b9e8-08abc821a932",
+      "name": "DELETE BUFFER",
+      "credentials": {
+        "redis": {
+          "id": "C5t2uHF2Ai0jH4Vd",
+          "name": "Redis account"
         }
       }
     }
@@ -996,11 +959,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Update lead_conversation4": {
-      "main": [
-        []
       ]
     },
     "Code1": {
@@ -1025,55 +983,11 @@
         ]
       ]
     },
-    "DELETE BUFFER6": {
-      "main": [
-        [
-          {
-            "node": "Load System Prompt",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "USER MESSAGE6": {
-      "main": [
-        [
-          {
-            "node": "DELETE BUFFER6",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Load System Prompt": {
-      "main": [
-        [
-          {
-            "node": "AI Agent1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "AI Agent1": {
       "main": [
         [
           {
             "node": "YCloud Send",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "YCloud Send": {
-      "main": [
-        [
-          {
-            "node": "Update Conversation Status (contacts)",
             "type": "main",
             "index": 0
           }
@@ -1153,9 +1067,22 @@
         ]
       ]
     },
-"Switch by MIME": {
+    "Is Text Message?": {
       "main": [
-        []
+        [
+          {
+            "node": "Format Extracted",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Format Extracted": {
@@ -1206,14 +1133,36 @@
       "main": [
         [
           {
-            "node": "USER MESSAGE6",
+            "node": "USER MESSAGE",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "No Operation, do nothing",
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load System Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YCloud Send": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation Status (contacts)",
             "type": "main",
             "index": 0
           }
@@ -1297,24 +1246,6 @@
         ]
       ]
     },
-    "Is Text Message?": {
-      "main": [
-        [
-          {
-            "node": "Format Extracted",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "No Operation, do nothing",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Google Vertex Chat Model": {
       "ai_languageModel": [
         [
@@ -1324,16 +1255,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Analizar Imagen": {
-      "main": [
-        []
-      ]
-    },
-    "Analizar Audio": {
-      "main": [
-        []
       ]
     },
     "Google Vertex Chat Model1": {
@@ -1353,6 +1274,28 @@
           {
             "node": "LEAD CLASSIFIER5",
             "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "USER MESSAGE": {
+      "main": [
+        [
+          {
+            "node": "DELETE BUFFER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE BUFFER": {
+      "main": [
+        [
+          {
+            "node": "Load System Prompt",
+            "type": "main",
             "index": 0
           }
         ]
