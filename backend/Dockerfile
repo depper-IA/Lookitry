@@ -2,7 +2,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@11 --activate
+RUN npm install -g pnpm@11.1.2
 
 COPY package*.json pnpm-lock.yaml ./
 RUN pnpm install
