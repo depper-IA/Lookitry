@@ -32,11 +32,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=768
 RUN apk add --no-cache curl vips
-COPY --from=builder /app/node_modules/sharp ./node_modules/sharp
-COPY --from=builder /app/node_modules/@img ./node_modules/@img
-COPY --from=builder /app/node_modules/sharp-libvips-* ./node_modules/
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+RUN rm -rf node_modules/sharp node_modules/@img
+COPY --from=builder /app/node_modules/sharp ./node_modules/sharp
+COPY --from=builder /app/node_modules/@img ./node_modules/@img
 EXPOSE 3000
 CMD ["node", "server.js"]
