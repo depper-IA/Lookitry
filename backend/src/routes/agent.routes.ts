@@ -5,7 +5,6 @@ import { supabaseAdmin } from '../config/supabase';
 import axios from 'axios';
 import { rebeccaIdentityService } from '../services/rebecca-identity.service';
 import { GoogleGenAI } from '@google/genai';
-import * as path from 'path';
 
 const router = Router();
 
@@ -60,7 +59,7 @@ router.post('/knowledge/search', async (req: Request, res: Response) => {
     // 1. Vertex AI SDK — query embedding via text-embedding-004
     let qEmbedding: number[] | null = null;
     try {
-      process.env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(__dirname, '../../secrets/vertex-key.json');
+      // Use existing GOOGLE_APPLICATION_CREDENTIALS env var (set in Docker via /app/credentials/)
       const ai = getVertexAI();
       const embResult = await (ai.models as any).embedContent({
         model: 'text-embedding-004',
