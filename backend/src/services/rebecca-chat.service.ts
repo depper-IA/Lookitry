@@ -85,18 +85,18 @@ export function detectIntent(message: string): LeadIntent {
  * Construye los enlaces contextuales según la página actual.
  * Section 4.2 del spec
  */
-export function buildContextualLinks(context: ChatContext): Record<string, string> {
+export function buildContextualLinks(context?: ChatContext | null): Record<string, string> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
   return {
-    plans: `${baseUrl}/plans`,
+    plans: `${baseUrl}/planes`,
     checkout: context?.brand_slug
       ? `${baseUrl}/checkout/${context.brand_slug}`
       : `${baseUrl}/checkout`,
     demo: `${baseUrl}/demo`,
-    faq: `${baseUrl}/plans#faq`,
-    howItWorks: `${baseUrl}/how-it-works`,
-    contact: `${baseUrl}/contact`,
+    faq: `${baseUrl}/planes#faq`,
+    howItWorks: `${baseUrl}/probador-virtual`,
+    contact: `${baseUrl}/contacto`,
   };
 }
 
