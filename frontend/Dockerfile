@@ -22,7 +22,7 @@ ENV NEXT_PUBLIC_REBECCA_WIDGET_ENABLED=$NEXT_PUBLIC_REBECCA_WIDGET_ENABLED
 ENV SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY
 COPY package*.json pnpm-lock.yaml ./
 RUN apk add --no-cache vips-dev
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@11 --activate
 RUN pnpm install
 COPY . .
 RUN pnpm run build
