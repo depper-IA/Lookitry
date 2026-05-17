@@ -378,94 +378,36 @@
     },
     {
       "parameters": {
-        "rules": {
-          "values": [
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
             {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "t1",
-                    "leftValue": "={{ $('Upload File to Drive').item.json.mimeType }}",
-                    "rightValue": "image/jpeg",
-                    "operator": {
-                      "type": "string",
-                      "operation": "startsWith"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "image"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "7f6a5371-dc4e-4d34-b13c-ae2e2fcb1d26",
-                    "leftValue": "={{ $('Upload File to Drive').item.json.mimeType }}",
-                    "rightValue": "Text",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals",
-                      "name": "filter.operator.equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Text"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "2dd1e9b2-2b75-4469-ac0e-00f567531c30",
-                    "leftValue": "={{ $('Upload File to Drive').item.json.mimeType }}",
-                    "rightValue": "mp3",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals",
-                      "name": "filter.operator.equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Audio"
+              "id": "t1",
+              "leftValue": "={{ $('Normalize Payload').item.json.message_type }}",
+              "rightValue": "text",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
             }
-          ]
+          ],
+          "combinator": "and"
         },
         "options": {}
       },
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.4,
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
       "position": [
         1072,
         3008
       ],
       "id": "af457975-dd29-4e5e-87d6-6855947dc037",
-      "name": "Switch by MIME"
+      "name": "Is Text Message?"
     },
     {
       "parameters": {
@@ -1211,29 +1153,9 @@
         ]
       ]
     },
-    "Switch by MIME": {
+"Switch by MIME": {
       "main": [
-        [
-          {
-            "node": "Analizar Imagen",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Format Extracted",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Analizar Audio",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Format Extracted": {
@@ -1368,7 +1290,25 @@
       "main": [
         [
           {
-            "node": "Switch by MIME",
+            "node": "Is Text Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Text Message?": {
+      "main": [
+        [
+          {
+            "node": "Format Extracted",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
             "type": "main",
             "index": 0
           }
@@ -1388,24 +1328,12 @@
     },
     "Analizar Imagen": {
       "main": [
-        [
-          {
-            "node": "Format Extracted",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Analizar Audio": {
       "main": [
-        [
-          {
-            "node": "Format Extracted",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Google Vertex Chat Model1": {
