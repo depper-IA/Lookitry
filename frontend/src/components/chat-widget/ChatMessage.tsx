@@ -17,12 +17,16 @@ function renderContentWithLinks(content: string): React.ReactNode {
     if (match.index > lastIndex) {
       parts.push(content.slice(lastIndex, match.index));
     }
+
+    const href = match[2];
+    const isInternal = href.startsWith('https://lookitry.com') || href.startsWith('/');
+
     parts.push(
       <a
         key={match.index}
-        href={match[2]}
-        target="_blank"
-        rel="noopener noreferrer"
+        href={href}
+        target={isInternal ? '_self' : '_blank'}
+        rel={isInternal ? undefined : 'noopener noreferrer'}
         className="text-accent hover:underline"
       >
         {match[1]}
