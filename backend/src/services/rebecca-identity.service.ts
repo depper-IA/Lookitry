@@ -208,24 +208,24 @@ export class RebeccaIdentityService {
 - Formato: "→ [Texto clickeable](url)"`;
     }
 
+    // Phase 2: Rich page context block
     let pageContextBlock = '';
-    if (pageContext && pageContext.page_url) {
+    if (pageContext) {
       const pageContextMap: Record<string, string> = {
-        '/demo': 'El lead está en la página de DEMO. Aún no conoce Lookitry. Explicá qué es Lookitry de forma simple y destacá el beneficio principal.',
-        '/plans': 'El lead está comparando planes y precios. Ayudalo a elegir el plan adecuado preguntando sobre su tienda.',
-        '/checkout': 'El lead está en proceso de compra. Facilitá el proceso y resolé objeciones rápido.',
-        '/how-it-works': 'El lead quiere saber cómo funciona Lookitry. Explicá el proceso de forma simple.',
+        '/demo': 'El lead está en la página de DEMO de Lookitry (https://lookitry.com/demo). Es una página de demostración donde puede probar el probador digital. AÚN NO CONOCE Lookitry. Explicá qué es Lookitry de forma simple en 2-3 oraciones: "Lookitry permite a tus clientes probarse la ropa desde casa con una foto. Se acabaron las devoluciones porque la gente compra sabiendo cómo les queda."',
+        '/plans': 'El lead está en la página de PLANES y PRECIOS de Lookitry (https://lookitry.com/plans). Está comparando opciones. PREGUNTALE sobre su tienda: cuántos productos tiene, cuánto vende. Así podés recomendarle el plan adecuado.',
+        '/checkout': 'El lead está en la página de CHECKOUT de Lookitry. Está a punto de comprar. facilitá el proceso, resolvé objeciones, recordale los beneficios del plan que eligió.',
+        '/how-it-works': 'El lead quiere saber cómo funciona Lookitry. Explicá el proceso de forma simple: 1) subís fotos de tu ropa, 2) tus clientes se prueben virtualmente, 3) compran con confianza y devuelven menos.',
       };
 
-      const pageKey = Object.keys(pageContextMap).find(key => pageContext.page_url?.startsWith(key));
+      const pageKey = pageContext.page_url ? Object.keys(pageContextMap).find(key => pageContext.page_url?.startsWith(key)) : null;
       const pageInstruction = pageKey ? pageContextMap[pageKey] : null;
 
-      if (pageInstruction || pageContext.source === 'demo') {
-        pageContextBlock = `
+      pageContextBlock = `
 
-## CONTEXTO DE PÁGINA
-${pageInstruction || 'El lead está en la página de DEMO. Aún no conoce Lookitry.'}`;
-      }
+## TU UBICACIÓN ACTUAL
+Estás hablando con alguien que está en: ${pageContext.page_url || 'desconocida'}
+${pageInstruction || 'No reconocemos la página específica, pero seguí conversando normalmente.'}`;
     }
 
     return SYSTEM_PROMPT_TEMPLATE
