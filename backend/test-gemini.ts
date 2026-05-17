@@ -3,7 +3,7 @@ import { GoogleAuth } from 'google-auth-library';
 import fs from 'fs';
 import path from 'path';
 
-process.env.GOOGLE_APPLICATION_CREDENTIALS = 'C:\\Users\\Matt\\Lookitry\\gen-lang-client-0591001769-06f04cbf5e1a.json';
+process.env.GOOGLE_APPLICATION_CREDENTIALS = '/home/travis/Lookitry/Lookitry/backend/secrets/vertex-key.json';
 
 const googleAuth = new GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/cloud-platform']

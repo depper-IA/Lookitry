@@ -18,7 +18,10 @@
       "options": {
         "project": "gen-lang-client-0591001769",
         "location": "us-central1",
-        "timeout": 120000
+        "timeout": 120000,
+        "googleAuthOptions": {
+          "keyFilename": "/home/travis/Lookitry/Lookitry/backend/secrets/vertex-key.json"
+        }
       },
       "models": {
         "gemini-3-pro-preview": {

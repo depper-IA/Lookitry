@@ -1,6 +1,8 @@
 import { supabaseAdmin } from '../config/supabase';
 import { rebeccaIdentityService } from './rebecca-identity.service';
 import { vertexService } from './vertex.service';
+import { pricingService } from './pricing.service';
+import { calculatePriceUSD } from '../utils/pricingCurrency';
 import type { VertexModelId } from './vertex.service';
 
 interface HistoryMessage {
@@ -38,22 +40,49 @@ async function getKnowledgeContext(): Promise<string> {
     return cached.context;
   }
 
-  const { data, error } = await supabaseAdmin
-    .from('lookitry_knowledge')
-    .select('title, content')
-    .eq('is_active', true);
+  try {
+    const [knowledgeResult, pricingConfigs, trmResult] = await Promise.all([
+      supabaseAdmin.from('lookitry_knowledge').select('title, content').eq('is_active', true),
+      pricingService.getPricingConfig().catch(() => [] as any[]),
+      pricingService.getEffectiveTrm().catch(() => ({ trm: 4000, source: 'fallback' as const })),
+    ]);
 
-  if (error) {
-    console.error('[RebeccaChatService] Error loading knowledge:', error);
+    const knowledgePart = knowledgeResult.data
+      ? knowledgeResult.data.map((item: { title: string; content: string }) => `${item.title}\n${item.content}`).join('\n\n---\n\n')
+      : '';
+
+    const pricingPart = buildPricingContext(pricingConfigs || [], trmResult?.trm ?? 4000);
+    const context = [knowledgePart, pricingPart].filter(Boolean).join('\n\n---\n\n');
+
+    knowledgeCache.set('web', { context, expiresAt: Date.now() + KNOWLEDGE_CACHE_TTL_MS });
+    return context;
+  } catch (err) {
+    console.error('[RebeccaChatService] Error building knowledge context:', err);
     return '';
   }
+}
 
-  const context = (data ?? [])
-    .map((item: { title: string; content: string }) => `${item.title}\n${item.content}`)
-    .join('\n\n---\n\n');
+function buildPricingContext(configs: any[], trm: number): string {
+  if (!configs || configs.length === 0) return '';
 
-  knowledgeCache.set('web', { context, expiresAt: Date.now() + KNOWLEDGE_CACHE_TTL_MS });
-  return context;
+  const lines: string[] = ['## PRECIOS DE PLANES', `TRM actual: ${trm} COP/USD`, ''];
+
+  const planOrder = ['TRIAL', 'BASIC', 'PRO', 'LANDING'];
+  const sorted = [...configs].sort(
+    (a: any, b: any) => (planOrder.indexOf(a.plan) - planOrder.indexOf(b.plan))
+  );
+
+  for (const plan of sorted) {
+    const usd = calculatePriceUSD(plan.precio_mensual_cop, trm);
+    lines.push(
+      `${plan.plan}: $${plan.precio_mensual_cop.toLocaleString('es-CO')} COP (≈$${usd} USD)/mes` +
+      (plan.precio_original_cop && plan.precio_original_cop > plan.precio_mensual_cop
+        ? ` — precio anterior: $${plan.precio_original_cop.toLocaleString('es-CO')} COP`
+        : '')
+    );
+  }
+
+  return lines.join('\n');
 }
 
 async function getRebeccaConfig(): Promise<RebeccaConfig> {
