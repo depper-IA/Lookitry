@@ -26,21 +26,21 @@ export function ChatInput({ onSend, isLoading, isExpanded }: ChatInputProps) {
   }
 
   return (
-    <div className="flex items-end gap-2 border-t border-gray-200 dark:border-zinc-700 p-3">
+    <div className={`flex items-end gap-3 border-t border-gray-200 dark:border-zinc-700 ${isExpanded ? 'p-5' : 'p-3'}`}>
       <textarea
         ref={textareaRef}
         rows={1}
         placeholder="Escribí tu mensaje..."
         onKeyDown={handleKeyDown}
         disabled={isLoading}
-        className={`flex-1 resize-none rounded-xl border border-gray-200 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-50 max-h-24 overflow-y-auto ${isExpanded ? 'text-base py-3' : 'text-sm'}`}
+        className={`flex-1 resize-none rounded-2xl border border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-zinc-700/50 px-4 py-3 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/30 disabled:opacity-50 max-h-32 overflow-y-auto transition-colors ${isExpanded ? 'text-base py-4' : 'text-sm py-2.5'}`}
         style={{ scrollbarWidth: 'none' }}
       />
       <button
         type="button"
         onClick={submit}
         disabled={isLoading}
-        className="shrink-0 rounded-xl bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-bright transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className={`shrink-0 rounded-2xl bg-accent hover:bg-accent-bright font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent/20 hover:shadow-accent/30 ${isExpanded ? 'px-6 py-4 text-base' : 'px-4 py-3 text-sm'}`}
       >
         {isLoading ? (
           <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -48,10 +48,13 @@ export function ChatInput({ onSend, isLoading, isExpanded }: ChatInputProps) {
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
           </svg>
         ) : (
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M22 2L11 13" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M22 2L15 22 11 13 2 9l20-7z" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <span className="flex items-center gap-2">
+            Enviar
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 2L11 13" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M22 2L15 22 11 13 2 9l20-7z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
         )}
       </button>
     </div>
