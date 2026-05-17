@@ -51,10 +51,10 @@ const KNOWLEDGE_CACHE_TTL_MS = 5 * 60 * 1000;
 const CONFIG_CACHE_TTL_MS = 60 * 1000;
 
 // Límites de caracteres por canal - Section 5.2
-// WhatsApp: 600 chars, Web: 1200 chars para que Rebecca pueda dar respuestas completas
+// WhatsApp: 800 chars, Web: 2400 chars para que Rebecca pueda dar respuestas completas con contexto
 const CHANNEL_LIMITS = {
-  whatsapp: 600,
-  web: 1200,
+  whatsapp: 800,
+  web: 2400,
 } as const;
 
 const knowledgeCache = new Map<'web', KnowledgeCacheEntry>();
@@ -317,9 +317,9 @@ export class RebeccaChatService {
     const trimmedHistory = history.slice(-config.max_history);
 
 // — Phase 1: Configurar maxOutputTokens por canal (Section 5.2) —
-// WhatsApp: 150 tokens (~600 chars) para respuestas completas
-// Web: 300 tokens (~1200 chars) para respuestas desarrolladas
-const maxTokens = channel === 'whatsapp' ? 150 : 300;
+// WhatsApp: 200 tokens (~800 chars) para respuestas completas
+// Web: 600 tokens (~2400 chars) para respuestas largas con contexto
+const maxTokens = channel === 'whatsapp' ? 200 : 600;
 
     const systemPrompt = rebeccaIdentityService.getSystemPrompt(
       channel,
