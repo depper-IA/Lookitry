@@ -2,13 +2,11 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-RUN npm install -g pnpm@11.1.2
-
-COPY package*.json pnpm-lock.yaml ./
-RUN pnpm install
+COPY package*.json ./
+RUN npm install
 
 COPY . .
-RUN pnpm run build
+RUN npm run build
 
 # Stage 2: Production
 FROM node:20-alpine AS runner
@@ -17,10 +15,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=512
 
-COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
+RUN npm install --omit=dev
+
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/assets ./assets
-COPY package*.json ./
 
 EXPOSE 3001
 CMD ["node", "dist/index.js"]
