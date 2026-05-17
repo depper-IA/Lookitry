@@ -51,7 +51,7 @@ export function MobileBottomNav({ pathname }: { pathname: string }) {
     >
       <div className="relative flex items-stretch border-t border-black/[0.06] dark:border-white/[0.06] bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
         <Item href="/" icon={<Home size={22} />} label="Inicio" active={isActive('/')} />
-        <Item href="/#hero" icon={<Sparkles size={22} />} label="Probar" active={false} />
+        <Item href="/demo" icon={<Sparkles size={22} />} label="Probar" active={isActive('/demo')} />
         <Item href="/contacto" icon={<Mail size={22} />} label="Contacto" active={isActive('/contacto')} />
         <Item
           href={isLoggedIn ? '/dashboard' : '/login'}
