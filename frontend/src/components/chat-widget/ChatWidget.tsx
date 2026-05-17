@@ -29,27 +29,33 @@ function ChatWidgetInner() {
       type="button"
       onClick={() => setIsOpen(true)}
       aria-label="Abrir chat con Rebecca"
-      className="fixed bottom-6 right-6 z-[9999] flex items-center gap-3 rounded-2xl bg-white dark:bg-[#1a1a1a] pl-1 pr-4 py-1 shadow-[0_8px_32px_rgba(0,0,0,0.18)] hover:shadow-[0_12px_40px_rgba(255,92,58,0.25)] hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent/50 border border-black/[0.06] dark:border-white/[0.08]"
+      // Mobile: sube sobre el bottom nav (68px nav + 8px gap)
+      // Desktop: posición estándar bottom-6
+      className="fixed bottom-[calc(env(safe-area-inset-bottom)+76px)] right-5 md:bottom-6 md:right-6 z-[9999] group focus:outline-none"
     >
-      {/* Avatar con indicador online */}
-      <div className="relative flex-shrink-0">
-        <div className="h-11 w-11 rounded-xl overflow-hidden ring-2 ring-accent/20">
-          <Image
-            src="/rebecca-avatar.png"
-            alt="Rebecca"
-            width={44}
-            height={44}
-            className="object-cover object-top w-full h-full"
-          />
-        </div>
-        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white dark:border-[#1a1a1a]" aria-hidden="true" />
-      </div>
+      {/* Glow ring exterior animado */}
+      <span
+        className="absolute inset-0 rounded-full bg-[#FF5C3A]/20 scale-110 animate-ping group-hover:bg-[#FF5C3A]/30"
+        style={{ animationDuration: '2.4s' }}
+        aria-hidden="true"
+      />
 
-      {/* Texto */}
-      <div className="text-left leading-tight">
-        <p className="text-[13px] font-bold text-dark dark:text-white tracking-tight">Hola, soy Rebecca</p>
-        <p className="text-[11px] text-accent font-semibold">¿En qué te ayudo? →</p>
-      </div>
+      {/* Círculo principal */}
+      <span className="relative flex h-14 w-14 items-center justify-center rounded-full ring-[2.5px] ring-[#FF5C3A] ring-offset-[3px] ring-offset-white dark:ring-offset-[#0a0a0a] shadow-[0_6px_24px_rgba(255,92,58,0.45)] hover:shadow-[0_8px_32px_rgba(255,92,58,0.6)] hover:scale-105 transition-all duration-200 overflow-hidden">
+        <Image
+          src="/rebecca-avatar.png"
+          alt="Rebecca — asesora Lookitry"
+          width={56}
+          height={56}
+          className="object-cover object-top w-full h-full"
+        />
+      </span>
+
+      {/* Indicador online */}
+      <span
+        className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white dark:border-[#0a0a0a] z-10"
+        aria-hidden="true"
+      />
     </button>
   );
 }
