@@ -2,7 +2,7 @@
  * KnowledgeEmbeddingService
  *
  * Genera y actualiza embeddings para los items del knowledge base de Rebecca.
- * Usa Gemini gemini-embedding-001 (768 dimensiones) — mismo modelo que el resto del proyecto.
+ * Usa Gemini text-embedding-004 (768 dimensiones).
  *
  * Se llama de forma asíncrona (fire-and-forget) desde el controller de knowledge
  * para no bloquear la respuesta HTTP al admin.
@@ -12,7 +12,7 @@ import { supabaseAdmin } from '../config/supabase';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY ?? '';
 const GEMINI_BASE    = 'https://generativelanguage.googleapis.com/v1beta';
-const EMBEDDING_MODEL = 'gemini-embedding-001';
+const EMBEDDING_MODEL = 'text-embedding-004';
 
 const TABLE = 'lookitry_knowledge';
 
@@ -85,7 +85,7 @@ export class KnowledgeEmbeddingService {
   }
 
   /**
-   * Genera embedding usando Gemini gemini-embedding-001.
+   * Genera embedding usando Gemini text-embedding-004.
    * El texto combina título + contenido para mejor representación semántica.
    */
   private async _generateEmbedding(title: string, content: string): Promise<number[] | null> {

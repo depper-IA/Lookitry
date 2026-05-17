@@ -45,12 +45,12 @@ router.post('/knowledge/search', async (req: Request, res: Response) => {
     if (GEMINI_API_KEY_AGENT) {
       try {
         const embRes = await fetch(
-          `${GEMINI_BASE_AGENT}/models/gemini-embedding-001:embedContent?key=${GEMINI_API_KEY_AGENT}`,
+          `${GEMINI_BASE_AGENT}/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY_AGENT}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              model: 'models/gemini-embedding-001',
+              model: 'models/text-embedding-004',
               content: { parts: [{ text: query }] },
               taskType: 'RETRIEVAL_QUERY',
             }),
@@ -203,9 +203,9 @@ router.post('/rag/search', async (req: Request, res: Response) => {
       // Generar embedding usando Gemini
       try {
         const embeddingResponse = await axios.post(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent',
+          'https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent',
           {
-            model: 'models/gemini-embedding-001',
+            model: 'models/text-embedding-004',
             content: { parts: [{ text: query }] },
             taskType: 'RETRIEVAL_QUERY',
             outputDimensionality: 768,
