@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Message, WidgetApiResponse } from '../chat-widget.types';
+import type { Message, WidgetApiResponse, ChatContext } from '../chat-widget.types';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? 'https://api.lookitry.com';
@@ -20,6 +20,17 @@ interface UseChatSendReturn {
   error: string | null;
 }
 
+/**
+ * Captura el contexto de página actual para Rebecca (Spec: Rebecca 2.0 §7.1)
+ */
+function getPageContext(): ChatContext {
+  return {
+    page_url: window.location.pathname,
+    page_title: document.title,
+    source: window.location.pathname === '/demo' ? 'demo' : 'widget',
+  };
+}
+
 export function useChatSend({
   sessionId,
   getHistorySlice,
@@ -36,6 +47,7 @@ export function useChatSend({
     setError(null);
 
     const history = getHistorySlice();
+    const context = getPageContext();
 
     try {
       const response = await fetch(`${API_BASE}/api/chat/widget`, {
@@ -45,6 +57,7 @@ export function useChatSend({
           session_id: sessionId,
           message: userMessage,
           history,
+          context,
         }),
       });
 

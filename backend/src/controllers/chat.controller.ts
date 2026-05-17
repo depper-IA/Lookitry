@@ -279,3 +279,59 @@ export const replyToConversation = async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+/**
+ * POST /api/chat/track-page
+ * Tracks page visits for abandoned checkout detection (Spec: Rebecca 2.0 §6.4)
+ */
+export const trackPage = async (req: Request, res: Response) => {
+  try {
+    const { session_id, page_url, event } = req.body as {
+      session_id?: unknown;
+      page_url?: unknown;
+      event?: unknown;
+    };
+
+    // Validate inputs
+    if (typeof session_id !== 'string' || session_id.trim().length === 0) {
+      return res.status(400).json({ error: 'invalid_input', details: 'session_id is required' });
+    }
+    if (session_id.length > 128) {
+      return res.status(400).json({ error: 'invalid_input', details: 'session_id exceeds 128 characters' });
+    }
+    if (typeof page_url !== 'string' || page_url.trim().length === 0) {
+      return res.status(400).json({ error: 'invalid_input', details: 'page_url is required' });
+    }
+    if (!['visit', 'checkout_start', 'checkout_complete'].includes(event as string)) {
+      return res.status(400).json({ error: 'invalid_input', details: 'event must be one of: visit, checkout_start, checkout_complete' });
+    }
+
+    const { redis } = await import('../config/redis');
+    const eventType = event as 'visit' | 'checkout_start' | 'checkout_complete';
+
+    if (eventType === 'checkout_start') {
+      // Set abandoned checkout reminder: TTL 48h (172800 seconds)
+      const key = `reminder:checkout_abandoned:${session_id}`;
+      await redis?.setex(key, 172800, JSON.stringify({
+        page_url,
+        started_at: new Date().toISOString(),
+      }));
+    } else if (eventType === 'checkout_complete') {
+      // Delete abandoned checkout reminder
+      const key = `reminder:checkout_abandoned:${session_id}`;
+      await redis?.del(key);
+    } else if (eventType === 'visit') {
+      // Set plans visit reminder: TTL 24h
+      const key = `reminder:plans:${session_id}`;
+      await redis?.setex(key, 86400, JSON.stringify({
+        page_url,
+        visited_at: new Date().toISOString(),
+      }));
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (error: any) {
+    console.error('[Chat] trackPage:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
