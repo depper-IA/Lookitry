@@ -32,11 +32,13 @@ export const metadata: Metadata = {
     'Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica. Intégralo en tu tienda en 10 minutos. Sin apps, sin desarrollo.',
   keywords: [
     'probador virtual IA',
-    'probador virtual tienda',
+    'probador virtual tienda ropa',
     'prueba ropa online',
-    'widget probador virtual tienda',
+    'widget probador virtual',
     'probador virtual IA Latam',
     'virtual try-on Colombia',
+    'virtual try-on México',
+    'virtual try-on latam',
     'probador virtual ropa',
     'IA moda Latinoamérica',
     'probador virtual Colombia',
@@ -48,10 +50,17 @@ export const metadata: Metadata = {
     'probador virtual para WooCommerce',
     'aumentar ventas tienda ropa online',
     'reducir devoluciones tienda online',
-    'virtual try-on Latam',
     'probador virtual sin app',
-    'probador de ropa virtual Venezuela',
-    'tienda ropa online Venezuela IA',
+    'probador ropa inteligencia artificial',
+    'tienda virtual ropa sin web',
+    'como vender ropa por whatsapp',
+    'tienda virtual ropa instagram',
+    'link bio instagram tienda ropa',
+    'probador ropa online sin descargar',
+    'virtual try-on free',
+    'ai fashion try on',
+    'probador de ropa virtual',
+    'IA para tienda de ropa',
   ],
   authors: [{ name: 'Lookitry', url: BASE_URL }],
   creator: 'Lookitry',
@@ -102,6 +111,7 @@ import { Analytics } from '@/components/analytics/Analytics';
 import { RouteChrome } from '@/components/layout/RouteChrome';
 import { Toaster } from 'sonner';
 import { ExitIntentProvider } from '@/components/landing/ExitIntentProvider';
+import { ChatWidget } from '@/components/chat-widget/ChatWidget';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
@@ -212,6 +222,7 @@ style={
                   },
                 }}
               />
+              <ChatWidget />
             </ExitIntentProvider>
           </Suspense>
         </ThemeProvider>

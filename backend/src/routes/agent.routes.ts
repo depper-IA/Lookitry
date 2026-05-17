@@ -3,6 +3,7 @@ import { agentActivityService } from '../services/agent-activity.service';
 import { agentSessionService } from '../services/agent-session.service';
 import { supabaseAdmin } from '../config/supabase';
 import axios from 'axios';
+import { rebeccaIdentityService } from '../services/rebecca-identity.service';
 
 const router = Router();
 
@@ -697,6 +698,48 @@ router.get('/session/:agentName', async (req: Request, res: Response) => {
   } catch (err) {
     console.error('[AgentRoutes] GET /session/:agentName error:', err);
     res.status(500).json({ error: 'Error consultando sesión del agente' });
+  }
+});
+
+/**
+ * GET /api/agent/identity/system-prompt
+ * Retorna el system prompt de Rebecca listo para inyectar en n8n o el widget.
+ * Query params:
+ *   - channel: 'whatsapp' | 'web' (default: 'web')
+ *   - include_knowledge: 'true' | 'false' (default: 'true')
+ */
+router.get('/identity/system-prompt', async (req: Request, res: Response) => {
+  try {
+    const channel = (req.query.channel === 'whatsapp' ? 'whatsapp' : 'web') as 'whatsapp' | 'web';
+    const includeKnowledge = req.query.include_knowledge !== 'false';
+
+    let knowledgeContext = '';
+
+    if (includeKnowledge) {
+      const { data, error } = await supabaseAdmin
+        .from('lookitry_knowledge')
+        .select('category, title, content')
+        .eq('is_active', true)
+        .order('category')
+        .order('title');
+
+      if (!error && data?.length) {
+        knowledgeContext = data
+          .map((item: any) => `### ${item.title}\n${item.content}`)
+          .join('\n\n');
+      }
+    }
+
+    const systemPrompt = rebeccaIdentityService.getSystemPrompt(channel, knowledgeContext);
+
+    res.json({
+      channel,
+      system_prompt: systemPrompt,
+      knowledge_items: includeKnowledge ? (knowledgeContext ? knowledgeContext.split('###').length - 1 : 0) : null,
+    });
+  } catch (err: any) {
+    console.error('[AgentRoutes] GET /identity/system-prompt error:', err);
+    res.status(500).json({ error: 'Error generando system prompt' });
   }
 });
 
