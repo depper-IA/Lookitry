@@ -4,6 +4,7 @@ import { vertexService } from './vertex.service';
 import { pricingService } from './pricing.service';
 import { calculatePriceUSD } from '../utils/pricingCurrency';
 import type { VertexModelId } from './vertex.service';
+import { redis } from '../config/redis';
 
 interface HistoryMessage {
   role: 'user' | 'assistant';
@@ -28,13 +29,150 @@ interface RebeccaConfig {
   max_history: number;
 }
 
+// ChatContext para páginas - Phase 1
+export interface ChatContext {
+  page_url: string;
+  page_title?: string;
+  source: 'demo' | 'widget' | 'whatsapp';
+  brand_slug?: string;
+}
+
+// Lead intent detection - Section 3.4
+export type LeadIntent =
+  | 'pricing_question'
+  | 'checkout_intent'
+  | 'demo_request'
+  | 'objection'
+  | 'greeting'
+  | 'info_request'
+  | 'unknown';
+
 const KNOWLEDGE_CACHE_TTL_MS = 5 * 60 * 1000;
 const CONFIG_CACHE_TTL_MS = 60 * 1000;
+
+// Límites de caracteres por canal - Section 5.2
+const CHANNEL_LIMITS = {
+  whatsapp: 200,  // ~50 tokens
+  web: 600,       // ~150 tokens
+} as const;
 
 const knowledgeCache = new Map<'web', KnowledgeCacheEntry>();
 let configCache: { config: RebeccaConfig; expiresAt: number } | null = null;
 
-async function getKnowledgeContext(): Promise<string> {
+// ——————————————
+// HELPERS - Phase 1
+// ——————————————
+
+/**
+ * Detecta la intención del lead basándose en el mensaje.
+ * Section 3.4 del spec
+ */
+export function detectIntent(message: string): LeadIntent {
+  const lower = message.toLowerCase();
+
+  if (/cuánto cuesta|precios|plan|cuesta|valor|pago/.test(lower)) return 'pricing_question';
+  if (/comprar|pagar|activar|checkout|empieza|subscri|registrar/.test(lower)) return 'checkout_intent';
+  if (/demo|cómo funciona|ver prueba|como uso|funciona|como trabajo/.test(lower)) return 'demo_request';
+  if (/es caro|no me sirve|pienso|mejor|alternativa|difícil|complicado/.test(lower)) return 'objection';
+  if (/hola|buenos|buenas|saludos|que tal|como estás/.test(lower)) return 'greeting';
+  if (/qué incluye|diferencias|características|ventajas|beneficios/.test(lower)) return 'info_request';
+
+  return 'unknown';
+}
+
+/**
+ * Construye los enlaces contextuales según la página actual.
+ * Section 4.2 del spec
+ */
+export function buildContextualLinks(context: ChatContext): Record<string, string> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
+
+  return {
+    plans: `${baseUrl}/plans`,
+    checkout: context?.brand_slug
+      ? `${baseUrl}/checkout/${context.brand_slug}`
+      : `${baseUrl}/checkout`,
+    demo: `${baseUrl}/demo`,
+    faq: `${baseUrl}/plans#faq`,
+    howItWorks: `${baseUrl}/how-it-works`,
+    contact: `${baseUrl}/contact`,
+  };
+}
+
+/**
+ * Trunca el texto al límite de caracteres en el último punto completo.
+ * Section 5.3 del spec
+ */
+export function truncateToLimit(text: string, maxChars: number): string {
+  if (text.length <= maxChars) return text;
+
+  const truncated = text.substring(0, maxChars);
+  const lastPeriod = truncated.lastIndexOf('.');
+
+  return lastPeriod > maxChars * 0.7
+    ? truncated.substring(0, lastPeriod + 1)
+    : truncated + '...';
+}
+
+/**
+ * Obtiene recordatorios pendientes para una sesión.
+ * Section 6.3 del spec
+ */
+async function getPendingReminder(sessionId: string): Promise<string | null> {
+  try {
+    const checkoutKey = await redis?.get(`reminder:checkout_abandoned:${sessionId}`);
+    if (checkoutKey) {
+      return "Vi que quedaste en el checkout ayer. ¿Necesitás ayuda con el proceso de activación?";
+    }
+
+    const plansKey = await redis?.get(`reminder:plans:${sessionId}`);
+    if (plansKey) {
+      return "Vi que viste los planes hace un rato. ¿Tenés alguna duda antes de elegir el tuyo?";
+    }
+
+    const pendingKey = await redis?.get(`reminder:pending:${sessionId}`);
+    if (pendingKey) {
+      return "Vi que estuviste mirando opciones. ¿Hay algo en lo que te pueda ayudar?";
+    }
+
+    return null;
+  } catch (err) {
+    console.error('[RebeccaChatService] Error checking reminders:', err);
+    return null;
+  }
+}
+
+/**
+ * Registra una conversación en sales_patterns.
+ * Section 3.2 del spec
+ */
+async function registerSalesPattern(params: {
+  trigger_phrase: string;
+  rebecca_response: string;
+  intent_detected: LeadIntent;
+  lead_session_id?: string;
+  lead_email?: string;
+  brand_id?: string;
+}): Promise<void> {
+  try {
+    await supabaseAdmin
+      .from('sales_patterns')
+      .insert({
+        trigger_phrase: params.trigger_phrase.substring(0, 500),
+        rebecca_response: params.rebecca_response.substring(0, 2000),
+        outcome: 'abandoned', // Default until conversion
+        intent_detected: params.intent_detected,
+        lead_session_id: params.lead_session_id || null,
+        lead_email: params.lead_email || null,
+        brand_id: params.brand_id || null,
+      });
+  } catch (err) {
+    // Non-critical error, don't fail the reply
+    console.error('[RebeccaChatService] Error registering sales pattern:', err);
+  }
+}
+
+async function getKnowledgeContext(contextualLinks?: Record<string, string> | null): Promise<string> {
   const cached = knowledgeCache.get('web');
   if (cached && Date.now() < cached.expiresAt) {
     return cached.context;
@@ -52,7 +190,18 @@ async function getKnowledgeContext(): Promise<string> {
       : '';
 
     const pricingPart = buildPricingContext(pricingConfigs || [], trmResult?.trm ?? 4000);
-    const context = [knowledgePart, pricingPart].filter(Boolean).join('\n\n---\n\n');
+
+    // Phase 1: Agregar enlaces contextuales al contexto si están disponibles
+    let linksPart = '';
+    if (contextualLinks) {
+      linksPart = `\n\n## ENLACES DE CONVERSIÓN
+- Planes y precios: ${contextualLinks.plans || ''}
+- Checkout directo: ${contextualLinks.checkout || ''}
+- Demo interactiva: ${contextualLinks.demo || ''}
+- FAQ: ${contextualLinks.faq || ''}`;
+    }
+
+    const context = [knowledgePart, pricingPart, linksPart].filter(Boolean).join('\n\n---\n\n');
 
     knowledgeCache.set('web', { context, expiresAt: Date.now() + KNOWLEDGE_CACHE_TTL_MS });
     return context;
@@ -138,11 +287,12 @@ function getDefaultConfig(): RebeccaConfig {
 
 export class RebeccaChatService {
   async replyForChannel(
-    channel: 'web',
+    channel: 'web' | 'whatsapp',
     sessionId: string,
     message: string,
     history: HistoryMessage[],
-    locale?: string
+    locale?: string,
+    context?: ChatContext
   ): Promise<string> {
     const config = await getRebeccaConfig();
 
@@ -150,16 +300,38 @@ export class RebeccaChatService {
       throw new Error('[RebeccaChatService] Rebecca is disabled');
     }
 
+    // — Phase 1: Detectar intención —
+    const intent = detectIntent(message);
+
+    // — Phase 1: Obtener contexto de recordatorios —
+    const reminderMessage = await getPendingReminder(sessionId);
+    const enrichedMessage = reminderMessage ? `${reminderMessage}\n\n${message}` : message;
+
+    // — Phase 1: Construir enlaces contextuales —
+    const contextualLinks = context ? buildContextualLinks(context) : null;
+
+    // — Phase 1: Obtener conocimiento con enlaces —
+    const knowledgeContext = await getKnowledgeContext(contextualLinks);
+
     const trimmedHistory = history.slice(-config.max_history);
 
-    const knowledgeContext = await getKnowledgeContext();
+    // — Phase 1: Configurar maxOutputTokens por canal (Section 5.2) —
+    const maxTokens = channel === 'whatsapp' ? 50 : 150;
+
     const systemPrompt = rebeccaIdentityService.getSystemPrompt(
       channel,
       knowledgeContext,
       locale,
       config.web_instructions,
       config.whatsapp_instructions,
-      config.system_prompt_extra
+      config.system_prompt_extra,
+      contextualLinks ? {
+        plans_url: contextualLinks.plans,
+        checkout_url: contextualLinks.checkout,
+        demo_url: contextualLinks.demo,
+        faq_url: contextualLinks.faq,
+      } : undefined,
+      context?.source === 'demo'
     );
     const model = config.model as VertexModelId;
 
@@ -168,7 +340,7 @@ export class RebeccaChatService {
         role: msg.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: msg.content }],
       })),
-      { role: 'user', parts: [{ text: message }] },
+      { role: 'user', parts: [{ text: enrichedMessage }] },
     ];
 
     const result = await vertexService.generateContent({
@@ -178,7 +350,7 @@ export class RebeccaChatService {
         parts: [{ text: systemPrompt }],
       },
       generationConfig: {
-        maxOutputTokens: config.max_output_tokens,
+        maxOutputTokens: maxTokens,
         temperature: config.temperature,
       },
     });
@@ -192,7 +364,19 @@ export class RebeccaChatService {
       throw new Error('[RebeccaChatService] Empty response from Vertex');
     }
 
-    return reply;
+    // — Phase 1: Truncar si es necesario (Section 5.3) —
+    const maxChars = channel === 'whatsapp' ? CHANNEL_LIMITS.whatsapp : CHANNEL_LIMITS.web;
+    const truncatedReply = truncateToLimit(reply, maxChars);
+
+    // — Phase 1: Registrar patrón de ventas —
+    await registerSalesPattern({
+      trigger_phrase: message,
+      rebecca_response: truncatedReply,
+      intent_detected: intent,
+      lead_session_id: sessionId,
+    });
+
+    return truncatedReply;
   }
 }
 

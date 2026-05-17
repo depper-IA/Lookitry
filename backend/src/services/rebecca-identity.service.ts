@@ -173,7 +173,9 @@ export class RebeccaIdentityService {
     locale?: string,
     webInstructions?: string,
     whatsappInstructions?: string,
-    systemPromptExtra?: string
+    systemPromptExtra?: string,
+    contextualLinks?: { plans_url: string; checkout_url: string; demo_url: string; faq_url: string },
+    isDemoPage?: boolean
   ): string {
     const resolvedLocale = locale || 'default';
 
@@ -188,11 +190,42 @@ export class RebeccaIdentityService {
 
     const extraInstructions = systemPromptExtra ? `\n\n## INSTRUCCIONES ADICIONALES\n${systemPromptExtra}` : '';
 
+    // Phase 1: Agregar bloques de contexto si están disponibles
+    let contextualLinksBlock = '';
+    if (contextualLinks) {
+      contextualLinksBlock = `
+
+## ENLACES DE CONVERSIÓN
+- Planes y precios: ${contextualLinks.plans_url}
+- Checkout directo: ${contextualLinks.checkout_url}
+- Demo interactiva: ${contextualLinks.demo_url}
+
+## REGLAS DE COMPARTIR ENLACES
+- Si el lead pregunta precios → SIEMPRE compartir ${contextualLinks.plans_url}
+- Si el lead quiere comprar → SIEMPRE compartir ${contextualLinks.checkout_url}
+- Si el lead pregunta cómo funciona → SIEMPRE compartir ${contextualLinks.demo_url}
+- Los enlaces van AL FINAL del mensaje, nunca en el medio
+- Formato: "→ [Texto clickeable](url)"`;
+    }
+
+    let pageContextBlock = '';
+    if (isDemoPage) {
+      pageContextBlock = `
+
+## CONTEXTO DE PÁGINA
+El lead está en la página de DEMO. Aún no conoce Lookitry.
+- Explicá qué es Lookitry de forma simple (2-3 oraciones)
+- Destacá el beneficio principal: "muestra cómo quedan tus prendas en tus clientes"
+- Invitá a probar o ver los planes`;
+    }
+
     return SYSTEM_PROMPT_TEMPLATE
       .replace('{IDENTITY_BLOCK}', identityBlock)
       .replace('{CHANNEL_INSTRUCTION}', channelInstruction)
       .replace('{KNOWLEDGE_CONTEXT}', knowledgeContext)
-      + extraInstructions;
+      + extraInstructions
+      + contextualLinksBlock
+      + pageContextBlock;
   }
 }
 
