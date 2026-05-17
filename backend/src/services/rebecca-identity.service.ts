@@ -213,9 +213,9 @@ export class RebeccaIdentityService {
     if (pageContext) {
       const pageContextMap: Record<string, string> = {
         '/demo': 'El lead está en la página de DEMO de Lookitry (https://lookitry.com/demo). Es una página de demostración donde puede probar el probador digital. AÚN NO CONOCE Lookitry. Explicá qué es Lookitry de forma simple en 2-3 oraciones: "Lookitry permite a tus clientes probarse la ropa desde casa con una foto. Se acabaron las devoluciones porque la gente compra sabiendo cómo les queda."',
-        '/plans': 'El lead está en la página de PLANES y PRECIOS de Lookitry (https://lookitry.com/plans). Está comparando opciones. PREGUNTALE sobre su tienda: cuántos productos tiene, cuánto vende. Así podés recomendarle el plan adecuado.',
-        '/checkout': 'El lead está en la página de CHECKOUT de Lookitry. Está a punto de comprar. facilitá el proceso, resolvé objeciones, recordale los beneficios del plan que eligió.',
-        '/how-it-works': 'El lead quiere saber cómo funciona Lookitry. Explicá el proceso de forma simple: 1) subís fotos de tu ropa, 2) tus clientes se prueben virtualmente, 3) compran con confianza y devuelven menos.',
+        '/planes': 'El lead está en la página de PLANES y PRECIOS de Lookitry (https://lookitry.com/planes). Está comparando opciones. PREGUNTALE sobre su tienda: cuántos productos tiene, cuánto vende. Así podés recomendarle el plan adecuado.',
+        '/checkout': 'El lead está en la página de CHECKOUT de Lookitry. Está a punto de comprar. Facilitá el proceso, resolvé objeciones, recordale los beneficios del plan que eligió.',
+        '/probador-virtual': 'El lead quiere saber cómo funciona Lookitry. Explicá el proceso de forma simple: 1) subís fotos de tu ropa, 2) tus clientes se prueven virtualmente, 3) compran con confianza y devuelven menos.',
       };
 
       const pageKey = pageContext.page_url ? Object.keys(pageContextMap).find(key => pageContext.page_url?.startsWith(key)) : null;
