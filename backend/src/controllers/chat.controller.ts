@@ -161,10 +161,16 @@ export const getConversationMessages = async (req: Request, res: Response) => {
  */
 export const widgetReply = async (req: Request, res: Response) => {
   try {
-    const { session_id, message, history } = req.body as {
+    const { session_id, message, history, context } = req.body as {
       session_id?: unknown;
       message?: unknown;
       history?: unknown;
+      context?: {
+        page_url?: string;
+        page_title?: string;
+        source?: 'demo' | 'widget' | 'whatsapp';
+        brand_slug?: string;
+      };
     };
 
     if (typeof session_id !== 'string' || session_id.trim().length === 0) {
@@ -201,8 +207,30 @@ export const widgetReply = async (req: Request, res: Response) => {
       }
     }
 
+    // Phase 1: Validar context si está presente
+    const parsedContext = context ? {
+      page_url: typeof context?.page_url === 'string' ? context.page_url : '/unknown',
+      page_title: typeof context?.page_title === 'string' ? context.page_title : undefined,
+      source: (context?.source === 'demo' || context?.source === 'whatsapp') ? context.source : 'widget' as const,
+      brand_slug: typeof context?.brand_slug === 'string' ? context.brand_slug : undefined,
+    } : undefined;
+
+    // Phase 1: Registrar page visit si hay contexto
+    if (parsedContext?.page_url) {
+      try {
+        const { redis } = await import('../config/redis');
+        const sessionKey = `reminder:pending:${session_id}`;
+        await redis?.set(sessionKey, JSON.stringify({
+          page_url: parsedContext.page_url,
+          visited_at: new Date().toISOString(),
+        }), 'EX', 86400 * 7); // 7 días TTL
+      } catch (err) {
+        // Non-critical, continue
+      }
+    }
+
     const locale = rebeccaIdentityService.detectLocale(message);
-    const reply = await rebeccaChatService.replyForChannel('web', session_id, message, parsedHistory, locale);
+    const reply = await rebeccaChatService.replyForChannel('web', session_id, message, parsedHistory, locale, parsedContext);
     return res.status(200).json({ reply, session_id });
   } catch (error: any) {
     console.error('[Chat] widgetReply:', error);
