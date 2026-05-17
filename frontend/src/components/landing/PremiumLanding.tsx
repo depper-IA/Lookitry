@@ -110,9 +110,9 @@ export default function PremiumLanding({
           <LandingStats />
           <LandingSteps />
           <LandingOnboardingSteps />
+          <LandingSocialProof />
           <LandingMiniLanding />
           <LandingPlugin />
-          <LandingSocialProof />
           <LandingPricing pricing={pricing} currency={navCurrency} trm={trmState} />
           <ActiveCouponsBanner />
           <LandingPayments />
