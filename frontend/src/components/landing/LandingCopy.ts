@@ -41,17 +41,6 @@ export const LANDING_COPY = {
     ]
   },
 
-  /**
-   * SOCIAL OS — Sección 1 (aparece primero)
-   * ─────────────────────────────────────────
-   * Producto: PROBADOR VIRTUAL
-   * Propuesta: el probador virtual con IA que funciona desde los canales donde ya están las clientas.
-   * Diferenciador clave: NO es una tienda — es la tecnología de prueba accesible desde
-   * Instagram, TikTok y WhatsApp. Resuelve la fricción "¿me quedará bien?" en el canal
-   * donde ya existe la intención de compra.
-   *
-   * NO confundir con: Tienda Virtual (ver abajo), que es el mini ecommerce completo.
-   */
   social_proof: {
     label: "Probador Virtual",
     title: "Tus clientas se prueban tu ropa",
@@ -74,17 +63,6 @@ export const LANDING_COPY = {
     }
   },
 
-  /**
-   * TIENDA VIRTUAL — Sección 2 (aparece después de Social OS)
-   * ──────────────────────────────────────────────────────────
-   * Producto: MINI ECOMMERCE
-   * Propuesta: una tienda online propia, lista en 10 minutos, con catálogo, probador
-   * virtual integrado y cierre por WhatsApp. Es un DESTINO completo de compra,
-   * no solo una herramienta de prueba.
-   *
-   * NO confundir con: Social OS (ver arriba), que es el probador virtual que opera
-   * dentro de los canales sociales sin necesidad de una tienda propia.
-   */
   virtual_shop: {
     badge: "Mini Ecommerce · Pago único",
     title: "Tu tienda online,",
