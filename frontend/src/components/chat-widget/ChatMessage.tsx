@@ -6,6 +6,37 @@ interface ChatMessageProps {
   message: Message;
 }
 
+function renderContentWithLinks(content: string): React.ReactNode {
+  const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = linkRegex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(content.slice(lastIndex, match.index));
+    }
+    parts.push(
+      <a
+        key={match.index}
+        href={match[2]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-accent hover:underline"
+      >
+        {match[1]}
+      </a>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < content.length) {
+    parts.push(content.slice(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : content;
+}
+
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
 
@@ -18,7 +49,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
             : 'bg-gray-100 text-gray-800 rounded-bl-sm dark:bg-zinc-700 dark:text-gray-100'
         }`}
       >
-        {message.content}
+        {renderContentWithLinks(message.content)}
       </div>
     </div>
   );
