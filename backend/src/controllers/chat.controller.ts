@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { rebeccaChatService } from '../services/rebecca-chat.service';
+import { rebeccaIdentityService } from '../services/rebecca-identity.service';
 
 type ConversationStatus = 'new' | 'in_progress' | 'classified' | 'resolved' | 'escalated';
 
@@ -200,7 +201,8 @@ export const widgetReply = async (req: Request, res: Response) => {
       }
     }
 
-    const reply = await rebeccaChatService.replyForChannel('web', session_id, message, parsedHistory);
+    const locale = rebeccaIdentityService.detectLocale(message);
+    const reply = await rebeccaChatService.replyForChannel('web', session_id, message, parsedHistory, locale);
     return res.status(200).json({ reply, session_id });
   } catch (error: any) {
     console.error('[Chat] widgetReply:', error);

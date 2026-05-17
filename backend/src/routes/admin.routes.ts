@@ -95,6 +95,7 @@ import {
   getGenerationFeedback,
   resolveFeedbackAdmin,
 } from '../controllers/admin/feedback.admin.controller';
+import { getRebeccaConfig, updateRebeccaConfig } from '../controllers/admin/rebecca.admin.controller';
 import {
   getWidgetIpWhitelist,
   addWidgetIpWhitelist,
@@ -306,5 +307,9 @@ router.patch('/knowledge/:id', requirePermission('settings'), updateKnowledgeIte
 router.delete('/knowledge/:id', requirePermission('settings'), deleteKnowledgeItem);
 // Backfill: regenera embeddings para todos los items sin embedding (correr una sola vez post-migración)
 router.post('/knowledge/backfill-embeddings', requirePermission('settings'), backfillEmbeddings);
+
+// Rebecca AI Agent Config
+router.get('/rebecca/config', requirePermission('settings'), getRebeccaConfig);
+router.patch('/rebecca/config', requirePermission('settings'), updateRebeccaConfig);
 
 export default router;
