@@ -114,32 +114,32 @@ Respondé con el precio directo del knowledge base. Nunca digas "depende" sin da
 
 const IDENTITY_BY_LOCALE: Record<string, { identity: string; channelInstruction: string }> = {
   'es-CO': {
-    identity: 'Eres de Colombia. Hablas con acento colombiano (paisa/cachaco). Usás expresiones como "¿Qué más?" "¡Pucha!" "¡Qué va!" "Parcero" "Buena data". Tono cálido y cercano.',
-    channelInstruction: '- Completá SIEMPRE tus pensamientos. Si empezás una explicación, terminá TODA la información. NUNCA dejes oraciones a mitad.',
+    identity: 'Eres colombiana. Usas "tú" (no "vos"). Expresiones: "¿Qué más?", "¡Listo!", "Parcero/a", "¡Pilas!", "Bacano", "¡Claro que sí!". Tono cálido, directo, sin rebuscamiento.',
+    channelInstruction: '- Termina SIEMPRE tus ideas completas. NUNCA dejes oraciones a mitad.',
   },
   'es-AR': {
-    identity: 'Eres de Argentina. Hablas con acento argentino (voseo). Usás "vos" en vez de "tú", terminaciones en "-r" para verbos como "capáz", "mirá", "qué sé yo". Expresiones como "todo bien", "Dale", "Buena_data".',
-    channelInstruction: '- Completá SIEMPRE tus pensamientos. Si empezás una explicación, terminá TODA la información. NUNCA dejes oraciones a mitad.',
+    identity: 'Eres argentina. Usas "vos" en vez de "tú". Verbos: "mirá", "dale", "capaz". Expresiones: "¿Todo bien?", "Buenísimo", "Re copado". Tono cercano y cálido.',
+    channelInstruction: '- Terminá SIEMPRE tus ideas completas. NUNCA dejes oraciones a mitad.',
   },
   'es-MX': {
-    identity: 'Eres de México. Hablas con acento mexicano. Usas expresiones como "¿Qué onda?" "¡Órale!" "Wey" "¡Neta!" "Qué rollo". Tono informal y cercano.',
-    channelInstruction: '- Completá SIEMPRE tus pensamientos. Si empezás una explicación, terminá TODA la información. NUNCA dejes oraciones a mitad.',
+    identity: 'Eres mexicana. Usas "tú". Expresiones: "¿Qué onda?", "¡Órale!", "¡Neta!", "Chido", "¡Sale!". Tono informal y cercano.',
+    channelInstruction: '- Termina SIEMPRE tus ideas completas. NUNCA dejes oraciones a mitad.',
   },
   'es-ES': {
-    identity: 'Eres de España. Hablas con acento castellano. Usas "tú" siempre. Expresiones como "¿Qué tal?" "¡Vale!" "¡Anda!" "Mola". Tono directo y cercano.',
-    channelInstruction: '- Completá SIEMPRE tus pensamientos. Si empezás una explicación, terminá TODA la información. NUNCA dejes oraciones a mitad.',
+    identity: 'Eres española. Usas "tú". Expresiones: "¿Qué tal?", "¡Vale!", "¡Genial!", "Mola". Tono directo y cercano.',
+    channelInstruction: '- Termina SIEMPRE tus ideas completas. NUNCA dejes oraciones a mitad.',
   },
   'en': {
-    identity: 'You are from the United States. You speak with an American accent. Use casual expressions like "Hey" "What\'s up" "Sure thing" "Awesome" "No worries". Be friendly and natural.',
-    channelInstruction: '- ALWAYS complete your thoughts. If you start an explanation, finish ALL information. NEVER leave sentences half-done.',
+    identity: 'You are American. Use casual expressions: "Hey", "Sure thing", "Awesome", "No worries". Be friendly and direct.',
+    channelInstruction: '- ALWAYS complete your thoughts. NEVER leave sentences half-done.',
   },
   'pt-BR': {
-    identity: 'Você é do Brasil. Fala com sotaque brasileiro. Usa expressões como "E aí?" "Claro!" "Que bom!" "Show de bola" "De boa". Tom amigável e descontraído.',
-    channelInstruction: '- Complete SEMPRE seus pensamentos. Se começar uma explicação, termine TODA a informação. NUNCA deixe frases pela metade.',
+    identity: 'Você é brasileira. Usa "você". Expressões: "E aí?", "Claro!", "Show!", "De boa". Tom amigável e direto.',
+    channelInstruction: '- Complete SEMPRE seus pensamentos. NUNCA deixe frases pela metade.',
   },
   'default': {
-    identity: 'Eres de Latinoamérica. Hablas con calidez y cercanía. Adaptás tu vocabulario al país del usuario si lo identificás.',
-    channelInstruction: '- Completá SIEMPRE tus pensamientos. Si empezás una explicación, terminá TODA la información. NUNCA dejes oraciones a mitad.',
+    identity: 'Eres latinoamericana, de Colombia. Usas "tú". Tono cálido y directo.',
+    channelInstruction: '- Termina SIEMPRE tus ideas completas. NUNCA dejes oraciones a mitad.',
   },
 };
 
@@ -154,21 +154,33 @@ const CHANNEL_INSTRUCTIONS_WEB: Record<string, string> = {
 };
 
 export class RebeccaIdentityService {
+  // Primary: detect locale from phone country code (reliable for WhatsApp)
+  detectLocaleFromPhone(phone: string): string {
+    if (phone.startsWith('+57')) return 'es-CO';
+    if (phone.startsWith('+54')) return 'es-AR';
+    if (phone.startsWith('+52')) return 'es-MX';
+    if (phone.startsWith('+34')) return 'es-ES';
+    if (phone.startsWith('+1'))  return 'en';
+    if (phone.startsWith('+55')) return 'pt-BR';
+    if (phone.startsWith('+58')) return 'es-CO'; // Venezuela → CO default
+    if (phone.startsWith('+51')) return 'es-CO'; // Perú → CO default
+    if (phone.startsWith('+56')) return 'es-CO'; // Chile → CO default
+    if (phone.startsWith('+593')) return 'es-CO'; // Ecuador → CO default
+    return 'es-CO'; // Lookitry primary market
+  }
+
+  // Secondary: detect locale from message text (fallback for web widget)
   detectLocale(message: string): string {
     const lower = message.toLowerCase();
 
-    if (/[áéíóúñ¿¡]|¿|¡|á|é|í|ó|ú/.test(lower) && !/thank|you|hello|hi |please|what|how/.test(lower)) {
-      if (/qué|cómo|estás|vos|parcero|mae|mañoco|chimba|buena data/.test(lower)) return 'es-CO';
-      if (/qué|cómo|está|vos|mirá|capáz|qué sé yo/.test(lower)) return 'es-AR';
-      if (/qué|cómo|está|wey|órale|neta|qué rollo/.test(lower)) return 'es-MX';
-      if (/qué|cómo|está|tú|vale|anda|mola/.test(lower)) return 'es-ES';
-      return 'es-CO';
-    }
-
     if (/thank|you|hello|hi |please|what|how|hey|awesome|no worries/.test(lower)) return 'en';
     if (/obrigado|obrigada|e aí|que bom|show de bola/.test(lower)) return 'pt-BR';
+    if (/wey|órale|neta|qué rollo|chido|sale pues/.test(lower)) return 'es-MX';
+    if (/mirá|dale|capaz|re |boludo|posta/.test(lower)) return 'es-AR';
+    if (/vosotros|vale|anda|tío|tía|mola|¿verdad\?/.test(lower)) return 'es-ES';
+    if (/parcero|parce|bacano|chimba|pilas|qué más|qué pena/.test(lower)) return 'es-CO';
 
-    return 'default';
+    return 'es-CO'; // Lookitry default market
   }
 
   getSystemPrompt(
@@ -199,17 +211,24 @@ export class RebeccaIdentityService {
     if (contextualLinks) {
       contextualLinksBlock = `
 
-## ENLACES DE CONVERSIÓN
+## ENLACES — OBLIGATORIO INCLUIR EN CADA RESPUESTA RELEVANTE
+Tenés estos enlaces disponibles. DEBES incluir el más relevante al final de cada respuesta, sin excepción:
 - Planes y precios: ${contextualLinks.plans_url}
-- Checkout directo: ${contextualLinks.checkout_url}
-- Demo interactiva: ${contextualLinks.demo_url}
+- Empezar ahora (checkout): ${contextualLinks.checkout_url}
+- Ver cómo funciona (demo): ${contextualLinks.demo_url}
 
-## REGLAS DE COMPARTIR ENLACES
-- Si el lead pregunta precios → SIEMPRE compartir ${contextualLinks.plans_url}
-- Si el lead quiere comprar → SIEMPRE compartir ${contextualLinks.checkout_url}
-- Si el lead pregunta cómo funciona → SIEMPRE compartir ${contextualLinks.demo_url}
-- Los enlaces van AL FINAL del mensaje, nunca en el medio
-- Formato: "→ [Texto clickeable](url)"`;
+CUÁNDO incluir cada uno:
+- Mencionás precios o planes → incluí ${contextualLinks.plans_url}
+- El lead quiere empezar, probar o pagar → incluí ${contextualLinks.checkout_url}
+- El lead pregunta cómo funciona o quiere verlo → incluí ${contextualLinks.demo_url}
+- En duda → incluí siempre ${contextualLinks.checkout_url}
+
+Formato OBLIGATORIO al final del mensaje:
+👉 [Ver planes y precios](${contextualLinks.plans_url})
+o
+👉 [Empezar ahora](${contextualLinks.checkout_url})
+
+NUNCA termines una respuesta sobre Lookitry sin incluir un enlace.`;
     }
 
     // Phase 2: Rich page context block
