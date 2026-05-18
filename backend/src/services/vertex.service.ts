@@ -103,6 +103,29 @@ class VertexService {
   }
 
   /**
+   * Call Vertex AI with system prompt + user message (for Rebecca)
+   */
+  async callVertex(systemPrompt: string, userMessage: string): Promise<string> {
+    const result = await this.generateContent({
+      model: 'gemini-2.5-flash',
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+    });
+
+    if (result.error) {
+      throw new Error(`VERTEX_ERROR: ${result.error}`);
+    }
+
+    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      throw new Error('VERTEX_NO_RESPONSE');
+    }
+
+    return text;
+  }
+
+  /**
    * Generate content using Vertex AI Gemini models
    */
   async generateContent(options: VertexGenerateOptions): Promise<VertexGenerateResult> {

@@ -17,13 +17,26 @@ const supabase = createClient(
 );
 
 // In-memory cache to prevent processing duplicate retries from YCloud
+// NOTE: In Edge Functions, this persists within a warm execution context
 const processedMessages = new Set<string>();
+
+// Hash-based dedup to handle message content duplicates
+function hashMessage(phone: string, text: string): string {
+  const str = `${phone}:${text}`;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.codePointAt(i)!;
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString(36);
+}
 
 serve(async (req: Request) => {
   const startTime = Date.now();
   let payload: YCloudWebhookPayload;
   
-  // Parse JSON upfront to handle errors properly
+  // Parse JSON upfront
   let rawPayload: any;
   try {
     rawPayload = await req.json();
@@ -41,115 +54,143 @@ serve(async (req: Request) => {
     payload = rawPayload;
 
     console.log('[Edge] Raw payload keys:', Object.keys(payload));
-    console.log('[Edge] whatsappMessage:', payload?.whatsappMessage ? 'EXISTS' : 'MISSING');
-    console.log('[Edge] whatsappInboundMessage:', payload?.whatsappInboundMessage ? 'EXISTS' : 'MISSING');
-    console.log('[Edge] payload:', payload?.payload ? 'EXISTS' : 'MISSING');
 
     // Normalize YCloud webhook payload
-    // Some webhooks send whatsappMessage, others send whatsappInboundMessage, others send payload
     const msg = payload?.whatsappMessage || payload?.whatsappInboundMessage || payload?.payload;
     if (!msg) {
       console.error('[Edge] No message found in payload');
       return new Response(JSON.stringify({ status: 'error', code: 'INVALID_PAYLOAD' }), { status: 400 });
     }
 
-    console.log('[Edge] Message extracted, from:', msg?.from);
-
-    // Extract fields - handle both formats
-    // YCloud webhook: from=customer phone, to=our business phone
-    // To reply: send TO customer's phone (from), FROM our business phone (to)
+    // Extract fields
     const customerPhone = msg.from || msg.fromUserId;
     const businessPhone = msg.to;
     const message = msg.text?.body || msg.content?.text || '';
     const messageId = msg.id;
 
-    // PREVENT DUPLICATES (YCloud retries)
-    if (messageId) {
-      if (processedMessages.has(messageId)) {
-        console.log('[Edge] Dropping duplicate message from YCloud retry:', messageId);
-        return new Response(JSON.stringify({ status: 'ignored', reason: 'duplicate_retry' }), { status: 200 });
-      }
-      processedMessages.add(messageId);
-      // Clean up cache to prevent memory leak (keep last 500 max)
-      if (processedMessages.size > 500) {
-        const iterator = processedMessages.values();
-        processedMessages.delete(iterator.next().value);
-      }
+    console.log('[Edge] Message from:', customerPhone, '| content:', message.substring(0, 50));
+
+    // 1. DEDUPLICATION - Check messageId AND content hash BEFORE processing
+    const contentHash = hashMessage(customerPhone || '', message);
+    
+    // Check if already processing this exact message
+    if (processedMessages.has(contentHash)) {
+      console.log('[Edge] Dropping duplicate message by content hash:', contentHash);
+      return new Response(JSON.stringify({ status: 'ignored', reason: 'duplicate_content' }), { status: 200 });
     }
     
-    // STOP PROCESSING OLD RETRIES
-    const createTimeStr = payload.createTime || msg.createTime || msg.sendTime;
-    if (createTimeStr) {
-      const msgTime = new Date(createTimeStr).getTime();
-      const now = Date.now();
-      // Drop messages older than 3 minutes (180000 ms)
-      if (now - msgTime > 180000) {
-        console.log('[Edge] Dropping old message from queue:', createTimeStr);
-        return new Response(JSON.stringify({ status: 'ignored', reason: 'old_message_retry' }), { status: 200 });
-      }
+    // Also check by messageId if present
+    if (messageId && processedMessages.has(messageId)) {
+      console.log('[Edge] Dropping duplicate message by ID:', messageId);
+      return new Response(JSON.stringify({ status: 'ignored', reason: 'duplicate_retry' }), { status: 200 });
+    }
+    
+    // Mark as being processed - prevents concurrent processing of same message
+    processedMessages.add(contentHash);
+    if (messageId) {
+      processedMessages.add(messageId);
+    }
+    
+    // Keep cache manageable
+    if (processedMessages.size > 500) {
+      const arr = Array.from(processedMessages);
+      processedMessages.clear();
+      arr.slice(-300).forEach(h => processedMessages.add(h));
     }
 
-    // Extract customer name from profile
-    const customerName = payload.whatsappMessage?.customerProfile?.name || payload.whatsappInboundMessage?.customerProfile?.name;
-    if (customerName) {
-      console.log('[Edge] Customer:', customerName);
-    }
-
-    // 2. Validate
+    // 2. Validate phone
     if (!customerPhone?.trim()) {
       return new Response(JSON.stringify({ status: 'error', code: 'MISSING_PHONE' }), { status: 400 });
     }
 
-    // 3. Upsert lead + append message
-    await leadService.upsertLead(supabase, customerPhone, message, customerName);
+    // 3. Extract customer name
+    const customerName = payload?.whatsappMessage?.customerProfile?.name || 
+                         payload?.whatsappInboundMessage?.customerProfile?.name;
 
-    // 4. RAG context (vector search)
-    const ragContext = await ragService.getKnowledgeContext(supabase, message);
-
-    // 5. Build prompts
-    const systemPrompt = promptBuilder.buildSystemPrompt(ragContext);
-    const userMessage = promptBuilder.buildUserMessage(message);
-
-    // 6. Call AI (MiniMax primary, Vertex secondary)
-    let response: string;
+    // 4. PROCESS MESSAGE SYNCHRONOUSLY - don't return until done
+    // This ensures we only send ONE response per message
     try {
-      console.log('[Edge] Calling MiniMax...');
-      response = await minimaxService.callMiniMax(systemPrompt, userMessage);
-      console.log('[Edge] MiniMax response:', response.substring(0, 100));
-    } catch (minimaxError: any) {
-      console.warn('[Edge] MiniMax failed, falling back to Vertex AI:', minimaxError.message);
-      console.log('[Edge] Calling Vertex AI...');
-      response = await vertexService.callVertex(systemPrompt, userMessage);
-      console.log('[Edge] Vertex response:', response.substring(0, 100));
+      console.log('[Edge] Processing message...');
+
+      // Upsert lead + append message
+      await leadService.upsertLead(supabase, customerPhone, message, customerName);
+
+      // RAG context (vector search)
+      const ragContext = await ragService.getKnowledgeContext(supabase, message);
+
+      // Build prompts
+      const systemPrompt = promptBuilder.buildSystemPrompt(ragContext);
+      const userMessage = promptBuilder.buildUserMessage(message);
+
+      // Call AI (MiniMax primary, Vertex secondary)
+      let response: string;
+      try {
+        console.log('[Edge] Calling MiniMax...');
+        response = await minimaxService.callMiniMax(systemPrompt, userMessage);
+        console.log('[Edge] MiniMax response received, length:', response.length);
+      } catch (minimaxError: any) {
+        console.warn('[Edge] MiniMax failed, falling back to Vertex AI:', minimaxError.message);
+        try {
+          response = await vertexService.callVertex(systemPrompt, userMessage);
+        } catch (vertexError: any) {
+          console.error('[Edge] Vertex also failed:', vertexError.message);
+          await fallbackHandler.trigger(supabase, payload);
+          return new Response(JSON.stringify({ status: 'fallback_triggered', code: 'AI_ERROR' }), { status: 200 });
+        }
+      }
+
+      // Clean response
+      response = cleanResponse(response);
+
+      if (!response || response.trim().length === 0) {
+        console.error('[Edge] Empty response after cleaning');
+        return new Response(JSON.stringify({ status: 'ignored', reason: 'empty_response' }), { status: 200 });
+      }
+
+      // Send via YCloud - ONLY ONCE
+      console.log('[Edge] Sending to YCloud - customer:', customerPhone, 'business:', businessPhone);
+      await ycloudService.sendMessage(customerPhone, response, businessPhone);
+      
+      const latency = Date.now() - startTime;
+      console.log(JSON.stringify({ event: 'success', latency_ms: latency }));
+
+      return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
+      
+    } catch (processError: any) {
+      console.error('[Edge] Processing error:', processError.message);
+      
+      const isAIError = processError.message.includes('timeout') ||
+                        processError.message.includes('MINIMAX') ||
+                        processError.message.includes('VERTEX');
+      
+      if (isAIError) {
+        await fallbackHandler.trigger(supabase, payload);
+        return new Response(JSON.stringify({ status: 'fallback_triggered' }), { status: 200 });
+      }
+      
+      return new Response(JSON.stringify({ status: 'error', code: processError.message }), { status: 500 });
     }
 
-    // 7. Send via YCloud - FROM our business phone TO customer
-    console.log('[Edge] Sending to YCloud - customer:', customerPhone, 'business:', businessPhone);
-    await ycloudService.sendMessage(customerPhone, response, businessPhone);
-    
-    const latency = Date.now() - startTime;
-    console.log(JSON.stringify({ event: 'success', latency_ms: latency, phone }));
-    
-    return new Response(JSON.stringify({ status: 'ok', message_id: messageId }), { status: 200 });
-    
   } catch (error: any) {
-    const latency = Date.now() - startTime;
-    const errorCode = error.message || 'INTERNAL_ERROR';
-
-    // Only fallback on AI errors (timeout or API errors from MiniMax or Vertex)
-    const isAIError = errorCode.includes('timeout') ||
-                      errorCode.includes('TIMEOUT') ||
-                      errorCode.includes('MINIMAX') ||
-                      errorCode.includes('VERTEX');
-
-    if (isAIError) {
-      console.log(JSON.stringify({ event: 'fallback', reason: errorCode, latency_ms: latency }));
-      await fallbackHandler.trigger(supabase, payload);
-      return new Response(JSON.stringify({ status: 'fallback_triggered', code: errorCode }), { status: 504 });
-    }
-
-    // For other errors (YCLOUD, validation, etc), just log and return error
-    console.log(JSON.stringify({ event: 'error', error: errorCode, latency_ms: latency }));
-    return new Response(JSON.stringify({ status: 'error', code: errorCode }), { status: 500 });
+    console.error('[Edge] Fatal error:', error.message);
+    return new Response(JSON.stringify({ status: 'error', code: error.message }), { status: 500 });
   }
 });
+
+// Clean response text - remove thinking blocks that leaked through
+function cleanResponse(text: string): string {
+  if (!text) return '';
+  
+  let cleaned = text;
+  
+  // Remove thinking tags and content
+  cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  
+  // Remove any remaining parenthetical content that looks like thinking artifacts
+  cleaned = cleaned.replace(/\([A-Za-z0-9\u00C0-\u024F\u4e00-\u9fff\u0600-\u06FF]{1,100}\)/g, '');
+  
+  // Remove multiple spaces and newlines
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  
+  return cleaned;
+}
