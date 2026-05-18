@@ -36,12 +36,6 @@ serve(async (req: Request) => {
   try {
     payload = rawPayload;
 
-    // Validate payload structure
-    if (!payload?.payload) {
-      console.error('[Edge] Invalid payload structure:', JSON.stringify(payload));
-      return new Response(JSON.stringify({ status: 'error', code: 'INVALID_PAYLOAD' }), { status: 400 });
-    }
-
     // Normalize YCloud webhook payload
     // Some webhooks send whatsappInboundMessage, others send payload
     const msg = payload.whatsappInboundMessage || payload.payload;
