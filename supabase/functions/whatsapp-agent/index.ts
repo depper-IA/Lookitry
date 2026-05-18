@@ -42,7 +42,25 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ status: 'error', code: 'INVALID_PAYLOAD' }), { status: 400 });
     }
 
-    const { from: phone, content: { text: message }, id: messageId, to: fromNumber } = payload.payload;
+    // Normalize YCloud webhook payload
+    // Some webhooks send whatsappInboundMessage, others send payload
+    const msg = payload.whatsappInboundMessage || payload.payload;
+    if (!msg) {
+      console.error('[Edge] No message found in payload');
+      return new Response(JSON.stringify({ status: 'error', code: 'INVALID_PAYLOAD' }), { status: 400 });
+    }
+
+    // Extract fields - handle both formats
+    const phone = msg.from || msg.fromUserId;
+    const message = msg.text?.body || msg.content?.text || '';
+    const messageId = msg.id;
+    const fromNumber = msg.to;
+
+    // Handle customer profile name
+    const customerName = payload.whatsappInboundMessage?.customerProfile?.name;
+    if (customerName) {
+      console.log('[Edge] Customer:', customerName);
+    }
     
     // 2. Validate
     if (!phone?.trim()) {
@@ -50,7 +68,7 @@ serve(async (req: Request) => {
     }
     
     // 3. Upsert lead + append message
-    await leadService.upsertLead(supabase, phone, message);
+    await leadService.upsertLead(supabase, phone, message, customerName);
     
     // 4. RAG context (vector search)
     const ragContext = await ragService.getKnowledgeContext(supabase, message);
