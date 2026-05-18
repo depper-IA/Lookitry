@@ -1,8 +1,14 @@
 export const ycloudService = {
   async sendMessage(to: string, text: string, from?: string): Promise<void> {
+    const businessNumber = from?.replace('+', '') || '573248507947';
+    const customerNumber = to.replace('+', '');
+
+    console.log('[YCloud] SendMessage - to:', customerNumber, 'from:', businessNumber);
+    console.log('[YCloud] Text preview:', text.substring(0, 50));
+
     const payload = {
-      to: to.replace('+', ''),
-      from: from?.replace('+', '') || '573248507947',
+      to: customerNumber,
+      from: businessNumber,
       type: 'text',
       text: {
         body: text

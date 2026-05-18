@@ -52,37 +52,39 @@ serve(async (req: Request) => {
     console.log('[Edge] Message extracted, from:', msg?.from);
 
     // Extract fields - handle both formats
-    const phone = msg.from || msg.fromUserId;
+    // YCloud webhook: from=customer phone, to=our business phone
+    // To reply: send TO customer's phone (from), FROM our business phone (to)
+    const customerPhone = msg.from || msg.fromUserId;
+    const businessPhone = msg.to;
     const message = msg.text?.body || msg.content?.text || '';
     const messageId = msg.id;
-    const fromNumber = msg.to;
 
-    // Handle customer profile name
-    const customerName = payload.whatsappInboundMessage?.customerProfile?.name;
+    // Extract customer name from profile
+    const customerName = payload.whatsappMessage?.customerProfile?.name || payload.whatsappInboundMessage?.customerProfile?.name;
     if (customerName) {
       console.log('[Edge] Customer:', customerName);
     }
-    
+
     // 2. Validate
-    if (!phone?.trim()) {
+    if (!customerPhone?.trim()) {
       return new Response(JSON.stringify({ status: 'error', code: 'MISSING_PHONE' }), { status: 400 });
     }
-    
+
     // 3. Upsert lead + append message
-    await leadService.upsertLead(supabase, phone, message, customerName);
-    
+    await leadService.upsertLead(supabase, customerPhone, message, customerName);
+
     // 4. RAG context (vector search)
     const ragContext = await ragService.getKnowledgeContext(supabase, message);
-    
+
     // 5. Build prompts
     const systemPrompt = promptBuilder.buildSystemPrompt(ragContext);
     const userMessage = promptBuilder.buildUserMessage(message);
-    
+
     // 6. Call MiniMax (5s timeout)
     const response = await minimaxService.callMiniMax(systemPrompt, userMessage);
-    
-    // 7. Send via YCloud
-    await ycloudService.sendMessage(phone, response, fromNumber);
+
+    // 7. Send via YCloud - FROM our business phone TO customer
+    await ycloudService.sendMessage(customerPhone, response, businessPhone);
     
     const latency = Date.now() - startTime;
     console.log(JSON.stringify({ event: 'success', latency_ms: latency, phone }));
