@@ -1,10 +1,10 @@
 export const ycloudService = {
   async sendMessage(to: string, text: string, from?: string): Promise<void> {
-    const businessNumber = from?.replace('+', '') || '573248507947';
-    const customerNumber = to.replace('+', '');
+    // YCloud expects numbers in format without + for from, but with + for to
+    const businessNumber = from ? from.replace('+', '') : '573248507947';
+    const customerNumber = to.startsWith('+') ? to : `+${to}`;
 
-    console.log('[YCloud] SendMessage - to:', customerNumber, 'from:', businessNumber);
-    console.log('[YCloud] Text preview:', text.substring(0, 50));
+    console.log('[YCloud] to:', customerNumber, 'from:', businessNumber);
 
     const payload = {
       to: customerNumber,

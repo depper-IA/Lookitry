@@ -39,8 +39,25 @@ export const minimaxService = {
       }
       
       const result = await response.json();
-      console.log('[MiniMax] Response:', JSON.stringify(result).substring(0, 500));
-      return result.choices?.[0]?.message?.content || 'Error generating response';
+      console.log('[MiniMax] Raw response:', JSON.stringify(result).substring(0, 1000));
+
+      // Handle different MiniMax response formats
+      let responseText = result.choices?.[0]?.message?.content;
+      if (!responseText && result.choices?.[0]?.text) {
+        responseText = result.choices?.[0]?.text;
+      }
+      if (!responseText && result.output?.text) {
+        responseText = result.output.text;
+      }
+      if (!responseText && result.generation?.text) {
+        responseText = result.generation.text;
+      }
+      if (!responseText) {
+        console.error('[MiniMax] No text found in response:', JSON.stringify(result).substring(0, 500));
+        throw new Error('MINIMAX_NO_RESPONSE');
+      }
+
+      return responseText;
     } catch (error: any) {
       clearTimeout(timeout);
       if (error.name === 'AbortError') {
