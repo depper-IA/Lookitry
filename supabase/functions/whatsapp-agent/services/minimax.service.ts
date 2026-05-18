@@ -41,10 +41,21 @@ export const minimaxService = {
       }
 
       const result = await response.json();
-      console.log('[MiniMax] Raw response:', JSON.stringify(result).substring(0, 1000));
+      console.log('[MiniMax] Raw response:', JSON.stringify(result).substring(0, 1500));
 
       // Handle Anthropic-compatible response format
+      // MiniMax puts text in content[0].text OR content[0].thinking (reasoning)
       let responseText = result.content?.[0]?.text;
+
+      // MiniMax-M2.7 puts actual response in thinking block, strip the tags
+      if (!responseText && result.content?.[0]?.thinking) {
+        const thinkingContent = result.content[0].thinking;
+        // Remove <think> and </think> tags
+        responseText = thinkingContent
+          .replace(/<think>/gi, '')
+          .replace(/<\/think>/gi, '')
+          .trim();
+      }
 
       if (!responseText && result.error) {
         console.error('[MiniMax] API Error:', result.error);
@@ -55,6 +66,9 @@ export const minimaxService = {
         console.error('[MiniMax] No text found in response:', JSON.stringify(result).substring(0, 500));
         throw new Error('MINIMAX_NO_RESPONSE');
       }
+
+      // Remove thinking tags if present
+      responseText = responseText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
       return responseText;
     } catch (error: any) {
