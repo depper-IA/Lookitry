@@ -46,7 +46,14 @@ export const rebeccaRateLimitByIP = rateLimit({
   windowMs: WINDOW_MS,
   max: 60,
   store: makeStore('rl:widget-ip:'),
-  keyGenerator: (req: Request): string => req.ip ?? 'unknown',
+  keyGenerator: (req: Request): string => {
+    // Use x-forwarded-for header (set by Traefik) as primary identifier
+    const forwarded = req.headers['x-forwarded-for']?.toString().split(',')[0].trim();
+    if (forwarded) return forwarded;
+    // Fallback: use socket remote address
+    const remoteAddress = req.socket?.remoteAddress ?? 'unknown';
+    return remoteAddress;
+  },
   validate: {
     ip: false,
   },
