@@ -31,6 +31,7 @@ import homeRoutes from './home.routes';
 import vertexRoutes from './vertex.routes';
 import aiRoutes from './ai.routes';
 import chatRoutes from './chat.routes';
+import ycloudRoutes from './ycloud.routes';
 
 const router = Router();
 
@@ -63,5 +64,6 @@ router.use('/home/tryon', homeRoutes);
 router.use('/vertex', vertexRoutes);
 router.use('/ai', aiRoutes);
 router.use('/chat', chatRoutes);
+router.use('/chat', ycloudRoutes);
 
 export default router;
