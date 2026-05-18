@@ -53,14 +53,21 @@ serve(async (req: Request) => {
   } catch (error: any) {
     const latency = Date.now() - startTime;
     const errorCode = error.message || 'INTERNAL_ERROR';
-    
-    // Check if MiniMax timeout
-    if (errorCode.includes('timeout') || errorCode.includes('TIMEOUT')) {
-      console.log(JSON.stringify({ event: 'fallback', reason: 'MINIMAX_TIMEOUT', latency_ms: latency }));
-      await fallbackHandler.trigger(supabase, payload);
-      return new Response(JSON.stringify({ status: 'error', code: 'MINIMAX_TIMEOUT' }), { status: 504 });
+
+    // Only fallback on MiniMax/AI errors (timeout or API errors)
+    const isMiniMaxError = errorCode.includes('timeout') ||
+                           errorCode.includes('TIMEOUT') ||
+                           errorCode.includes('MINIMAX');
+
+    if (isMiniMaxError) {
+      console.log(JSON.stringify({ event: 'fallback', reason: errorCode, latency_ms: latency }));
+      if (payload?.payload) {
+        await fallbackHandler.trigger(supabase, payload);
+      }
+      return new Response(JSON.stringify({ status: 'fallback_triggered', code: errorCode }), { status: 504 });
     }
-    
+
+    // For other errors (YCLOUD, validation, etc), just log and return error
     console.log(JSON.stringify({ event: 'error', error: errorCode, latency_ms: latency }));
     return new Response(JSON.stringify({ status: 'error', code: errorCode }), { status: 500 });
   }
