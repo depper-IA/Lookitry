@@ -43,18 +43,35 @@ export const minimaxService = {
       const result = await response.json();
       console.log('[MiniMax] Raw response:', JSON.stringify(result).substring(0, 1500));
 
-      // Handle Anthropic-compatible response format
-      // MiniMax puts text in content[0].text OR content[0].thinking (reasoning)
-      let responseText = result.content?.[0]?.text;
+// Handle Anthropic-compatible response format
+      // MiniMax-M2.7 returns content blocks: [{type: "thinking", thinking: "..."}, {type: "text", text: "..."}]
+      // We need to find the text block, NOT the thinking block
+      let responseText = '';
 
-      // MiniMax-M2.7 puts actual response in thinking block, strip the tags
-      if (!responseText && result.content?.[0]?.thinking) {
-        const thinkingContent = result.content[0].thinking;
-        // Remove <think> and </think> tags
-        responseText = thinkingContent
-          .replace(/<think>/gi, '')
-          .replace(/<\/think>/gi, '')
-          .trim();
+      // Look for content blocks with type "text"
+      if (result.content && Array.isArray(result.content)) {
+        for (const block of result.content) {
+          if (block.type === 'text' && block.text) {
+            responseText = block.text;
+            break;
+          }
+        }
+
+        // If no text block found, try thinking block (but this is internal reasoning, not the answer)
+        if (!responseText && result.content?.[0]?.thinking) {
+          // This is the thinking/reasoning, not the actual response
+          // Try to find a second content block
+          if (result.content.length > 1) {
+            responseText = result.content[1].text || '';
+          }
+          // If still nothing, use thinking but it will be the prompt instructions
+          if (!responseText) {
+            responseText = result.content[0].thinking
+              .replace(/<think>/gi, '')
+              .replace(/<\/think>/gi, '')
+              .trim();
+          }
+        }
       }
 
       if (!responseText && result.error) {
