@@ -4,8 +4,10 @@ const MINIMAX_TIMEOUT_MS = 15000;
 const MAX_TOKENS = 2048;
 const TEMPERATURE = 0.7;
 
+export type ConvMessage = { role: 'user' | 'assistant'; content: string };
+
 export const minimaxService = {
-  async callMiniMax(systemPrompt: string, userMessage: string): Promise<string> {
+  async callMiniMax(systemPrompt: string, userMessage: string, history: ConvMessage[] = []): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), MINIMAX_TIMEOUT_MS);
 
@@ -15,6 +17,15 @@ export const minimaxService = {
       if (!apiKey) {
         throw new Error('MINIMAX_API not configured');
       }
+
+      // Build multi-turn messages: history + current user message
+      const messages = [
+        ...history.map(m => ({
+          role: m.role,
+          content: [{ type: 'text', text: m.content }]
+        })),
+        { role: 'user', content: [{ type: 'text', text: userMessage }] }
+      ];
 
       const response = await fetch(MINIMAX_API_URL, {
         method: 'POST',
@@ -28,9 +39,7 @@ export const minimaxService = {
           model: MINIMAX_MODEL,
           max_tokens: MAX_TOKENS,
           system: systemPrompt,
-          messages: [
-            { role: 'user', content: [{ type: 'text', text: userMessage }] }
-          ],
+          messages,
           temperature: TEMPERATURE
         }),
         signal: controller.signal

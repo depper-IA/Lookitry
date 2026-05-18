@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
-import { minimaxService } from '../services/minimax.service';
+import { minimaxService, ConvMessage } from '../services/minimax.service';
 import { vertexService } from '../services/vertex.service';
 import { ycloudSendMessage } from '../services/ycloud.service';
 import { rebeccaIdentityService } from '../services/rebecca-identity.service';
 import { getRagContext } from '../services/rag-context.service';
+
+const HISTORY_LIMIT = 20; // max messages to load (10 exchanges)
 
 // In-memory dedup — keyed by messageId (primary) or content hash (fallback)
 const processedMessages = new Set<string>();
@@ -96,20 +98,41 @@ async function processWhatsAppMessage(rawPayload: any): Promise<void> {
     });
   if (leadError) console.error('[YCloud-Webhook] Lead upsert error:', leadError);
 
-  // 4. RAG + identity
+  // 4. Load conversation history for multi-turn context
+  let history: ConvMessage[] = [];
+  if (conversation) {
+    const { data: pastMessages } = await supabaseAdmin
+      .from('lead_messages')
+      .select('sender_type, content')
+      .eq('conversation_id', conversation.id)
+      .order('created_at', { ascending: true })
+      .limit(HISTORY_LIMIT);
+
+    if (pastMessages && pastMessages.length > 0) {
+      history = pastMessages
+        .filter((m: any) => m.sender_type === 'lead' || m.sender_type === 'bot')
+        .map((m: any) => ({
+          role: m.sender_type === 'lead' ? 'user' : 'assistant' as 'user' | 'assistant',
+          content: m.content
+        }));
+      console.log('[YCloud-Webhook] Loaded', history.length, 'history messages');
+    }
+  }
+
+  // 5. RAG + identity
   const ragContext = await getRagContext(message);
   const locale = rebeccaIdentityService.detectLocale(message);
   const systemPrompt = rebeccaIdentityService.getSystemPrompt('whatsapp', ragContext, locale);
 
-  // 5. AI — MiniMax primary, Vertex fallback
+  // 6. AI — MiniMax primary, Vertex fallback — both receive full history
   let aiResponse: string;
   try {
-    console.log('[YCloud-Webhook] Calling MiniMax... locale:', locale);
-    aiResponse = await minimaxService.callMiniMax(systemPrompt, message);
+    console.log('[YCloud-Webhook] Calling MiniMax... locale:', locale, 'history:', history.length);
+    aiResponse = await minimaxService.callMiniMax(systemPrompt, message, history);
   } catch (minimaxErr: any) {
     console.warn('[YCloud-Webhook] MiniMax failed, trying Vertex:', minimaxErr.message);
     try {
-      aiResponse = await vertexService.callVertex(systemPrompt, message);
+      aiResponse = await vertexService.callVertex(systemPrompt, message, history);
     } catch (vertexErr: any) {
       console.error('[YCloud-Webhook] Both AI providers failed:', vertexErr.message);
       return;

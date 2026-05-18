@@ -103,13 +103,22 @@ class VertexService {
   }
 
   /**
-   * Call Vertex AI with system prompt + user message (for Rebecca)
+   * Call Vertex AI with system prompt + conversation history + current message
    */
-  async callVertex(systemPrompt: string, userMessage: string): Promise<string> {
+  async callVertex(systemPrompt: string, userMessage: string, history: { role: 'user' | 'assistant'; content: string }[] = []): Promise<string> {
+    // Vertex uses 'model' for assistant role
+    const contents = [
+      ...history.map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      })),
+      { role: 'user', parts: [{ text: userMessage }] }
+    ];
+
     const result = await this.generateContent({
       model: 'gemini-2.5-flash',
       systemInstruction: { parts: [{ text: systemPrompt }] },
-      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+      contents,
       generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
     });
 
