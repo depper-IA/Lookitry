@@ -39,6 +39,7 @@ export const minimaxService = {
       }
       
       const result = await response.json();
+      console.log('[MiniMax] Response:', JSON.stringify(result).substring(0, 500));
       return result.choices?.[0]?.message?.content || 'Error generating response';
     } catch (error: any) {
       clearTimeout(timeout);
