@@ -19,9 +19,29 @@ serve(async (req: Request) => {
   const startTime = Date.now();
   let payload: YCloudWebhookPayload;
   
+  // Parse JSON upfront to handle errors properly
+  let rawPayload: any;
   try {
-    // 1. Parse YCloud payload
-    payload = await req.json();
+    rawPayload = await req.json();
+  } catch (jsonError) {
+    console.error('[Edge] Failed to parse JSON:', jsonError.message);
+    return new Response(JSON.stringify({ status: 'error', code: 'INVALID_JSON' }), { status: 400 });
+  }
+
+  if (!rawPayload) {
+    console.error('[Edge] Empty payload');
+    return new Response(JSON.stringify({ status: 'error', code: 'EMPTY_PAYLOAD' }), { status: 400 });
+  }
+
+  try {
+    payload = rawPayload;
+
+    // Validate payload structure
+    if (!payload?.payload) {
+      console.error('[Edge] Invalid payload structure:', JSON.stringify(payload));
+      return new Response(JSON.stringify({ status: 'error', code: 'INVALID_PAYLOAD' }), { status: 400 });
+    }
+
     const { from: phone, content: { text: message }, id: messageId, to: fromNumber } = payload.payload;
     
     // 2. Validate
