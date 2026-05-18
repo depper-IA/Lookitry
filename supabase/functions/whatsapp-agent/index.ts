@@ -16,6 +16,9 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
+// In-memory cache to prevent processing duplicate retries from YCloud
+const processedMessages = new Set<string>();
+
 serve(async (req: Request) => {
   const startTime = Date.now();
   let payload: YCloudWebhookPayload;
@@ -59,6 +62,20 @@ serve(async (req: Request) => {
     const businessPhone = msg.to;
     const message = msg.text?.body || msg.content?.text || '';
     const messageId = msg.id;
+
+    // PREVENT DUPLICATES (YCloud retries)
+    if (messageId) {
+      if (processedMessages.has(messageId)) {
+        console.log('[Edge] Dropping duplicate message from YCloud retry:', messageId);
+        return new Response(JSON.stringify({ status: 'ignored', reason: 'duplicate_retry' }), { status: 200 });
+      }
+      processedMessages.add(messageId);
+      // Clean up cache to prevent memory leak (keep last 500 max)
+      if (processedMessages.size > 500) {
+        const iterator = processedMessages.values();
+        processedMessages.delete(iterator.next().value);
+      }
+    }
     
     // STOP PROCESSING OLD RETRIES
     const createTimeStr = payload.createTime || msg.createTime || msg.sendTime;
