@@ -1,9 +1,22 @@
 export interface YCloudWebhookPayload {
-  event: string;
-  app_id: string;
-  timestamp: number;
-  version: string;
-  payload: {
+  id: string;
+  type: string;
+  apiVersion: string;
+  createTime: string;
+  whatsappInboundMessage?: {
+    id: string;
+    wamid: string;
+    wabaId: string;
+    from: string;
+    fromUserId?: string;
+    customerProfile?: { name: string };
+    to: string;
+    sendTime: string;
+    type: string;
+    text?: { body: string };
+    content?: { text: string };
+  };
+  payload?: {
     from: string;
     to: string;
     id: string;
@@ -18,6 +31,7 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  customerName?: string;
 }
 
 export interface KnowledgeItem {
