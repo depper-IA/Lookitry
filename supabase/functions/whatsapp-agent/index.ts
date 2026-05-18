@@ -5,6 +5,7 @@ import { CONFIG } from './config.ts';
 import { leadService } from './services/lead.service.ts';
 import { ragService } from './services/rag.service.ts';
 import { minimaxService } from './services/minimax.service.ts';
+import { vertexService } from './services/vertex.service.ts';
 import { ycloudService } from './services/ycloud.service.ts';
 import { fallbackHandler } from './utils/fallback-handler.ts';
 import { promptBuilder } from './utils/prompt-builder.ts';
@@ -80,10 +81,18 @@ serve(async (req: Request) => {
     const systemPrompt = promptBuilder.buildSystemPrompt(ragContext);
     const userMessage = promptBuilder.buildUserMessage(message);
 
-    // 6. Call MiniMax (5s timeout)
-    console.log('[Edge] Calling MiniMax...');
-    const response = await minimaxService.callMiniMax(systemPrompt, userMessage);
-    console.log('[Edge] MiniMax response:', response.substring(0, 100));
+    // 6. Call AI (MiniMax primary, Vertex secondary)
+    let response: string;
+    try {
+      console.log('[Edge] Calling MiniMax...');
+      response = await minimaxService.callMiniMax(systemPrompt, userMessage);
+      console.log('[Edge] MiniMax response:', response.substring(0, 100));
+    } catch (minimaxError: any) {
+      console.warn('[Edge] MiniMax failed, falling back to Vertex AI:', minimaxError.message);
+      console.log('[Edge] Calling Vertex AI...');
+      response = await vertexService.callVertex(systemPrompt, userMessage);
+      console.log('[Edge] Vertex response:', response.substring(0, 100));
+    }
 
     // 7. Send via YCloud - FROM our business phone TO customer
     console.log('[Edge] Sending to YCloud - customer:', customerPhone, 'business:', businessPhone);
@@ -98,12 +107,13 @@ serve(async (req: Request) => {
     const latency = Date.now() - startTime;
     const errorCode = error.message || 'INTERNAL_ERROR';
 
-    // Only fallback on MiniMax/AI errors (timeout or API errors)
-    const isMiniMaxError = errorCode.includes('timeout') ||
-                           errorCode.includes('TIMEOUT') ||
-                           errorCode.includes('MINIMAX');
+    // Only fallback on AI errors (timeout or API errors from MiniMax or Vertex)
+    const isAIError = errorCode.includes('timeout') ||
+                      errorCode.includes('TIMEOUT') ||
+                      errorCode.includes('MINIMAX') ||
+                      errorCode.includes('VERTEX');
 
-    if (isMiniMaxError) {
+    if (isAIError) {
       console.log(JSON.stringify({ event: 'fallback', reason: errorCode, latency_ms: latency }));
       if (payload?.payload) {
         await fallbackHandler.trigger(supabase, payload);
