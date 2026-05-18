@@ -6,7 +6,7 @@ export const minimaxService = {
     const timeout = setTimeout(() => controller.abort(), CONFIG.MINIMAX_TIMEOUT_MS);
     
     try {
-      const apiKey = Deno.env.get('MINIMAX_API_KEY');
+      const apiKey = Deno.env.get('MINIMAX_API');
       const groupId = Deno.env.get('MINIMAX_GROUP_ID');
       
       if (!apiKey) {
