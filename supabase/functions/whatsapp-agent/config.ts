@@ -1,7 +1,7 @@
 export const CONFIG = {
-  MINIMAX_API_URL: 'https://api.minimax.io/v1/text/chatcompletion_v2',
-  MINIMAX_MODEL: 'MiniMax-Text-01',
-  MINIMAX_TIMEOUT_MS: 5000,
+  MINIMAX_API_URL: 'https://api.minimax.io/anthropic/v1/messages',
+  MINIMAX_MODEL: 'MiniMax-M2.7',
+  MINIMAX_TIMEOUT_MS: 8000,
   MAX_CONVERSATION_LENGTH: 50,
   MAX_TOKENS: 500,
   TEMPERATURE: 0.7,
