@@ -27,7 +27,8 @@ export const minimaxService = {
           messages: [
             { role: 'user', content: [{ type: 'text', text: userMessage }] }
           ],
-          temperature: CONFIG.TEMPERATURE
+          temperature: CONFIG.TEMPERATURE,
+          thinking: false
         }),
         signal: controller.signal
       });
