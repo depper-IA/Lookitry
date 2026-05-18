@@ -37,12 +37,13 @@ serve(async (req: Request) => {
     payload = rawPayload;
 
     console.log('[Edge] Raw payload keys:', Object.keys(payload));
+    console.log('[Edge] whatsappMessage:', payload?.whatsappMessage ? 'EXISTS' : 'MISSING');
     console.log('[Edge] whatsappInboundMessage:', payload?.whatsappInboundMessage ? 'EXISTS' : 'MISSING');
     console.log('[Edge] payload:', payload?.payload ? 'EXISTS' : 'MISSING');
 
     // Normalize YCloud webhook payload
-    // Some webhooks send whatsappInboundMessage, others send payload
-    const msg = payload?.whatsappInboundMessage || payload?.payload;
+    // Some webhooks send whatsappMessage, others send whatsappInboundMessage, others send payload
+    const msg = payload?.whatsappMessage || payload?.whatsappInboundMessage || payload?.payload;
     if (!msg) {
       console.error('[Edge] No message found in payload');
       return new Response(JSON.stringify({ status: 'error', code: 'INVALID_PAYLOAD' }), { status: 400 });
