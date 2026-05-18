@@ -131,9 +131,6 @@ export const handleYCloudWebhook = async (req: Request, res: Response) => {
         source: 'whatsapp',
         status: 'new',
         country: 'Colombia' // Default for now
-      }, {
-        onConflict: 'phone',
-        ignoreDuplicates: true
       });
 
     if (leadError) {

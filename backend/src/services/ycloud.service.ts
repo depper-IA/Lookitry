@@ -5,13 +5,12 @@
 
 const YCLOUD_API_URL = 'https://api.ycloud.com/v2/whatsapp/messages';
 
-export const ycloudSendMessage = async (to: string, text: string, from?: string): Promise<void> => {
-  if (!from) {
-    throw new Error('YCLOUD_ERROR: Missing business number (from)');
-  }
+// Default FROM number - must be a registered YCloud WhatsApp Business number
+const DEFAULT_FROM_NUMBER = process.env.YCLOUD_WHATSAPP_NUMBER || '+573248507947';
 
-  // YCloud expects numbers in format without + for from, but with + for to
-  const businessNumber = from.replace('+', '');
+export const ycloudSendMessage = async (to: string, text: string, _from?: string): Promise<void> => {
+  // Always send FROM our registered business number, not the passed _from param
+  const businessNumber = DEFAULT_FROM_NUMBER.replace('+', '');
   const customerNumber = to.startsWith('+') ? to : `+${to}`;
 
   console.log('[YCloud] to:', customerNumber, 'from:', businessNumber);
