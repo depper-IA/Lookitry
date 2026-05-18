@@ -263,7 +263,8 @@ sammantha_voice:
 - Colores: `#FF5C3A` naranja, `#0a0a0a` negro base, `#141414` cards
 - Tipografia: Plus Jakarta Sans (titulos), DM Sans (cuerpo)
 - Texto minimo: `#999` secundario, `#bbb` features - PROHIBIDO `#333`–`#555`
-- Sin emojis en UI - solo SVG / lucide-react
+- **PROHIBIDO usar emojis** en cualquier interfaz, documento, README o comunicación del proyecto — usar SIEMPRE iconos SVG / lucide-react
+- **PROHIBIDO emojis en READMEs de GitHub** (showcases, perfil, repos públicos) — usar badges de shields.io con `logo=` para iconos
 - Toggle activo: `#FF5C3A` (nunca `bg-blue-600`)
 - Logo: siempre SVG + texto `Look<span className="text-[#FF5C3A]">itry</span>`
 - Accesibilidad: botones de mostrar/ocultar contrasena deben ser focusables y llevar `aria-label`
