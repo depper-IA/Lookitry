@@ -17,11 +17,12 @@ const supabase = createClient(
 
 serve(async (req: Request) => {
   const startTime = Date.now();
+  let payload: YCloudWebhookPayload;
   
   try {
     // 1. Parse YCloud payload
-    const payload: YCloudWebhookPayload = await req.json();
-    const { from: phone, content: { text: message }, id: messageId } = payload.payload;
+    payload = await req.json();
+    const { from: phone, content: { text: message }, id: messageId, to: fromNumber } = payload.payload;
     
     // 2. Validate
     if (!phone?.trim()) {
@@ -42,7 +43,7 @@ serve(async (req: Request) => {
     const response = await minimaxService.callMiniMax(systemPrompt, userMessage);
     
     // 7. Send via YCloud
-    await ycloudService.sendMessage(phone, response);
+    await ycloudService.sendMessage(phone, response, fromNumber);
     
     const latency = Date.now() - startTime;
     console.log(JSON.stringify({ event: 'success', latency_ms: latency, phone }));
