@@ -46,11 +46,18 @@ export const minimaxService = {
       if (!responseText && result.choices?.[0]?.text) {
         responseText = result.choices?.[0]?.text;
       }
+      if (!responseText && result.choices?.[0]?.messages?.[0]?.content) {
+        // MiniMax returns messages array inside choices
+        responseText = result.choices?.[0]?.messages?.[0]?.content;
+      }
       if (!responseText && result.output?.text) {
         responseText = result.output.text;
       }
       if (!responseText && result.generation?.text) {
         responseText = result.generation.text;
+      }
+      if (!responseText && result.text) {
+        responseText = result.text;
       }
       if (!responseText) {
         console.error('[MiniMax] No text found in response:', JSON.stringify(result).substring(0, 500));
