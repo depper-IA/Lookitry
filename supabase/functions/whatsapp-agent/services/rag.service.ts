@@ -3,9 +3,9 @@ import type { KnowledgeItem } from '../types.ts';
 
 // Generate embedding for query using Gemini Embedding API
 async function generateQueryEmbedding(query: string): Promise<number[]> {
-  const apiKey = Deno.env.get('GOOGLE_API_KEY');
+  const apiKey = Deno.env.get('VERTEX_API_KEY');
   if (!apiKey) {
-    console.warn('[RAG] GOOGLE_API_KEY not set, using dummy embedding');
+    console.warn('[RAG] VERTEX_API_KEY not set, using dummy embedding');
     return new Array(768).fill(0);
   }
   
