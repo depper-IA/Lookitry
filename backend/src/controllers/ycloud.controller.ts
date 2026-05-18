@@ -40,8 +40,9 @@ export const handleYCloudWebhook = async (req: Request, res: Response) => {
       return res.status(400).json({ status: 'error', code: 'INVALID_PAYLOAD' });
     }
 
-    // Extract fields
-    const customerPhone = msg.from || msg.fromUserId;
+    // Extract fields — normalize phone to always have + prefix
+    const rawPhone = msg.from || msg.fromUserId || '';
+    const customerPhone = rawPhone.startsWith('+') ? rawPhone : `+${rawPhone}`;
     const businessPhone = msg.to;
     const message = msg.text?.body || msg.content?.text || '';
     const messageId = msg.id;
@@ -121,16 +122,16 @@ export const handleYCloudWebhook = async (req: Request, res: Response) => {
       }
     }
 
-    // 3. Upsert lead for CRM
+    // 3. Upsert lead for CRM — name falls back to phone to satisfy NOT NULL constraint
     const { error: leadError } = await supabaseAdmin
       .from('leads')
       .upsert({
         phone: customerPhone,
-        name: customerName || null,
+        name: customerName || customerPhone,
         internal_notes: `Último mensaje: ${message}`,
         source: 'whatsapp',
         status: 'new',
-        country: 'Colombia' // Default for now
+        country: 'Colombia'
       });
 
     if (leadError) {
