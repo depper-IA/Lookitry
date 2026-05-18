@@ -115,9 +115,7 @@ serve(async (req: Request) => {
 
     if (isAIError) {
       console.log(JSON.stringify({ event: 'fallback', reason: errorCode, latency_ms: latency }));
-      if (payload?.payload) {
-        await fallbackHandler.trigger(supabase, payload);
-      }
+      await fallbackHandler.trigger(supabase, payload);
       return new Response(JSON.stringify({ status: 'fallback_triggered', code: errorCode }), { status: 504 });
     }
 
