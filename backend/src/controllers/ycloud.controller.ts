@@ -119,9 +119,9 @@ async function processWhatsAppMessage(rawPayload: any): Promise<void> {
     }
   }
 
-  // 5. RAG + identity
+  // 5. RAG + identity — locale from phone prefix (reliable), message as fallback
   const ragContext = await getRagContext(message);
-  const locale = rebeccaIdentityService.detectLocale(message);
+  const locale = rebeccaIdentityService.detectLocaleFromPhone(customerPhone) || rebeccaIdentityService.detectLocale(message);
   const systemPrompt = rebeccaIdentityService.getSystemPrompt('whatsapp', ragContext, locale);
 
   // 6. AI — MiniMax primary, Vertex fallback — both receive full history
