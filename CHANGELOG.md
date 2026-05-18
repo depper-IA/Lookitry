@@ -1,5 +1,26 @@
 # CHANGELOG — Lookitry
 
+## 18 de Mayo 2026 — GitHub Profile & Repos Públicos
+
+### Descripción
+Gestión del perfil público de GitHub de Sam Wilkie (depper-IA) para uso como hoja de vida técnica.
+
+### Cambios Realizados
+
+| Acción | Detalle |
+|--------|---------|
+| Token GitHub guardado | `GITHUB_TOKEN` agregado a `.env.opencode` |
+| 8 showcases de clientes → público | `precisionwrapz-showcase`, `lwlanguageschool-showcase`, `duquestours-showcase`, `lifekombucha-showcase`, `carrusel-showcase`, `caribesupermercados-showcase`, `lamariana-showcase`, `lamontana-agromercados-showcase` |
+| Repo de perfil creado | `depper-IA/depper-IA` con README completo (stack, proyectos, cliente work, stats) |
+
+### Archivos Modificados
+- `.env.opencode` — agregado `GITHUB_TOKEN`
+
+### Motivo
+Preparar el perfil de GitHub como hoja de vida técnica pública para Sam Wilkie.
+
+---
+
 ## 17 de Mayo 2026 — Rebecca 2.0: Ventas Inteligentes
 
 ### Descripción
