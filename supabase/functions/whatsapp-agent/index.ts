@@ -59,6 +59,18 @@ serve(async (req: Request) => {
     const businessPhone = msg.to;
     const message = msg.text?.body || msg.content?.text || '';
     const messageId = msg.id;
+    
+    // STOP PROCESSING OLD RETRIES
+    const createTimeStr = payload.createTime || msg.createTime || msg.sendTime;
+    if (createTimeStr) {
+      const msgTime = new Date(createTimeStr).getTime();
+      const now = Date.now();
+      // Drop messages older than 3 minutes (180000 ms)
+      if (now - msgTime > 180000) {
+        console.log('[Edge] Dropping old message from queue:', createTimeStr);
+        return new Response(JSON.stringify({ status: 'ignored', reason: 'old_message_retry' }), { status: 200 });
+      }
+    }
 
     // Extract customer name from profile
     const customerName = payload.whatsappMessage?.customerProfile?.name || payload.whatsappInboundMessage?.customerProfile?.name;
