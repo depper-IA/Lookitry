@@ -81,9 +81,12 @@ serve(async (req: Request) => {
     const userMessage = promptBuilder.buildUserMessage(message);
 
     // 6. Call MiniMax (5s timeout)
+    console.log('[Edge] Calling MiniMax...');
     const response = await minimaxService.callMiniMax(systemPrompt, userMessage);
+    console.log('[Edge] MiniMax response:', response.substring(0, 100));
 
     // 7. Send via YCloud - FROM our business phone TO customer
+    console.log('[Edge] Sending to YCloud - customer:', customerPhone, 'business:', businessPhone);
     await ycloudService.sendMessage(customerPhone, response, businessPhone);
     
     const latency = Date.now() - startTime;
