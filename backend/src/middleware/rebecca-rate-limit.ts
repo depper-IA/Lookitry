@@ -26,26 +26,14 @@ function makeStore(prefix: string): RedisStore | undefined {
   }
 }
 
-// Helper to get safe IP from request (never used in keyGenerator)
-function getSafeIP(req: Request): string {
-  // Use x-forwarded-for first (set by Traefik), then socket remote address
-  const forwarded = req.headers['x-forwarded-for']?.toString().split(',')[0].trim();
-  if (forwarded) return forwarded;
-  return req.socket?.remoteAddress ?? 'unknown';
-}
-
 export const rebeccaRateLimitBySession = rateLimit({
   windowMs: WINDOW_MS,
   max: MAX,
   store: makeStore('rl:widget:'),
   keyGenerator: (req: Request): string => {
-    // Use session_id from body if present, otherwise generate from IP + user-agent
     const body = req.body as { session_id?: string };
     if (body?.session_id) return `session:${body.session_id}`;
-    // Fallback: use IP + user-agent hash (no req.ip reference to avoid IPv6 validation error)
-    const ip = getSafeIP(req);
-    const ua = req.headers['user-agent'] ?? 'unknown';
-    return `anon:${ip}:${ua.substring(0, 50)}`;
+    return `widget:${req.headers['x-forwarded-for'] ?? req.socket?.remoteAddress ?? 'unknown'}`;
   },
   validate: {
     ip: false,
@@ -60,12 +48,7 @@ export const rebeccaRateLimitByIP = rateLimit({
   max: 60,
   store: makeStore('rl:widget-ip:'),
   keyGenerator: (req: Request): string => {
-    // Use x-forwarded-for header (set by Traefik) as primary identifier
-    // NEVER use req.ip directly — causes IPv6 validation error in express-rate-limit 8.x
-    const forwarded = req.headers['x-forwarded-for']?.toString().split(',')[0].trim();
-    if (forwarded) return forwarded;
-    // Fallback: use socket remote address
-    return req.socket?.remoteAddress ?? 'unknown';
+    return `ip:${req.headers['x-forwarded-for'] ?? req.socket?.remoteAddress ?? 'unknown'}`;
   },
   validate: {
     ip: false,
