@@ -79,16 +79,58 @@ export const handleYCloudWebhook = async (req: Request, res: Response) => {
     const customerName = rawPayload?.whatsappMessage?.customerProfile?.name || 
                          rawPayload?.whatsappInboundMessage?.customerProfile?.name;
 
-    // 1. Upsert lead
+    // 1. Find or create conversation (using phone as platform_id for WhatsApp)
+    let { data: conversation } = await supabaseAdmin
+      .from('lead_conversations')
+      .select('*')
+      .eq('platform_id', customerPhone)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (!conversation) {
+      const { data: newConv, error: convError } = await supabaseAdmin
+        .from('lead_conversations')
+        .insert({
+          platform_id: customerPhone,
+          status: 'active',
+          source: 'whatsapp'
+        })
+        .select()
+        .single();
+        
+      if (convError) {
+        console.error('[YCloud-Webhook] Conversation creation error:', convError);
+      } else {
+        conversation = newConv;
+      }
+    }
+
+    // 2. Insert message
+    if (conversation) {
+      const { error: msgError } = await supabaseAdmin
+        .from('lead_messages')
+        .insert({
+          conversation_id: conversation.id,
+          sender_type: 'lead',
+          content: message,
+          metadata: { messageId, raw: rawPayload }
+        });
+
+      if (msgError) {
+        console.error('[YCloud-Webhook] Message insertion error:', msgError);
+      }
+    }
+
+    // 3. Upsert lead for CRM
     const { error: leadError } = await supabaseAdmin
       .from('leads')
       .upsert({
         phone: customerPhone,
         name: customerName || null,
-        last_message: message,
-        last_message_at: new Date().toISOString(),
+        internal_notes: `Último mensaje: ${message}`,
         source: 'whatsapp',
-        status: 'new'
+        status: 'new',
+        country: 'Colombia' // Default for now
       }, {
         onConflict: 'phone',
         ignoreDuplicates: true
@@ -98,7 +140,7 @@ export const handleYCloudWebhook = async (req: Request, res: Response) => {
       console.error('[YCloud-Webhook] Lead upsert error:', leadError);
     }
 
-    // 2. RAG context (vector search) - SAME as web chat
+    // 4. RAG context (vector search) - SAME as web chat
     const ragContext = await getRagContext(message);
 
     // 3. Detect locale for Rebecca identity - SAME as web chat
