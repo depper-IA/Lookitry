@@ -12,7 +12,7 @@ export const LANDING_COPY = {
       "un probador digital.",
       "más que un catálogo.",
     ],
-    subtitle: "Tus clientas se prueban tu ropa desde Instagram o WhatsApp usando solo su celular. Reduce devoluciones y aumenta la confianza.",
+    subtitle: "Tus clientes se prueban tu ropa desde Instagram o WhatsApp usando solo su celular. Reduce devoluciones y aumenta la confianza.",
     cta_primary: "Pruébalo ahora gratis",
     cta_secondary: "Ver planes",
   },
@@ -35,7 +35,7 @@ export const LANDING_COPY = {
       {
         id: 3,
         title: "¡Empieza a vender!",
-        description: "Recibe tu 'Link Mágico' para Instagram o WhatsApp. Tu clienta se ve puesta la ropa y compra con seguridad.",
+        description: "Recibe tu 'Link Mágico' para Instagram o WhatsApp. Tu cliente se ve puesta la ropa y compra con seguridad.",
         icon: "ShoppingBag",
       }
     ]
@@ -43,11 +43,11 @@ export const LANDING_COPY = {
 
   social_proof: {
     label: "Probador Virtual",
-    title: "Tus clientas se prueban tu ropa",
+    title: "Tus clientes se prueban tu ropa",
     titleAccent: "desde donde ya están.",
     instagram: {
       title: "Prueba virtual desde tu bio",
-      description: "Pega el link en tu Instagram. Tu seguidora elige la prenda, sube su foto y ve cómo le queda — sin salir de la app. Sin fricción, sin dudas.",
+      description: "Pega el link en tu Instagram. Tu seguidor elige la prenda, sube su foto y ve cómo le queda — sin salir de la app. Sin fricción, sin dudas.",
       tag: "@Lookitry"
     },
     tiktok: {
@@ -56,8 +56,8 @@ export const LANDING_COPY = {
       tag: "@Lookitry"
     },
     whatsapp: {
-      title: "Llegan listas para confirmar",
-      description: "En vez de responder '¿me quedará bien?', envías el link del probador. Tu clienta se prueba sola y te escribe con la compra ya resuelta.",
+      title: "Llegan listos para confirmar",
+      description: "En vez de responder '¿me quedará bien?', envías el link del probador. Tu cliente se prueba sola y te escribe con la compra ya resuelta.",
       stat: "Hasta 30% menos devoluciones",
       tag: "+57 Ventas"
     }
@@ -113,7 +113,7 @@ export const LANDING_COPY = {
   },
 
   trust: {
-    badge: "Instalación Humana Incluida",
+    badge: "Soporte Técnico Incluido",
     guarantee: "Si no sabes cómo configurarlo, nuestro equipo lo hace por ti sin costo adicional.",
   },
 
@@ -130,7 +130,7 @@ export const LANDING_COPY = {
       title: "Básico",
       price: "$180.000",
       period: "por mes",
-      features: ["5 prendas activas", "400 pruebas virtuales/mes", "Link para Instagram", "Ventas por WhatsApp"]
+      features: ["5 prendas activas", "400 pruebas virtuales/mes", "Link para Instagram, Tiktok, entre otros", "Ventas por WhatsApp"]
     },
     pro: {
       title: "Pro",

@@ -34,6 +34,9 @@ export const rebeccaRateLimitBySession = rateLimit({
     const body = req.body as { session_id?: string };
     return body?.session_id ?? req.ip ?? 'unknown';
   },
+  validate: {
+    ip: false, // Bypass strict IPv6 check since we use session_id fallback
+  },
   standardHeaders: true,
   legacyHeaders: false,
   handler: make429Handler,
@@ -44,6 +47,9 @@ export const rebeccaRateLimitByIP = rateLimit({
   max: 60,
   store: makeStore('rl:widget-ip:'),
   keyGenerator: (req: Request): string => req.ip ?? 'unknown',
+  validate: {
+    ip: false,
+  },
   standardHeaders: true,
   legacyHeaders: false,
   handler: make429Handler,
