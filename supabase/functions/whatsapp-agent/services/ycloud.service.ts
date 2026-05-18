@@ -1,7 +1,11 @@
 export const ycloudService = {
   async sendMessage(to: string, text: string, from?: string): Promise<void> {
+    if (!from) {
+      throw new Error('YCLOUD_ERROR: Missing business number (from) in webhook payload');
+    }
+
     // YCloud expects numbers in format without + for from, but with + for to
-    const businessNumber = from ? from.replace('+', '') : '573248507947';
+    const businessNumber = from.replace('+', '');
     const customerNumber = to.startsWith('+') ? to : `+${to}`;
 
     console.log('[YCloud] to:', customerNumber, 'from:', businessNumber);
