@@ -1,5 +1,5 @@
 export const CONFIG = {
-  MINIMAX_API_URL: 'https://api.minimax.chat/v1/text/chatcompletion_v2',
+  MINIMAX_API_URL: 'https://api.minimax.io/v1/text/chatcompletion_v2',
   MINIMAX_MODEL: 'MiniMax-Text-01',
   MINIMAX_TIMEOUT_MS: 5000,
   MAX_CONVERSATION_LENGTH: 50,

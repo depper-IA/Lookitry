@@ -26,8 +26,7 @@ export const minimaxService = {
             { role: 'user', content: userMessage }
           ],
           max_tokens: CONFIG.MAX_TOKENS,
-          temperature: CONFIG.TEMPERATURE,
-          group_id: groupId
+          temperature: CONFIG.TEMPERATURE
         }),
         signal: controller.signal
       });
