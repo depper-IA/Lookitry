@@ -1,103 +1,189 @@
 /**
  * Script para limpiar leads duplicados de Rebecca
- * Mantiene el registro más reciente de cada phone, elimina los demás
- * 
- * Uso: npx ts-node scripts/cleanup-rebecca-duplicates.ts
+ * Normaliza phones (sin +) y elimina duplicados
  */
 
-import { createClient } from '@supabase/supabase-js';
+const SUPABASE_URL = 'https://vkdooutklowctuudjnkl.supabase.co';
+const SUPABASE_KEY = '***REMOVED-SECRET***';
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Faltan variables de entorno: SUPABASE_URL, SUPABASE_SERVICE_KEY');
-  process.exit(1);
+interface LeadRecord {
+  id: string;
+  phone: string;
+  created_at: string;
+  updated_at: string;
+  name: string | null;
+  email: string | null;
+  internal_notes: string | null;
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+async function supabaseQuery<T = unknown>(table: string, options: {
+  select?: string;
+  eq?: Record<string, string>;
+  order?: string;
+  limit?: number;
+} = {}): Promise<T> {
+  let url = `${SUPABASE_URL}/rest/v1/${table}?`;
+  
+  const params = new URLSearchParams();
+  if (options.select) params.append('select', options.select);
+  if (options.order) params.append('order', options.order);
+  if (options.limit) params.append('limit', options.limit.toString());
+  
+  if (options.eq) {
+    for (const [col, val] of Object.entries(options.eq)) {
+      params.append(col, `eq.${val}`);
+    }
+  }
+  
+  url += params.toString();
+  
+  const res = await fetch(url, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+    }
+  });
+  
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+  
+  return res.json() as T;
+}
+
+async function supabaseDelete(table: string, ids: string[]) {
+  const url = `${SUPABASE_URL}/rest/v1/${table}?id=in.(${ids.join(',')})`;
+  
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+    }
+  });
+  
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+  
+  return true;
+}
+
+async function supabaseUpdate(table: string, id: string, data: Record<string, unknown>) {
+  const url = `${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`;
+  
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(data)
+  });
+  
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+  
+  return true;
+}
+
+// Normalizar phone: siempre sin +
+function normalizePhone(phone: string): string {
+  return phone.replace(/^\+/, '').replace(/^0/, '');
+}
+
+// Agrupar phones similares
+function areSamePhone(phone1: string, phone2: string): boolean {
+  const n1 = normalizePhone(phone1);
+  const n2 = normalizePhone(phone2);
+  return n1 === n2;
+}
 
 async function cleanupDuplicates() {
-  console.log('🔍 Buscando leads duplicados...\n');
+  console.log('🔍 Buscando leads duplicados (normalizando phones)...\n');
 
-  // 1. Encontrar phones duplicados
-  const { data: duplicates, error: dupError } = await supabase
-    .from('leads')
-    .select('phone')
-    .in('source', ['whatsapp_rebecca', 'web_rebecca']);
+  try {
+    const leads = await supabaseQuery<LeadRecord[]>('leads', {
+      select: 'id,phone,created_at,updated_at,name,email,internal_notes',
+      eq: { source: 'whatsapp' }
+    });
 
-  if (dupError) {
-    console.error('Error buscando duplicados:', dupError);
-    return;
-  }
+    const webLeads = await supabaseQuery<LeadRecord[]>('leads', {
+      select: 'id,phone,created_at,updated_at,name,email,internal_notes',
+      eq: { source: 'web' }
+    });
 
-  // Contar occurrences de cada phone
-  const phoneCounts: Record<string, number> = {};
-  for (const lead of duplicates || []) {
-    phoneCounts[lead.phone] = (phoneCounts[lead.phone] || 0) + 1;
-  }
+    const allLeads: LeadRecord[] = [...leads, ...webLeads];
+    console.log(`📊 Total leads: ${allLeads.length}\n`);
 
-  // Filtrar solo los que tienen duplicados
-  const duplicatedPhones = Object.entries(phoneCounts)
-    .filter(([_, count]) => count > 1)
-    .map(([phone]) => phone);
-
-  console.log(`📊 Encontrados ${duplicatedPhones.length} phones con duplicados\n`);
-
-  if (duplicatedPhones.length === 0) {
-    console.log('✅ No hay duplicados para limpiar');
-    return;
-  }
-
-  // 2. Para cada phone duplicado, mantener el más reciente
-  let totalDeleted = 0;
-
-  for (const phone of duplicatedPhones) {
-    console.log(`\n📱 Procesando: ${phone}`);
-
-    const { data: leadRecords, error: fetchError } = await supabase
-      .from('leads')
-      .select('id, created_at, updated_at, name, email, internal_notes')
-      .eq('phone', phone)
-      .order('updated_at', { ascending: false });
-
-    if (fetchError || !leadRecords || leadRecords.length === 0) {
-      console.log(`  ⚠️ Error o no encontrado`);
-      continue;
+    // Agrupar por phone normalizado
+    const normalizedGroups: Record<string, LeadRecord[]> = {};
+    for (const lead of allLeads) {
+      const normalized = normalizePhone(lead.phone);
+      if (!normalizedGroups[normalized]) {
+        normalizedGroups[normalized] = [];
+      }
+      normalizedGroups[normalized].push(lead);
     }
 
-    const [keep, ...toDelete] = leadRecords;
-    console.log(`  ✅ Mantener: ${keep.id} (actualizado: ${keep.updated_at})`);
-    console.log(`  🗑️  Eliminar: ${toDelete.length} registros`);
+    // Filtrar grupos con duplicados
+    const duplicatedGroups = Object.entries(normalizedGroups)
+      .filter(([_, leads]) => leads.length > 1);
 
-    // Merge notes de todos los registros antes de eliminar
-    const mergedNotes = leadRecords
-      .map(r => r.internal_notes)
-      .filter(Boolean)
-      .join('\n---\n');
+    console.log(`📊 Grupos con duplicados: ${duplicatedGroups.length}`);
 
-    // Actualizar el registro a mantener con todas las notas
-    await supabase
-      .from('leads')
-      .update({ internal_notes: mergedNotes })
-      .eq('id', keep.id);
+    if (duplicatedGroups.length === 0) {
+      console.log('✅ No hay duplicados para limpiar');
+      return;
+    }
 
-    // Eliminar los duplicados
-    const idsToDelete = toDelete.map(r => r.id);
-    const { error: deleteError } = await supabase
-      .from('leads')
-      .delete()
-      .in('id', idsToDelete);
+    let totalDeleted = 0;
 
-    if (deleteError) {
-      console.log(`  ❌ Error eliminando: ${deleteError.message}`);
-    } else {
+    for (const [normalizedPhone, leadRecords] of duplicatedGroups) {
+      console.log(`\n📱 Procesando: ${normalizedPhone}`);
+      console.log(`   variants: ${leadRecords.map(l => l.phone).join(', ')}`);
+
+      // Ordenar por updated_at descendente
+      leadRecords.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+
+      const [keep, ...toDelete] = leadRecords;
+      console.log(`  ✅ Mantener: ${keep.id} (${keep.phone})`);
+      console.log(`  🗑️  Eliminar: ${toDelete.length} registros`);
+
+      // Merge notes de todos
+      const mergedNotes = leadRecords
+        .map(r => r.internal_notes)
+        .filter((n): n is string => n !== null)
+        .join('\n---\n');
+
+      // Merge name y email (preferir el que tenga más datos)
+      const mergedName = keep.name || toDelete.find(r => r.name)?.name || null;
+      const mergedEmail = keep.email || toDelete.find(r => r.email)?.email || null;
+
+      await supabaseUpdate('leads', keep.id, { 
+        internal_notes: mergedNotes,
+        name: mergedName,
+        email: mergedEmail,
+        phone: normalizedPhone // Normalizar el phone del que mantenemos
+      });
+      console.log('  📝 Datos mergeados y phone normalizado');
+
+      const idsToDelete = toDelete.map(r => r.id);
+      await supabaseDelete('leads', idsToDelete);
+
       totalDeleted += toDelete.length;
       console.log(`  ✅ Eliminados ${toDelete.length} duplicados`);
     }
-  }
 
-  console.log(`\n\n🎉 Total de duplicados eliminados: ${totalDeleted}`);
+    console.log(`\n\n🎉 Total de duplicados eliminados: ${totalDeleted}`);
+    console.log(`📊 Leads únicos restantes: ${allLeads.length - totalDeleted}`);
+
+  } catch (error) {
+    console.error('Error:', error);
+  }
 }
 
-cleanupDuplicates().catch(console.error);
+cleanupDuplicates();
