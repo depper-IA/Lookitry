@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { Alert } from '@/components/ui/Alert';
 import { fetchPublicPaymentSettings } from '@/services/public-config.service';
 import { CheckoutStepper } from '@/components/checkout/CheckoutStepper';
+import { trackPageEvent, getRebeccaSessionId } from '@/lib/rebecca-tracking';
 
 // Emil Kowalski Design System - Custom Easing & Motion
 const CSS_VARS = `
@@ -217,7 +218,13 @@ function PagoExitosoContent() {
       }
     }
 
-    validatePayment();
+    validatePayment().then(() => {
+      // Spec: Rebecca 2.0 §6.4 — Track checkout completion
+      const sessionId = getRebeccaSessionId();
+      if (sessionId) {
+        trackPageEvent('checkout_complete', '/checkout');
+      }
+    });
   }, [ref, resolvedMonths, method, paypalToken, wompiId]);
 
   useEffect(() => {

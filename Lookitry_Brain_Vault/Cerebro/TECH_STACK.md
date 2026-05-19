@@ -123,14 +123,18 @@ Este documento es la **fuente de verdad técnica** del sistema. Detalla stack, l
 - **SO:** Ubuntu con Docker Engine
 
 ### 4.2 Contenedores Docker
-| Contenedor | Imagen | Propósito |
-|------------|--------|-----------|
-| `lookitry-frontend` | `nextjs:custom` (Node 20 Alpine) | Aplicación Next.js |
-| `lookitry-backend` | `node:20-alpine` | API Express |
-| `root-n8n-1` | `n8nio/n8n` | Orquestador de flujos |
-| `minio` | `quay.io/minio/minio` | Almacenamiento local S3 |
-| `lookitry-sammy` | `node:20-alpine` (custom build) | Agente Sammy (Telegram bot + LLM) |
-| `lookitry-sam-service` | `python:3.11-slim` (custom build) | MobileSAM FastAPI (puerto 8000) |
+
+| Contenedor | Imagen Base | Propósito |
+|------------|-------------|-----------|
+| `lookitry-frontend` | `node:20-alpine` (custom build) | Aplicación Next.js |
+| `lookitry-backend` | **`node:22-alpine`** (custom build) | API Express — Node 22 requerido por `@supabase/realtime-js` (WebSocket nativo) |
+| `lookitry-sam-local` | Python (custom build) | MobileSAM FastAPI (puerto 8000) |
+| `root-n8n-1` | `docker.n8n.io/n8nio/n8n:latest` | Orquestador de flujos |
+| `root-redis-1` | `redis:7` | Cache y colas |
+| `minio` | `minio/minio:latest` | Almacenamiento local S3 |
+| `traefik` | `traefik:v2.10` | Reverse proxy |
+
+> **Nota:** `lookitry-sammy` (agente Telegram) no corre actualmente en producción.
 
 ### 4.3 Reverse Proxy (Traefik)
 - **Frontend:** `lookitry.com` y `www.lookitry.com`
@@ -142,6 +146,23 @@ Este documento es la **fuente de verdad técnica** del sistema. Detalla stack, l
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_N8N_DESCRIPTOR_URL`
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+- `NEXT_PUBLIC_REBECCA_WIDGET_ENABLED` — habilita/deshabilita el chat widget de Rebecca (se bake en build-time, no runtime)
+
+### 4.5 Gestión de Paquetes — pnpm@9.15.9
+
+**REGLA:** Solo pnpm. npm install está prohibido (§15 de REGLAS_IMPORTANTES).
+
+| Artefacto | Detalle |
+|-----------|---------|
+| Versión | `pnpm@9.15.9` |
+| Instalación en Docker | `corepack enable && corepack prepare pnpm@9.15.9 --activate` |
+| Versión compatible Node | Node 18, 20, 22 (pnpm@11 requiere Node ≥22.13 — NO usar) |
+| `shamefully-hoist=true` | En `frontend/.npmrc` y `backend/.npmrc` — aplana node_modules para que TypeScript encuentre dependencias transitivas (`google-auth-library`, `@img/sharp-*`) |
+| `pnpm-workspace.yaml` | Ambos proyectos tienen este archivo; DEBE incluir `packages: ['.']` o Docker falla con `packages field missing or empty` |
+| Lockfiles | `frontend/pnpm-lock.yaml` y `backend/pnpm-lock.yaml` — ambos trackeados en git (requerido para `COPY pnpm-lock.yaml` en Dockerfile) |
 
 ---
 
@@ -315,7 +336,38 @@ Admin puede responder manualmente via POST /api/chat/conversations/:id/reply
 - `GET /api/chat/conversations/:id` — Mensajes de una conversación
 - `POST /api/chat/conversations/:id/reply` — Respuesta manual del admin
 
-### 7.0d AI Product Descriptor
+### 7.0d Sistema Rebecca — Chat Widget Web
+
+Rebecca es la asesora de ventas IA de Lookitry para el canal web (`lookitry.com`). Su misión: cerrar ventas, resolver dudas, capturar leads (nombre, email, tienda, plataforma).
+
+**Habilitación:**
+- Variable `NEXT_PUBLIC_REBECCA_WIDGET_ENABLED=true` en `.env` → se bake en build Docker como `ARG`
+- `ChatWidget.tsx` retorna `null` si la variable es `false` o no está definida
+
+**Componentes:**
+| Archivo | Rol |
+|---------|-----|
+| `frontend/src/components/chat-widget/ChatWidget.tsx` | Widget embebido en el layout del frontend |
+| `backend/src/services/rebecca-identity.service.ts` | Sistema prompt + detección de idioma/acento |
+| `backend/src/controllers/rebecca.controller.ts` | Endpoint HTTP del chat web |
+| `backend/src/services/rebecca-chat.service.ts` | Lógica de conversación + RAG |
+
+**Reglas del prompt (CRÍTICO):**
+- PROHIBIDO: "virtual try-on", "IA", "widget", "algoritmo", "tecnología", "integración", "onboarding", "conversión", "dashboard", "plataforma tecnológica"
+- Reemplazos obligatorios: "widget" → "un botón en tu tienda", "dashboard" → "tus estadísticas", etc.
+- Tuteo adaptado: "vos" para Argentina, "tú" para el resto
+- Captura de leads en orden natural: nombre → email → nombre de tienda → plataforma
+- Máximo un dato por mensaje, sin sonar a formulario
+
+**Identidades por locale:**
+- `es-AR`, `es-CO`, `es-MX`, `es-ES`, `en`, `pt-BR`, `default`
+- Cada locale tiene identity block + channel instructions diferenciadas (WhatsApp: 200 chars, Web: 3 párrafos)
+
+**Canal WhatsApp:** Sistema separado vía YCloud → `POST /api/chat/webhook` (ver §7.0c)
+
+---
+
+### 7.0e AI Product Descriptor
 
 Reemplaza el proxy a n8n para descripción de productos. Usa Vertex AI Gemini 2.5 Flash directamente.
 
@@ -342,7 +394,7 @@ ProductDescription { CLOTHING | ACCESSORY | FOOTWEAR }
 - `backend/src/services/ai-descriptor/formatters/` — clothing, accessory, footwear
 - `backend/src/routes/ai.routes.ts` — `POST /api/ai/describe-product`
 
-### 7.0e Widget Security
+### 7.0f Widget Security
 
 Middleware `widgetSecurity.ts` con dos capas:
 
@@ -352,7 +404,7 @@ Middleware `widgetSecurity.ts` con dos capas:
    - Siempre permite dominios de Lookitry y localhost
    - Permite IPs internas (Next.js SSR)
 
-### 7.0f Leads Públicos
+### 7.0g Leads Públicos
 
 - `POST /api/leads/public` — Captura lead (upsert por email)
 - `GET /api/leads/public/check?email=xxx` — Verifica si email ya existe
@@ -393,11 +445,13 @@ LOOKITRY/
 ## 9. Scripts de Desarrollo
 
 ### Frontend
-- `npm run dev`: Desarrollo local
-- `npm run build`: Generar build de producción
+- `pnpm install`: Instalar dependencias
+- `pnpm dev`: Desarrollo local
+- `pnpm build`: Generar build de producción
 
 ### Backend
-- `npm run dev`: Hot-reload con ts-node-dev
+- `pnpm install`: Instalar dependencias
+- `pnpm dev`: Hot-reload con ts-node-dev
 - `python scripts/_deploy_now.py`: Deploy al VPS
 
 ---

@@ -28,7 +28,7 @@ import {
   getFeedbacks, getFeedbackStats, resolveFeedback, deleteFeedback, 
   getUnresolvedFeedbackCount,
   // System
-  getSystemStats, getOpenRouterCredits, getReplicateCredits,
+  getSystemStats,
   // Woo Integration
   getWooBrandsSummary, getWooBrandProducts, setWooProductActive
 } from '../controllers/admin.controller';
@@ -95,6 +95,7 @@ import {
   getGenerationFeedback,
   resolveFeedbackAdmin,
 } from '../controllers/admin/feedback.admin.controller';
+import { getRebeccaConfig, updateRebeccaConfig } from '../controllers/admin/rebecca.admin.controller';
 import {
   getWidgetIpWhitelist,
   addWidgetIpWhitelist,
@@ -177,10 +178,6 @@ router.get('/feedback', requirePermission('brands'), getFeedbacks);
 router.patch('/feedback/:id/resolve', requirePermission('brands'), resolveFeedback);
 router.post('/feedback/:id/resolve', requirePermission('brands'), resolveFeedbackAdmin);
 router.delete('/feedback/:id', requirePermission('brands'), deleteFeedback);
-
-// Monitor de créditos e IA
-router.get('/openrouter-credits', requirePermission('settings'), getOpenRouterCredits);
-router.get('/replicate-credits', requirePermission('settings'), getReplicateCredits);
 
 // Estadísticas del sistema (RAM, Uptime)
 router.get('/system/stats', requirePermission('settings'), getSystemStats);
@@ -310,5 +307,9 @@ router.patch('/knowledge/:id', requirePermission('settings'), updateKnowledgeIte
 router.delete('/knowledge/:id', requirePermission('settings'), deleteKnowledgeItem);
 // Backfill: regenera embeddings para todos los items sin embedding (correr una sola vez post-migración)
 router.post('/knowledge/backfill-embeddings', requirePermission('settings'), backfillEmbeddings);
+
+// Rebecca AI Agent Config
+router.get('/rebecca/config', requirePermission('settings'), getRebeccaConfig);
+router.patch('/rebecca/config', requirePermission('settings'), updateRebeccaConfig);
 
 export default router;

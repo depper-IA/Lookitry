@@ -12,7 +12,7 @@ Aplicación Next.js 14 con TypeScript y TailwindCSS. Incluye el dashboard de mar
 
 ```bash
 cd frontend
-npm install
+pnpm install
 cp .env.example .env
 # Editar .env con la URL del backend
 npm run dev
@@ -39,7 +39,7 @@ Copiar `.env.example` a `.env` y completar los valores. La variable más importa
 
 - Plan de hosting con soporte Node.js (VPS o Business Hosting)
 - Acceso SSH al servidor
-- PM2 instalado globalmente: `npm install -g pm2`
+- PM2 instalado globalmente: `pnpm install -g pm2`
 - Backend ya desplegado y accesible por HTTPS
 
 ### Pasos de deploy
@@ -70,7 +70,7 @@ nano .env
 **3. Instalar dependencias y compilar**
 
 ```bash
-npm install
+pnpm install
 npm run build
 # Genera la carpeta .next/ con el build optimizado
 ```
@@ -113,7 +113,7 @@ location / {
 ```bash
 cd /home/usuario/virtual-tryon/frontend
 git pull origin main
-npm install
+pnpm install
 npm run build
 pm2 restart virtual-tryon-frontend
 ```

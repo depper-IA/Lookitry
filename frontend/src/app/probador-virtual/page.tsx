@@ -5,10 +5,22 @@ const ProbadorVirtualContent = dynamic(
   { ssr: false }
 );
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
+
 export const metadata = {
-  title: 'Probador Virtual Embed — Integración IA | Lookitry',
-  description: 'Integración del probador virtual de IA en Instagram, TikTok, WhatsApp y cualquier tienda online. Activa en menos de 3 minutos. Sin开发, sin fricción.',
-  keywords: ['probador virtual', 'embed IA', 'integración ecommerce', 'widget try-on', 'instagram shopping', 'tiktok shop', 'whatsapp negocio'],
+  title: 'Probador Virtual para tu Tienda Online | Lookitry',
+  description: 'Integra el probador virtual con IA en tu tienda. Tus clientes se prueban la ropa desde Instagram, TikTok o WhatsApp en segundos. Sin apps, sin desarrollo.',
+  keywords: [
+    'probador virtual tienda online',
+    'widget probador virtual',
+    'integración probador IA',
+    'probador ropa instagram',
+    'probador virtual whatsapp',
+    'try on virtual tienda',
+    'plugin probador ropa woocommerce',
+    'integrar probador virtual shopify',
+  ],
+  alternates: { canonical: `${BASE_URL}/probador-virtual` },
 };
 
 export default function ProbadorVirtualPage() {

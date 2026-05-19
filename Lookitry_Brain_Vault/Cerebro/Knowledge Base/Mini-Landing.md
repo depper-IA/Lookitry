@@ -4,7 +4,7 @@ kb_category: planes
 kb_active: true
 ---
 
-# Mini-Landing
+# Mini E-Commerce
 
 Precio: $650.000 COP pago único (precio original $850.000 — 23% de descuento).
 

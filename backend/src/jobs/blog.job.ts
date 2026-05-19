@@ -98,9 +98,9 @@ export async function startBlogJob() {
 
           const triggerResult = await triggerBlogWebhook(url, secret, 'backend_cron_job', {
 
-            openrouter_model: settings.openrouter_article_model || 'google/gemini-2.5-flash',
+            article_model: 'google/gemini-2.5-flash',
 
-            image_provider: settings.image_generation_provider || 'replicate',
+            image_provider: settings.image_generation_provider || 'vertex',
 
           });
 

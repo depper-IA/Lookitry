@@ -7,7 +7,6 @@ inclusion: always
 
 > ### Navegacion del Cerebro
 > - Volver al [[MAPA_MAESTRO|Mapa Maestro de Conocimiento]]
-> - Consultar Roles de [[AGENTS|Agentes del Equipo]]
 > - Ver Estado de Producto en [[PRD]]
 
 ---
@@ -26,7 +25,7 @@ inclusion: always
 ## 0. Documentacion Viva (Regla de Sincronicidad)
 
 **TODA VEZ que se realicen cambios estructurales en la arquitectura, componentes base, o diseño, es OBLIGATORIO:**
-1. **Usar el agente docs-writter (Lina)** para documentar los cambios y mantener actualizados los archivos: [[PRD]], [[DESIGN]], [[TECH_STACK]] y [[REGLAS_IMPORTANTES]]
+1. **Usar el agente docs-writter (Lina)** para documentar los cambios y mantener actualizados los archivos: [[REGLAS_IMPORTANTES]] y [[ARCHITECTURE_OVERVIEW]]
 2. Estos documentos deben reflejar inmediatamente la realidad del sistema. Los documentos nunca deben quedar obsoletos.
 
 **REGLA DE ORO: NO ELIMINAR informacion tecnica que siga siendo valida o funcional (versiones de librerias, estructuras de carpetas, reglas previas). Solo se debe incluir la informacion que falta o se actualiza, manteniendo el historial y contexto previo.**
@@ -53,9 +52,20 @@ inclusion: always
 
 ### 1.1 Deploy
 
-- **SIEMPRE usar el script _deploy_now.py** Located in `C:\Users\Matt\Lookitry\scripts\_deploy_now.py`
+- **SIEMPRE usar el script _deploy_now.py** Located in `scripts/_deploy_now.py` (raíz del proyecto: `/home/travis/Lookitry/Lookitry/scripts/_deploy_now.py`)
 - **NUNCA usar GitHub Actions CI/CD** para deploys
-- Para ejecutar: `python _deploy_now.py` desde la carpeta `scripts/` o usar `--force` para forzar rebuild
+- Para ejecutar: `python3 scripts/_deploy_now.py` desde la raíz del proyecto
+
+**Flags disponibles:**
+| Flag | Efecto |
+|------|--------|
+| (sin flags) | Deploy inteligente: detecta qué cambió (frontend/backend) |
+| `--force` | Fuerza rebuild aunque no haya cambios detectados |
+| `--frontend` | Solo rebuild y deploy del frontend |
+| `--backend` | Solo rebuild y deploy del backend |
+| `--no-cache` | Build Docker sin cache (útil cuando cambia package.json) |
+
+**REGLA:** Usar flags específicos (`--frontend` o `--backend`) cuando el cambio es solo en un servicio. No lanzar un deploy completo por un cambio en un solo Dockerfile.
 
 ### 1.2 Pasos para Deploy (Commit -> Push -> Verificar -> Deploy)
 
@@ -67,6 +77,76 @@ Cuando el usuario autorice el deploy, seguir estos pasos:
 4. **Ejecutar deploy** con `python scripts/_deploy_now.py --force`
 5. **Verificar** que el health check devuelve 200 y los endpoints funcionan
 6. **Si hay errores**, diagnosticar y arreglar antes de reportar exito
+
+---
+
+## 1.3 Generación de Imágenes con Vertex AI
+
+**Script:** `scripts/generate_image.py`
+**Modelo:** Vertex AI Imagen 3 (`imagen-3.0-generate-002`)
+**Key:** `backend/secrets/vertex-key.json` (service account, NO commitear)
+
+### Uso básico
+
+```bash
+python3 scripts/generate_image.py "descripción de la imagen" \
+  --out frontend/public/carpeta/nombre.webp \
+  --aspect 4:3
+```
+
+- La ruta `--out` puede ser relativa al proyecto o absoluta. Se crea el directorio automáticamente.
+- Funciona desde cualquier directorio.
+
+### Relación de aspecto → tamaño generado
+
+| Flag `--aspect` | Resolución | Cuándo usarlo |
+|-----------------|-----------|----------------|
+| `1:1`  | 1024×1024 | Avatar, card cuadrada |
+| `16:9` | 1408×768  | Hero banner, video thumbnail |
+| `9:16` | 768×1408  | Mobile, story, vertical card |
+| `4:3`  | 1280×960  | Megamenu card, blog cover |
+| `3:4`  | 960×1280  | Product card, póster |
+
+**Elegir el aspecto según el contenedor donde va la imagen**, no al revés.
+
+### Flags disponibles
+
+| Flag | Default | Descripción |
+|------|---------|-------------|
+| `--aspect` | `1:1` | Relación de aspecto (ver tabla arriba) |
+| `--count` | `1` | Variantes a generar (1–4). Sufijo `_0`, `_1`... |
+| `--quality` | `90` | Calidad de compresión WebP/JPEG (1–100) |
+| `--no-brand` | — | Omite el sufijo de estilo de marca del prompt |
+
+### Ejemplos por caso de uso
+
+```bash
+# Megamenu card (4:3, 1280×960)
+python3 scripts/generate_image.py \
+  "Latin American woman trying on clothes virtually using AI" \
+  --out frontend/public/megamenu/demo.webp --aspect 4:3
+
+# Hero banner (16:9, 1408×768)
+python3 scripts/generate_image.py \
+  "Fashion e-commerce hero, warm orange tones, Colombian brand" \
+  --out frontend/public/hero/nueva-imagen.webp --aspect 16:9
+
+# Product card (3:4, 960×1280) — 4 variantes
+python3 scripts/generate_image.py \
+  "White sneaker on clean background, product photography" \
+  --out frontend/public/products/sneaker.webp --aspect 3:4 --count 4
+
+# Sin sufijo de marca (fotografía técnica, UI, etc.)
+python3 scripts/generate_image.py \
+  "Abstract dark tech background, orange glow" \
+  --out frontend/public/bg/tech.webp --aspect 16:9 --no-brand
+```
+
+### Regla de uso
+
+- **Siempre especificar `--aspect` según el contenedor** donde va la imagen.
+- Imágenes generadas van en `frontend/public/` bajo una carpeta temática (`megamenu/`, `hero/`, `products/`, etc.).
+- Revisar visualmente el resultado antes de usarlo en producción.
 
 ---
 
@@ -87,8 +167,7 @@ Cada vez que se realice cualquier cambio en el codigo, la IA DEBE documentarlo e
 ### 3.1 Modelo Default
 
 ```yaml
-modelo_default: "gemini-1.5-pro-customtools"
-fallback: "minimax/MiniMax-M2.7"
+modelo_default: "minimax/MiniMax-M2.7"
 
 regla: "Todos los agentes usan este modelo por defecto"
 excepcion: "Solo usar otro modelo si AGENTS.md lo especifica explícitamente"
@@ -254,7 +333,8 @@ sammantha_voice:
 - Colores: `#FF5C3A` naranja, `#0a0a0a` negro base, `#141414` cards
 - Tipografia: Plus Jakarta Sans (titulos), DM Sans (cuerpo)
 - Texto minimo: `#999` secundario, `#bbb` features - PROHIBIDO `#333`–`#555`
-- Sin emojis en UI - solo SVG / lucide-react
+- **PROHIBIDO usar emojis** en cualquier interfaz, documento, README o comunicación del proyecto — usar SIEMPRE iconos SVG / lucide-react
+- **PROHIBIDO emojis en READMEs de GitHub** (showcases, perfil, repos públicos) — usar badges de shields.io con `logo=` para iconos
 - Toggle activo: `#FF5C3A` (nunca `bg-blue-600`)
 - Logo: siempre SVG + texto `Look<span className="text-[#FF5C3A]">itry</span>`
 - Accesibilidad: botones de mostrar/ocultar contrasena deben ser focusables y llevar `aria-label`
@@ -281,8 +361,10 @@ Para evitar corrupciones de codigo y caidas del sistema:
 - Usar maybeSingle() o validaciones manuales en lugar de .single()
 
 ### 5.4 Gestion de APIs de IA
-- **GROQ**: API oficial directa, NO via OpenRouter
-- **OpenRouter**: Exclusivo para GENERACION DE IMAGENES del WIDGET (Try-On). PROHIBIDO usar sus creditos para otras tareas.
+- **Vertex AI (GCP)**: Pipeline PRIMARIO de Try-On e imágenes. Usa Gemini 2.5 Flash + Imagen 3 vía `@google-cloud/vertexai`. TODA generación de imágenes pasa por aquí.
+- **MobileSAM (Python/FastAPI)**: Servicio LOCAL para generación de máscaras antes del pipeline Try-On. Corre en Docker. PROHIBIDO reemplazar por llamada externa sin autorización explícita.
+- **OpenRouter**: SOLO accesible vía n8n como FALLBACK cuando Vertex AI falla. PROHIBIDO llamar directamente desde el backend — la integración directa fue eliminada (ver commits `2bb94eb6`, `e281c8a8`).
+- **GROQ**: ~~API directa~~ → **ELIMINADO del proyecto**. No referenciar ni reinstalar.
 
 ### 5.5 Blindaje contra Overload de MiniMax (CRÍTICO)
 
@@ -408,11 +490,13 @@ Los agentes ya NO necesitan notificar por Telegram cuando completan tareas. Esta
 
 ---
 
-**Ultima actualizacion:** Abril 2026 - Sistema de Agentes v3.1
+**Ultima actualizacion:** 2026-05-17 - Sistema de Agentes v3.1 / pnpm@9.15.9 / Node 22 backend
 **Cambios principales:**
+- Regla 15.2: Versión pnpm@9.15.9 especificada, compatibilidad Node documentada, configuración shamefully-hoist y workspace
+- Regla 1.1: Deploy flags documentados (`--frontend`, `--backend`, `--force`, `--no-cache`)
 - Regla 10: Refactorización obligatoria por tamaño de archivo (600 líneas)
 - Regla 10.3: Detección y reporte de código muerto obligatorio
-- Renumeración de secciones para acomodar nueva regla
+- Regla 5.4: Vertex AI primario, OpenRouter solo vía n8n fallback, GROQ eliminado, MobileSAM local documentado
 
 ---
 
@@ -506,3 +590,37 @@ Ver: `Cerebro/Skills/code-sync-checker.md`
 ### Cookie Security
 - **COOKIE_DOMAIN**: Configurado en producción para cookies HTTP-only
 - **Flag**: `COOKIE_DOMAIN` en `.env` del backend
+
+---
+
+## 15. Gestión Segura de Dependencias (MANDATORIO)
+
+**ALERTA DE SEGURIDAD (Mayo 2026):** Se han detectado múltiples ataques de cadena de suministro (Supply Chain Attacks) masivos en el registro oficial de NPM (ataques como *Mini Shai-Hulud* y *PromptMink*). Estos ataques inyectan malware en paquetes populares para robar credenciales, secretos de entorno (.env) y llaves SSH.
+
+### 15.1 Prohibición de NPM Install
+- **REGLA DE ORO**: Está **ESTRICTAMENTE PROHIBIDO** ejecutar `npm install` o `npm update` en cualquier parte del proyecto (local, VPS o agentes).
+- **Razón**: El cliente oficial de NPM es actualmente vulnerable a la ejecución de scripts maliciosos en la fase de pre-instalación que han comprometido a más de 25,000 repositorios.
+
+### 15.2 Uso Obligatorio de PNPM
+
+- Para toda gestión de paquetes, se debe usar **`pnpm`**.
+- **Versión obligatoria**: `pnpm@9.15.9`
+  - **Razón**: pnpm@11 requiere Node ≥22.13. El backend Docker usa Node 22 pero pnpm@9.15.9 es más estable y compatible con ambos Node 20 (frontend) y Node 22 (backend).
+  - **Instalación en Docker**: `corepack enable && corepack prepare pnpm@9.15.9 --activate` (NO usar `npm install -g pnpm`)
+- **Comandos permitidos**:
+  - `pnpm install`
+  - `pnpm add [package]`
+  - `pnpm dev`
+- **Bloqueo**: Si un agente intenta usar `npm install`, Sammantha o el Orquestador deben detener la operación inmediatamente.
+
+**Configuración pnpm en el proyecto:**
+- `shamefully-hoist=true` en `frontend/.npmrc` y `backend/.npmrc` — aplana node_modules para TypeScript
+- `pnpm-workspace.yaml` en ambos proyectos DEBE incluir `packages: ['.']`
+- Lockfiles (`pnpm-lock.yaml`) deben estar trackeados en git en ambos proyectos
+
+**Compatibilidad Node / Docker:**
+- **Frontend Docker**: `node:20-alpine` — pnpm@9.15.9 ✓
+- **Backend Docker**: `node:22-alpine` — requerido por `@supabase/realtime-js@2.105.4` (necesita `globalThis.WebSocket` nativo)
+
+### 15.3 Auditoría de Seguridad
+- Antes de agregar cualquier librería nueva, se debe verificar en [Socket.dev](https://socket.dev) o herramientas similares para asegurar que no tenga comportamientos sospechosos (telemetría oculta, acceso a red no declarado).

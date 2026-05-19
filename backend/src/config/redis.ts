@@ -14,14 +14,18 @@ class RedisService {
   public static getInstance(): Redis {
     if (!this.instance) {
       this.instance = new Redis(redisUrl, {
-        maxRetriesPerRequest: 1,
+        maxRetriesPerRequest: null, // No lanzar error si no hay conexión, simplemente encolar o fallar según retryStrategy
         retryStrategy: (times) => {
-          // Desactivar reintentos infinitos si falla para no bloquear el proceso
-          if (times > 3) return null;
-          return Math.min(times * 50, 2000);
+          // Intentar reconectar cada 10 segundos en desarrollo
+          if (process.env.NODE_ENV === 'development') {
+            return 10000;
+          }
+          // En producción, reintentos limitados
+          if (times > 10) return null;
+          return Math.min(times * 100, 3000);
         },
-        lazyConnect: false,
-        enableReadyCheck: true,
+        lazyConnect: true, // No intentar conectar inmediatamente al crear instancia
+        enableReadyCheck: false, // Desactivar check de ready para evitar cuelgues si no hay Redis
       });
 
       this.instance.on('connect', () => {
@@ -51,10 +55,11 @@ class RedisService {
         }
       });
 
-      // Try to connect (non-blocking — will fail silently in dev without Redis)
+      /* 
       this.instance.connect().catch(() => {
         // Connection failed — that's ok for local dev without Redis
       });
+      */
     }
     return this.instance;
   }

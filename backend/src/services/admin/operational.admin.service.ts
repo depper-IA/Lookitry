@@ -1,10 +1,6 @@
 import { supabaseAdmin } from '../../config/supabase';
 
-type PricingMetaData = {
-  replicate_api_token?: string;
-  replicate_monthly_budget_usd?: number;
-  replicate_cost_per_generation_usd?: number;
-};
+type PricingMetaData = Record<string, unknown>;
 
 /**
  * Operational Admin Service — Mission Control, Admin Metadata y Audit Log.

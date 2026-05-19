@@ -17,6 +17,8 @@
     "husky": "^9.0.0"
   },
   "dependencies": {
-    "canvas": "^3.2.3"
+    "@supabase/supabase-js": "^2.106.0",
+    "canvas": "^3.2.3",
+    "pg": "^8.20.0"
   }
 }

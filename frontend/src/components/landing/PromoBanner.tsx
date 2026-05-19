@@ -80,7 +80,7 @@ export function PromoBanner() {
 
   return (
     <div
-      className="relative z-[80] flex w-full items-center justify-center px-4 sm:px-10 py-2.5 text-[13px] font-medium shadow-md transition-all duration-300"
+      className="relative z-[80] flex w-full items-center justify-center px-4 sm:px-10 py-2.5 text-[13px] font-medium transition-all duration-300"
       style={{ backgroundColor: bg, color: textColor }}
       role="banner"
     >

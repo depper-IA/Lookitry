@@ -4,10 +4,7 @@
   "small_model": "groq/llama-3.3-70b-versatile",
   "provider": {
     "minimax": {
-      "npm": "@ai-sdk/anthropic",
       "options": {
-        "baseURL": "https://api.minimax.io/anthropic/v1",
-        "timeout": 300000,
         "apiKey": "sk-cp-sPgdKbqLq4Ms_K5vTJUw6bJS3WjGmmbrvCQ8CNUyLyHZzACF_44tRK4oqcWNq5zCsjPANYk_oruPGv2m3_VGqjayHyZ07JSf8fUpbwcPhOx5vOAVNhUSZps"
       },
       "models": {
@@ -21,9 +18,94 @@
       "options": {
         "project": "gen-lang-client-0591001769",
         "location": "us-central1",
-        "timeout": 120000
+        "timeout": 120000,
+        "googleAuthOptions": {
+          "keyFilename": "/home/travis/Lookitry/Lookitry/backend/secrets/vertex-key.json"
+        }
       },
-      "models": {}
+      "models": {
+        "gemini-3-pro-preview": {
+          "name": "gemini-3-pro-preview"
+        },
+        "gemini-2.5-pro": {
+          "name": "gemini-2.5-pro"
+        },
+        "gemini-2.5-flash": {
+          "name": "gemini-2.5-flash"
+        },
+        "gemini-2.0-flash-001": {
+          "name": "gemini-2.0-flash-001"
+        },
+        "gemini-2.5-flash-lite": {
+          "name": "gemini-2.5-flash-lite"
+        },
+        "gemini-3.1-pro-preview": {
+          "name": "gemini-3.1-pro-preview"
+        },
+        "gemini-3.1-flash-preview": {
+          "name": "gemini-3.1-flash-preview"
+        },
+        "gemini-3.0-pro-preview": {
+          "name": "gemini-3.0-pro-preview"
+        },
+        "gemini-3.0-flash-preview": {
+          "name": "gemini-3.0-flash-preview"
+        },
+        "gemini-2.5-pro-preview-05-06": {
+          "name": "gemini-2.5-pro-preview-05-06"
+        },
+        "gemini-2.5-pro-preview-06-05": {
+          "name": "gemini-2.5-pro-preview-06-05"
+        },
+        "imagen-3.0-generate-001": {
+          "name": "imagen-3.0-generate-001"
+        },
+        "imagen-3.0-generate-002": {
+          "name": "imagen-3.0-generate-002"
+        },
+        "imagen-3.0-fast-generate-001": {
+          "name": "imagen-3.0-fast-generate-001"
+        },
+        "imagen-4.0-generate-001": {
+          "name": "imagen-4.0-generate-001"
+        },
+        "imagen-4.0-fast-generate-001": {
+          "name": "imagen-4.0-fast-generate-001"
+        },
+        "imagen-4.0-ultra-generate-001": {
+          "name": "imagen-4.0-ultra-generate-001"
+        },
+        "gemini-2.5-flash-image": {
+          "name": "gemini-2.5-flash-image"
+        },
+        "gemini-3.1-flash-image-preview": {
+          "name": "gemini-3.1-flash-image-preview"
+        },
+        "gemini-3-pro-image-preview": {
+          "name": "gemini-3-pro-image-preview"
+        },
+        "veo-3.1-generate-001": {
+          "name": "veo-3.1-generate-001"
+        },
+        "veo-3.1-fast-generate-001": {
+          "name": "veo-3.1-fast-generate-001"
+        },
+        "veo-3.0-generate-001": {
+          "name": "veo-3.0-generate-001"
+        },
+        "veo-3.0-fast-generate-001": {
+          "name": "veo-3.0-fast-generate-001"
+        },
+        "veo-2.0-generate-001": {
+          "name": "veo-2.0-generate-001"
+        },
+        "text-embedding-005": {
+          "name": "text-embedding-005"
+        },
+        "gemini-embedding-2-preview": {
+          "name": "gemini-embedding-2-preview"
+        }
+      }
     },
     "groq": {
       "options": {
@@ -137,9 +219,9 @@
       "type": "local",
       "command": [
         "node",
-        "C:\\Users\\Matt\\Lookitry\\.opencode\\mcp-servers\\telegram-mcp\\dist\\index.js"
+        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/telegram-mcp/dist/index.js"
       ],
-      "enabled": true,
+      "enabled": false,
       "environment": {
         "TELEGRAM_BOT_TOKEN": "8353367320:AAFxmMJ4lFteK-XQaVBcjQx7rZXojpDxH-A",
         "TELEGRAM_CHAT_ID": "1049458877"
@@ -149,7 +231,7 @@
       "type": "local",
       "command": [
         "node",
-        "C:\\Users\\Matt\\Lookitry\\.opencode\\mcp-servers\\n8n-mcp-server\\dist\\index.js"
+        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/n8n-mcp-server/dist/index.js"
       ],
       "enabled": true,
       "environment": {

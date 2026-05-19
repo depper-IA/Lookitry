@@ -3,13 +3,28 @@ import { agentActivityService } from '../services/agent-activity.service';
 import { agentSessionService } from '../services/agent-session.service';
 import { supabaseAdmin } from '../config/supabase';
 import axios from 'axios';
+import { rebeccaIdentityService } from '../services/rebecca-identity.service';
+import { GoogleGenAI } from '@google/genai';
 
 const router = Router();
+
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; magA += a[i] * a[i]; magB += b[i] * b[i]; }
+  return dot / (Math.sqrt(magA) * Math.sqrt(magB) + 1e-9);
+}
+
+function getVertexAI(): GoogleGenAI {
+  return new GoogleGenAI({
+    vertexai: true,
+    project: process.env.VERTEX_PROJECT_ID || 'gen-lang-client-0591001769',
+    location: 'us-central1',
+  });
+}
 
 // === RAG: Lookitry Knowledge Search (Rebecca WhatsApp Agent) ===
 
 const GEMINI_API_KEY_AGENT = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY ?? '';
-const GEMINI_BASE_AGENT    = 'https://generativelanguage.googleapis.com/v1beta';
 
 /**
  * POST /api/agent/knowledge/search
@@ -41,41 +56,51 @@ router.post('/knowledge/search', async (req: Request, res: Response) => {
     let results: any[] = [];
     let searchType = 'semantic';
 
-    // 1. Intentar búsqueda semántica con embeddings
-    if (GEMINI_API_KEY_AGENT) {
+    // 1. Vertex AI SDK — query embedding via text-embedding-004
+    let qEmbedding: number[] | null = null;
+    try {
+      // Use existing GOOGLE_APPLICATION_CREDENTIALS env var (set in Docker via /app/credentials/)
+      const ai = getVertexAI();
+      const embResult = await (ai.models as any).embedContent({
+        model: 'text-embedding-004',
+        contents: [{ parts: [{ text: query }] }],
+        taskType: 'RETRIEVAL_QUERY',
+      });
+      qEmbedding = embResult?.embeddings?.[0]?.values ?? embResult?.embedding?.values ?? null;
+    } catch (embErr: any) {
+      console.warn('[Knowledge Search] Vertex embedding failed:', embErr.message);
+    }
+
+    // 2. In-process cosine similarity search
+    if (qEmbedding && qEmbedding.length === 768) {
       try {
-        const embRes = await fetch(
-          `${GEMINI_BASE_AGENT}/models/gemini-embedding-001:embedContent?key=${GEMINI_API_KEY_AGENT}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              model: 'models/gemini-embedding-001',
-              content: { parts: [{ text: query }] },
-              taskType: 'RETRIEVAL_QUERY',
-            }),
-          }
-        );
+        const { data: kbItems } = await supabaseAdmin
+          .from('lookitry_knowledge')
+          .select('id, category, title, content, embedding')
+          .eq('is_active', true)
+          .not('embedding', 'is', null);
 
-        if (embRes.ok) {
-          const embJson = await embRes.json() as { embedding?: { values?: number[] } };
-          const embedding = embJson?.embedding?.values;
+        if (kbItems && kbItems.length > 0) {
+          const scored = kbItems
+            .map((item: any) => {
+              try {
+                const stored = typeof item.embedding === 'string'
+                  ? JSON.parse(item.embedding)
+                  : Array.isArray(item.embedding) ? item.embedding : null;
+                if (!stored || stored.length !== 768) return null;
+                const sim = cosineSimilarity(qEmbedding, stored);
+                return { ...item, similarity: sim };
+              } catch { return null; }
+            })
+            .filter(Boolean)
+            .sort((a: any, b: any) => b.similarity - a.similarity)
+            .slice(0, Math.min(match_count, 10))
+            .filter((item: any) => item.similarity >= min_similarity);
 
-          if (embedding && embedding.length === 768) {
-            const { data, error } = await supabaseAdmin.rpc('search_lookitry_knowledge', {
-              p_query_embedding: embedding,
-              p_match_count:     Math.min(match_count, 10),
-              p_category_filter: category || null,
-              p_min_similarity:  min_similarity,
-            });
-
-            if (!error && data?.length > 0) {
-              results = data;
-            }
-          }
+          if (scored.length > 0) results = scored;
         }
       } catch (embErr: any) {
-        console.warn('[Knowledge Search] Embedding falló, usando keyword fallback:', embErr.message);
+        console.warn('[Knowledge Search] In-process search failed:', embErr.message);
       }
     }
 
@@ -203,9 +228,9 @@ router.post('/rag/search', async (req: Request, res: Response) => {
       // Generar embedding usando Gemini
       try {
         const embeddingResponse = await axios.post(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent',
+          'https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent',
           {
-            model: 'models/gemini-embedding-001',
+            model: 'models/text-embedding-004',
             content: { parts: [{ text: query }] },
             taskType: 'RETRIEVAL_QUERY',
             outputDimensionality: 768,
@@ -697,6 +722,48 @@ router.get('/session/:agentName', async (req: Request, res: Response) => {
   } catch (err) {
     console.error('[AgentRoutes] GET /session/:agentName error:', err);
     res.status(500).json({ error: 'Error consultando sesión del agente' });
+  }
+});
+
+/**
+ * GET /api/agent/identity/system-prompt
+ * Retorna el system prompt de Rebecca listo para inyectar en n8n o el widget.
+ * Query params:
+ *   - channel: 'whatsapp' | 'web' (default: 'web')
+ *   - include_knowledge: 'true' | 'false' (default: 'true')
+ */
+router.get('/identity/system-prompt', async (req: Request, res: Response) => {
+  try {
+    const channel = (req.query.channel === 'whatsapp' ? 'whatsapp' : 'web') as 'whatsapp' | 'web';
+    const includeKnowledge = req.query.include_knowledge !== 'false';
+
+    let knowledgeContext = '';
+
+    if (includeKnowledge) {
+      const { data, error } = await supabaseAdmin
+        .from('lookitry_knowledge')
+        .select('category, title, content')
+        .eq('is_active', true)
+        .order('category')
+        .order('title');
+
+      if (!error && data?.length) {
+        knowledgeContext = data
+          .map((item: any) => `### ${item.title}\n${item.content}`)
+          .join('\n\n');
+      }
+    }
+
+    const systemPrompt = rebeccaIdentityService.getSystemPrompt(channel, knowledgeContext);
+
+    res.json({
+      channel,
+      system_prompt: systemPrompt,
+      knowledge_items: includeKnowledge ? (knowledgeContext ? knowledgeContext.split('###').length - 1 : 0) : null,
+    });
+  } catch (err: any) {
+    console.error('[AgentRoutes] GET /identity/system-prompt error:', err);
+    res.status(500).json({ error: 'Error generando system prompt' });
   }
 });
 

@@ -32,11 +32,13 @@ export const metadata: Metadata = {
     'Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica. Intégralo en tu tienda en 10 minutos. Sin apps, sin desarrollo.',
   keywords: [
     'probador virtual IA',
-    'probador virtual tienda',
+    'probador virtual tienda ropa',
     'prueba ropa online',
-    'widget probador virtual tienda',
+    'widget probador virtual',
     'probador virtual IA Latam',
     'virtual try-on Colombia',
+    'virtual try-on México',
+    'virtual try-on latam',
     'probador virtual ropa',
     'IA moda Latinoamérica',
     'probador virtual Colombia',
@@ -48,10 +50,17 @@ export const metadata: Metadata = {
     'probador virtual para WooCommerce',
     'aumentar ventas tienda ropa online',
     'reducir devoluciones tienda online',
-    'virtual try-on Latam',
     'probador virtual sin app',
-    'probador de ropa virtual Venezuela',
-    'tienda ropa online Venezuela IA',
+    'probador ropa inteligencia artificial',
+    'tienda virtual ropa sin web',
+    'como vender ropa por whatsapp',
+    'tienda virtual ropa instagram',
+    'link bio instagram tienda ropa',
+    'probador ropa online sin descargar',
+    'virtual try-on free',
+    'ai fashion try on',
+    'probador de ropa virtual',
+    'IA para tienda de ropa',
   ],
   authors: [{ name: 'Lookitry', url: BASE_URL }],
   creator: 'Lookitry',
@@ -102,6 +111,7 @@ import { Analytics } from '@/components/analytics/Analytics';
 import { RouteChrome } from '@/components/layout/RouteChrome';
 import { Toaster } from 'sonner';
 import { ExitIntentProvider } from '@/components/landing/ExitIntentProvider';
+import { ChatWidget } from '@/components/chat-widget/ChatWidget';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
@@ -109,7 +119,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="es"
-      className={`dark ${inter.variable} ${outfit.variable} scroll-smooth antialiased`}
+      className={`${inter.variable} ${outfit.variable} scroll-smooth antialiased`}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
 style={
@@ -136,10 +146,10 @@ style={
         <link rel="dns-prefetch" href="https://api.lookitry.com" />
         <link rel="dns-prefetch" href="https://vkdooutklowctuudjnkl.supabase.co" />
         
-        {/* Script de tema: aplica user preference (light) DESPUES del primer paint — dark ya viene por defecto en html class */}
-        {/* dark es el UNICO default — light solo si el usuario lo elige explicitamente */}
-        <Script id="theme-init" strategy="afterInteractive">
-          {`(function(){try{var t=localStorage.getItem('theme');if(t==='light'){document.documentElement.classList.add('light');document.documentElement.classList.remove('dark');}else{document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');}}catch(e){document.documentElement.classList.add('dark');}})();`}
+        {/* Script de tema: aplica ANTES del primer paint para evitar flash */}
+        {/* beforeInteractive garantiza que la clase dark/light esté lista antes del hydration */}
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`(function(){try{var t=localStorage.getItem('theme');if(t==='light'){document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');}else{document.documentElement.classList.remove('light');document.documentElement.classList.add('dark');}}catch(e){document.documentElement.classList.add('dark');}})();`}
         </Script>
       </head>
 
@@ -212,6 +222,7 @@ style={
                   },
                 }}
               />
+              <ChatWidget />
             </ExitIntentProvider>
           </Suspense>
         </ThemeProvider>

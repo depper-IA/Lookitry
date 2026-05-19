@@ -32,15 +32,14 @@ const LandingStats = dynamic(() => import('./LandingStats'), {
   loading: () => <LandingSkeleton variant="stats" />
 });
 
-// Steps: skeleton mientras carga
-const LandingSteps = dynamic(() => import('./LandingSteps'), {
-  ssr: false,
-  loading: () => <LandingSkeleton variant="steps" />
-});
-
 // MiniLanding: skeleton mientras carga
 const LandingMiniLanding = dynamic(() => import('./LandingMiniLanding'), { ssr: false });
 const LandingPlugin = dynamic(() => import('./LandingPlugin'), { ssr: false });
+
+// New Components (Onboarding & Social Proof)
+const LandingOnboardingSteps = dynamic(() => import('./LandingOnboardingSteps'), { ssr: false });
+const LandingSocialProof = dynamic(() => import('./LandingSocialProof'), { ssr: false });
+const LandingSteps = dynamic(() => import('./LandingSteps'), { ssr: false });
 
 // PromoBanner: carga inmediata
 const PromoBanner = dynamic(() => import('./PromoBanner').then(m => ({ default: m.PromoBanner })), { ssr: true });
@@ -105,11 +104,13 @@ export default function PremiumLanding({
     <PromoBannerProvider>
       <div className="min-h-screen bg-white dark:bg-dark text-dark dark:text-text-primary selection:bg-accent/30 selection:text-white font-dm-sans overflow-x-clip">
         <PromoBanner />
-        <LandingNav currency={navCurrency} onCurrencyChange={handleNavCurrencyChange} />
+        <LandingNav currency={navCurrency} onCurrencyChange={handleNavCurrencyChange} transparent={true} />
         <main className="relative">
           <LandingHero />
           <LandingStats />
           <LandingSteps />
+          <LandingOnboardingSteps />
+          <LandingSocialProof />
           <LandingMiniLanding />
           <LandingPlugin />
           <LandingPricing pricing={pricing} currency={navCurrency} trm={trmState} />
