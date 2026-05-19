@@ -53,7 +53,7 @@ export default function LandingHero() {
           preload="auto"
           onCanPlay={() => setVideoReady(true)}
           style={{ transition: 'opacity 0.6s ease', opacity: videoReady ? 1 : 0 }}
-          className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 object-cover"
+          className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-[58%] scale-[1.12] object-cover"
         >
           <source src="/videos/hero.webm" type="video/webm" />
         </video>
