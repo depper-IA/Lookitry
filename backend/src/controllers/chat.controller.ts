@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { rebeccaChatService } from '../services/rebecca-chat.service';
 import { rebeccaIdentityService } from '../services/rebecca-identity.service';
+import { upsertRebeccaLead, appendLeadNote } from '../services/rebecca-lead.service';
+import type { LeadSource } from '../services/rebecca-lead.service';
 
 const WHATSAPP_HISTORY_TTL = 86400 * 7; // 7 días — memoria de conversación extendida
 const WHATSAPP_HISTORY_MAX = 40; // Más contexto para evitar redundancia y mantener flujo
@@ -47,6 +49,16 @@ export const whatsappReply = async (req: Request, res: Response) => {
       }
       await redis.set(historyKey, JSON.stringify(history), 'EX', WHATSAPP_HISTORY_TTL);
     }
+
+    // Guardar lead en Supabase (crea o actualiza)
+    await upsertRebeccaLead({
+      phone,
+      source: 'whatsapp_rebecca' as LeadSource,
+      last_message: message,
+    });
+
+    // Guardar respuesta de Rebecca también
+    await appendLeadNote(phone, `Rebecca: ${reply}`);
 
     return res.status(200).json({ reply });
   } catch (error: any) {
@@ -283,6 +295,15 @@ export const widgetReply = async (req: Request, res: Response) => {
 
     const locale = rebeccaIdentityService.detectLocale(message);
     const reply = await rebeccaChatService.replyForChannel('web', session_id, message, parsedHistory, locale, parsedContext);
+
+    // Guardar lead en Supabase para web (usa session_id como identifier)
+    await upsertRebeccaLead({
+      phone: session_id, // session_id como identifier para web
+      source: 'web_rebecca',
+      last_message: message,
+    });
+    await appendLeadNote(session_id, `Rebecca: ${reply}`);
+
     return res.status(200).json({ reply, session_id });
   } catch (error: any) {
     console.error('[Chat] widgetReply:', error);
