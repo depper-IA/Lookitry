@@ -139,6 +139,10 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 ### 7.1 Prohibiciones
 - **SIN emojis** en UI — solo SVG / lucide-react
 - **NUNCA mostrar** solo el logo sin el nombre de texto, ni solo el nombre sin el logo
+- **SIN bordes decorativos** — `border`, `border-white`, `border-black`, `border-black/8`, `border-white/8`, etc. están **PROHIBIDOS** como separadores visuales o marcos de cards. No existen en la marca.
+- **SIN divisores lineales** — `<hr>`, `border-t`, `border-b`, `border-l`, `border-r` como separadores de sección están **PROHIBIDOS**. Para crear separación visual usar: espacio (`gap`, `py`, `mt`), sombras (`shadow`), o diferencia de fondo (`bg-black/[0.04]`).
+
+> **Regla de oro de profundidad**: si necesitás separar algo visualmente, usá sombra o contraste de fondo. NUNCA un borde o línea.
 
 ### 7.2 Fondo por Contexto
 - Dashboard: `#0a0a0a` (oscuro por defecto)

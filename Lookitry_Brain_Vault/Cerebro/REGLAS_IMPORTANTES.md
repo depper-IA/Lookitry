@@ -80,6 +80,76 @@ Cuando el usuario autorice el deploy, seguir estos pasos:
 
 ---
 
+## 1.3 Generación de Imágenes con Vertex AI
+
+**Script:** `scripts/generate_image.py`
+**Modelo:** Vertex AI Imagen 3 (`imagen-3.0-generate-002`)
+**Key:** `backend/secrets/vertex-key.json` (service account, NO commitear)
+
+### Uso básico
+
+```bash
+python3 scripts/generate_image.py "descripción de la imagen" \
+  --out frontend/public/carpeta/nombre.webp \
+  --aspect 4:3
+```
+
+- La ruta `--out` puede ser relativa al proyecto o absoluta. Se crea el directorio automáticamente.
+- Funciona desde cualquier directorio.
+
+### Relación de aspecto → tamaño generado
+
+| Flag `--aspect` | Resolución | Cuándo usarlo |
+|-----------------|-----------|----------------|
+| `1:1`  | 1024×1024 | Avatar, card cuadrada |
+| `16:9` | 1408×768  | Hero banner, video thumbnail |
+| `9:16` | 768×1408  | Mobile, story, vertical card |
+| `4:3`  | 1280×960  | Megamenu card, blog cover |
+| `3:4`  | 960×1280  | Product card, póster |
+
+**Elegir el aspecto según el contenedor donde va la imagen**, no al revés.
+
+### Flags disponibles
+
+| Flag | Default | Descripción |
+|------|---------|-------------|
+| `--aspect` | `1:1` | Relación de aspecto (ver tabla arriba) |
+| `--count` | `1` | Variantes a generar (1–4). Sufijo `_0`, `_1`... |
+| `--quality` | `90` | Calidad de compresión WebP/JPEG (1–100) |
+| `--no-brand` | — | Omite el sufijo de estilo de marca del prompt |
+
+### Ejemplos por caso de uso
+
+```bash
+# Megamenu card (4:3, 1280×960)
+python3 scripts/generate_image.py \
+  "Latin American woman trying on clothes virtually using AI" \
+  --out frontend/public/megamenu/demo.webp --aspect 4:3
+
+# Hero banner (16:9, 1408×768)
+python3 scripts/generate_image.py \
+  "Fashion e-commerce hero, warm orange tones, Colombian brand" \
+  --out frontend/public/hero/nueva-imagen.webp --aspect 16:9
+
+# Product card (3:4, 960×1280) — 4 variantes
+python3 scripts/generate_image.py \
+  "White sneaker on clean background, product photography" \
+  --out frontend/public/products/sneaker.webp --aspect 3:4 --count 4
+
+# Sin sufijo de marca (fotografía técnica, UI, etc.)
+python3 scripts/generate_image.py \
+  "Abstract dark tech background, orange glow" \
+  --out frontend/public/bg/tech.webp --aspect 16:9 --no-brand
+```
+
+### Regla de uso
+
+- **Siempre especificar `--aspect` según el contenedor** donde va la imagen.
+- Imágenes generadas van en `frontend/public/` bajo una carpeta temática (`megamenu/`, `hero/`, `products/`, etc.).
+- Revisar visualmente el resultado antes de usarlo en producción.
+
+---
+
 ## 2. Registro de Cambios (Changelog)
 
 Cada vez que se realice cualquier cambio en el codigo, la IA DEBE documentarlo en [[CHANGELOG]] antes de terminar la tarea. Cada entrada debe incluir:
