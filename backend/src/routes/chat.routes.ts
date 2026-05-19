@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { receiveWebhook, getConversations, getConversationMessages, replyToConversation, updateConversationStatus, widgetReply, trackPage, whatsappReply, updateLeadContact, getLeadContext } from '../controllers/chat.controller';
+import { receiveWebhook, getConversations, getConversationMessages, replyToConversation, updateConversationStatus, widgetReply, trackPage, whatsappReply, updateLeadContact, getLeadContext, updateLeadProfileEndpoint } from '../controllers/chat.controller';
 import { adminAuthMiddleware } from '../middleware/adminAuth';
 import { rebeccaRateLimitBySession, rebeccaRateLimitByIP } from '../middleware/rebecca-rate-limit';
 
@@ -13,6 +13,7 @@ router.post('/track-page', trackPage);
 
 // Lead management endpoints (públicos, llamados por Rebecca)
 router.post('/lead/contact', updateLeadContact);
+router.post('/lead/profile', updateLeadProfileEndpoint);
 router.get('/lead/:phone', getLeadContext);
 
 // Webhook for incoming WhatsApp messages
