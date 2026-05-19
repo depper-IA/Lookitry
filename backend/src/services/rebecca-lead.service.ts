@@ -28,6 +28,9 @@ interface StoredLead {
  * Guarda o actualiza un lead de Rebecca en la tabla leads de Supabase.
  * Si el lead existe (por phone), actualiza los campos nuevos.
  * Si no existe, lo crea.
+ * 
+ * IMPORTANTE: Solo se debe llamar en el PRIMER mensaje del lead.
+ * Los mensajes siguientes NO deben crear leads nuevos.
  */
 export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ success: boolean; leadId?: string; error?: string }> {
   try {
@@ -49,40 +52,22 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
     const now = new Date().toISOString();
 
     if (existingLead) {
-      // 2. LEAD EXISTE → actualizar solo campos nuevos
-      const updates: Partial<StoredLead> = {
-        updated_at: now,
-      };
-
-      // Solo actualizar si hay datos nuevos
-      if (name && !existingLead.name) updates.name = name;
-      if (email && !existingLead.email) updates.email = email;
-      if (source && !existingLead.source) updates.source = source;
-      if (stage) updates.bot_status = stage;
-      
-      // Agregar al internal_notes si hay conversación
+      // 2. LEAD EXISTE → NO hacer nada, ya fue creado en el primer mensaje
+      // Solo agregar nota si hay mensaje nuevo
       if (last_message) {
         const existingNotes = existingLead.internal_notes || '';
-        const newNote = `[${now}] Lead: ${last_message}\n`;
-        updates.internal_notes = existingNotes + newNote;
+        // Evitar duplicar la última nota (check básico)
+        if (!existingNotes.includes(last_message.substring(0, 50))) {
+          const newNote = `[${now}] Lead: ${last_message}\n`;
+          await supabaseAdmin
+            .from('leads')
+            .update({
+              internal_notes: existingNotes + newNote,
+              updated_at: now,
+            })
+            .eq('id', existingLead.id);
+        }
       }
-
-      // Actualizar status si está en un nuevo stage
-      if (stage && existingLead.status !== stage) {
-        updates.status = stage;
-      }
-
-      const { error: updateError } = await supabaseAdmin
-        .from('leads')
-        .update(updates)
-        .eq('id', existingLead.id);
-
-      if (updateError) {
-        console.error('[RebeccaLead] Error actualizando lead:', updateError);
-        return { success: false, error: updateError.message };
-      }
-
-      console.log(`[RebeccaLead] Lead actualizado: ${existingLead.id}`);
       return { success: true, leadId: existingLead.id };
 
     } else {
@@ -120,6 +105,63 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
 }
 
 /**
+ * Agrega una nota a la conversación del lead (para mensajes posteriores)
+ * Solo usar para leads que YA EXISTEN
+ */
+export async function appendLeadNote(phone: string, note: string): Promise<boolean> {
+  try {
+    const { data: lead } = await supabaseAdmin
+      .from('leads')
+      .select('internal_notes')
+      .eq('phone', phone)
+      .single();
+
+    if (!lead) return false;
+
+    const now = new Date().toISOString();
+    const existingNotes = lead.internal_notes || '';
+    // Evitar duplicar notas similares (check básico)
+    if (existingNotes.includes(note.substring(0, 50))) return true;
+    
+    const newNote = `[${now}] ${note}\n`;
+
+    const { error } = await supabaseAdmin
+      .from('leads')
+      .update({
+        internal_notes: existingNotes + newNote,
+        updated_at: now,
+      })
+      .eq('phone', phone);
+
+    if (error) {
+      console.error('[RebeccaLead] Error agregando nota:', error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('[RebeccaLead] Error agregando nota:', err);
+    return false;
+  }
+}
+
+/**
+ * Verifica si un lead existe (para saber si es el primer mensaje)
+ */
+export async function leadExists(phone: string): Promise<boolean> {
+  try {
+    const { data } = await supabaseAdmin
+      .from('leads')
+      .select('id')
+      .eq('phone', phone)
+      .single();
+    return !!data;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Actualiza el stage del lead (para seguimiento del flujo)
  */
 export async function updateLeadStage(
@@ -144,43 +186,6 @@ export async function updateLeadStage(
     return true;
   } catch (err) {
     console.error('[RebeccaLead] Error actualizando stage:', err);
-    return false;
-  }
-}
-
-/**
- * Agrega una nota a la conversación del lead
- */
-export async function appendLeadNote(phone: string, note: string): Promise<boolean> {
-  try {
-    const { data: lead } = await supabaseAdmin
-      .from('leads')
-      .select('internal_notes')
-      .eq('phone', phone)
-      .single();
-
-    if (!lead) return false;
-
-    const now = new Date().toISOString();
-    const existingNotes = lead.internal_notes || '';
-    const newNote = `[${now}] ${note}\n`;
-
-    const { error } = await supabaseAdmin
-      .from('leads')
-      .update({
-        internal_notes: existingNotes + newNote,
-        updated_at: now,
-      })
-      .eq('phone', phone);
-
-    if (error) {
-      console.error('[RebeccaLead] Error agregando nota:', error);
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    console.error('[RebeccaLead] Error agregando nota:', err);
     return false;
   }
 }
