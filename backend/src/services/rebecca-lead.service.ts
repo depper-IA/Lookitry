@@ -10,6 +10,13 @@ export interface RebeccaLeadData {
   stage?: 'new' | 'qualified' | 'contacted' | 'interested' | 'converted' | 'lost';
   conversation_summary?: string;
   last_message?: string;
+  // Nuevos campos para perfil completo
+  website?: string | null;
+  instagram?: string | null;
+  tiktok?: string | null;
+  city?: string | null;
+  country?: string | null;
+  business_type?: string | null;
 }
 
 interface StoredLead {
@@ -22,12 +29,16 @@ interface StoredLead {
   bot_status: string | null;
   internal_notes: string | null;
   updated_at: string;
+  website: string | null;
+  instagram: string | null;
+  tiktok: string | null;
+  city: string | null;
+  country: string | null;
+  business_type: string | null;
 }
 
 /**
  * Normaliza un número de teléfono para evitar duplicados
- * - Elimina el + inicial
- * - Elimina ceros iniciales
  */
 function normalizePhone(phone: string): string {
   return phone.replace(/^\+/, '').replace(/^0+/, '').trim();
@@ -35,28 +46,23 @@ function normalizePhone(phone: string): string {
 
 /**
  * Guarda o actualiza un lead de Rebecca en la tabla leads de Supabase.
- * Si el lead existe (por phone normalizado), actualiza los campos nuevos.
+ * Si el lead existe (por phone normalizado), actualiza campos nuevos.
  * Si no existe, lo crea.
- * 
- * IMPORTANTE: Solo se debe llamar en el PRIMER mensaje del lead.
- * Los mensajes siguientes NO deben crear leads nuevos.
  */
 export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ success: boolean; leadId?: string; error?: string }> {
   try {
-    const { phone, name, email, source, stage, conversation_summary, last_message } = data;
+    const { phone, name, email, source, stage, last_message, website, instagram, tiktok, city, country, business_type } = data;
 
-    // Normalizar phone para evitar duplicados (+57 vs 57)
     const normalizedPhone = normalizePhone(phone);
 
-    // 1. Buscar lead existente por phone normalizado
+    // Buscar lead existente
     const { data: existingLead, error: findError } = await supabaseAdmin
       .from('leads')
-      .select('id, phone, name, email, source, status, bot_status, internal_notes, updated_at')
+      .select('*')
       .eq('phone', normalizedPhone)
       .single();
 
     if (findError && findError.code !== 'PGRST116') {
-      // PGRST116 = no rows found, otros errores sí importan
       console.error('[RebeccaLead] Error buscando lead:', findError);
       return { success: false, error: findError.message };
     }
@@ -64,26 +70,33 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
     const now = new Date().toISOString();
 
     if (existingLead) {
-      // 2. LEAD EXISTE → NO hacer nada, ya fue creado en el primer mensaje
-      // Solo agregar nota si hay mensaje nuevo
+      // LEAD EXISTE → actualizar solo campos vacíos
+      const updates: Partial<StoredLead> = { updated_at: now };
+
+      if (website && !existingLead.website) updates.website = website;
+      if (instagram && !existingLead.instagram) updates.instagram = instagram;
+      if (tiktok && !existingLead.tiktok) updates.tiktok = tiktok;
+      if (city && !existingLead.city) updates.city = city;
+      if (country && !existingLead.country) updates.country = country;
+      if (business_type && !existingLead.business_type) updates.business_type = business_type;
+      if (name && !existingLead.name) updates.name = name;
+      if (email && !existingLead.email) updates.email = email;
+
       if (last_message) {
         const existingNotes = existingLead.internal_notes || '';
-        // Evitar duplicar la última nota (check básico)
         if (!existingNotes.includes(last_message.substring(0, 50))) {
-          const newNote = `[${now}] Lead: ${last_message}\n`;
-          await supabaseAdmin
-            .from('leads')
-            .update({
-              internal_notes: existingNotes + newNote,
-              updated_at: now,
-            })
-            .eq('id', existingLead.id);
+          updates.internal_notes = existingNotes + `[${now}] Lead: ${last_message}\n`;
         }
       }
+
+      if (Object.keys(updates).length > 1) {
+        await supabaseAdmin.from('leads').update(updates).eq('id', existingLead.id);
+      }
+
       return { success: true, leadId: existingLead.id };
 
     } else {
-      // 3. LEAD NUEVO → crear
+      // LEAD NUEVO → crear
       const { data: newLead, error: insertError } = await supabaseAdmin
         .from('leads')
         .insert({
@@ -93,7 +106,12 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
           source,
           status: stage || 'new',
           bot_status: stage || 'new',
-          country: 'CO', // Por defecto Colombia (Lookitry primary market)
+          country: country || 'CO',
+          city: city || null,
+          website: website || null,
+          instagram: instagram || null,
+          tiktok: tiktok || null,
+          business_type: business_type || null,
           internal_notes: last_message ? `[${now}] Lead: ${last_message}\n` : null,
           created_at: now,
           updated_at: now,
@@ -117,8 +135,7 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
 }
 
 /**
- * Agrega una nota a la conversación del lead (para mensajes posteriores)
- * Solo usar para leads que YA EXISTEN
+ * Agrega una nota a la conversación del lead
  */
 export async function appendLeadNote(phone: string, note: string): Promise<boolean> {
   try {
@@ -133,17 +150,13 @@ export async function appendLeadNote(phone: string, note: string): Promise<boole
 
     const now = new Date().toISOString();
     const existingNotes = lead.internal_notes || '';
-    // Evitar duplicar notas similares (check básico)
     if (existingNotes.includes(note.substring(0, 50))) return true;
     
     const newNote = `[${now}] ${note}\n`;
 
     const { error } = await supabaseAdmin
       .from('leads')
-      .update({
-        internal_notes: existingNotes + newNote,
-        updated_at: now,
-      })
+      .update({ internal_notes: existingNotes + newNote, updated_at: now })
       .eq('phone', normalized);
 
     if (error) {
@@ -159,7 +172,7 @@ export async function appendLeadNote(phone: string, note: string): Promise<boole
 }
 
 /**
- * Verifica si un lead existe (para saber si es el primer mensaje)
+ * Verifica si un lead existe
  */
 export async function leadExists(phone: string): Promise<boolean> {
   try {
@@ -176,28 +189,20 @@ export async function leadExists(phone: string): Promise<boolean> {
 }
 
 /**
- * Actualiza el stage del lead (para seguimiento del flujo)
+ * Actualiza el stage del lead
  */
-export async function updateLeadStage(
-  phone: string,
-  stage: RebeccaLeadData['stage']
-): Promise<boolean> {
+export async function updateLeadStage(phone: string, stage: RebeccaLeadData['stage']): Promise<boolean> {
   try {
     const normalized = normalizePhone(phone);
     const { error } = await supabaseAdmin
       .from('leads')
-      .update({
-        status: stage,
-        bot_status: stage,
-        updated_at: new Date().toISOString(),
-      })
+      .update({ status: stage, bot_status: stage, updated_at: new Date().toISOString() })
       .eq('phone', normalized);
 
     if (error) {
       console.error('[RebeccaLead] Error actualizando stage:', error);
       return false;
     }
-
     return true;
   } catch (err) {
     console.error('[RebeccaLead] Error actualizando stage:', err);
@@ -206,7 +211,7 @@ export async function updateLeadStage(
 }
 
 /**
- * Obtiene datos del lead por phone (para contexto de conversación)
+ * Obtiene datos del lead por phone
  */
 export async function getLeadByPhone(phone: string): Promise<StoredLead | null> {
   try {
@@ -216,7 +221,6 @@ export async function getLeadByPhone(phone: string): Promise<StoredLead | null> 
       .select('*')
       .eq('phone', normalized)
       .single();
-
     if (error) return null;
     return data;
   } catch {
@@ -226,7 +230,6 @@ export async function getLeadByPhone(phone: string): Promise<StoredLead | null> 
 
 /**
  * Actualiza datos de contacto del lead (nombre, email)
- * Llama este endpoint cuando Rebecca captura estos datos
  */
 export async function updateLeadContactInfo(
   phone: string,
@@ -240,10 +243,7 @@ export async function updateLeadContactInfo(
       return { success: false, error: 'No hay datos para actualizar' };
     }
 
-    const updates: Partial<StoredLead> = {
-      updated_at: new Date().toISOString(),
-    };
-
+    const updates: Partial<StoredLead> = { updated_at: new Date().toISOString() };
     if (name) updates.name = name;
     if (email) updates.email = email;
 
@@ -266,20 +266,71 @@ export async function updateLeadContactInfo(
 }
 
 /**
- * Obtiene contexto del lead para enviarlo a Rebecca
- * Incluye nombre y email si existen
+ * Actualiza perfil completo del lead (website, instagram, tiktok, ciudad, país)
+ */
+export async function updateLeadProfile(
+  phone: string,
+  profileData: {
+    website?: string;
+    instagram?: string;
+    tiktok?: string;
+    city?: string;
+    country?: string;
+    business_type?: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const normalized = normalizePhone(phone);
+    const updates: Partial<StoredLead> = { updated_at: new Date().toISOString() };
+
+    if (profileData.website) updates.website = profileData.website;
+    if (profileData.instagram) updates.instagram = profileData.instagram;
+    if (profileData.tiktok) updates.tiktok = profileData.tiktok;
+    if (profileData.city) updates.city = profileData.city;
+    if (profileData.country) updates.country = profileData.country;
+    if (profileData.business_type) updates.business_type = profileData.business_type;
+
+    if (Object.keys(updates).length === 1) {
+      return { success: false, error: 'No hay datos para actualizar' };
+    }
+
+    const { error } = await supabaseAdmin
+      .from('leads')
+      .update(updates)
+      .eq('phone', normalized);
+
+    if (error) {
+      console.error('[RebeccaLead] Error actualizando perfil:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('[RebeccaLead] Error actualizando perfil:', err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+
+/**
+ * Obtiene contexto del lead para Rebecca
  */
 export async function getLeadContextForRebecca(phone: string): Promise<{
   exists: boolean;
   name?: string;
   email?: string;
   stage?: string;
+  website?: string;
+  instagram?: string;
+  tiktok?: string;
+  city?: string;
+  country?: string;
+  business_type?: string;
 }> {
   try {
     const normalized = normalizePhone(phone);
     const { data, error } = await supabaseAdmin
       .from('leads')
-      .select('name, email, status, bot_status')
+      .select('name, email, status, bot_status, website, instagram, tiktok, city, country, business_type')
       .eq('phone', normalized)
       .single();
 
@@ -292,6 +343,12 @@ export async function getLeadContextForRebecca(phone: string): Promise<{
       name: data.name || undefined,
       email: data.email || undefined,
       stage: data.bot_status || data.status || undefined,
+      website: data.website || undefined,
+      instagram: data.instagram || undefined,
+      tiktok: data.tiktok || undefined,
+      city: data.city || undefined,
+      country: data.country || undefined,
+      business_type: data.business_type || undefined,
     };
   } catch {
     return { exists: false };

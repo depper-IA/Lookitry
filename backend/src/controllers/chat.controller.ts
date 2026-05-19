@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { rebeccaChatService } from '../services/rebecca-chat.service';
 import { rebeccaIdentityService } from '../services/rebecca-identity.service';
-import { upsertRebeccaLead, appendLeadNote, updateLeadContactInfo, getLeadContextForRebecca, updateLeadStage } from '../services/rebecca-lead.service';
+import { upsertRebeccaLead, appendLeadNote, updateLeadContactInfo, getLeadContextForRebecca, updateLeadStage, updateLeadProfile } from '../services/rebecca-lead.service';
 import type { LeadSource } from '../services/rebecca-lead.service';
 
 const WHATSAPP_HISTORY_TTL = 86400 * 7; // 7 días — memoria de conversación extendida
@@ -454,7 +454,7 @@ export const updateLeadContact = async (req: Request, res: Response) => {
 
 /**
  * GET /api/chat/lead/:phone
- * Obtiene el contexto del lead para Rebecca (nombre, email, stage)
+ * Obtiene el contexto del lead para Rebecca (nombre, email, stage, perfil)
  */
 export const getLeadContext = async (req: Request, res: Response) => {
   try {
@@ -469,6 +469,55 @@ export const getLeadContext = async (req: Request, res: Response) => {
     return res.status(200).json(context);
   } catch (error: any) {
     console.error('[Chat] getLeadContext:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * POST /api/chat/lead/profile
+ * Actualiza el perfil del lead (website, instagram, tiktok, ciudad, país)
+ */
+export const updateLeadProfileEndpoint = async (req: Request, res: Response) => {
+  try {
+    const { phone, website, instagram, tiktok, city, country, business_type } = req.body as {
+      phone?: unknown;
+      website?: unknown;
+      instagram?: unknown;
+      tiktok?: unknown;
+      city?: unknown;
+      country?: unknown;
+      business_type?: unknown;
+    };
+
+    if (typeof phone !== 'string' || !phone.trim()) {
+      return res.status(400).json({ error: 'phone required' });
+    }
+
+    const profileData: {
+      website?: string;
+      instagram?: string;
+      tiktok?: string;
+      city?: string;
+      country?: string;
+      business_type?: string;
+    } = {};
+
+    if (typeof website === 'string' && website.trim()) profileData.website = website.trim();
+    if (typeof instagram === 'string' && instagram.trim()) profileData.instagram = instagram.trim();
+    if (typeof tiktok === 'string' && tiktok.trim()) profileData.tiktok = tiktok.trim();
+    if (typeof city === 'string' && city.trim()) profileData.city = city.trim();
+    if (typeof country === 'string' && country.trim()) profileData.country = country.trim();
+    if (typeof business_type === 'string' && business_type.trim()) profileData.business_type = business_type.trim();
+
+    const result = await updateLeadProfile(phone.trim(), profileData);
+
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (error: any) {
+    console.error('[Chat] updateLeadProfile:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
