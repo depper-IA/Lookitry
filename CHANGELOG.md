@@ -1,5 +1,86 @@
 # CHANGELOG — Lookitry
 
+## 18 de Mayo 2026 — GitHub Profile & Repos Públicos
+
+### Descripción
+Gestión del perfil público de GitHub de Sam Wilkie (depper-IA) para uso como hoja de vida técnica.
+
+### Cambios Realizados
+
+| Acción | Detalle |
+|--------|---------|
+| Token GitHub guardado | `GITHUB_TOKEN` agregado a `.env.opencode` |
+| 8 showcases de clientes → público | `precisionwrapz-showcase`, `lwlanguageschool-showcase`, `duquestours-showcase`, `lifekombucha-showcase`, `carrusel-showcase`, `caribesupermercados-showcase`, `lamariana-showcase`, `lamontana-agromercados-showcase` |
+| Repo de perfil creado | `depper-IA/depper-IA` con README completo (stack, proyectos, cliente work, stats) |
+
+### Archivos Modificados
+- `.env.opencode` — agregado `GITHUB_TOKEN`
+
+### Motivo
+Preparar el perfil de GitHub como hoja de vida técnica pública para Sam Wilkie.
+
+---
+
+## 17 de Mayo 2026 — Rebecca 2.0: Ventas Inteligentes
+
+### Descripción
+Sistema de ventas proactivo para Rebecca: aprende de conversaciones exitosas, comparte enlaces contextuales, respuestas cortas controladas, y recordatorios de checkout abandonado.
+
+### Arquitectura Implementada
+
+**Fase 1: Backend + DB**
+
+| Archivo | Descripción |
+|---------|-------------|
+| `backend/src/migrations/20260517_rebecca_v2_sales_patterns.sql` | Tabla `sales_patterns`, view `successful_sales_patterns`, índices |
+| `backend/src/services/rebecca-chat.service.ts` | `detectIntent()`, `buildContextualLinks()`, `truncateToLimit()`, maxTokens por canal |
+| `backend/src/services/rebecca-identity.service.ts` | `getSystemPrompt()` con `contextualLinks` y `isDemoPage` dinámicos |
+| `backend/src/scheduler/sales-patterns-analyzer.ts` | Cron domingo 2am — analiza patrones exitosos → upsert a `lookitry_knowledge` |
+| `backend/src/scheduler/reminder-processor.ts` | Cron cada hora — procesa recordatorios pendientes |
+
+**Fase 2: Frontend**
+
+| Archivo | Descripción |
+|---------|-------------|
+| `frontend/src/components/chat-widget/chat-widget.types.ts` | Tipado `ChatContext`, `WidgetRequest` |
+| `frontend/src/components/chat-widget/hooks/useChatSend.ts` | `getPageContext()` con `window.location` |
+| `frontend/src/lib/rebecca-tracking.ts` | Helper `getRebeccaSessionId()`, `trackPageEvent()` |
+| `frontend/src/app/checkout/page.tsx` | Tracking `checkout_start` al montar |
+| `frontend/src/app/pago-exitoso/page.tsx` | Tracking `checkout_complete` tras pago exitoso |
+| `backend/src/routes/chat.routes.ts` | Nueva ruta `POST /api/chat/track-page` |
+
+### Features Implementadas
+
+1. **Detección de intención** — `pricing_question`, `checkout_intent`, `demo_request`, `objection`, `greeting`, `info_request`
+2. **Enlaces contextuales** — Plans, checkout, demo, FAQ — compartidos según intención detectada
+3. **Respuestas cortas** — `maxOutputTokens: 50` (WhatsApp) / `150` (Web) + truncate inteligente
+4. **Aprendizaje automático** — Tabla `sales_patterns`, análisis semanal de patrones exitosos
+5. **Recordatorios** — Redis tracking: checkout abandonado (48h), visita a planes sin compra (24h)
+6. **Contexto de página** — Widget captura `page_url`, `page_title`, `source` ('demo' | 'widget')
+
+### Detección de Intención
+```typescript
+type lead_intent = 'pricing_question' | 'checkout_intent' | 'demo_request' | 'objection' | 'greeting' | 'info_request' | 'unknown';
+```
+
+### Cron Jobs
+| Job | Schedule | Función |
+|-----|----------|---------|
+| `sales-patterns-analyzer` | `0 2 * * 0` (domingo 2am) | Analiza patrones → `lookitry_knowledge.ventas_exitosas` |
+| `reminder-processor` | `0 * * * *` (cada hora) | Procesa `queue:pending_reminders` |
+
+### Enlaces Compartidos
+| Intención | Enlace |
+|-----------|--------|
+| `pricing_question` | `lookitry.com/plans` |
+| `checkout_intent` | `lookitry.com/checkout/{brand_slug}` |
+| `demo_request` | `lookitry.com/demo` |
+| `objection` | `lookitry.com/plans#faq` |
+
+### Commits
+- `feat(rebecca): implement sales patterns and context API (Phase 1)`
+- `feat(rebecca): add widget context tracking and checkout abandoned detection`
+
 ## 1 de Mayo 2026 — AI Product Descriptor Polymórfico
 
 ### Descripción
@@ -1390,3 +1471,21 @@ Todas las páginas ahora leen precios desde `pricing_config` en Supabase via `ge
 - La API de sesiones de OpenClaw no expone endpoint REST público (solo UI web)
 - Sistema operando con MOCK_AGENTS hasta que se configure acceso real a sesiones
 - Si se necesita integración real con sesiones, requiere modificar OpenClaw Gateway
+
+## 15 de Mayo 2026 � Propuesta Redise�o Landing Page Conversi�n Premium
+
+### Descripci�n
+Creaci�n de propuesta SDD (.sdd/proposals/premium-conversion-landing-redesign.md) para redise�ar la landing page.
+
+### Cambios
+- Humanizaci�n del lenguaje (Business benefits sobre t�rminos t�cnicos).
+- Clarificaci�n de flujo "Pay-to-Enter".
+- Adici�n de secci�n "3 Simple Steps".
+- Inclusi�n de casos de uso social (Instagram Bio, WhatsApp).
+- Garant�a de instalaci�n/soporte.
+
+### Archivos
+- .sdd/proposals/premium-conversion-landing-redesign.md
+
+### Motivo
+Mejorar la conversi�n de usuarios no t�cnicos eliminando fricci�n terminol�gica y clarificando el proceso de pago.

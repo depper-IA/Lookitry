@@ -130,11 +130,7 @@ export const blogSettingsController = {
 
         ...data,
 
-        openrouter_article_model: data?.openrouter_article_model || 'google/gemini-2.5-flash',
-
-        openrouter_image_model: data?.openrouter_image_model || 'openai/dall-e-3',
-
-        image_generation_provider: data?.image_generation_provider || 'replicate',
+        image_generation_provider: data?.image_generation_provider || 'vertex',
 
         image_generator_webhook: data?.image_generator_webhook || null,
 
@@ -180,7 +176,7 @@ export const blogSettingsController = {
 
     try {
 
-      const { frequency, is_enabled, webhook_url, webhook_secret, openrouter_article_model, openrouter_image_model, image_generation_provider, image_generator_webhook } = req.body;
+      const { frequency, is_enabled, webhook_url, webhook_secret, image_generation_provider, image_generator_webhook } = req.body;
 
 
 
@@ -220,10 +216,6 @@ export const blogSettingsController = {
 
       if (webhook_secret !== undefined) updates.webhook_secret = webhook_secret;
 
-      if (openrouter_article_model !== undefined) updates.openrouter_article_model = openrouter_article_model;
-
-      if (openrouter_image_model !== undefined) updates.openrouter_image_model = openrouter_image_model;
-
       if (image_generation_provider !== undefined) updates.image_generation_provider = image_generation_provider;
 
       if (image_generator_webhook !== undefined) updates.image_generator_webhook = image_generator_webhook;
@@ -256,11 +248,7 @@ export const blogSettingsController = {
 
           ...data,
 
-          openrouter_article_model: data?.openrouter_article_model || 'google/gemini-2.5-flash',
-
-          openrouter_image_model: data?.openrouter_image_model || 'openai/dall-e-3',
-
-          image_generation_provider: data?.image_generation_provider || 'replicate',
+          image_generation_provider: data?.image_generation_provider || 'vertex',
 
           webhook_secret: undefined,
 
@@ -348,11 +336,9 @@ export const blogSettingsController = {
 
         const triggerResult = await triggerBlogWebhook(url, secret, 'admin_manual', {
 
-          openrouter_model: settings.openrouter_article_model || 'google/gemini-2.5-flash',
+          article_model: 'google/gemini-2.5-flash',
 
-          openrouter_image_model: settings.openrouter_image_model || 'openai/dall-e-3',
-
-          image_provider: settings.image_generation_provider || 'replicate',
+          image_provider: settings.image_generation_provider || 'vertex',
 
         });
 

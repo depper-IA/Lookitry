@@ -12,15 +12,33 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
 export const metadata = {
   title: 'Lookitry — Probador Virtual con IA para tu Tienda de Ropa',
-  description: 'Activa el probador virtual con inteligencia artificial en tu tienda en 10 minutos. Sin apps, sin desarrollo. Para marcas que venden por Instagram o WhatsApp.',
+  description: 'Probador virtual con IA para tiendas de ropa. Tus clientes prueban la ropa antes de comprar: menos devoluciones, más ventas. Sin apps, sin código. Activa en 10 minutos.',
+  keywords: [
+    'probador virtual IA',
+    'probador virtual tienda ropa',
+    'como vender ropa por whatsapp',
+    'tienda virtual ropa instagram',
+    'probador virtual sin app',
+    'reducir devoluciones tienda online',
+    'virtual try-on Colombia',
+    'virtual try-on México',
+    'probador virtual gratis',
+    'IA para tienda de ropa',
+    'probador ropa inteligencia artificial',
+    'tienda virtual ropa sin web',
+    'link bio instagram tienda ropa',
+    'virtual try-on latam',
+    'probador ropa online sin descargar',
+  ],
   alternates: { canonical: BASE_URL },
   openGraph: {
-    title: 'Lookitry — Probador Virtual con IA',
-    description: 'Tu tienda online profesional con probador virtual IA integrado, sin pagar un diseñador ni saber de código.',
+    title: 'Lookitry — Probador Virtual con IA para tu Tienda de Ropa',
+    description: 'Tus clientes se prueban la ropa antes de comprar. Menos devoluciones, más ventas. Sin apps, sin código. Activa en 10 minutos.',
     url: BASE_URL,
     siteName: 'Lookitry',
     locale: 'es_CO',
     type: 'website',
+    images: [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630, alt: 'Lookitry — Probador Virtual con IA para tiendas de ropa en Latinoamérica' }],
   },
 };
 
@@ -131,6 +149,62 @@ export default async function HomePage() {
             priceValidUntil: '2027-12-31',
             availability: 'https://schema.org/InStock',
             url: `${BASE_URL}/planes`,
+          },
+        ],
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': `${BASE_URL}/#faq`,
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: '¿Cómo funciona el probador virtual?',
+            acceptedAnswer: { '@type': 'Answer', text: 'El cliente sube una foto suya (selfie o foto de cuerpo completo), selecciona el producto que quiere probar y la IA genera en segundos una imagen realista mostrando cómo le quedaría la prenda o accesorio.' },
+          },
+          {
+            '@type': 'Question',
+            name: '¿Mis clientes necesitan crear una cuenta para usar el probador?',
+            acceptedAnswer: { '@type': 'Answer', text: 'No. El probador es completamente público. Tus clientes solo necesitan subir una foto y elegir el producto. Sin registro, sin apps, sin fricción.' },
+          },
+          {
+            '@type': 'Question',
+            name: '¿Cómo integro el probador en mi tienda o web?',
+            acceptedAnswer: { '@type': 'Answer', text: 'Tienes dos opciones: usar tu propia Tienda Virtual de Lookitry (sin código) o conectar el probador directamente en tu sitio web. Funciona en Shopify, WordPress, Wix, etc.' },
+          },
+          {
+            '@type': 'Question',
+            name: '¿Las fotos de mis clientes se almacenan?',
+            acceptedAnswer: { '@type': 'Answer', text: 'Las selfies se procesan de forma temporal y se eliminan automáticamente después de generar el resultado. No almacenamos imágenes de los clientes permanentemente.' },
+          },
+          {
+            '@type': 'Question',
+            name: '¿Necesito saber programar para usar Lookitry?',
+            acceptedAnswer: { '@type': 'Answer', text: 'No. Todo se configura con formularios simples. No necesitas tocar código ni contratar desarrolladores.' },
+          },
+          {
+            '@type': 'Question',
+            name: '¿Tienen plugin para WooCommerce?',
+            acceptedAnswer: { '@type': 'Answer', text: 'Sí, contamos con un plugin oficial para WordPress/WooCommerce que permite integrar el probador en minutos sin tocar código.' },
+          },
+          {
+            '@type': 'Question',
+            name: '¿Puedo cancelar en cualquier momento?',
+            acceptedAnswer: { '@type': 'Answer', text: 'Sí. No hay contratos de permanencia. Puedes cancelar tu suscripción cuando quieras desde tu dashboard.' },
+          },
+          {
+            '@type': 'Question',
+            name: '¿Cuántas generaciones incluye cada plan?',
+            acceptedAnswer: { '@type': 'Answer', text: 'El Plan Básico incluye 400 generaciones por mes. El Plan Pro incluye 1.200 generaciones por mes. El contador se reinicia el primer día de cada mes.' },
+          },
+          {
+            '@type': 'Question',
+            name: '¿Qué métodos de pago aceptan?',
+            acceptedAnswer: { '@type': 'Answer', text: 'Aceptamos pagos a través de Wompi (Visa, Mastercard, PSE y Nequi) y PayPal para pagos en USD.' },
+          },
+          {
+            '@type': 'Question',
+            name: '¿Funciona en Shopify o Wix?',
+            acceptedAnswer: { '@type': 'Answer', text: 'Sí. Puedes conectar el probador copiando y pegando el código en la sección de descripción o liquid de cualquier plataforma.' },
           },
         ],
       },

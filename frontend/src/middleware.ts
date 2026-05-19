@@ -7,9 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
 
-  const isProtectedRoute = 
-    request.nextUrl.pathname.startsWith('/dashboard') || 
-    request.nextUrl.pathname.startsWith('/admin');
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard');
 
   if (isProtectedRoute) {
     if (!token) {
@@ -21,7 +19,6 @@ export async function middleware(request: NextRequest) {
       await jwtVerify(token, secret);
       return NextResponse.next();
     } catch (error) {
-      // Invalid or expired token
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
@@ -30,5 +27,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/admin/:path*'],
+  matcher: ['/dashboard/:path*'],
 };

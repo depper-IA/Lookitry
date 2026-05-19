@@ -23,6 +23,10 @@ export interface AuthRequest extends Request {
 
     plan?: string;
 
+    name?: string;
+
+    brand_description?: string | null;
+
   };
 
 }
@@ -133,6 +137,10 @@ if (!payload.brandId) {
       slug: (brand as any).slug,
 
       plan: (brand as any).plan,
+
+      name: (brand as any).name,
+
+      brand_description: (brand as any).brand_description ?? null,
 
     };
 

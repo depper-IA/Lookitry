@@ -1,80 +1,64 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Home, Sparkles, Mail, User, LogIn } from 'lucide-react';
 import { usePublicSession } from '@/hooks/usePublicSession';
 
 export function MobileBottomNav({ pathname }: { pathname: string }) {
   const { isLoggedIn } = usePublicSession();
-  const itemClass =
-    'flex flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-2 text-center transition-all duration-200 min-w-0';
-  const labelClass =
-    'text-[8px] leading-[1.05] font-semibold uppercase tracking-[0.08em] text-center break-words';
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
 
-  const getIcon = () => {
-    if (isLoggedIn) return <User size={20} />;
-    return <LogIn size={20} />;
-  };
-
-  const getLabel = () => isLoggedIn ? 'Mi Panel' : 'Ingresar';
-  const getHref = () => isLoggedIn ? '/dashboard' : '/login';
+  const Item = ({
+    href,
+    icon,
+    label,
+    active,
+  }: {
+    href: string;
+    icon: React.ReactNode;
+    label: string;
+    active: boolean;
+  }) => (
+    <Link
+      href={href}
+      aria-current={active ? 'page' : undefined}
+      className="flex flex-1 flex-col items-center justify-center gap-[5px] py-2 transition-all duration-150 active:opacity-60"
+    >
+      <span className={`transition-colors duration-150 ${active ? 'text-[#FF5C3A]' : 'text-black/30 dark:text-white/25'}`}>
+        {icon}
+      </span>
+      <span className={`text-[9.5px] font-semibold leading-none tracking-wide transition-colors duration-150 ${
+        active ? 'text-[#FF5C3A]' : 'text-black/30 dark:text-white/25'
+      }`}>
+        {label}
+      </span>
+      {active && (
+        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-5 rounded-full bg-[#FF5C3A]" />
+      )}
+    </Link>
+  );
 
   return (
     <nav
       role="navigation"
       aria-label="Navegación principal"
-      className="fixed bottom-0 left-0 right-0 z-40 px-2 pt-2 md:hidden"
-      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+      className="fixed bottom-0 left-0 right-0 z-40 md:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="mx-auto max-w-sm">
-        <div className="flex items-center justify-center gap-0.5 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-dark px-1.5 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
-          <Link
-            href="/"
-            aria-current={isActive('/') ? 'page' : undefined}
-            className={`${itemClass} ${
-              isActive('/') ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
-            }`}
-          >
-            <Home size={20} />
-            <span className={labelClass}>Inicio</span>
-          </Link>
-
-          <Link
-            href="/#hero"
-            aria-current={isActive('/') ? 'page' : undefined}
-            className={`${itemClass} ${
-              isActive('/') ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
-            }`}
-          >
-            <Sparkles size={20} />
-            <span className={labelClass}>Probar</span>
-          </Link>
-
-          <Link
-            href="/contacto"
-            aria-current={isActive('/contacto') ? 'page' : undefined}
-            className={`${itemClass} ${
-              isActive('/contacto') ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
-            }`}
-          >
-            <Mail size={20} />
-            <span className={labelClass}>Contacto</span>
-          </Link>
-
-          <Link
-            href={getHref()}
-            className={`${itemClass} ${isActive(getHref()) ? 'bg-accent/15 text-accent' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'}`}
-          >
-            {getIcon()}
-            <span className={labelClass}>{getLabel()}</span>
-          </Link>
-        </div>
+      <div className="relative flex items-stretch border-t border-black/[0.06] dark:border-white/[0.06] bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+        <Item href="/" icon={<Home size={22} />} label="Inicio" active={isActive('/')} />
+        <Item href="/demo" icon={<Sparkles size={22} />} label="Probar" active={isActive('/demo')} />
+        <Item href="/contacto" icon={<Mail size={22} />} label="Contacto" active={isActive('/contacto')} />
+        <Item
+          href={isLoggedIn ? '/dashboard' : '/login'}
+          icon={isLoggedIn ? <User size={22} /> : <LogIn size={22} />}
+          label={isLoggedIn ? 'Mi Panel' : 'Ingresar'}
+          active={isActive(isLoggedIn ? '/dashboard' : '/login')}
+        />
       </div>
     </nav>
   );

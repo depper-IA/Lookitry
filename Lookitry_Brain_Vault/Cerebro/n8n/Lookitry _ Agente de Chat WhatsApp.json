@@ -1,0 +1,1310 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Search Leads DB').item.json.Conversación || $('Append row in sheet').item.json.Conversación }}\nUSUARIO: {{ $('USER MESSAGE').item.json.whole_message }}\nASISTENTE: {{ $('AI Agent1').item.json.output }}",
+        "options": {
+          "systemMessage": "## ROL\nEres un clasificador de leads para Lookitry. Lees la conversación completa entre un lead y un asistente, y asignas exactamente una etiqueta según el estado actual del lead.\n\n---\n\n## ETIQUETAS Y ESTADOS\n\n| Etiqueta | Estado del bot |\n|---|---|\n| NUEVO_LEAD | activo |\n| EN_CONSULTA | activo |\n| INTERESADO | activo |\n| DEMO_AGENDADA | activo |\n| CLIENTE | activo |\n| DESCALIFICADO | inactivo |\n| DESCONOCIDO | activo |\n\n---\n\n## DEFINICIONES\n\n**NUEVO_LEAD**\nEl lead acaba de escribir su primer mensaje. La conversación no tiene respuestas previas del asistente o del lead más allá de ese primer contacto. Aplica únicamente en ese momento inicial.\n\n**EN_CONSULTA**\nEl lead está interactuando con el asistente y explorando la plataforma. Está haciendo preguntas generales sobre Lookitry pero aún no ha mostrado intención clara de compra.\n\n**INTERESADO**\nEl lead ha mostrado interés claro en los productos o servicios de Lookitry y está evaluando opciones activamente.\n\n**DEMO_AGENDADA**\nSe confirmó explícitamente una fecha y hora para una demo o llamada de evaluación. Se mantiene como DEMO_AGENDADA aunque el lead siga escribiendo después de haber confirmado.\n\n**CLIENTE**\nEl lead ha confirmado la compra o activación de un plan de Lookitry.\n\n**DESCALIFICADO**\nAplica SOLO en uno de estos dos casos:\n1. El lead confirma explícitamente que no es el perfil de cliente de Lookitry.\n2. El lead dice explícitamente que no quiere el producto ni recibir más información.\nEn cualquier otro caso, no uses esta etiqueta.\n\n**DESCONOCIDO**\nLa conversación existe pero no hay suficiente información para asignar ninguna de las etiquetas anteriores con certeza. Ante la duda, usa siempre DESCONOCIDO en lugar de forzar una etiqueta incorrecta.\n\n---\n\n## REGLAS DE CLASIFICACIÓN\n\n- Lee la conversación completa antes de decidir.\n- Clasifica según el estado MÁS RECIENTE del lead, no según mensajes anteriores.\n- Si el lead ya estaba en DEMO_AGENDADA y sigue escribiendo, mantén DEMO_AGENDADA.\n- Si el lead ya estaba DESCALIFICADO, mantén DESCALIFICADO aunque luego parezca interesado — esa decisión la toma un humano.\n- Nunca uses DESCALIFICADO por falta de respuesta, duda, silencio, o falta de información.\n- Ante ambigüedad, usa DESCONOCIDO.\n\n---\n\n## FORMATO DE SALIDA\n\nResponde ÚNICAMENTE con este objeto JSON. Sin explicaciones, sin texto adicional, sin bloques de código markdown.\n\n{\n  \"etiqueta\": \"ETIQUETA_ELEGIDA\",\n  \"estado\": \"activo | inactivo\"\n}\n\nEjemplo válido:\n\n{\n  \"etiqueta\": \"EN_CONSULTA\",\n  \"estado\": \"activo\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        14864,
+        8592
+      ],
+      "id": "3a702627-0f24-400c-ad4e-b1effebea88f",
+      "name": "LEAD CLASSIFIER5"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "leads",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {}
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldValue": "={{ $json.bot_status }}"
+            },
+            {
+              "fieldValue": "={{ $json.lead_status }}"
+            },
+            {
+              "fieldValue": "={{ $('Q&A CLASSIFIER1').item.json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        15392,
+        8592
+      ],
+      "id": "8d16ccc1-67ec-4bdb-8ac4-296b4601a0fc",
+      "name": "Update lead_conversation4",
+      "credentials": {
+        "supabaseApi": {
+          "id": "FRE0anooe2qI1LJP",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawOutput = $json.output;\n\n// Aseguramos que sea string\nrawOutput = String(rawOutput).trim();\n\n// Eliminamos bloques tipo ```json ... ```\nrawOutput = rawOutput\n  .replace(/```(json)?/gi, \"\") // elimina ```json o ``` \n  .replace(/```/g, \"\")         // elimina ``` finales\n  .trim();\n\n// Eliminamos caracteres de escape (\\n, \\t, etc.)\nrawOutput = rawOutput\n  .replace(/\\\\n/g, \"\")\n  .replace(/\\\\t/g, \"\")\n  .replace(/\\r/g, \"\")\n  .trim();\n\n// A veces vienen comillas escapadas dentro del texto; las corregimos si es necesario\nif (rawOutput.startsWith('\"') && rawOutput.endsWith('\"')) {\n  rawOutput = rawOutput.slice(1, -1);\n}\n\n// Mapa de etiquetas legacy a etiquetas Lookitry (por si el modelo devuelve etiquetas viejas)\nconst labelMap = {\n  'NUEVO LEAD': 'NUEVO_LEAD',\n  'EN PROCESO': 'EN_CONSULTA',\n  'DOCUMENTOS COMPLETOS': 'INTERESADO',\n  'EN ESTUDIO': 'INTERESADO',\n  'LLAMADA AGENDADA': 'DEMO_AGENDADA',\n  'DESCALIFICADO': 'DESCALIFICADO',\n  'DESCONOCIDO': 'DESCONOCIDO',\n  'NUEVO_LEAD': 'NUEVO_LEAD',\n  'EN_CONSULTA': 'EN_CONSULTA',\n  'INTERESADO': 'INTERESADO',\n  'DEMO_AGENDADA': 'DEMO_AGENDADA',\n  'CLIENTE': 'CLIENTE'\n};\n\n// Intentamos parsear\nlet parsed;\ntry {\n  parsed = JSON.parse(rawOutput);\n\n  const etiqueta = parsed.etiqueta?.trim() ?? 'DESCONOCIDO';\n  const etiquetaNormalizada = labelMap[etiqueta] ?? 'DESCONOCIDO';\n\n  return {\n    lead_status: etiquetaNormalizada,\n    bot_status: parsed.estado ?? 'activo'\n  };\n\n} catch (error) {\n  throw new Error(\"Error al parsear el JSON: \" + error.message + \"\\nContenido limpio: \" + rawOutput);\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        15200,
+        8592
+      ],
+      "id": "e5a9f507-fcf1-463e-ad8a-220b5712d7f2",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Conversación }}\nUSUARIO: {{ $('USER MESSAGE').item.json.whole_message }}\nASISTENTE: {{ $('AI Agent1').item.json.output }}",
+        "options": {
+          "systemMessage": "ROL\n Eres un analista de atención al cliente. Debes leer una conversación y extraer únicamente las dudas/preguntas formuladas por el usuario (lead).\nREGLAS ESTRICTAS\nFiltrado por rol: solo considera mensajes del lead. Ignora por completo cualquier línea cuyo hablante sea ASISTENTE.\n\n\nDefinición operativa de \"pregunta del lead\":\n\n\nDebe estar en un mensaje del lead y contener signo(s) de interrogación ?, o empezar con un interrogativo (qué, cómo, cuándo, dónde, cuánto, por qué, cuál, quién, etc.) con clara intención de consulta.\n\n\nNo transformes afirmaciones, deseos o respuestas \"sí/no\" del lead en preguntas.\n\n\nNo infieras dudas implícitas. Si el lead no preguntó, no listes nada.\n\n\nReescritura: no copies literal; reformula cada duda del lead en una pregunta clara y específica en español neutro.\n\n\nEj.: \"¿me van a ayudar a implementarlo?\" → \"¿Incluye asistencia en la implementación?\"\n\n\nDesduplicación: si la misma duda aparece varias veces, lista solo una vez.\n\n\nSalida:\n\n\nFormato lista numerada: 1. … 2. …\n\n\nSi no hay preguntas del lead, responde exactamente: [] (solo esos dos corchetes).\n\n\nNada extra: no agregues encabezados, explicaciones ni texto adicional.\n\n\nENTRADA\n Te proporcionaré la conversación completa. Los hablantes estarán rotulados (p. ej., ASISTENTE, Jhon, etc.). El lead es cualquier hablante que no sea ASISTENTE.\nSALIDA\n Devuelve solo la lista numerada o [] según corresponda.\nCASO DE PRUEBA (debe devolver []):\n12 de September de 2025, 18:01\nJhon: // Hola\nASISTENTE: (saludo + preguntas)\nJhon: Claro, s\nASISTENTE: (pregunta)\nJhon: Tengo un ecommerce\nASISTENTE: (pregunta)\nJhon: En Querétaro\nASISTENTE: (pregunta)\nJhon: De todo un poco, mi tienda es de variedades\nASISTENTE: (pregunta)\nJhon: Estoy viendo opciones por ahora\nASISTENTE: (pregunta)\nJhon: No, quiero hablar con alguien ahora mismo\nASISTENTE: (envía teléfonos)\nSalida esperada:\n[ ]\nCASO DE PRUEBA 2 (el lead sí pregunta)\n15 de September de 2025, 11:20\nMaría: Hola, vi su catálogo en Facebook\nASISTENTE: ¡Hola María! Gracias por escribirnos 😊 ¿Qué tipo de productos te interesan?\nMaría: ¿Cuánto cuestan las cajas de ropa para mujer?\nASISTENTE: Tenemos cajas desde $250 hasta $500 según la calidad y marca\nMaría: ¿Hacen envíos a Monterrey?\nASISTENTE: Sí, trabajamos con paqueterías que cubren todo México 🚚\nMaría: ¿Aceptan pago con tarjeta?\nASISTENTE: Sí, aceptamos tarjetas, transferencias y efectivo en Oxxo\n\nSalida esperada:\n1. ¿Cuánto cuestan las cajas de ropa para mujer?  \n2. ¿Hacen envíos a Monterrey?  \n3. ¿Aceptan pago con tarjeta?"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        14512,
+        8592
+      ],
+      "id": "39feef1b-8c4c-4ecc-83ba-b231df9b5143",
+      "name": "Q&A CLASSIFIER1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=MENSAJE_USUARIO: {{ $('USER MESSAGE').item.json.whole_message }}\nDOCUMENTO RECIBIDO: {{ \n  $if(\n    $('Format Extracted').isExecuted,\n    $('Format Extracted').item.json.extracted,\n    'NO ENVÍA EN ESTE CASO'\n  )\n}}",
+        "options": {
+          "systemMessage": "={{ $('Load System Prompt').item.json.system_prompt }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        12704,
+        8592
+      ],
+      "id": "988eff09-0e68-4390-8c13-773c76266bac",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Normalize Payload').first().json.phone }}",
+        "contextWindowLength": 250
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        12688,
+        8832
+      ],
+      "id": "fa9b4616-a9b3-4438-9523-2668b2431651",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "tuWQBcTXYxGx3c6P",
+          "name": "Postgres - GM Capital"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[0] !== undefined && $json[0] !== null }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "36eb8d88-be87-4554-9779-e55e6779ef65"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "EXISTE EN DB"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a9ab6ae6-73cc-402b-8f1f-d900207753bc",
+                    "leftValue": "={{ $json[0] === undefined || $json[0] === null }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "notExists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "NO EXISTE EN DB"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        14064,
+        8592
+      ],
+      "id": "d4711293-480e-4911-8edf-b30088cbab66",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "leads",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ encodeURIComponent($('Normalize Payload').first().json.phone) }}\n"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "bot_status",
+              "fieldValue": "={{ $json.bot_status }}"
+            },
+            {
+              "fieldId": "lead_category",
+              "fieldValue": "={{ $json.lead_status }}"
+            },
+            {
+              "fieldId": "qa_notes",
+              "fieldValue": "={{ $('Q&A CLASSIFIER1').item.json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        14272,
+        8496
+      ],
+      "id": "6dcffd45-1dc8-40f5-88cf-5d36cd47c33b",
+      "name": "Update lead_conversation",
+      "credentials": {
+        "supabaseApi": {
+          "id": "FRE0anooe2qI1LJP",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "leads",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $('Normalize Payload').item.json.phone }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Normalize Payload').item.json.contact_name }}"
+            },
+            {
+              "fieldId": "source",
+              "fieldValue": "whatsapp"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "new"
+            },
+            {
+              "fieldId": "bot_status",
+              "fieldValue": "activo"
+            },
+            {
+              "fieldId": "lead_category",
+              "fieldValue": "NUEVO_LEAD"
+            },
+            {
+              "fieldId": "last_message",
+              "fieldValue": "={{ $('USER MESSAGE').item.json.whole_message }}"
+            },
+            {
+              "fieldId": "last_message_sent",
+              "fieldValue": "={{ $('AI Agent1').item.json.output }}"
+            },
+            {
+              "fieldId": "conversation",
+              "fieldValue": "=**CHAT STARTS**\\nUSUARIO: {{ $('Normalize Payload').item.json.text }}\\nASISTENTE: {{ $('AI Agent1').item.json.output }}"
+            },
+            {
+              "fieldId": "last_interaction_at",
+              "fieldValue": "={{ $now.toISO() }}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        14272,
+        8704
+      ],
+      "id": "7fe504cb-8401-44c0-878c-53f504d31247",
+      "name": "Insert lead_conversation",
+      "credentials": {
+        "supabaseApi": {
+          "id": "FRE0anooe2qI1LJP",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ycloud-lookitry",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        11600,
+        8336
+      ],
+      "id": "bcc0e830-e39b-4681-9a73-0a29572fd747",
+      "name": "Webhook Lookitry",
+      "webhookId": "lookitry-chat-inbound"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? {};\nconst waMsg = body.whatsappInboundMessage ?? {};\n\n// Extraer phone del payload YCloud\nlet phone = waMsg.from ?? '';\nphone = phone.replace(/^whatsapp:/i, '').replace(/\\D/g, ''); // strip prefix y no-dígitos\nif (!phone) throw new Error('No se pudo extraer phone del payload YCloud');\n\nconst contact_name = waMsg.customerProfile?.name || 'Cliente';\nconst text = waMsg.text?.body || '';\nconst message_type = waMsg.type ?? '';\nconst to_number = waMsg.to ?? '';\nconst event_type = body.type ?? '';\n\nreturn [{ json: { phone, contact_name, text, message_type, to_number, event_type } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        11840,
+        8336
+      ],
+      "id": "f9ce6eea-b14a-4acf-af69-3b176b3efba7",
+      "name": "Normalize Payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "t1",
+              "leftValue": "={{ $('Normalize Payload').item.json.message_type }}",
+              "rightValue": "text",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        12336,
+        8336
+      ],
+      "id": "f9472328-969c-45a9-835f-1509c8092423",
+      "name": "Is Text Message?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "x1",
+              "name": "extracted",
+              "value": "={{ $json.content[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        12576,
+        8320
+      ],
+      "id": "9e882a19-5a75-4467-9713-9f17b75c259a",
+      "name": "Format Extracted"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ 'wa:' + $('Normalize Payload').first().json.phone }}",
+        "messageData": "={{ $('Normalize Payload').first().json.text }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        12784,
+        8320
+      ],
+      "id": "8bc8f4cb-7cc9-4475-90d5-de04e926c7e7",
+      "name": "PUSH BUFFER",
+      "credentials": {
+        "redis": {
+          "id": "C5t2uHF2Ai0jH4Vd",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        12992,
+        8320
+      ],
+      "id": "11719493-660c-4f00-99c1-062f57b2ff58",
+      "name": "Wait 20s",
+      "webhookId": "wait-buffer-lookitry"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "message",
+        "key": "={{ 'wa:' + $('Normalize Payload').first().json.phone }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        13184,
+        8320
+      ],
+      "id": "92fe3bc1-8e9f-4721-8e55-0c2f0a0b92e7",
+      "name": "GET BUFFER",
+      "credentials": {
+        "redis": {
+          "id": "C5t2uHF2Ai0jH4Vd",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "lm1",
+              "leftValue": "={{ $json.message.last() }}",
+              "rightValue": "={{ $('Normalize Payload').item.json.text }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        13376,
+        8320
+      ],
+      "id": "aae36e4c-04e2-4209-9004-d0f36d67d034",
+      "name": "Is last message?"
+    },
+    {
+      "parameters": {
+        "url": "https://api.lookitry.com/api/agent/identity/system-prompt",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "channel",
+              "value": "whatsapp"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        14048,
+        8304
+      ],
+      "id": "9812061f-899b-4fe5-a94d-96a44a1000d5",
+      "name": "Load System Prompt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-API-Key",
+              "value": "4465e9492cdfd61cc5826337d68783a6"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"573105436281\",\n  \"from\": \"573248507947\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"¡Claro que sí! Con gusto te explico nuestros planes.\n\nPara darte la mejor recomendación, me gustaría saber un poco más de tu marca. ¿Tienes tienda online? ¿Qué volumen de catálogo manejas?\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        13040,
+        8592
+      ],
+      "id": "7e5b7d73-178c-49a4-8108-d633ed788495",
+      "name": "YCloud Send"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://api.lookitry.com/api/chat/conversations/' + $('Normalize Payload').item.json.contact_id + '/status' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "last_response",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        13248,
+        8592
+      ],
+      "id": "fe9bbea3-5620-485c-8422-41f1054ff0a4",
+      "name": "Update Conversation Status (contacts)"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://api.lookitry.com/api/chat/conversations/' + $('Normalize Payload').item.json.contact_id + '/status' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "in_progress"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        13424,
+        8592
+      ],
+      "id": "f00e6b37-c50a-4ac7-bc11-bf98a015b7fb",
+      "name": "Update Conversation Status (leads)"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://api.lookitry.com/api/chat/conversations/' + $('Normalize Payload').item.json.contact_id + '/status' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "classified"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        13648,
+        8592
+      ],
+      "id": "47e7ebd7-fd6c-40fd-8050-d73116d5a333",
+      "name": "Update Conversation Status (leads1)"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "leads",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $('Normalize Payload').item.json.contact_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        13872,
+        8592
+      ],
+      "id": "29b2e935-453b-4cc5-92e8-8fbf11e70cca",
+      "name": "Search Leads DB",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "FRE0anooe2qI1LJP",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        12320,
+        8624
+      ],
+      "id": "3d16f91d-27d7-43e3-b2ce-f2703e39de52",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "url": "https://api.cal.com/v2/slots",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "eventTypeId"
+            },
+            {
+              "name": "start",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Fecha de inicio del rango a consultar. Formato: YYYY-MM-DD. \nUsa la fecha actual o la fecha que el cliente indicó como preferencia. \nEjemplo: 2026-04-14. Nunca incluyas horas, solo la fecha.`, 'string') }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `Fecha de fin del rango a consultar. Formato: YYYY-MM-DD. \nPor defecto usa el mismo día que start. Si no hay disponibilidad, \namplía hasta 3 días hábiles adelante. Nunca pongas una hora aquí. \nEjemplo: 2026-04-16`, 'string') }}"
+            },
+            {
+              "name": "timeZone",
+              "value": "America/Argentina/Buenos_Aires"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization"
+            },
+            {
+              "name": "cal-api-version",
+              "value": "2024-09-04"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        12848,
+        8832
+      ],
+      "id": "6977160d-6678-40d8-987e-2d464458a077",
+      "name": "Check Availability"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cal.com/v2/bookings",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization"
+            },
+            {
+              "name": "cal-api-version",
+              "value": "2026-02-25"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "eventTypeId"
+            },
+            {
+              "name": "start",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Hora exacta copiada del campo \"start\" de la respuesta de Check \nAvailability, convertida a UTC sumando 3 horas (UTC-3 → UTC).\nEjemplo: \"2026-04-15T08:10:00.000-03:00\" → \"2026-04-15T11:10:00.000Z\"\nNUNCA uses un horario que no esté en la lista devuelta por \nCheck Availability.`, 'string') }}"
+            },
+            {
+              "name": "attendee.name",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `Nombre del Cliente`, 'string') }}"
+            },
+            {
+              "name": "attendee.email",
+              "value": "contacto@lookitry.com"
+            },
+            {
+              "name": "attendee.timeZone",
+              "value": "America/Argentina/Buenos_Aires"
+            },
+            {
+              "name": "attendee.language",
+              "value": "es"
+            },
+            {
+              "name": "bookingFieldsResponses.notes",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters6_Value', `Resumen estructurado del cliente para el asesor. Incluye TODOS los \ndatos recolectados en la conversación, en este formato exacto:\n\n\"Nombre: [nombre completo]. Teléfono: [teléfono]. \nConsulta: [descripción de lo que busca el cliente]. \nNotas: [observaciones adicionales relevantes].\"`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        13040,
+        8832
+      ],
+      "id": "e40b562c-77f9-4570-a3fa-aa9b4e9c31dd",
+      "name": "Book Call"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "69d4a433-f4bd-4a1b-aede-52e0e1085874",
+              "name": "contactId",
+              "value": "={{ $('Normalize Payload').item.json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "9b6db8a0-c188-4162-9802-606ee48186f8",
+              "name": "contactName",
+              "value": "={{ $('Normalize Payload').item.json.contact_name }}",
+              "type": "string"
+            },
+            {
+              "id": "7298d36f-5de8-43dc-a4a5-e25685612acc",
+              "name": "contactPhone\t",
+              "value": "={{ $('Normalize Payload').item.json.phone }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        12080,
+        8336
+      ],
+      "id": "36bb1b08-13c6-4d7c-8095-236ef7b784c8",
+      "name": "Get Contact Data"
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gen-lang-client-0591001769",
+          "mode": "id"
+        },
+        "options": {
+          "maxOutputTokens": 2048
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        12528,
+        8832
+      ],
+      "id": "3289076c-2068-4a3f-8a43-a5c6038a9678",
+      "name": "Google Vertex Chat Model",
+      "credentials": {
+        "googleApi": {
+          "id": "anSUCJJxgytfDRRD",
+          "name": "Vertex API -- LOOKITRY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gen-lang-client-0591001769",
+          "mode": "id"
+        },
+        "options": {
+          "maxOutputTokens": 2048
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        14464,
+        8832
+      ],
+      "id": "8057d0a8-f250-4f99-a63f-70726c3f015f",
+      "name": "Google Vertex Chat Model1",
+      "credentials": {
+        "googleApi": {
+          "id": "anSUCJJxgytfDRRD",
+          "name": "Vertex API -- LOOKITRY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "gen-lang-client-0591001769",
+          "mode": "id"
+        },
+        "options": {
+          "maxOutputTokens": 2048
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleVertex",
+      "typeVersion": 1,
+      "position": [
+        14816,
+        8880
+      ],
+      "id": "91d861cc-5871-491c-b623-ecb5ee0cb4d1",
+      "name": "Google Vertex Chat Model2",
+      "credentials": {
+        "googleApi": {
+          "id": "anSUCJJxgytfDRRD",
+          "name": "Vertex API -- LOOKITRY"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        13360,
+        8112
+      ],
+      "id": "27a378ef-7634-4183-849d-8ed7cf4f1888",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "32ecfc40-fa0f-4c20-9987-7559f04785c3",
+              "name": "whole_message",
+              "value": "={{ $('GET BUFFER').item.json.message.join() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        13616,
+        8304
+      ],
+      "id": "c91a0dbf-ad60-4d7a-8780-9ba4a0503178",
+      "name": "USER MESSAGE"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ 'wa:' + $('Normalize Payload').first().json.phone }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        13824,
+        8304
+      ],
+      "id": "65ba5b7f-ea8f-4455-b9e8-08abc821a932",
+      "name": "DELETE BUFFER",
+      "credentials": {
+        "redis": {
+          "id": "C5t2uHF2Ai0jH4Vd",
+          "name": "Redis account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "LEAD CLASSIFIER5": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Update lead_conversation4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Q&A CLASSIFIER1": {
+      "main": [
+        [
+          {
+            "node": "LEAD CLASSIFIER5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "YCloud Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Update lead_conversation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert lead_conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update lead_conversation": {
+      "main": [
+        [
+          {
+            "node": "Q&A CLASSIFIER1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert lead_conversation": {
+      "main": [
+        [
+          {
+            "node": "Q&A CLASSIFIER1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Lookitry": {
+      "main": [
+        [
+          {
+            "node": "Normalize Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Payload": {
+      "main": [
+        [
+          {
+            "node": "Get Contact Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Text Message?": {
+      "main": [
+        [
+          {
+            "node": "Format Extracted",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Extracted": {
+      "main": [
+        [
+          {
+            "node": "PUSH BUFFER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PUSH BUFFER": {
+      "main": [
+        [
+          {
+            "node": "Wait 20s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 20s": {
+      "main": [
+        [
+          {
+            "node": "GET BUFFER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET BUFFER": {
+      "main": [
+        [
+          {
+            "node": "Is last message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is last message?": {
+      "main": [
+        [
+          {
+            "node": "USER MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load System Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YCloud Send": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation Status (contacts)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Conversation Status (contacts)": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation Status (leads)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Conversation Status (leads)": {
+      "main": [
+        [
+          {
+            "node": "Update Conversation Status (leads1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Conversation Status (leads1)": {
+      "main": [
+        [
+          {
+            "node": "Search Leads DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Leads DB": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Availability": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Call": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Contact Data": {
+      "main": [
+        [
+          {
+            "node": "Is Text Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Q&A CLASSIFIER1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Vertex Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LEAD CLASSIFIER5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "USER MESSAGE": {
+      "main": [
+        [
+          {
+            "node": "DELETE BUFFER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE BUFFER": {
+      "main": [
+        [
+          {
+            "node": "Load System Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+  }
+}

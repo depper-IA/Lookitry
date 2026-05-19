@@ -2,8 +2,7 @@
 import React from 'react';
 
 /* ══════════════════════════════════════════════════════════════════════════
-   SAMMY BRAIN — AI-powered mood, environment & avatar behavior
-   Uses OpenRouter (Claude Haiku) for contextual responses
+   SAMMY BRAIN — mood-driven environment & avatar behavior
 ══════════════════════════════════════════════════════════════════════════ */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -64,95 +63,32 @@ const MOOD_TO_FLOOR: Record<SammyMood, FloorEffect> = {
   happy:    'glow-pulse',
 };
 
-/* ─── OpenRouter AI Response Generator ─────────────────────────────── */
-async function fetchAIResponse(
+/* ─── Sammy Response Generator ─────────────────────────────────────── */
+function fetchAIResponse(
   mood: SammyMood,
   event: EnvironmentEvent | null,
-  history: string[]
-): Promise<{ response: string; suggestedMood: SammyMood; confidence: number }> {
-  const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY
-    || process.env.OPENROUTER_API_KEY;
+): { response: string; suggestedMood: SammyMood; confidence: number } {
+  const demos: Record<SammyMood, { res: string; conf: number }> = {
+    idle:     { res: 'Systems nominal. Awaiting your command, Sam.', conf: 0.97 },
+    working:  { res: 'Processing data streams... neural networks stable.', conf: 0.94 },
+    thinking: { res: 'Analyzing multiple vectors. Give me a moment.', conf: 0.89 },
+    excited:  { res: 'Incredible! I just detected a breakthrough pattern!', conf: 0.91 },
+    tired:    { res: '*yawn* Running low on processing cycles...', conf: 0.86 },
+    alert:    { res: '⚠ WARNING: Anomaly detected in sector 7-G!', conf: 0.98 },
+    happy:    { res: 'Task complete! Ready for the next challenge!', conf: 0.95 },
+  };
 
-  if (!apiKey) {
-    /* Fallback demo responses when no API key */
-    const demos: Record<SammyMood, { res: string; conf: number }> = {
-      idle:     { res: 'Systems nominal. Awaiting your command, Sam.', conf: 0.97 },
-      working:  { res: 'Processing data streams... neural networks stable.', conf: 0.94 },
-      thinking: { res: 'Analyzing multiple vectors. Give me a moment.', conf: 0.89 },
-      excited:  { res: 'Incredible! I just detected a breakthrough pattern!', conf: 0.91 },
-      tired:    { res: '*yawn* Running low on processing cycles...', conf: 0.86 },
-      alert:    { res: '⚠ WARNING: Anomaly detected in sector 7-G!', conf: 0.98 },
-      happy:    { res: 'Task complete! Ready for the next challenge!', conf: 0.95 },
-    };
+  const current = demos[mood];
+  let nextMood = mood;
 
-    const current = demos[mood];
-    let nextMood = mood;
-
-    if (event?.type === 'alert') nextMood = 'alert';
-    else if (event?.type === 'notification') nextMood = 'excited';
-    else if (event?.priority === 'low' && Math.random() > 0.7) {
-      const moods: SammyMood[] = ['idle', 'thinking', 'happy', 'excited'];
-      nextMood = moods[Math.floor(Math.random() * moods.length)];
-    }
-
-    return { response: current.res, suggestedMood: nextMood, confidence: current.conf };
+  if (event?.type === 'alert') nextMood = 'alert';
+  else if (event?.type === 'notification') nextMood = 'excited';
+  else if (event?.priority === 'low' && Math.random() > 0.7) {
+    const moods: SammyMood[] = ['idle', 'thinking', 'happy', 'excited'];
+    nextMood = moods[Math.floor(Math.random() * moods.length)];
   }
 
-  try {
-    const systemPrompt = `You are Sammy, an AI assistant for the Lookitry Command Center.
-You exist in a cyberpunk control room. Your current mood is "${mood}".
-${event ? `There is an active event: "${event.message}" (${event.priority} priority)` : ''}
-
-Respond as Sammy — friendly, warm, slightly playful but professional.
-Keep responses under 80 characters. Speak in the voice of a smart, enthusiastic AI.
-After your response, suggest your next mood as one of: idle, working, thinking, excited, tired, alert, happy`;
-
-    const userMessage = event
-      ? `Event: ${event.type} — "${event.message}"`
-      : `What are you doing right now as ${mood}?`;
-
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://lookitry.ai',
-        'X-Title': 'Lookitry Command Center',
-      },
-      body: JSON.stringify({
-        model: 'anthropic/claude-3-haiku',
-        messages: [
-          ...history.slice(-4).map(h => ({ role: 'user', content: h })),
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage },
-        ],
-        max_tokens: 120,
-        temperature: 0.8,
-      }),
-    });
-
-    if (!res.ok) throw new Error(`OpenRouter ${res.status}`);
-
-    const data = await res.json();
-    const raw = data.choices?.[0]?.message?.content ?? '';
-
-    /* Parse mood suggestion from response if present */
-    const moodMatch = raw.match(/\[MOOD:(\w+)\]/i);
-    const suggestedMood = (moodMatch?.[1]?.toLowerCase() ?? mood) as SammyMood;
-    const responseText = raw.replace(/\[MOOD:\w+\]/gi, '').trim();
-
-    return {
-      response: responseText || 'Processing...',
-      suggestedMood,
-      confidence: 0.85 + Math.random() * 0.14,
-    };
-  } catch {
-    return {
-      response: '🤖 Offline mode — running on backup protocols.',
-      suggestedMood: 'idle',
-      confidence: 0.6,
-    };
-  }
+  return { response: current.res, suggestedMood: nextMood, confidence: current.conf };
 }
 
 /* ─── Mock event simulation ────────────────────────────────────────── */
@@ -184,14 +120,12 @@ export function useSammyBrain() {
   const [currentAction, setCurrentAction]    = useState<AvatarAction>('standing');
   const [lastEvent, setLastEvent]            = useState<EnvironmentEvent | null>(null);
 
-  const historyRef = useRef<string[]>([]);
-  const tickRef    = useRef(0);
+  const tickRef = useRef(0);
 
   /* ── AI thinking cycle ──────────────────────────────────────────── */
-  const think = useCallback(async () => {
+  const think = useCallback(() => {
     tickRef.current += 1;
 
-    /* Emit activity log entry every 3 ticks */
     if (tickRef.current % 3 === 0) {
       const logEntries: Record<SammyMood, string> = {
         idle:      'Running idle cycle — all systems nominal',
@@ -205,11 +139,10 @@ export function useSammyBrain() {
       setActivityLog(prev => [logEntries[mood], ...prev].slice(0, 8));
     }
 
-    const ai = await fetchAIResponse(mood, lastEvent, historyRef.current);
+    const ai = fetchAIResponse(mood, lastEvent);
 
     if (ai.response && ai.response !== response) {
       setResponse(ai.response);
-      historyRef.current = [...historyRef.current, ai.response].slice(-8);
     }
 
     setConfidence(ai.confidence);
@@ -277,18 +210,14 @@ export function useSammyBrain() {
   }, []);
 
   /* ── User command ───────────────────────────────────────────────── */
-  const sendCommand = useCallback(async (command: string) => {
+  const sendCommand = useCallback((command: string) => {
     setActivityLog(prev => [`[USER] ${command}`, ...prev].slice(0, 8));
     setMood('working');
     setCurrentAction('typing');
     setFloorEffect('data-stream');
     setCurrentTask(`Processing: "${command.slice(0, 30)}..."`);
 
-    const ai = await fetchAIResponse(
-      mood,
-      { type: 'user', message: command, priority: 'high' },
-      historyRef.current
-    );
+    const ai = fetchAIResponse(mood, { type: 'user', message: command, priority: 'high' });
 
     setResponse(ai.response);
     setConfidence(ai.confidence);

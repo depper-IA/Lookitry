@@ -13,7 +13,7 @@ API REST construida con Express + TypeScript. Gestiona autenticación, productos
 
 ```bash
 cd backend
-npm install
+pnpm install
 cp .env.example .env
 # Editar .env con tus credenciales
 npm run dev
@@ -41,7 +41,7 @@ Copiar `.env.example` a `.env` y completar todos los valores. Ver el archivo par
 
 - Plan de hosting con soporte Node.js (VPS o Business Hosting)
 - Acceso SSH al servidor
-- PM2 instalado globalmente: `npm install -g pm2`
+- PM2 instalado globalmente: `pnpm install -g pm2`
 
 ### Pasos de deploy
 
@@ -60,7 +60,7 @@ cd /home/usuario/virtual-tryon/backend
 
 ```bash
 cd /home/usuario/virtual-tryon/backend
-npm install --production
+pnpm install --production
 ```
 
 **3. Configurar variables de entorno**
@@ -119,7 +119,7 @@ location /api {
 ```bash
 cd /home/usuario/virtual-tryon/backend
 git pull origin main
-npm install --production
+pnpm install --production
 npm run build
 pm2 restart virtual-tryon-backend
 ```

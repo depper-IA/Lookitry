@@ -220,7 +220,7 @@ export default function PlanSelectionStep({
                       }
                     </motion.div>
                     <div className="text-[10px] text-[#999] font-bold uppercase mt-0.5">
-                      {p === 'TRIAL' ? (planBase.TRIAL > 0 ? 'Pago único' : '7 Días') : 'Mensual'}
+                      {p === 'TRIAL' ? (planBase.TRIAL > 0 ? 'Activación (7 días)' : '7 Días gratis') : 'Mensual'}
                     </div>
                   </>
                 )}
@@ -291,7 +291,9 @@ export default function PlanSelectionStep({
       {/* Selector de meses */}
       {!isTrial && (
         <div className="bg-[#0d0d0d] border border-[#1f1f1f] rounded-2xl p-6">
-          <h3 className="text-sm font-bold text-white mb-4">¿Por cuánto tiempo?</h3>
+          <h3 className="text-sm font-bold text-white mb-4">
+            {isLanding ? '¿Por cuánto tiempo quieres el plan asociado?' : '¿Por cuánto tiempo?'}
+          </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {discounts.map(d => (
               <motion.button

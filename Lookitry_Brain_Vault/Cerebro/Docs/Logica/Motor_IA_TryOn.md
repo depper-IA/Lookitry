@@ -28,5 +28,20 @@ Cuando un usuario pulsa "Reportar error":
 2. Se genera un **Embedding** (vector) de ese error.
 3. Este vector se usa en futuras generaciones para que la IA sepa qué corregir automáticamente.
 
-> [!TIP]
-> **Performance**: El sistema usa "Polling" (consultas cada 2 segundos) para que el frontend sepa cuándo la imagen está lista sin saturar el servidor con conexiones abiertas.
+## 5. Modelos Activos (Mayo 2026)
+
+| Etapa | Modelo | Costo estimado |
+|-------|--------|----------------|
+| Segmentación | SAM 2 (Vertex) o MobileSAM local | ~$0.01-0.02 |
+| Generación | **Nano Banana (Gemini 2.5 Flash)** | ~$0.01-0.05 |
+| Fallback | n8n + OpenRouter | — |
+
+**Total por generación: ~$0.02-0.07 USD**
+
+> **Nota**: Imagen 3 fue removida del pipeline activo. El código existía pero nunca se llamaba. Nano Banana ofrece calidad aceptable a menor costo.
+
+## 6. Código Relacionado
+
+- `backend/src/services/vertex-ai.service.ts` — SAM 2 + Nano Banana
+- `backend/src/controllers/tryon.controller.ts` — Pipeline con fallback n8n
+- `backend/src/services/n8n.client.ts` — Cliente n8n

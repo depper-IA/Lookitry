@@ -103,6 +103,38 @@ class VertexService {
   }
 
   /**
+   * Call Vertex AI with system prompt + conversation history + current message
+   */
+  async callVertex(systemPrompt: string, userMessage: string, history: { role: 'user' | 'assistant'; content: string }[] = []): Promise<string> {
+    // Vertex uses 'model' for assistant role
+    const contents = [
+      ...history.map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      })),
+      { role: 'user', parts: [{ text: userMessage }] }
+    ];
+
+    const result = await this.generateContent({
+      model: 'gemini-2.5-flash',
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents,
+      generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+    });
+
+    if (result.error) {
+      throw new Error(`VERTEX_ERROR: ${result.error}`);
+    }
+
+    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      throw new Error('VERTEX_NO_RESPONSE');
+    }
+
+    return text;
+  }
+
+  /**
    * Generate content using Vertex AI Gemini models
    */
   async generateContent(options: VertexGenerateOptions): Promise<VertexGenerateResult> {
@@ -165,8 +197,9 @@ class VertexService {
     } catch (error: any) {
       console.error(`[VertexService] Error generating content with @google/genai, falling back to REST:`, error?.message || error);
 
-      // Fallback to Gemini REST API using GOOGLE_API_KEY if Vertex fails
-      const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+      // Fallback to Gemini REST API — GOOGLE_API_KEY has AIza format (valid for REST);
+      // GEMINI_API_KEY uses AQ. format (OAuth token, invalid for this endpoint)
+      const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
       if (apiKey) {
         try {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;

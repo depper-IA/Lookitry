@@ -649,3 +649,13 @@ img[data-next-image] {
 .mobile-footer-link:hover {
   color: #FF5C3A !important;
 }
+
+/* ── Force absolute transparency and no borders/shadows/lines on transparent navbar ── */
+nav.bg-transparent {
+  border: none !important;
+  border-bottom: 0px solid transparent !important;
+  border-bottom-width: 0px !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+

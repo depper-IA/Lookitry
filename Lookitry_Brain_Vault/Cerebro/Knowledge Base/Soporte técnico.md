@@ -12,4 +12,4 @@ El plan PRO y ENTERPRISE tienen soporte prioritario.
 
 Horario de atención: lunes a viernes 9am–6pm (hora Colombia).
 
-Contacto: info@lookitry.com
+Contacto: contacto@lookitry.com

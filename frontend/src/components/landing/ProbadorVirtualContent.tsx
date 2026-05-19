@@ -35,8 +35,8 @@ function fadeUp(delay = 0) {
 // ─── Section Tag ─────────────────────────────────────────────────────────────
 function Tag({ children, accent = false }: { children: React.ReactNode; accent?: boolean }) {
   return (
-    <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] ${accent ? 'bg-accent/10 border-accent/20 text-accent' : 'bg-white/5 border-white/10 text-white/60'}`}>
-      <span className={`h-1.5 w-1.5 rounded-full animate-pulse ${accent ? 'bg-accent' : 'bg-white/40'}`} />
+    <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] ${accent ? 'bg-accent/10 border-accent/20 text-accent' : 'bg-gray-100 dark:bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-200 dark:border-white/10 text-gray-500 dark:text-white/60'}`}>
+      <span className={`h-1.5 w-1.5 rounded-full animate-pulse ${accent ? 'bg-accent' : 'bg-gray-400 dark:bg-white/40'}`} />
       {children}
     </div>
   );
@@ -54,15 +54,15 @@ function PlatformCard({ color, icon, title, features }: { color: string; icon: R
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, ease: EASING }}
       whileHover={{ y: -4 }}
-      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 transition-all duration-300 hover:border-white/20"
+      className="group relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6 transition-all duration-300 hover:border-gray-300 dark:hover:border-white/20"
     >
       <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: `${color}20`, color: color }}>
         {icon}
       </div>
-      <h4 className="mb-3 font-jakarta text-lg font-bold text-white">{title}</h4>
+      <h4 className="mb-3 font-jakarta text-lg font-bold text-dark dark:text-white">{title}</h4>
       <ul className="space-y-2">
         {features.map((f, i) => (
-          <li key={i} className="flex items-center gap-2 text-sm text-white/50">
+          <li key={i} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-500 dark:text-gray-500 dark:text-gray-500 dark:text-gray-500 dark:text-white/50">
             <Check size={12} style={{ color }} />
             {f}
           </li>
@@ -76,12 +76,12 @@ function PlatformCard({ color, icon, title, features }: { color: string; icon: R
 function StepItem({ n, title, desc }: { n: number; title: string; desc: string }) {
   return (
     <div className="flex items-start gap-4">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent font-jakarta text-sm font-black text-white">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent font-jakarta text-sm font-black text-dark dark:text-white">
         {n}
       </div>
       <div className="pt-1">
-        <h5 className="mb-1 font-jakarta font-bold text-white">{title}</h5>
-        <p className="text-sm text-white/50 leading-relaxed">{desc}</p>
+        <h5 className="mb-1 font-jakarta font-bold text-dark dark:text-white">{title}</h5>
+        <p className="text-sm text-gray-500 dark:text-white/50 leading-relaxed">{desc}</p>
       </div>
     </div>
   );
@@ -90,13 +90,13 @@ function StepItem({ n, title, desc }: { n: number; title: string; desc: string }
 // ─── Feature Item ───────────────────────────────────────────────────────────
 function FeatureItem({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="flex items-start gap-4 rounded-xl border border-white/5 bg-white/3 p-5">
+    <div className="flex items-start gap-4 rounded-xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 p-5">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
         {icon}
       </div>
       <div>
-        <h5 className="mb-1 font-jakarta text-sm font-bold text-white">{title}</h5>
-        <p className="text-xs text-white/50 leading-relaxed">{desc}</p>
+        <h5 className="mb-1 font-jakarta text-sm font-bold text-dark dark:text-white">{title}</h5>
+        <p className="text-xs text-gray-500 dark:text-white/50 leading-relaxed">{desc}</p>
       </div>
     </div>
   );
@@ -105,15 +105,15 @@ function FeatureItem({ icon, title, desc }: { icon: React.ReactNode; title: stri
 // ─── Testimonial ────────────────────────────────────────────────────────────
 function TestimonialItem({ quote, author, brand }: { quote: string; author: string; brand: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-      <p className="mb-4 text-sm leading-relaxed text-white/70 italic">&ldquo;{quote}&rdquo;</p>
+    <div className="rounded-2xl border border-gray-200 dark:border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
+      <p className="mb-4 text-sm leading-relaxed text-gray-600 dark:text-gray-600 dark:text-gray-600 dark:text-white/70 italic">&ldquo;{quote}&rdquo;</p>
       <div className="flex items-center gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/20 font-jakarta font-black text-accent">
           {author[0]}
         </div>
         <div>
-          <p className="font-jakarta text-sm font-bold text-white">{author}</p>
-          <p className="text-xs text-white/40">{brand}</p>
+          <p className="font-jakarta text-sm font-bold text-dark dark:text-white">{author}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400 dark:text-white/40">{brand}</p>
         </div>
       </div>
     </div>
@@ -123,17 +123,17 @@ function TestimonialItem({ quote, author, brand }: { quote: string; author: stri
 // ─── Code Block ─────────────────────────────────────────────────────────────
 function CodeBlock() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-dark-overlay">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-dark-overlay">
       <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
         <div className="h-2.5 w-2.5 rounded-full bg-red-500/60" />
         <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/60" />
         <div className="h-2.5 w-2.5 rounded-full bg-green-500/60" />
-        <span className="ml-2 text-[10px] text-white/30">index.html</span>
+        <span className="ml-2 text-[10px] text-gray-400 dark:text-white/30">index.html</span>
       </div>
       <div className="p-6 font-mono text-[11px] leading-relaxed">
-        <div className="text-white/20">{'<!-- Tu producto -->'}</div>
-        <div className="mb-1 text-white/40">{'<div id="lookitry-widget"></div>'}</div>
-        <div className="mb-2 text-white/20">{'<!-- Código Lookitry -->'}</div>
+        <div className="text-gray-400 dark:text-white/20">{'<!-- Tu producto -->'}</div>
+        <div className="mb-1 text-gray-400 dark:text-white/40">{'<div id="lookitry-widget"></div>'}</div>
+        <div className="mb-2 text-gray-400 dark:text-white/20">{'<!-- Código Lookitry -->'}</div>
         <div className="text-indigo-300/80">{'<script src="https://lookitry.com/widget.js"'}</div>
         <div className="pl-4 text-indigo-300/80">{'data-slug="tu-marca"'}</div>
         <div className="text-indigo-300/80">{'async defer></script>'}</div>
@@ -168,14 +168,14 @@ function StatsSection() {
 
   return (
     <section className="mx-auto max-w-6xl py-12">
-      <div className="flex flex-wrap items-center justify-center gap-8 rounded-2xl border border-white/10 bg-white/5 p-8">
+      <div className="flex flex-wrap items-center justify-center gap-8 rounded-2xl border border-gray-200 dark:border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-8">
         {displayStats.map((stat, i) => (
           <React.Fragment key={i}>
             <div className="text-center">
               <div className="font-jakarta text-3xl font-black text-white">{stat.value}</div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40">{stat.label}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-white/40">{stat.label}</div>
             </div>
-            {i < displayStats.length - 1 && <div className="h-10 w-px bg-white/10" />}
+            {i < displayStats.length - 1 && <div className="h-10 w-px bg-gray-200 dark:bg-gray-200 dark:bg-white/10" />}
           </React.Fragment>
         ))}
       </div>
@@ -248,20 +248,20 @@ function ReviewsSection() {
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
         {displayReviews.map((review) => (
-          <div key={review.id} className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <div key={review.id} className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-6">
             <div className="mb-3 flex items-center gap-1">
               {Array.from({ length: review.rating }).map((_, i) => (
                 <Star key={i} size={12} className="fill-accent text-accent" />
               ))}
             </div>
-            <p className="mb-4 text-sm leading-relaxed text-white/70 italic">&ldquo;{review.comment.length > 150 ? review.comment.slice(0, 150) + '…' : review.comment}&rdquo;</p>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600 dark:text-white/70 italic">&ldquo;{review.comment.length > 150 ? review.comment.slice(0, 150) + '…' : review.comment}&rdquo;</p>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/20 font-jakarta font-black text-accent">
                 {review.reviewer_name.charAt(0)}
               </div>
               <div>
                 <p className="font-jakarta text-sm font-bold text-white">{review.reviewer_name}</p>
-                <p className="text-xs text-white/40">{review.reviewer_plan}</p>
+                <p className="text-xs text-gray-400 dark:text-white/40">{review.reviewer_plan}</p>
               </div>
             </div>
           </div>
@@ -276,7 +276,7 @@ function CTAButton({ href, primary, children }: { href: string; primary: boolean
   return (
     <a
       href={href}
-      className={`inline-flex items-center gap-2 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95 ${primary ? 'bg-accent text-white px-8 py-4 shadow-lg shadow-accent/30' : 'border border-white/20 bg-white/5 px-8 py-4 text-white hover:bg-white/10'}`}
+      className={`inline-flex items-center gap-2 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95 ${primary ? 'bg-accent text-white px-8 py-4 shadow-lg shadow-accent/30' : 'border border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-white/5 px-8 py-4 text-dark dark:text-white hover:bg-gray-100 dark:hover:bg-gray-200 dark:bg-white/10'}`}
     >
       {children}
       <ArrowRight size={16} />
@@ -287,7 +287,7 @@ function CTAButton({ href, primary, children }: { href: string; primary: boolean
 // ─── MAIN COMPONENT ─────────────────────────────────────────────────────────
 export default function ProbadorVirtualContent() {
   return (
-    <div className="min-h-screen bg-dark font-dm-sans text-white selection:bg-accent/30 selection:text-accent">
+    <div className="min-h-screen bg-white dark:bg-dark font-dm-sans text-dark dark:text-white selection:bg-accent/30 selection:text-accent">
       <LandingNav />
 
       <main className="px-6 pb-24 pt-20">
@@ -301,7 +301,7 @@ export default function ProbadorVirtualContent() {
             Tu tienda, tu marca,{' '}
             <span className="text-accent">tu probador virtual.</span>
           </motion.h1>
-          <motion.p {...fadeUp(0.2)} className="mx-auto mb-10 max-w-2xl text-lg font-medium text-white/50">
+          <motion.p {...fadeUp(0.2)} className="mx-auto mb-10 max-w-2xl text-lg font-medium text-gray-500 dark:text-white/50">
             Integración en menos de 180 segundos. Funciona en Instagram, TikTok,
             WhatsApp y cualquier sitio web.
           </motion.p>
@@ -309,14 +309,14 @@ export default function ProbadorVirtualContent() {
             <CTAButton href="/trial-checkout" primary>Activar para mi Marca</CTAButton>
             <CTAButton href="#integracion" primary={false}>Ver cómo funciona</CTAButton>
           </motion.div>
-          <motion.div {...fadeUp(0.4)} className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-white/40">
+          <motion.div {...fadeUp(0.4)} className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400 dark:text-white/40">
             <div className="flex items-center gap-1">
               {[1,2,3,4,5].map(i => <span key={i} className="text-accent">★</span>)}
               <span className="ml-2">4.9/5 satisfacción</span>
             </div>
-            <span className="h-4 w-px bg-white/10" />
+            <span className="h-4 w-px bg-gray-200 dark:bg-white/10" />
             <span>+180 marcas activas</span>
-            <span className="h-4 w-px bg-white/10" />
+            <span className="h-4 w-px bg-gray-200 dark:bg-white/10" />
             <span>+50K generaciones</span>
           </motion.div>
         </section>
@@ -330,7 +330,7 @@ export default function ProbadorVirtualContent() {
                 El motor de IA que<br />
                 <span className="text-accent">viaja con tu marca.</span>
               </h2>
-              <p className="mb-8 text-base leading-relaxed text-white/50">
+              <p className="mb-8 text-base leading-relaxed text-gray-500 dark:text-white/50">
                 Embed es la tecnología de Lookitry que permite integrar un probador virtual
                 de ropa con IA en múltiples canales: tu tienda online, Instagram, TikTok,
                 WhatsApp o cualquier plataforma que soporte código HTML.
@@ -341,7 +341,7 @@ export default function ProbadorVirtualContent() {
                   { icon: <Globe size={16} />, text: 'Funciona en cualquier plataforma' },
                   { icon: <Check size={16} />, text: 'Mobile-first, responsive' },
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm font-semibold text-white/70">
+                  <li key={i} className="flex items-center gap-3 text-sm font-semibold text-gray-600 dark:text-white/70">
                     <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-accent/20 text-accent">{item.icon}</div>
                     {item.text}
                   </li>
@@ -350,29 +350,29 @@ export default function ProbadorVirtualContent() {
             </motion.div>
 
             {/* Browser mockup */}
-            <motion.div {...fadeUp(0.15)} className="overflow-hidden rounded-2xl border border-white/10 bg-dark-card shadow-2xl">
+            <motion.div {...fadeUp(0.15)} className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-dark-card shadow-2xl">
               <div className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
-                <div className="h-2.5 w-2.5 rounded-full bg-white/10" />
-                <div className="h-2.5 w-2.5 rounded-full bg-white/10" />
+                <div className="h-2.5 w-2.5 rounded-full bg-gray-200 dark:bg-white/10" />
+                <div className="h-2.5 w-2.5 rounded-full bg-gray-200 dark:bg-white/10" />
                 <div className="h-2.5 w-2.5 rounded-full bg-accent/50" />
-                <div className="flex-1 rounded-full bg-white/5 px-3 py-1.5 text-[9px] text-white/30">lookitry.com/mi-tienda</div>
+                <div className="flex-1 rounded-full bg-gray-50 dark:bg-white/5 px-3 py-1.5 text-[9px] text-gray-400 dark:text-white/30">lookitry.com/mi-tienda</div>
               </div>
-              <div className="relative aspect-[16/10] bg-gradient-to-br from-dark-input to-dark p-8 flex items-center justify-center">
-                <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-dark-surface p-6">
+              <div className="relative aspect-[16/10] bg-gradient-to-br from-gray-100 to-white dark:from-dark-input dark:to-dark p-8 flex items-center justify-center">
+                <div className="w-full max-w-sm rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-dark-surface p-6">
                   <div className="mb-4 flex items-center justify-between">
                     <div className="h-6 w-6 rounded-lg bg-accent/20" />
-                    <div className="h-2 w-16 rounded-full bg-white/10" />
+                    <div className="h-2 w-16 rounded-full bg-gray-200 dark:bg-white/10" />
                   </div>
-                  <div className="mb-4 aspect-square rounded-xl bg-white/5 flex items-center justify-center">
-                    <Camera size={28} className="text-white/20" />
+                  <div className="mb-4 aspect-square rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center">
+                    <Camera size={28} className="text-gray-400 dark:text-white/20" />
                   </div>
                   <div className="space-y-2">
-                    <div className="h-3 w-full rounded-full bg-white/5" />
-                    <div className="h-3 w-3/4 rounded-full bg-white/5" />
+                    <div className="h-3 w-full rounded-full bg-gray-50 dark:bg-white/5" />
+                    <div className="h-3 w-3/4 rounded-full bg-gray-50 dark:bg-white/5" />
                   </div>
                   <div className="mt-6 flex gap-2">
                     <div className="h-9 flex-1 rounded-lg bg-accent" />
-                    <div className="h-9 flex-1 rounded-lg border border-white/10" />
+                    <div className="h-9 flex-1 rounded-lg border border-gray-200 dark:border-white/10" />
                   </div>
                 </div>
                 <div className="absolute right-6 top-6 rounded-xl border border-accent/30 bg-accent/10 px-3 py-1.5 backdrop-blur">
@@ -419,7 +419,7 @@ export default function ProbadorVirtualContent() {
 
           <motion.div {...fadeUp(0.2)} className="mt-8 flex flex-wrap items-center justify-center gap-3">
             {['WordPress + WooCommerce', 'Shopify', 'Wix', 'Webflow', 'Square', 'HTML Custom'].map(name => (
-              <div key={name} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white/50">
+              <div key={name} className="rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-white/50">
                 {name}
               </div>
             ))}
@@ -436,7 +436,7 @@ export default function ProbadorVirtualContent() {
                   Activo en{' '}
                   <span className="text-accent">menos de 3 minutos.</span>
                 </h2>
-                <p className="text-base text-white/50">
+                <p className="text-base text-gray-500 dark:text-white/50">
                   No necesitas desarrolladores. El código funciona out-of-the-box.
                 </p>
               </motion.div>
@@ -491,7 +491,7 @@ export default function ProbadorVirtualContent() {
               Empieza hoy.{' '}
               <span className="text-accent">Sin costo de setup.</span>
             </h2>
-            <p className="mx-auto mb-10 max-w-lg text-base text-white/50">
+            <p className="mx-auto mb-10 max-w-lg text-base text-gray-500 dark:text-white/50">
               Trial de 7 días por $20.000 COP. Sin compromisos, sin contratos.
               Activa tu probador en menos de 3 minutos.
             </p>
@@ -499,13 +499,13 @@ export default function ProbadorVirtualContent() {
               <CTAButton href="/trial-checkout" primary>Comenzar mi trial ahora</CTAButton>
               <CTAButton href="/planes" primary={false}>Ver todos los planes</CTAButton>
             </div>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-[10px] font-bold uppercase tracking-widest text-white/30">
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-white/30">
               <span>Sin tarjeta de crédito</span>
-              <span className="h-4 w-px bg-white/10" />
+              <span className="h-4 w-px bg-gray-200 dark:bg-white/10" />
               <span>Setup en 3 minutos</span>
-              <span className="h-4 w-px bg-white/10" />
+              <span className="h-4 w-px bg-gray-200 dark:bg-white/10" />
               <span>Soporte incluido</span>
-              <span className="h-4 w-px bg-white/10" />
+              <span className="h-4 w-px bg-gray-200 dark:bg-white/10" />
               <span>Cancelar cuando quieras</span>
             </div>
           </motion.div>

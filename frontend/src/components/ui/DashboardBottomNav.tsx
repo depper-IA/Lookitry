@@ -1,16 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Package, Sparkles, BarChart3, User } from 'lucide-react';
 
 export function DashboardBottomNav() {
   const pathname = usePathname();
-  const itemClass =
-    'flex flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-2 text-center transition-all duration-200 min-w-0';
-  const labelClass =
-    'text-[8px] leading-[1.05] font-semibold uppercase tracking-[0.08em] text-center break-words';
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard';
@@ -19,80 +14,49 @@ export function DashboardBottomNav() {
 
   if (!pathname.startsWith('/dashboard')) return null;
 
+  const Item = ({
+    href,
+    icon,
+    label,
+  }: {
+    href: string;
+    icon: React.ReactNode;
+    label: string;
+  }) => {
+    const active = isActive(href);
+    return (
+      <Link
+        href={href}
+        aria-current={active ? 'page' : undefined}
+        className="relative flex flex-1 flex-col items-center justify-center gap-[5px] py-2 transition-all duration-150 active:opacity-60"
+      >
+        <span className={`transition-colors duration-150 ${active ? 'text-[#FF5C3A]' : 'text-black/30 dark:text-white/25'}`}>
+          {icon}
+        </span>
+        <span className={`text-[9.5px] font-semibold leading-none tracking-wide transition-colors duration-150 ${
+          active ? 'text-[#FF5C3A]' : 'text-black/30 dark:text-white/25'
+        }`}>
+          {label}
+        </span>
+        {active && (
+          <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-5 rounded-full bg-[#FF5C3A]" />
+        )}
+      </Link>
+    );
+  };
+
   return (
     <nav
       role="navigation"
       aria-label="Navegación del dashboard"
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-safe"
-      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
     >
-      <div className="mx-auto max-w-sm px-3 pt-1">
-        <div className="flex items-center justify-center gap-0.5 rounded-2xl bg-white dark:bg-dark border border-black/10 dark:border-white/10 shadow-2xl shadow-black/20 dark:shadow-black/40 px-1.5 py-1.5 pb-safe">
-          <Link
-            href="/dashboard"
-            aria-current={isActive('/dashboard') ? 'page' : undefined}
-            className={`${itemClass} ${
-              isActive('/dashboard')
-                ? 'bg-accent/15 text-accent'
-                : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
-            }`}
-          >
-            <Home size={20} />
-            <span className={labelClass}>Inicio</span>
-          </Link>
-          
-          <Link
-            href="/dashboard/products"
-            aria-current={isActive('/dashboard/products') ? 'page' : undefined}
-            className={`${itemClass} ${
-              isActive('/dashboard/products')
-                ? 'bg-accent/15 text-accent'
-                : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
-            }`}
-          >
-            <Package size={20} />
-            <span className={labelClass}>Productos</span>
-          </Link>
-          
-          <Link
-            href="/dashboard/generations"
-            aria-current={isActive('/dashboard/generations') ? 'page' : undefined}
-            className={`${itemClass} ${
-              isActive('/dashboard/generations')
-                ? 'bg-accent/15 text-accent'
-                : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
-            }`}
-          >
-            <Sparkles size={20} />
-            <span className={labelClass}>Pruebas IA</span>
-          </Link>
-          
-          <Link
-            href="/dashboard/analytics"
-            aria-current={isActive('/dashboard/analytics') ? 'page' : undefined}
-            className={`${itemClass} ${
-              isActive('/dashboard/analytics')
-                ? 'bg-accent/15 text-accent'
-                : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
-            }`}
-          >
-            <BarChart3 size={20} />
-            <span className={labelClass}>Resultados</span>
-          </Link>
-          
-          <Link
-            href="/dashboard/profile"
-            aria-current={isActive('/dashboard/profile') ? 'page' : undefined}
-            className={`${itemClass} ${
-              isActive('/dashboard/profile')
-                ? 'bg-accent/15 text-accent'
-                : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
-            }`}
-          >
-            <User size={20} />
-            <span className={labelClass}>Perfil</span>
-          </Link>
-        </div>
+      <div className="relative flex items-stretch border-t border-black/[0.06] dark:border-white/[0.06] bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+        <Item href="/dashboard" icon={<Home size={22} />} label="Inicio" />
+        <Item href="/dashboard/products" icon={<Package size={22} />} label="Productos" />
+        <Item href="/dashboard/generations" icon={<Sparkles size={22} />} label="Pruebas" />
+        <Item href="/dashboard/analytics" icon={<BarChart3 size={22} />} label="Resultados" />
+        <Item href="/dashboard/profile" icon={<User size={22} />} label="Perfil" />
       </div>
     </nav>
   );

@@ -226,11 +226,9 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
   const canDescribeWithAI = !!formData.imageUrl && !!formData.name.trim();
   const imagePreviewSrc = imagePreview ? buildProxyImageUrl(imagePreview) : null;
 
-  const autoTriggeredRef = useRef(false);
-
-  // NOTA: Eliminamos el useEffect que disparaba la IA al teclear el nombre letra por letra.
-  // Ahora la IA se dispara explícitamente al Guardar (handleSubmit) si falta la descripción,
-  // o se puede añadir un botón manual.
+  // Tracks the image URL that was last used to generate a description.
+  // Descriptor only re-fires when the image URL actually changes.
+  const lastDescribedImageRef = useRef<string>('');
 
   useEffect(() => {
     if (product) {
@@ -241,6 +239,7 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
         imageUrl: product.imageUrl, category: isCustom ? 'other' : matchedCat, price: product.price ?? undefined,
         badge: product.badge ?? undefined, externalId: product.externalId ?? undefined, attributes: product.attributes || {} });
       setImagePreview(product.imageUrl);
+      lastDescribedImageRef.current = product.imageUrl; // mark existing image as already described
       if (isCustom) { setShowCustomCategory(true); setCustomCategory(product.category); }
     }
   }, [product]);
@@ -259,8 +258,11 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       const url = await uploadService.uploadImage(base64.split(',')[1], `product-${ts}.jpg`, false);
       setImagePreview(url); setFormData(p => ({ ...p, imageUrl: url }));
-      // Trigger AI description when image is uploaded/changed
-      if (formData.name.trim()) triggerDescribeWithAI(url, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category);
+      // Trigger descriptor only when image changes
+      if (formData.name.trim()) {
+        lastDescribedImageRef.current = url;
+        triggerDescribeWithAI(url, formData.name.trim(), formData.category === 'other' ? customCategory : formData.category);
+      }
     } catch (err: any) { setErrors(p => ({ ...p, imageUrl: err.message || 'Error al procesar la imagen' })); } 
     finally { setCompressing(false); }
   };
@@ -316,15 +318,15 @@ export function ProductForm({ product, showExternalId = false, brandId, onSubmit
     try {
       let finalDescription = formData.description;
       const finalCategory = formData.category === 'other' ? customCategory.trim() : formData.category;
-      
-      // Auto-generar la descripción en segundo plano al guardar si no existe, o si cambió la imagen/nombre
-      if (!finalDescription || autoTriggeredRef.current === false) {
-         try {
-           finalDescription = await triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), finalCategory);
-           autoTriggeredRef.current = true;
-         } catch (err) {
-           console.error("AI Describe failed on submit, continuing save...", err);
-         }
+
+      // Only auto-generate on save if there is no description at all (new product, upload failed, etc.)
+      // Never re-fire if image didn't change — upload handler already covered that case
+      if (!finalDescription && formData.imageUrl) {
+        try {
+          finalDescription = await triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), finalCategory);
+        } catch (err) {
+          console.error('AI Describe failed on submit, continuing save...', err);
+        }
       }
 
       await onSubmit({
