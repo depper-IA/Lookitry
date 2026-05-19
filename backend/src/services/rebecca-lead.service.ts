@@ -25,8 +25,17 @@ interface StoredLead {
 }
 
 /**
+ * Normaliza un número de teléfono para evitar duplicados
+ * - Elimina el + inicial
+ * - Elimina ceros iniciales
+ */
+function normalizePhone(phone: string): string {
+  return phone.replace(/^\+/, '').replace(/^0+/, '').trim();
+}
+
+/**
  * Guarda o actualiza un lead de Rebecca en la tabla leads de Supabase.
- * Si el lead existe (por phone), actualiza los campos nuevos.
+ * Si el lead existe (por phone normalizado), actualiza los campos nuevos.
  * Si no existe, lo crea.
  * 
  * IMPORTANTE: Solo se debe llamar en el PRIMER mensaje del lead.
@@ -36,11 +45,14 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
   try {
     const { phone, name, email, source, stage, conversation_summary, last_message } = data;
 
-    // 1. Buscar lead existente por phone
+    // Normalizar phone para evitar duplicados (+57 vs 57)
+    const normalizedPhone = normalizePhone(phone);
+
+    // 1. Buscar lead existente por phone normalizado
     const { data: existingLead, error: findError } = await supabaseAdmin
       .from('leads')
       .select('id, phone, name, email, source, status, bot_status, internal_notes, updated_at')
-      .eq('phone', phone)
+      .eq('phone', normalizedPhone)
       .single();
 
     if (findError && findError.code !== 'PGRST116') {
@@ -75,7 +87,7 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
       const { data: newLead, error: insertError } = await supabaseAdmin
         .from('leads')
         .insert({
-          phone,
+          phone: normalizedPhone,
           name: name || null,
           email: email || null,
           source,
@@ -110,10 +122,11 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
  */
 export async function appendLeadNote(phone: string, note: string): Promise<boolean> {
   try {
+    const normalized = normalizePhone(phone);
     const { data: lead } = await supabaseAdmin
       .from('leads')
       .select('internal_notes')
-      .eq('phone', phone)
+      .eq('phone', normalized)
       .single();
 
     if (!lead) return false;
@@ -131,7 +144,7 @@ export async function appendLeadNote(phone: string, note: string): Promise<boole
         internal_notes: existingNotes + newNote,
         updated_at: now,
       })
-      .eq('phone', phone);
+      .eq('phone', normalized);
 
     if (error) {
       console.error('[RebeccaLead] Error agregando nota:', error);
@@ -150,10 +163,11 @@ export async function appendLeadNote(phone: string, note: string): Promise<boole
  */
 export async function leadExists(phone: string): Promise<boolean> {
   try {
+    const normalized = normalizePhone(phone);
     const { data } = await supabaseAdmin
       .from('leads')
       .select('id')
-      .eq('phone', phone)
+      .eq('phone', normalized)
       .single();
     return !!data;
   } catch {
@@ -169,6 +183,7 @@ export async function updateLeadStage(
   stage: RebeccaLeadData['stage']
 ): Promise<boolean> {
   try {
+    const normalized = normalizePhone(phone);
     const { error } = await supabaseAdmin
       .from('leads')
       .update({
@@ -176,7 +191,7 @@ export async function updateLeadStage(
         bot_status: stage,
         updated_at: new Date().toISOString(),
       })
-      .eq('phone', phone);
+      .eq('phone', normalized);
 
     if (error) {
       console.error('[RebeccaLead] Error actualizando stage:', error);
@@ -195,10 +210,11 @@ export async function updateLeadStage(
  */
 export async function getLeadByPhone(phone: string): Promise<StoredLead | null> {
   try {
+    const normalized = normalizePhone(phone);
     const { data, error } = await supabaseAdmin
       .from('leads')
       .select('*')
-      .eq('phone', phone)
+      .eq('phone', normalized)
       .single();
 
     if (error) return null;
@@ -218,6 +234,7 @@ export async function updateLeadContactInfo(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { name, email } = contactData;
+    const normalized = normalizePhone(phone);
 
     if (!name && !email) {
       return { success: false, error: 'No hay datos para actualizar' };
@@ -233,7 +250,7 @@ export async function updateLeadContactInfo(
     const { error } = await supabaseAdmin
       .from('leads')
       .update(updates)
-      .eq('phone', phone);
+      .eq('phone', normalized);
 
     if (error) {
       console.error('[RebeccaLead] Error actualizando contacto:', error);
@@ -259,10 +276,11 @@ export async function getLeadContextForRebecca(phone: string): Promise<{
   stage?: string;
 }> {
   try {
+    const normalized = normalizePhone(phone);
     const { data, error } = await supabaseAdmin
       .from('leads')
       .select('name, email, status, bot_status')
-      .eq('phone', phone)
+      .eq('phone', normalized)
       .single();
 
     if (error || !data) {
