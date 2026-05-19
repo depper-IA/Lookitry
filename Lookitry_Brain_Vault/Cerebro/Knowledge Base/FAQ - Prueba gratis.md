@@ -10,6 +10,6 @@ Sí. Lookitry ofrece un trial de 7 días por $20.000 COP (pago único). Es un co
 
 El trial incluye 1 producto en el probador y 15 generaciones.
 
-Regístrate en: https://lookitry.com/registro
+Regístrate en: https://lookitry.com/trial-checkout
 
 No se requiere tarjeta de crédito adicional — solo el pago del trial de $20.000.

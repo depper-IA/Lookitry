@@ -34,7 +34,7 @@ export async function getRagContext(query: string): Promise<string> {
   }
 }
 
-async function generateEmbedding(text: string): Promise<number[] | null> {
+export async function generateEmbedding(text: string): Promise<number[] | null> {
   try {
     const ai = getAI();
     const result = await (ai.models as any).embedContent({
