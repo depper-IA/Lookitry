@@ -11,4 +11,4 @@ kb_active: true
 - Registro/Trial: https://lookitry.com/registro
 - Instagram: @look.itry_
 - TikTok: @lookitry
-- Soporte: disponible por WhatsApp para clientes activos (lunes a viernes 9am–6pm Colombia)
+- Soporte: disponible por WhatsApp para clientes activos (24 horas)

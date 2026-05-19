@@ -1,6 +1,7 @@
 // backend/src/routes/index.ts
 
 import { Router } from 'express';
+import { generateEmbedding } from '../services/rag-context.service';
 
 import authRoutes from './auth.routes';
 import brandsRoutes from './brands.routes';
@@ -42,6 +43,23 @@ router.use('/products', productsRoutes);
 router.use('/generations', generationsRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/payments', paymentsRoutes);
+// KB embed — n8n sync workflow (x-admin-key only, no JWT)
+const KB_SYNC_KEY = 'lookitry_kb_sync_2026';
+router.post('/admin/embed', async (req: any, res: any) => {
+  if (req.headers['x-admin-key'] !== KB_SYNC_KEY) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const { text } = req.body;
+  if (!text || typeof text !== 'string') {
+    return res.status(400).json({ error: 'text required' });
+  }
+  const embedding = await generateEmbedding(text.slice(0, 2000));
+  if (!embedding) {
+    return res.status(500).json({ error: 'Embedding generation failed' });
+  }
+  return res.json({ embedding });
+});
+
 router.use('/admin', adminRoutes);
 router.use('/', subscriptionRoutes);
 router.use('/cleanup', cleanupRoutes);

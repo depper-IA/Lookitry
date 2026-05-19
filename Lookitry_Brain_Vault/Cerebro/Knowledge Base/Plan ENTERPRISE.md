@@ -9,11 +9,11 @@ kb_active: true
 Precio: $800.000 COP/mes. Para conocer condiciones específicas, hablar con ventas.
 
 Incluye todo lo del Plan PRO más:
-- +50 productos en el probador
+- +50 productos en el probador (mínimo 20, máximo según necesidad)
 - 2.000 generaciones/mes (volumen a medida según necesidad)
 - Marca blanca
 - Panel de analítica avanzado
-- Acceso a API
+- Acceso a plugin woocommerce y API
 
 Ideal para: grandes retailers y operaciones a escala.
 
