@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabase';
+import { randomUUID } from 'crypto';
 
 export type LeadSource = 'whatsapp_rebecca' | 'web_rebecca';
 
@@ -10,7 +11,6 @@ export interface RebeccaLeadData {
   stage?: 'new' | 'qualified' | 'contacted' | 'interested' | 'converted' | 'lost';
   conversation_summary?: string;
   last_message?: string;
-  // Nuevos campos para perfil completo
   website?: string | null;
   instagram?: string | null;
   tiktok?: string | null;
@@ -37,17 +37,47 @@ interface StoredLead {
   business_type: string | null;
 }
 
-/**
- * Normaliza un número de teléfono para evitar duplicados
- */
 function normalizePhone(phone: string): string {
   return phone.replace(/^\+/, '').replace(/^0+/, '').trim();
 }
 
 /**
- * Guarda o actualiza un lead de Rebecca en la tabla leads de Supabase.
- * Si el lead existe (por phone normalizado), actualiza campos nuevos.
- * Si no existe, lo crea.
+ * Busca lead por phone normalizado O por email (email único)
+ * Retorna el lead si existe por cualquiera de los dos
+ */
+export async function findLeadByPhoneOrEmail(
+  phone: string,
+  email?: string
+): Promise<StoredLead | null> {
+  const normalized = normalizePhone(phone);
+
+  // 1. Buscar por phone primero
+  const { data: byPhone } = await supabaseAdmin
+    .from('leads')
+    .select('*')
+    .eq('phone', normalized)
+    .single();
+
+  if (byPhone) return byPhone;
+
+  // 2. Si hay email, buscar por email ( uniqueness)
+  if (email) {
+    const { data: byEmail } = await supabaseAdmin
+      .from('leads')
+      .select('*')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    if (byEmail) return byEmail;
+  }
+
+  return null;
+}
+
+/**
+ * Guarda o actualiza un lead de Rebecca.
+ * Busca por phone O email. Si existe, actualiza campos nuevos.
+ * Si no existe, crea con UUID único.
  */
 export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ success: boolean; leadId?: string; error?: string }> {
   try {
@@ -55,17 +85,8 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
 
     const normalizedPhone = normalizePhone(phone);
 
-    // Buscar lead existente
-    const { data: existingLead, error: findError } = await supabaseAdmin
-      .from('leads')
-      .select('*')
-      .eq('phone', normalizedPhone)
-      .single();
-
-    if (findError && findError.code !== 'PGRST116') {
-      console.error('[RebeccaLead] Error buscando lead:', findError);
-      return { success: false, error: findError.message };
-    }
+    // Buscar por phone o email
+    const existingLead = await findLeadByPhoneOrEmail(normalizedPhone, email);
 
     const now = new Date().toISOString();
 
@@ -80,7 +101,7 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
       if (country && !existingLead.country) updates.country = country;
       if (business_type && !existingLead.business_type) updates.business_type = business_type;
       if (name && !existingLead.name) updates.name = name;
-      if (email && !existingLead.email) updates.email = email;
+      if (email && !existingLead.email) updates.email = email.toLowerCase().trim();
 
       if (last_message) {
         const existingNotes = existingLead.internal_notes || '';
@@ -96,13 +117,15 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
       return { success: true, leadId: existingLead.id };
 
     } else {
-      // LEAD NUEVO → crear
+      // LEAD NUEVO → crear con UUID único
+      const newId = randomUUID();
       const { data: newLead, error: insertError } = await supabaseAdmin
         .from('leads')
         .insert({
+          id: newId,
           phone: normalizedPhone,
           name: name || null,
-          email: email || null,
+          email: email ? email.toLowerCase().trim() : null,
           source,
           status: stage || 'new',
           bot_status: stage || 'new',
@@ -134,9 +157,6 @@ export async function upsertRebeccaLead(data: RebeccaLeadData): Promise<{ succes
   }
 }
 
-/**
- * Agrega una nota a la conversación del lead
- */
 export async function appendLeadNote(phone: string, note: string): Promise<boolean> {
   try {
     const normalized = normalizePhone(phone);
@@ -151,7 +171,7 @@ export async function appendLeadNote(phone: string, note: string): Promise<boole
     const now = new Date().toISOString();
     const existingNotes = lead.internal_notes || '';
     if (existingNotes.includes(note.substring(0, 50))) return true;
-    
+
     const newNote = `[${now}] ${note}\n`;
 
     const { error } = await supabaseAdmin
@@ -171,9 +191,6 @@ export async function appendLeadNote(phone: string, note: string): Promise<boole
   }
 }
 
-/**
- * Verifica si un lead existe
- */
 export async function leadExists(phone: string): Promise<boolean> {
   try {
     const normalized = normalizePhone(phone);
@@ -188,9 +205,6 @@ export async function leadExists(phone: string): Promise<boolean> {
   }
 }
 
-/**
- * Actualiza el stage del lead
- */
 export async function updateLeadStage(phone: string, stage: RebeccaLeadData['stage']): Promise<boolean> {
   try {
     const normalized = normalizePhone(phone);
@@ -210,9 +224,6 @@ export async function updateLeadStage(phone: string, stage: RebeccaLeadData['sta
   }
 }
 
-/**
- * Obtiene datos del lead por phone
- */
 export async function getLeadByPhone(phone: string): Promise<StoredLead | null> {
   try {
     const normalized = normalizePhone(phone);
@@ -228,9 +239,6 @@ export async function getLeadByPhone(phone: string): Promise<StoredLead | null> 
   }
 }
 
-/**
- * Actualiza datos de contacto del lead (nombre, email)
- */
 export async function updateLeadContactInfo(
   phone: string,
   contactData: { name?: string; email?: string }
@@ -245,7 +253,7 @@ export async function updateLeadContactInfo(
 
     const updates: Partial<StoredLead> = { updated_at: new Date().toISOString() };
     if (name) updates.name = name;
-    if (email) updates.email = email;
+    if (email) updates.email = email.toLowerCase().trim();
 
     const { error } = await supabaseAdmin
       .from('leads')
@@ -265,9 +273,6 @@ export async function updateLeadContactInfo(
   }
 }
 
-/**
- * Actualiza perfil completo del lead (website, instagram, tiktok, ciudad, país)
- */
 export async function updateLeadProfile(
   phone: string,
   profileData: {
@@ -311,9 +316,6 @@ export async function updateLeadProfile(
   }
 }
 
-/**
- * Obtiene contexto del lead para Rebecca
- */
 export async function getLeadContextForRebecca(phone: string): Promise<{
   exists: boolean;
   name?: string;
