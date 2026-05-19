@@ -79,3 +79,5 @@ node-portable.zip
 __pycache__/
 *.pyc
 *.pyo
+# Local Pi runtime state
+.atl/

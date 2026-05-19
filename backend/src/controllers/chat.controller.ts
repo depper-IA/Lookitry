@@ -3,8 +3,8 @@ import { supabaseAdmin } from '../config/supabase';
 import { rebeccaChatService } from '../services/rebecca-chat.service';
 import { rebeccaIdentityService } from '../services/rebecca-identity.service';
 
-const WHATSAPP_HISTORY_TTL = 86400; // 24h
-const WHATSAPP_HISTORY_MAX = 20;
+const WHATSAPP_HISTORY_TTL = 86400 * 7; // 7 días — memoria de conversación extendida
+const WHATSAPP_HISTORY_MAX = 40; // Más contexto para evitar redundancia y mantener flujo
 
 /**
  * POST /api/chat/whatsapp
