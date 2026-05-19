@@ -55,7 +55,10 @@ export default function LandingNav({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [hoverMenu, setHoverMenu] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const howItWorksRef = useRef<HTMLDivElement>(null);
+  const productsRef = useRef<HTMLDivElement>(null);
   const { session } = usePublicSession();
   const { toggleTheme, isDark } = useTheme();
   const [trialPriceCOP, setTrialPriceCOP] = useState(DEFAULT_TRIAL_PRICE_COP);
@@ -168,12 +171,12 @@ export default function LandingNav({
   const isHeroMode = transparent && !scrolled;
   const navBg = isHeroMode
     ? 'bg-transparent'
-    : 'bg-white dark:bg-black shadow-sm dark:shadow-none [&:has(.level1-item:hover)]:shadow-none';
+    : 'bg-white dark:bg-black';
 
   return (
     <>
       <nav
-        className={`${transparent ? 'fixed' : 'sticky'} top-0 left-0 right-0 z-[70] w-full px-4 py-4 sm:px-6 sm:py-5 md:px-12 transition-all duration-300 ${navBg} ${isHeroMode ? '[&:has(.level1-item:hover)]:bg-white dark:[&:has(.level1-item:hover)]:bg-black [&:has(.level1-item:hover)]:shadow-sm [&_.nav-link]:!text-white/80 [&_.nav-products-btn]:!text-white/80 [&_.nav-login-link]:!text-white/80 [&_.nav-currency-btn]:!text-white/50 [&_.nav-theme-btn]:!text-white/60 [&_.nav-theme-btn]:!border-white/20 [&_.nav-theme-btn]:!bg-white/10 [&_.nav-logo-text]:!text-white [&_.nav-mobile-menu-btn]:!text-white/80' : ''}`}
+        className={`${transparent ? 'fixed' : 'sticky'} top-0 left-0 right-0 z-[70] w-full px-4 py-4 sm:px-6 sm:py-5 md:px-12 transition-all duration-300 ${navBg}`}
         role="navigation"
         aria-label="Navegacion principal"
         style={{
@@ -223,30 +226,52 @@ export default function LandingNav({
           <div className="hidden grow items-stretch justify-center gap-4 lg:flex xl:gap-8">
 
             {/* TRIGGER 1 — Cómo funciona */}
-            <div className="level1-item flex items-center">
+            <div
+              ref={howItWorksRef}
+              className="level1-item flex items-center"
+              onMouseEnter={() => setHoverMenu('howItWorks')}
+              onMouseLeave={() => setHoverMenu(null)}
+            >
               <button
                 aria-haspopup="true"
-                className="nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white [.level1-item:hover_&]:!text-accent"
+                aria-expanded={hoverMenu === 'howItWorks'}
+                className="nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 hover:text-dark dark:hover:text-white"
+                style={{ color: hoverMenu === 'howItWorks' ? 'var(--accent)' : undefined }}
               >
                 Cómo funciona
                 <ChevronDown
                   size={12}
-                  className="transition-transform duration-300 [.level1-item:hover_&]:rotate-180"
+                  className="transition-transform duration-300"
+                  style={{ transform: hoverMenu === 'howItWorks' ? 'rotate(180deg)' : undefined }}
                   aria-hidden="true"
                 />
               </button>
 
-              {/* HOW panel — slides from above, clipped by overflow-hidden */}
-              <div className="absolute top-full left-0 right-0 overflow-hidden pointer-events-none [.level1-item:hover_&]:pointer-events-auto z-50">
+              {/* HOW panel */}
+              <div
+                className="absolute top-full left-0 right-0 z-50"
+                style={{ overflow: 'hidden' }}
+                onMouseEnter={() => setHoverMenu('howItWorks')}
+                onMouseLeave={() => setHoverMenu(null)}
+              >
                 <div
-                  className="w-full bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/40 -translate-y-[calc(100%+1px)] [.level1-item:hover_&]:translate-y-0 transition-transform duration-[300ms] will-change-transform"
-                  style={{ transitionTimingFunction: PANEL_EASE }}
+                  className="w-full bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/40 -translate-y-[calc(100%+1px)] transition-transform duration-[300ms] will-change-transform"
+                  style={{
+                    transitionTimingFunction: PANEL_EASE,
+                    transform: hoverMenu === 'howItWorks' ? 'translateY(0)' : undefined,
+                    opacity: hoverMenu === 'howItWorks' ? 1 : 0,
+                  }}
                   role="menu"
                 >
                   {/* Content fades+slides in after panel arrives */}
                   <div
-                    className="opacity-0 -translate-y-3 transition-[opacity,transform] duration-[280ms] delay-0 [.level1-item:hover_&]:opacity-100 [.level1-item:hover_&]:translate-y-0 [.level1-item:hover_&]:delay-[150ms]"
-                    style={{ transitionTimingFunction: PANEL_EASE }}
+                    className="opacity-0 -translate-y-3 transition-[opacity,transform] duration-[280ms]"
+                    style={{
+                      transitionTimingFunction: PANEL_EASE,
+                      opacity: hoverMenu === 'howItWorks' ? 1 : 0,
+                      transform: hoverMenu === 'howItWorks' ? 'translateY(0)' : undefined,
+                      transitionDelay: hoverMenu === 'howItWorks' ? '150ms' : '0ms',
+                    }}
                   >
                     <div className="mx-auto max-w-7xl px-6 md:px-12 py-7">
                       <div className="flex gap-4" style={{ height: 300 }}>
@@ -344,29 +369,51 @@ export default function LandingNav({
             </div>
 
             {/* TRIGGER 2 — Productos */}
-            <div className="level1-item flex items-center">
+            <div
+              ref={productsRef}
+              className="level1-item flex items-center"
+              onMouseEnter={() => setHoverMenu('products')}
+              onMouseLeave={() => setHoverMenu(null)}
+            >
               <button
                 aria-haspopup="true"
-                className="nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white [.level1-item:hover_&]:!text-accent"
+                aria-expanded={hoverMenu === 'products'}
+                className="nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 hover:text-dark dark:hover:text-white"
+                style={{ color: hoverMenu === 'products' ? 'var(--accent)' : undefined }}
               >
                 Productos
                 <ChevronDown
                   size={12}
-                  className="transition-transform duration-300 [.level1-item:hover_&]:rotate-180"
+                  className="transition-transform duration-300"
+                  style={{ transform: hoverMenu === 'products' ? 'rotate(180deg)' : undefined }}
                   aria-hidden="true"
                 />
               </button>
 
               {/* PRODUCTS panel */}
-              <div className="absolute top-full left-0 right-0 overflow-hidden pointer-events-none [.level1-item:hover_&]:pointer-events-auto z-50">
+              <div
+                className="absolute top-full left-0 right-0 z-50"
+                style={{ overflow: 'hidden' }}
+                onMouseEnter={() => setHoverMenu('products')}
+                onMouseLeave={() => setHoverMenu(null)}
+              >
                 <div
-                  className="w-full bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/40 -translate-y-[calc(100%+1px)] [.level1-item:hover_&]:translate-y-0 transition-transform duration-[300ms] will-change-transform"
-                  style={{ transitionTimingFunction: PANEL_EASE }}
+                  className="w-full bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/40 -translate-y-[calc(100%+1px)] transition-transform duration-[300ms] will-change-transform"
+                  style={{
+                    transitionTimingFunction: PANEL_EASE,
+                    transform: hoverMenu === 'products' ? 'translateY(0)' : undefined,
+                    opacity: hoverMenu === 'products' ? 1 : 0,
+                  }}
                   role="menu"
                 >
                   <div
-                    className="opacity-0 -translate-y-3 transition-[opacity,transform] duration-[280ms] delay-0 [.level1-item:hover_&]:opacity-100 [.level1-item:hover_&]:translate-y-0 [.level1-item:hover_&]:delay-[150ms]"
-                    style={{ transitionTimingFunction: PANEL_EASE }}
+                    className="opacity-0 -translate-y-3 transition-[opacity,transform] duration-[280ms]"
+                    style={{
+                      transitionTimingFunction: PANEL_EASE,
+                      opacity: hoverMenu === 'products' ? 1 : 0,
+                      transform: hoverMenu === 'products' ? 'translateY(0)' : undefined,
+                      transitionDelay: hoverMenu === 'products' ? '150ms' : '0ms',
+                    }}
                   >
                     <div className="mx-auto max-w-7xl px-6 md:px-12 py-8">
                       <p className="text-[9px] font-black uppercase tracking-[0.25em] text-text-secondary mb-6">
