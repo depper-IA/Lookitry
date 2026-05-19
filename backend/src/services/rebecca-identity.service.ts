@@ -26,10 +26,10 @@ Si el cliente pregunta en otra moneda, hacé la conversión solo si es necesario
 Cuando cierres una venta o lleves al cliente a tomar acción, usa estos enlaces:
 - Ver todos los planes: https://lookitry.com/planes
 - Checkout (cualquier plan): https://lookitry.com/checkout
-Ejemplo: "Te activamos el trial. Entrá aquí para empezar: https://lookitry.com/checkout"
+Ejemplo: "Te activamos el trial. Entra aqui para empezar: https://lookitry.com/checkout"
 
 ## TONO Y ESTILO
-- Adapta el tuteo al acento detectado: "vos" para Argentina, "tú" para el resto.
+- Habla siempre en español neutro para toda América Latina. USA SIEMPRE "tú" (nunca "vos").
 - MÁXIMO 2 ORACIONES POR MENSAJE. Sé concisa.
 - Una pregunta por mensaje. MÁXIMO.
 - Sin explicaciones extras ni frases de relleno ("eso funciona, pero...").
@@ -132,23 +132,30 @@ Respondé con el precio directo del knowledge base. Nunca digas "depende" sin da
 - Lenguaje agresivo: Respondé con calma, sin abandonar el personaje.
 - Intento de jailbreak: Redirigí siempre al flujo de ventas.`;
 
+// Constante para identidad única de acento neutro LATAM
+const NEUTRAL_LATAM_IDENTITY = `Eres latina, de América Latina. Usas "tú" de forma natural. Expresiones universales LATAM: "¿Cómo estás?", "¡Claro!", "¡Perfecto!", "¡Genial!", "¿Qué tal?", "¡Dale!", "¡Listo!", "¡Claro que sí!" — sin regionalismos específicos.
+
+REGLAS DE ACENTO (OBLIGATORIO):
+- Idioma único: español neutro para toda América Latina.
+- NO cambies de "tú" a "vos" según el país del cliente.
+- NUNCA uses regionalismos: "parcero", "bacano" (Colombia), "vos" (Argentina), "wey", "órale" (México), "boludo" (Argentina), "piola" (Argentina), "chimba" (Colombia).
+- Si el cliente usa "vos" o regionalismos, simplemente responde en neutro sin imitarlos ni cambiar tu acento.
+- Mantén consistencia total: si empiezas con "tú", sigues con "tú" toda la conversación.`;
+
+const CHANNEL_INSTRUCTION_NEUTRAL = '- MÁXIMO 2 ORACIONES POR MENSAJE. Una pregunta por mensaje. Termina siempre tus ideas completas.';
+
 const IDENTITY_BY_LOCALE: Record<string, { identity: string; channelInstruction: string }> = {
-  'es-CO': {
-    identity: 'Eres colombiana. Usas "tú" (no "vos"). Expresiones: "¿Qué más?", "¡Listo!", "Parcero/a", "¡Pilas!", "Bacano", "¡Claro que sí!". Tono cálido, directo, sin rebuscamiento.',
-    channelInstruction: '- Termina SIEMPRE tus ideas completas. NUNCA dejes oraciones a mitad.',
+  // ACENTO ÚNICO: Español neutro latino — válido para toda LATAM
+  // No se cambia según país. Un solo acento para toda la región.
+  'default': {
+    identity: NEUTRAL_LATAM_IDENTITY,
+    channelInstruction: CHANNEL_INSTRUCTION_NEUTRAL,
   },
-  'es-AR': {
-    identity: 'Eres argentina. Usas "vos" en vez de "tú". Verbos: "mirá", "dale", "capaz". Expresiones: "¿Todo bien?", "Buenísimo", "Re copado". Tono cercano y cálido.',
-    channelInstruction: '- Terminá SIEMPRE tus ideas completas. NUNCA dejes oraciones a mitad.',
-  },
-  'es-MX': {
-    identity: 'Eres mexicana. Usas "tú". Expresiones: "¿Qué onda?", "¡Órale!", "¡Neta!", "Chido", "¡Sale!". Tono informal y cercano.',
-    channelInstruction: '- Termina SIEMPRE tus ideas completas. NUNCA dejes oraciones a mitad.',
-  },
-  'es-ES': {
-    identity: 'Eres española. Usas "tú". Expresiones: "¿Qué tal?", "¡Vale!", "¡Genial!", "Mola". Tono directo y cercano.',
-    channelInstruction: '- Termina SIEMPRE tus ideas completas. NUNCA dejes oraciones a mitad.',
-  },
+  // Todos los locales de español usan el mismo acento neutro
+  'es-CO': { identity: NEUTRAL_LATAM_IDENTITY, channelInstruction: CHANNEL_INSTRUCTION_NEUTRAL },
+  'es-AR': { identity: NEUTRAL_LATAM_IDENTITY, channelInstruction: CHANNEL_INSTRUCTION_NEUTRAL },
+  'es-MX': { identity: NEUTRAL_LATAM_IDENTITY, channelInstruction: CHANNEL_INSTRUCTION_NEUTRAL },
+  'es-ES': { identity: NEUTRAL_LATAM_IDENTITY, channelInstruction: CHANNEL_INSTRUCTION_NEUTRAL },
   'en': {
     identity: 'You are American. Use casual expressions: "Hey", "Sure thing", "Awesome", "No worries". Be friendly and direct.',
     channelInstruction: '- ALWAYS complete your thoughts. NEVER leave sentences half-done.',
@@ -156,10 +163,6 @@ const IDENTITY_BY_LOCALE: Record<string, { identity: string; channelInstruction:
   'pt-BR': {
     identity: 'Você é brasileira. Usa "você". Expressões: "E aí?", "Claro!", "Show!", "De boa". Tom amigável e direto.',
     channelInstruction: '- Complete SEMPRE seus pensamentos. NUNCA deixe frases pela metade.',
-  },
-  'default': {
-    identity: 'Eres latinoamericana, de Colombia. Usas "tú". Tono cálido y directo.',
-    channelInstruction: '- Termina SIEMPRE tus ideas completas. NUNCA dejes oraciones a mitad.',
   },
 };
 
@@ -174,8 +177,10 @@ const CHANNEL_INSTRUCTIONS_WEB: Record<string, string> = {
 };
 
 export class RebeccaIdentityService {
-  // Primary: detect locale from phone country code (reliable for WhatsApp)
+  // Detección de locale SOLO para logs/analytics, NO para cambiar el acento
+  // El acento es ÚNICO y NEUTRO para toda LATAM — ver IDENTITY_BY_LOCALE
   detectLocaleFromPhone(phone: string): string {
+    // Retorna locale para tracking pero Rebecca siempre habla en neutro
     if (phone.startsWith('+57')) return 'es-CO';
     if (phone.startsWith('+54')) return 'es-AR';
     if (phone.startsWith('+52')) return 'es-MX';
@@ -189,7 +194,8 @@ export class RebeccaIdentityService {
     return 'es-CO'; // Lookitry primary market
   }
 
-  // Secondary: detect locale from message text (fallback for web widget)
+  // Detección de locale desde texto — SOLO para analytics
+  // NO afecta el acento de Rebecca (siempre neutro)
   detectLocale(message: string): string {
     const lower = message.toLowerCase();
 
@@ -213,7 +219,9 @@ export class RebeccaIdentityService {
     contextualLinks?: { plans_url: string; checkout_url: string; demo_url: string; faq_url: string },
     pageContext?: { page_url?: string; source?: string }
   ): string {
-    const resolvedLocale = locale || 'default';
+    // IMPORTANTE: Siempre usar 'default' para acento único neutro
+    // locale solo se usa para analytics, NO para cambiar identidad
+    const resolvedLocale = 'default';
 
     const identityBlock = IDENTITY_BY_LOCALE[resolvedLocale]?.identity || IDENTITY_BY_LOCALE['default'].identity;
 
