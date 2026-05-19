@@ -33,7 +33,7 @@ export default function LandingHero() {
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen items-end overflow-hidden bg-black pb-20 sm:pb-28"
+      className="relative flex min-h-screen items-end overflow-hidden bg-black pb-20 sm:pb-28 md:pb-36 lg:pb-44"
       aria-label="Sección principal"
     >
       {/* ── Video Background ─────────────────────────────────────────── */}
@@ -73,7 +73,7 @@ export default function LandingHero() {
           className="max-w-2xl"
         >
           <h1
-            className="mb-5 font-jakarta font-black leading-[1.05] tracking-[-0.03em] text-white sm:mb-7"
+            className="mb-5 font-jakarta font-black leading-[1.05] tracking-[-0.03em] text-white sm:mb-7 md:mb-9 lg:mb-11"
             style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
           >
             <span className="block">{LANDING_COPY.hero.title}</span>
@@ -93,7 +93,7 @@ export default function LandingHero() {
             </span>
           </h1>
 
-          <p className="mb-9 max-w-lg font-dm-sans text-base font-light leading-[1.65] text-white/65 sm:mb-11 sm:text-lg">
+          <p className="mb-9 max-w-lg font-dm-sans text-base font-light leading-[1.65] text-white/65 sm:mb-11 sm:text-lg md:mb-14">
             {LANDING_COPY.hero.subtitle}
           </p>
 
@@ -112,7 +112,7 @@ export default function LandingHero() {
             </Link>
           </div>
 
-          <div className="mt-10 flex flex-wrap items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white/55 sm:gap-10">
+          <div className="mt-10 flex flex-wrap items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white/55 sm:gap-10 md:mt-14">
             <div className="flex items-center gap-2 hover:text-white/80 transition-colors">
               <ShieldCheck size={13} className="shrink-0 text-accent" aria-hidden="true" /> 100% Seguro
             </div>
