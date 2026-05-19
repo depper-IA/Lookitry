@@ -202,3 +202,75 @@ export async function getLeadByPhone(phone: string): Promise<StoredLead | null> 
     return null;
   }
 }
+
+/**
+ * Actualiza datos de contacto del lead (nombre, email)
+ * Llama este endpoint cuando Rebecca captura estos datos
+ */
+export async function updateLeadContactInfo(
+  phone: string,
+  contactData: { name?: string; email?: string }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { name, email } = contactData;
+
+    if (!name && !email) {
+      return { success: false, error: 'No hay datos para actualizar' };
+    }
+
+    const updates: Partial<StoredLead> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (name) updates.name = name;
+    if (email) updates.email = email;
+
+    const { error } = await supabaseAdmin
+      .from('leads')
+      .update(updates)
+      .eq('phone', phone);
+
+    if (error) {
+      console.error('[RebeccaLead] Error actualizando contacto:', error);
+      return { success: false, error: error.message };
+    }
+
+    console.log(`[RebeccaLead] Contacto actualizado para ${phone}:`, contactData);
+    return { success: true };
+  } catch (err) {
+    console.error('[RebeccaLead] Error actualizando contacto:', err);
+    return { success: false, error: 'Error interno' };
+  }
+}
+
+/**
+ * Obtiene contexto del lead para enviarlo a Rebecca
+ * Incluye nombre y email si existen
+ */
+export async function getLeadContextForRebecca(phone: string): Promise<{
+  exists: boolean;
+  name?: string;
+  email?: string;
+  stage?: string;
+}> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('leads')
+      .select('name, email, status, bot_status')
+      .eq('phone', phone)
+      .single();
+
+    if (error || !data) {
+      return { exists: false };
+    }
+
+    return {
+      exists: true,
+      name: data.name || undefined,
+      email: data.email || undefined,
+      stage: data.bot_status || data.status || undefined,
+    };
+  } catch {
+    return { exists: false };
+  }
+}

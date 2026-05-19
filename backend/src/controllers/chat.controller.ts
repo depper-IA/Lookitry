@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { rebeccaChatService } from '../services/rebecca-chat.service';
 import { rebeccaIdentityService } from '../services/rebecca-identity.service';
-import { upsertRebeccaLead, appendLeadNote } from '../services/rebecca-lead.service';
+import { upsertRebeccaLead, appendLeadNote, updateLeadContactInfo, getLeadContextForRebecca, updateLeadStage } from '../services/rebecca-lead.service';
 import type { LeadSource } from '../services/rebecca-lead.service';
 
 const WHATSAPP_HISTORY_TTL = 86400 * 7; // 7 días — memoria de conversación extendida
@@ -405,6 +405,70 @@ export const trackPage = async (req: Request, res: Response) => {
     return res.status(200).json({ success: true });
   } catch (error: any) {
     console.error('[Chat] trackPage:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * POST /api/chat/lead/contact
+ * Actualiza los datos de contacto del lead (nombre, email)
+ * Rebecca llama esto cuando captura estos datos
+ */
+export const updateLeadContact = async (req: Request, res: Response) => {
+  try {
+    const { phone, name, email } = req.body as {
+      phone?: unknown;
+      name?: unknown;
+      email?: unknown;
+    };
+
+    if (typeof phone !== 'string' || !phone.trim()) {
+      return res.status(400).json({ error: 'phone required' });
+    }
+
+    if (!name && !email) {
+      return res.status(400).json({ error: 'name or email required' });
+    }
+
+    const contactData: { name?: string; email?: string } = {};
+    if (typeof name === 'string' && name.trim()) contactData.name = name.trim();
+    if (typeof email === 'string' && email.trim()) contactData.email = email.trim();
+
+    const result = await updateLeadContactInfo(phone.trim(), contactData);
+
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    // Si se capturó email, marcar lead como qualified
+    if (contactData.email) {
+      await updateLeadStage(phone.trim(), 'qualified');
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (error: any) {
+    console.error('[Chat] updateLeadContact:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * GET /api/chat/lead/:phone
+ * Obtiene el contexto del lead para Rebecca (nombre, email, stage)
+ */
+export const getLeadContext = async (req: Request, res: Response) => {
+  try {
+    const { phone } = req.params;
+
+    if (!phone || !phone.trim()) {
+      return res.status(400).json({ error: 'phone required' });
+    }
+
+    const context = await getLeadContextForRebecca(phone.trim());
+
+    return res.status(200).json(context);
+  } catch (error: any) {
+    console.error('[Chat] getLeadContext:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
