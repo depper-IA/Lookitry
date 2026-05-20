@@ -296,13 +296,52 @@ export const widgetReply = async (req: Request, res: Response) => {
     const locale = rebeccaIdentityService.detectLocale(message);
     const reply = await rebeccaChatService.replyForChannel('web', session_id, message, parsedHistory, locale, parsedContext);
 
-    // Guardar lead en Supabase para web (usa session_id como identifier)
-    await upsertRebeccaLead({
-      phone: session_id, // session_id como identifier para web
-      source: 'web_rebecca',
-      last_message: message,
-    });
-    await appendLeadNote(session_id, `Rebecca: ${reply}`);
+    // Guardar en lead_messages para persistencia web
+    let { data: conversation } = await supabaseAdmin
+      .from('lead_conversations')
+      .select('id')
+      .eq('platform_id', session_id)
+      .eq('source', 'web')
+      .maybeSingle();
+
+    if (!conversation) {
+      const { data: newConv, error: convError } = await supabaseAdmin
+        .from('lead_conversations')
+        .insert({
+          platform_id: session_id,
+          source: 'web',
+          status: 'active',
+        })
+        .select('id')
+        .single();
+
+      if (convError) throw convError;
+      conversation = newConv;
+    }
+
+    // Guardar mensaje del usuario
+    await supabaseAdmin
+      .from('lead_messages')
+      .insert({
+        conversation_id: conversation.id,
+        sender_type: 'lead',
+        content: message,
+      });
+
+    // Guardar respuesta de Rebecca
+    await supabaseAdmin
+      .from('lead_messages')
+      .insert({
+        conversation_id: conversation.id,
+        sender_type: 'assistant',
+        content: reply,
+      });
+
+    // Actualizar updated_at de conversación
+    await supabaseAdmin
+      .from('lead_conversations')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', conversation.id);
 
     return res.status(200).json({ reply, session_id });
   } catch (error: any) {
