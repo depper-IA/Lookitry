@@ -59,7 +59,29 @@ export default function LandingNav({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const howItWorksRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { session } = usePublicSession();
+
+  const handleMouseEnter = (menuId: string) => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setHoverMenu(menuId);
+  };
+
+  const handleMouseLeave = () => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    closeTimeoutRef.current = setTimeout(() => {
+      setHoverMenu(null);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
   const { toggleTheme, isDark } = useTheme();
   const [trialPriceCOP, setTrialPriceCOP] = useState(DEFAULT_TRIAL_PRICE_COP);
   const [basicPriceCOP, setBasicPriceCOP] = useState(DEFAULT_BASIC_PRICE_COP);
@@ -229,8 +251,8 @@ export default function LandingNav({
             <div
               ref={howItWorksRef}
               className="level1-item flex items-center"
-              onMouseEnter={() => setHoverMenu('howItWorks')}
-              onMouseLeave={() => setHoverMenu(null)}
+              onMouseEnter={() => handleMouseEnter('howItWorks')}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 aria-haspopup="true"
@@ -251,8 +273,8 @@ export default function LandingNav({
               <div
                 className="absolute top-full left-0 right-0 z-50"
                 style={{ overflow: 'hidden' }}
-                onMouseEnter={() => setHoverMenu('howItWorks')}
-                onMouseLeave={() => setHoverMenu(null)}
+                onMouseEnter={() => handleMouseEnter('howItWorks')}
+                onMouseLeave={handleMouseLeave}
               >
                 <div
                   className="w-full bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/40 -translate-y-[calc(100%+1px)] transition-transform duration-[300ms] will-change-transform"
@@ -372,8 +394,8 @@ export default function LandingNav({
             <div
               ref={productsRef}
               className="level1-item flex items-center"
-              onMouseEnter={() => setHoverMenu('products')}
-              onMouseLeave={() => setHoverMenu(null)}
+              onMouseEnter={() => handleMouseEnter('products')}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 aria-haspopup="true"
@@ -394,8 +416,8 @@ export default function LandingNav({
               <div
                 className="absolute top-full left-0 right-0 z-50"
                 style={{ overflow: 'hidden' }}
-                onMouseEnter={() => setHoverMenu('products')}
-                onMouseLeave={() => setHoverMenu(null)}
+                onMouseEnter={() => handleMouseEnter('products')}
+                onMouseLeave={handleMouseLeave}
               >
                 <div
                   className="w-full bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/40 -translate-y-[calc(100%+1px)] transition-transform duration-[300ms] will-change-transform"
