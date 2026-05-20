@@ -7,7 +7,7 @@ import { ChatInvite } from './ChatInvite';
 import { useChatSession } from './hooks/useChatSession';
 import { useChatSend } from './hooks/useChatSend';
 
-const WIDGET_ENABLED = process.env.NEXT_PUBLIC_REBECCA_WIDGET_ENABLED === 'true';
+const WIDGET_ENABLED = process.env.NEXT_PUBLIC_REBECCA_WIDGET_ENABLED === 'true' || process.env.NODE_ENV === 'development';
 
 function ChatWidgetInner() {
   const [isOpen, setIsOpen] = useState(false);

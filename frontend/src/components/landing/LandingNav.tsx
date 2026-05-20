@@ -60,12 +60,22 @@ export default function LandingNav({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const howItWorksRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { session } = usePublicSession();
 
-  const toggleMenu = (menuId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setHoverMenu(prev => prev === menuId ? null : menuId);
+  const handleMouseEnter = (menuId: string) => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setHoverMenu(menuId);
+  };
+
+  const handleMouseLeave = () => {
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    closeTimeoutRef.current = setTimeout(() => {
+      setHoverMenu(null);
+    }, 300);
   };
 
   useEffect(() => {
@@ -220,28 +230,28 @@ export default function LandingNav({
                 <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className={`object-contain transition-opacity duration-300 ${isHeroMode ? 'opacity-0' : 'dark:opacity-0 opacity-100'}`} priority />
                 <Image src="/logo.svg" alt="Lookitry" fill className={`object-contain transition-opacity duration-300 ${isHeroMode ? 'opacity-100' : 'dark:opacity-100 opacity-0'}`} priority />
               </div>
-              <span className="nav-logo-text font-jakarta text-xl font-bold tracking-tighter text-black dark:text-white sm:text-2xl transition-colors duration-300 group-hover:text-dark dark:group-hover:text-white">
+              <span className={`nav-logo-text font-jakarta text-xl font-bold tracking-tighter sm:text-2xl transition-colors duration-300 group-hover:text-dark dark:group-hover:text-white ${isHeroMode ? 'text-white' : 'text-black dark:text-white'}`}>
                 Look<span className="text-accent">itry</span>
               </span>
             </Link>
 
             <div
-              className="ml-1 hidden items-center gap-2 rounded-full border border-black/10 bg-black/5 px-2.5 py-1.5 sm:ml-2 sm:flex sm:px-3 dark:border-white/10 dark:bg-white/5"
+              className={`ml-1 hidden items-center gap-2 rounded-full border px-2.5 py-1.5 sm:ml-2 sm:flex sm:px-3 ${isHeroMode ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5 dark:border-white/10 dark:bg-white/5'}`}
               role="group"
               aria-label="Selector de moneda"
             >
               <button
                 onClick={() => onCurrencyChange('COP')}
                 aria-pressed={currency === 'COP'}
-                className={`nav-currency-btn cursor-pointer text-[9px] font-bold uppercase transition-all duration-200 sm:text-[8px] ${currency === 'COP' ? 'text-accent scale-110' : 'text-black/45 hover:text-dark dark:text-white/50 dark:hover:text-white'}`}
+                className={`nav-currency-btn cursor-pointer text-[9px] font-bold uppercase transition-all duration-200 sm:text-[8px] ${currency === 'COP' ? 'text-accent scale-110' : (isHeroMode ? 'text-white/50 hover:text-white' : 'text-black/45 hover:text-dark dark:text-white/50 dark:hover:text-white')}`}
               >
                 COP
               </button>
-              <div className="h-2.5 w-[1px] bg-black/10 dark:bg-white/10" aria-hidden="true" />
+              <div className={`h-2.5 w-[1px] ${isHeroMode ? 'bg-white/10' : 'bg-black/10 dark:bg-white/10'}`} aria-hidden="true" />
               <button
                 onClick={() => onCurrencyChange('USD')}
                 aria-pressed={currency === 'USD'}
-                className={`nav-currency-btn cursor-pointer text-[9px] font-bold uppercase transition-all duration-200 sm:text-[8px] ${currency === 'USD' ? 'text-accent scale-110' : 'text-black/45 hover:text-dark dark:text-white/50 dark:hover:text-white'}`}
+                className={`nav-currency-btn cursor-pointer text-[9px] font-bold uppercase transition-all duration-200 sm:text-[8px] ${currency === 'USD' ? 'text-accent scale-110' : (isHeroMode ? 'text-white/50 hover:text-white' : 'text-black/45 hover:text-dark dark:text-white/50 dark:hover:text-white')}`}
               >
                 USD
               </button>
@@ -255,12 +265,13 @@ export default function LandingNav({
             <div
               ref={howItWorksRef}
               className="level1-item flex items-center"
+              onMouseEnter={() => handleMouseEnter('howItWorks')}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 aria-haspopup="true"
                 aria-expanded={hoverMenu === 'howItWorks'}
-                onClick={(e) => toggleMenu('howItWorks', e)}
-                className="nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 hover:text-dark dark:hover:text-white"
+                className={`nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 ${isHeroMode ? 'text-white/80 hover:text-white' : 'text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white'}`}
                 style={{ color: hoverMenu === 'howItWorks' ? 'var(--accent)' : undefined }}
               >
                 Cómo funciona
@@ -276,6 +287,8 @@ export default function LandingNav({
               <div
                 className="absolute top-full left-0 right-0 z-50"
                 style={{ overflow: 'hidden' }}
+                onMouseEnter={() => handleMouseEnter('howItWorks')}
+                onMouseLeave={handleMouseLeave}
               >
                 <div
                   className="w-full bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/40 -translate-y-[calc(100%+1px)] transition-transform duration-[300ms] will-change-transform"
@@ -395,12 +408,13 @@ export default function LandingNav({
             <div
               ref={productsRef}
               className="level1-item flex items-center"
+              onMouseEnter={() => handleMouseEnter('products')}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 aria-haspopup="true"
                 aria-expanded={hoverMenu === 'products'}
-                onClick={(e) => toggleMenu('products', e)}
-                className="nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 hover:text-dark dark:hover:text-white"
+                className={`nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 ${isHeroMode ? 'text-white/80 hover:text-white' : 'text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white'}`}
                 style={{ color: hoverMenu === 'products' ? 'var(--accent)' : undefined }}
               >
                 Productos
@@ -416,6 +430,8 @@ export default function LandingNav({
               <div
                 className="absolute top-full left-0 right-0 z-50"
                 style={{ overflow: 'hidden' }}
+                onMouseEnter={() => handleMouseEnter('products')}
+                onMouseLeave={handleMouseLeave}
               >
                 <div
                   className="w-full bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/40 -translate-y-[calc(100%+1px)] transition-transform duration-[300ms] will-change-transform"
@@ -521,7 +537,7 @@ export default function LandingNav({
               <Link
                 key={item.label}
                 href={item.href}
-                className="nav-link group relative text-[11px] font-bold uppercase tracking-[0.15em] text-black/60 transition-all duration-300 hover:text-dark dark:text-white/60 dark:hover:text-white"
+                className={`nav-link group relative text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${isHeroMode ? 'text-white/60 hover:text-white' : 'text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white'}`}
               >
                 {item.label}
                 <span className="nav-link-underline absolute bottom-0 left-0 right-0 h-[1px] origin-center scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" />
@@ -574,7 +590,7 @@ export default function LandingNav({
             ) : (
               <Link
                 href="/login"
-                className="nav-login-link hidden text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 transition-all duration-300 hover:text-dark hover:scale-105 sm:block dark:text-white/60 dark:hover:text-white"
+                className={`nav-login-link hidden text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 sm:block ${isHeroMode ? 'text-white/60 hover:text-white' : 'text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white'}`}
               >
                 Ingresar
               </Link>
@@ -582,7 +598,7 @@ export default function LandingNav({
 
             <button
               onClick={toggleTheme}
-              className="nav-theme-btn flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-black/5 text-black/60 transition-all duration-300 hover:scale-110 hover:border-accent/40 hover:text-accent dark:border-white/10 dark:bg-white/5 dark:text-white/60 dark:hover:text-accent"
+              className={`nav-theme-btn flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300 hover:scale-110 hover:border-accent/40 hover:text-accent ${isHeroMode ? 'border-white/10 bg-white/5 text-white/60 hover:text-white' : 'border-black/10 bg-black/5 text-black/60 dark:border-white/10 dark:bg-white/5 dark:text-white/60 dark:hover:text-accent'}`}
               aria-label={mounted && isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
               title={mounted && isDark ? 'Modo claro' : 'Modo oscuro'}
             >
@@ -602,7 +618,7 @@ export default function LandingNav({
             </Link>
 
             <button
-              className="nav-mobile-menu-btn p-2 text-dark/80 transition-all duration-300 hover:text-dark hover:scale-110 lg:hidden dark:text-white/80 dark:hover:text-white"
+              className={`nav-mobile-menu-btn p-2 transition-all duration-300 hover:scale-110 lg:hidden ${isHeroMode ? 'text-white hover:text-white' : 'text-dark/80 hover:text-dark dark:text-white/80 dark:hover:text-white'}`}
               onClick={() => {
                 setMobileMenuOpen(!mobileMenuOpen);
                 if (!mobileMenuOpen) fetchTrialDataIfNeeded();
@@ -768,8 +784,7 @@ export default function LandingNav({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[45] bg-black/40 backdrop-blur-[2px]"
-            onClick={() => setHoverMenu(null)}
+            className="fixed inset-0 z-[45] bg-black/40 backdrop-blur-[2px] pointer-events-none"
           />
         )}
       </AnimatePresence>
