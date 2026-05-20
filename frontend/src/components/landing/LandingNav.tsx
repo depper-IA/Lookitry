@@ -59,28 +59,40 @@ export default function LandingNav({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const howItWorksRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { session } = usePublicSession();
 
-  const handleMouseEnter = (menuId: string) => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
-    setHoverMenu(menuId);
-  };
-
-  const handleMouseLeave = () => {
-    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-    closeTimeoutRef.current = setTimeout(() => {
-      setHoverMenu(null);
-    }, 150);
+  const toggleMenu = (menuId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setHoverMenu(prev => prev === menuId ? null : menuId);
   };
 
   useEffect(() => {
-    return () => {
-      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-    };
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+      if (
+        hoverMenu &&
+        howItWorksRef.current && !howItWorksRef.current.contains(e.target as Node) &&
+        productsRef.current && !productsRef.current.contains(e.target as Node)
+      ) {
+        setHoverMenu(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [hoverMenu]);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setHoverMenu(null);
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
   const { toggleTheme, isDark } = useTheme();
   const [trialPriceCOP, setTrialPriceCOP] = useState(DEFAULT_TRIAL_PRICE_COP);
@@ -128,16 +140,6 @@ export default function LandingNav({
       if (saved) setInternalCurrency(saved);
     }
   }, [externalCurrency]);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
@@ -251,12 +253,11 @@ export default function LandingNav({
             <div
               ref={howItWorksRef}
               className="level1-item flex items-center"
-              onMouseEnter={() => handleMouseEnter('howItWorks')}
-              onMouseLeave={handleMouseLeave}
             >
               <button
                 aria-haspopup="true"
                 aria-expanded={hoverMenu === 'howItWorks'}
+                onClick={(e) => toggleMenu('howItWorks', e)}
                 className="nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 hover:text-dark dark:hover:text-white"
                 style={{ color: hoverMenu === 'howItWorks' ? 'var(--accent)' : undefined }}
               >
@@ -273,8 +274,6 @@ export default function LandingNav({
               <div
                 className="absolute top-full left-0 right-0 z-50"
                 style={{ overflow: 'hidden' }}
-                onMouseEnter={() => handleMouseEnter('howItWorks')}
-                onMouseLeave={handleMouseLeave}
               >
                 <div
                   className="w-full bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/40 -translate-y-[calc(100%+1px)] transition-transform duration-[300ms] will-change-transform"
@@ -394,12 +393,11 @@ export default function LandingNav({
             <div
               ref={productsRef}
               className="level1-item flex items-center"
-              onMouseEnter={() => handleMouseEnter('products')}
-              onMouseLeave={handleMouseLeave}
             >
               <button
                 aria-haspopup="true"
                 aria-expanded={hoverMenu === 'products'}
+                onClick={(e) => toggleMenu('products', e)}
                 className="nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 hover:text-dark dark:hover:text-white"
                 style={{ color: hoverMenu === 'products' ? 'var(--accent)' : undefined }}
               >
@@ -416,8 +414,6 @@ export default function LandingNav({
               <div
                 className="absolute top-full left-0 right-0 z-50"
                 style={{ overflow: 'hidden' }}
-                onMouseEnter={() => handleMouseEnter('products')}
-                onMouseLeave={handleMouseLeave}
               >
                 <div
                   className="w-full bg-white dark:bg-black shadow-2xl shadow-black/10 dark:shadow-black/40 -translate-y-[calc(100%+1px)] transition-transform duration-[300ms] will-change-transform"
@@ -759,6 +755,20 @@ export default function LandingNav({
               </motion.div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Backdrop overlay para Megamenú */}
+      <AnimatePresence>
+        {hoverMenu && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[45] bg-black/40 backdrop-blur-[2px]"
+            onClick={() => setHoverMenu(null)}
+          />
         )}
       </AnimatePresence>
     </>
