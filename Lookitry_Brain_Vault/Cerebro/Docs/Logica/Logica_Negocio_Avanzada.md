@@ -4,22 +4,6 @@ Este documento detalla los motores lógicos complejos que operan en el backend y
 
 ---
 
-## 1. Motor de Prospección (Lead Enrichment)
-Ubicación: `backend/src/services/lead-enrichment.service.ts`
-
-Sistema responsable de alimentar el pipeline de ventas de Lookitry mediante la captura y calificación automática de marcas de moda.
-
-### Funcionalidades Clave:
-- **Importación CRM**: Procesamiento de archivos Excel con leads crudos, detectando país por ciudad y validando nicho.
-- **Clasificación Automática**: Filtro bi-modal mediante `FASHION_KEYWORDS` y `NO_FASHION_KEYWORDS`. Si el lead no es de moda, se marca para eliminación automática o descarte.
-- **Verificación Social (Social OSINT)**:
-  - **Website Scraper**: Analiza el contenido HTML de la URL del lead buscando keywords de moda para confirmar relevancia (Score: 80).
-  - **Extractor de Handles**: Extrae automáticamente usuarios de Instagram y TikTok del código fuente del sitio web.
-  - **Social Head Check**: Realiza peticiones `HEAD` a perfiles sociales para verificar que las URLs existen y son válidas.
-- **Sistema de Scoring**: Cada lead tiene un `enrichment_score` basado en la confianza de los datos (Keyword: 50, Web: 80, Social: 100).
-
----
-
 ## 2. Motor de Referidos (Growth Engine)
 Ubicación: `backend/src/services/referral.service.ts`
 
