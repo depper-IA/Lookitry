@@ -867,7 +867,7 @@ export class PruebaloController {
       // 7.9.1 Direct processing (no Redis) — call n8n directly and wait for result
       console.log(`[pruebalo] Llamando n8n directamente para generación ${generation.id}`);
 
-      let n8nResult: { success: boolean; imageUrl?: string; error?: string } = { success: false };
+      let n8nResult: { success: boolean; imageUrl?: string; error?: string; finishReason?: string; finishMessage?: string } = { success: false };
 
       try {
         n8nResult = await n8nClient.callTryOnWebhook({
@@ -877,6 +877,19 @@ export class PruebaloController {
           product_image_url: compressedProductUrl,
           prompt,
         });
+
+        // Detectar rechazo por políticas de contenido en respuesta exitosa de N8N
+        if (n8nResult.finishReason === 'IMAGE_PROHIBITED_CONTENT' || n8nResult.error === 'IMAGE_PROHIBITED_CONTENT') {
+          console.warn(`[pruebalo] Content policy violation for generation ${generation.id}`);
+          await generationsService.updateGeneration(generation.id, {
+            status: 'FAILED',
+            error_message: 'IMAGE_CONTENT_POLICY',
+          });
+          return res.status(422).json({
+            error: 'IMAGE_CONTENT_POLICY',
+            message: 'La imagen fue rechazada por políticas de contenido de IA. Intenta con una foto diferente.'
+          });
+        }
 
       } catch (n8nCallError: any) {
 

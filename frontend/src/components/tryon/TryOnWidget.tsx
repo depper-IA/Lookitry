@@ -64,6 +64,7 @@ export function TryOnWidget({
   const [generationId, setGenerationId]     = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorIsService, setErrorIsService] = useState(false);
+  const [errorIsContentPolicy, setErrorIsContentPolicy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [uploadPrivacyNotice, setUploadPrivacyNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -252,7 +253,7 @@ export function TryOnWidget({
     setSelfieFile(null);
     setSelfieHash('');
     setSelectedProduct(prev => (hasLockedProduct ? prev : null));
-    setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
+    setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false); setErrorIsContentPolicy(false);
     setNotice(null);
     setGeneratedProducts(new Map());
     setStep(hasLockedProduct ? 'upload' : 'select');
@@ -362,10 +363,14 @@ export function TryOnWidget({
       } catch (err: any) {
         const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
         const isClientLimit = err.clientAttemptLimit === true;
+        const isContentPolicy = err.isContentPolicy === true;
         setErrorIsService(isService);
+        setErrorIsContentPolicy(isContentPolicy);
         if (isService) {
           setShowUpgradeModal(true);
           setError('SERVICE_CREDITS_EXHAUSTED');
+        } else if (isContentPolicy) {
+          setError('IMAGE_CONTENT_POLICY');
         } else if (isClientLimit) {
           setError(err.message || 'Ya usaste tus 3 intentos para este producto.');
         } else {
@@ -507,6 +512,7 @@ export function TryOnWidget({
     generationId,
     error,
     errorIsService,
+    errorIsContentPolicy,
     notice,
     generatedProducts,
     lockProductSelection: isLocked,
@@ -518,7 +524,7 @@ export function TryOnWidget({
     onProceedToUpload: () => setStep('upload'),
     onBack: () => setStep('select'),
     onGenerate: () => handleGenerate(),
-    onDismissError: () => setError(null),
+    onDismissError: () => { setError(null); setErrorIsService(false); setErrorIsContentPolicy(false); },
     onDismissNotice: () => setNotice(null),
     termsAccepted,
     onTermsAccepted: handleTermsAccepted,

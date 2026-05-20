@@ -134,6 +134,12 @@ class TryOnService {
         throw new Error(json.message || 'Límite de generaciones excedido');
       }
 
+      if (err?.response?.status === 422 && json.error === 'IMAGE_CONTENT_POLICY') {
+        const contentErr = new Error(json.message || 'Imagen rechazada por políticas de contenido') as any;
+        contentErr.isContentPolicy = true;
+        throw contentErr;
+      }
+
       const msg: string = json.message || 'Error al generar la imagen';
 
       if (isCreditsExhaustedErrorPayload(json)) {

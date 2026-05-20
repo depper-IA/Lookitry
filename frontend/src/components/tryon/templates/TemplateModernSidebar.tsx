@@ -34,6 +34,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
     generationId,
     error,
     errorIsService,
+    errorIsContentPolicy,
     notice,
     generatedProducts,
     onReset,
@@ -242,9 +243,10 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
 
         {/* Content Area */}
         <div className={`flex-1 ${isSmall ? 'p-4 w-full' : 'p-6 lg:p-8 overflow-y-auto'} max-w-full`}>
-          <ErrorBanner 
-            error={error} 
-            isService={errorIsService} 
+          <ErrorBanner
+            error={error}
+            isService={errorIsService}
+            isContentPolicy={errorIsContentPolicy}
             onDismiss={props.onDismissError}
             textColor={mainTextPrimary}
             mutedColor={mainTextMuted}

@@ -37,6 +37,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
     generationId,
     error,
     errorIsService,
+    errorIsContentPolicy,
     notice,
     generatedProducts,
     onReset,
@@ -184,6 +185,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                 <ErrorBanner
                   error={error}
                   isService={errorIsService}
+                  isContentPolicy={errorIsContentPolicy}
                   onDismiss={props.onDismissError}
                   textColor={textPrimary}
                   mutedColor={textMuted}

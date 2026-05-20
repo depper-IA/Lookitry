@@ -36,6 +36,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
     generationId,
     error,
     errorIsService,
+    errorIsContentPolicy,
     notice,
     generatedProducts,
     lockProductSelection,
@@ -75,6 +76,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
             <ErrorBanner
               error={error}
               isService={errorIsService}
+              isContentPolicy={errorIsContentPolicy}
               onDismiss={props.onDismissError}
               textColor={textPrimary}
               mutedColor={textMuted}
@@ -143,6 +145,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
             <ErrorBanner
               error={error}
               isService={errorIsService}
+              isContentPolicy={errorIsContentPolicy}
               onDismiss={props.onDismissError}
               textColor={textPrimary}
               mutedColor={textMuted}
