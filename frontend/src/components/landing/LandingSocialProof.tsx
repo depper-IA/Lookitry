@@ -56,7 +56,7 @@ function PhoneMockup() {
         className="relative z-10 w-full max-w-[240px]"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        animate={{ rotate: isHovered ? 13 : 10, y: isHovered ? -14 : 0 }}
+        animate={{ rotate: isHovered ? 8 : 5, y: isHovered ? -14 : 0 }}
         transition={{ type: 'spring', stiffness: 160, damping: 20 }}
       >
         {/* Body */}
