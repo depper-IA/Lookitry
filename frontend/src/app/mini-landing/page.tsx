@@ -238,7 +238,7 @@ export default function MiniLandingPage() {
             className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-40"
           >
             <motion.div variants={fadeUp} className="relative">
-              <SectionLabel text="Mini-Landing — Add-On" />
+              <SectionLabel text="Tienda Virtual — Add-On" />
               <motion.h1
                 variants={fadeUp}
                 className="font-jakarta text-[44px] md:text-[60px] font-black leading-[1.1] tracking-tight mb-8"
@@ -403,7 +403,7 @@ export default function MiniLandingPage() {
               >
                 <div className="absolute top-0 right-0 w-48 h-48 bg-[#FF5C3A]/15 blur-[60px] rounded-full translate-x-1/2 -translate-y-1/2" />
                 <h3 className="relative z-10 font-jakarta font-black text-2xl md:text-3xl text-white mb-8 leading-tight">
-                  Con la Mini-Landing de Lookitry,<br />
+                  Con la Tienda Virtual de Lookitry,<br />
                   <span className="text-[#FF5C3A]">pasas al siguiente nivel:</span>
                 </h3>
                 <div className="relative z-10 flex flex-col gap-5">
@@ -490,10 +490,10 @@ export default function MiniLandingPage() {
                 >
                   <SectionLabel text="Un solo pago. Ventas para siempre." />
                   <h2 className="font-jakarta text-3xl md:text-5xl font-black text-white mb-6 leading-tight">
-                    Llévate tu Mini-Landing personalizada.
+                    Llévate tu Tienda Virtual personalizada.
                   </h2>
                   <p className="text-white/60 font-dm-sans text-lg leading-relaxed mb-10">
-                    No te cobraremos una mensualidad adicional por el diseño ni el mantenimiento de esta página. Tu Mini-Landing se mantendrá activa siempre y cuando mantengas activa tu suscripción mensual (Plan Básico o Pro) de Lookitry.
+                    No te cobraremos una mensualidad adicional por el diseño ni el mantenimiento de esta página. Tu tienda virtual se mantendrá activa siempre y cuando mantengas activa tu suscripción mensual (Plan Básico o Pro) de Lookitry.
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4">
