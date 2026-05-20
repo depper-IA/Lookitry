@@ -566,6 +566,19 @@
             resetOverlay();
         });
 
+        // Cerrar modal con Escape o click afuera
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape' && $overlay.css('display') === 'flex') {
+                resetOverlay();
+            }
+        });
+
+        $overlay.on('click', function(e) {
+            if (e.target === this) {
+                resetOverlay();
+            }
+        });
+
         window.addEventListener('message', function(e) {
             if (allowedWidgetOrigins.indexOf(e.origin) === -1) {
                 return;
