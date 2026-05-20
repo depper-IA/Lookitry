@@ -324,7 +324,7 @@ export const widgetReply = async (req: Request, res: Response) => {
       .from('lead_messages')
       .insert({
         conversation_id: conversation.id,
-        sender_type: 'lead',
+        sender_type: 'user',
         content: message,
       });
 
@@ -333,7 +333,7 @@ export const widgetReply = async (req: Request, res: Response) => {
       .from('lead_messages')
       .insert({
         conversation_id: conversation.id,
-        sender_type: 'assistant',
+        sender_type: 'agent',
         content: reply,
       });
 
@@ -591,7 +591,7 @@ export const getWidgetHistory = async (req: Request, res: Response) => {
       .from('lead_messages')
       .select('id, sender_type, content, created_at')
       .eq('conversation_id', conversation.id)
-      .in('sender_type', ['lead', 'assistant'])
+      .in('sender_type', ['user', 'agent'])
       .order('created_at', { ascending: true });
 
     if (error) throw error;
