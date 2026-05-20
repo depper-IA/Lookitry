@@ -598,7 +598,7 @@ export const getWidgetHistory = async (req: Request, res: Response) => {
 
     // Transformar al formato esperado por el frontend
     const formattedMessages = (messages || []).map((msg) => ({
-      role: msg.sender_type === 'assistant' ? 'assistant' : 'user',
+      role: msg.sender_type === 'agent' ? 'assistant' : 'user',
       content: msg.content,
       timestamp: new Date(msg.created_at).getTime(),
     }));
@@ -658,8 +658,8 @@ export const saveWidgetMessage = async (req: Request, res: Response) => {
       conversation = newConv;
     }
 
-    // Insertar mensaje
-    const senderType = role === 'assistant' ? 'assistant' : 'lead';
+    // Insertar mensaje (sender_type enum: 'user' | 'agent')
+    const senderType = role === 'assistant' ? 'agent' : 'user';
     const { error: msgError } = await supabaseAdmin
       .from('lead_messages')
       .insert({
