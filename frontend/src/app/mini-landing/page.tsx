@@ -318,7 +318,7 @@ export default function MiniLandingPage() {
                   <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-5 bg-black/50 rounded-xl px-4 py-2.5 border border-white/5">
                       <div className="w-2 h-2 rounded-full bg-[#FF5C3A] animate-pulse" />
-                      <span className="text-[11px] font-mono text-white/50">lookitry.com/<span className="text-[#FF5C3A] font-bold">tu-marca</span></span>
+                      <span className="text-[11px] font-mono text-white/50">lookitry.com/<span className="text-[#FF5C3A] font-bold">sitio/tu-marca</span></span>
                     </div>
                     <div className="bg-[#FF5C3A]/10 rounded-2xl p-5 mb-4 border border-[#FF5C3A]/20">
                       <div className="h-2 w-20 bg-[#FF5C3A]/60 rounded-full mb-3" />
