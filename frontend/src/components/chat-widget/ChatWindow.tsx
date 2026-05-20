@@ -22,23 +22,21 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
   const [isOpening, setIsOpening] = useState(false);
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleOpenExpanded = () => {
-    setIsOpening(true);
-    setIsExpanded(true);
-    setTimeout(() => setIsOpening(false), 300);
-  };
+  const handleBackdropClick = () => onClose();
 
   const handleCloseExpanded = () => {
     setIsExpanded(false);
-  };
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      setTimeout(() => setIsExpanded(false), 100);
-    }
   };
 
   if (isExpanded) {
