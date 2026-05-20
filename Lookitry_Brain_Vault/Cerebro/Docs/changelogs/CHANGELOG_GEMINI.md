@@ -1,4 +1,19 @@
+# Sincronización y Mirroring de Rama Juli (2026-04-21)
+
+## Resumen
+La rama `Juli` ha sido reseteada para ser una copia exacta de la rama `main`. Esto asegura que el entorno de desarrollo tenga los últimos 92+ commits de la arquitectura estable.
+
+---
+
+## Cambios Realizados
+- **Reset Hard**: `Juli` local y remota sincronizadas exactamente con `origin/main`.
+- **Limpieza de Divergencias**: Se eliminaron configuraciones de agentes locales para priorizar la estructura oficial del repositorio.
+- **Estructura Brain Vault**: Integración completa de la nueva organización del Cerebro.
+
+---
+
 # Sammy 24/7 + Segundo Cerebro RAG (2026-04-09)
+
 
 ## Resumen
 Implementación de dos sistemas críticos de infraestructura: Sammy como agente 24/7 en Docker y el "Segundo Cerebro" para conocimiento del proyecto con RAG.

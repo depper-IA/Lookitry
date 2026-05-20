@@ -19,19 +19,19 @@ export function Breadcrumbs({ items, className = '', light = false }: Breadcrumb
           <Link
             href="/"
             className={`transition-colors ${
-              light 
-                ? 'text-gray-400 hover:text-white' 
-                : 'text-gray-500 hover:text-black'
+              light
+                ? 'text-gray-400 hover:text-white'
+                : 'theme-text-secondary hover:theme-text'
             }`}
           >
             Inicio
           </Link>
         </li>
-        
+
         {items.map((item, index) => (
           <li key={item.label} className="flex items-center space-x-2">
             <svg
-              className={`w-2.5 h-2.5 flex-shrink-0 ${light ? 'text-gray-600' : 'text-gray-300'}`}
+              className={`w-2.5 h-2.5 flex-shrink-0 ${light ? 'text-gray-600' : 'theme-text-muted'}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -39,20 +39,20 @@ export function Breadcrumbs({ items, className = '', light = false }: Breadcrumb
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
-            
+
             {item.href ? (
               <Link
                 href={item.href}
                 className={`transition-colors ${
-                  light 
-                    ? 'text-gray-400 hover:text-white' 
-                    : 'text-gray-500 hover:text-black'
+                  light
+                    ? 'text-gray-400 hover:text-white'
+                    : 'theme-text-secondary hover:theme-text'
                 }`}
               >
                 {item.label}
               </Link>
             ) : (
-              <span className={light ? 'text-accent' : 'text-accent'}>
+              <span className="text-accent">
                 {item.label}
               </span>
             )}

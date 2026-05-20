@@ -41,7 +41,6 @@ gen-lang-client-*.json
 service-account*.json
 *.pem
 *.key
-
 # Secrets locales del backend
 backend/secrets/
 backend/test-vertex.json
