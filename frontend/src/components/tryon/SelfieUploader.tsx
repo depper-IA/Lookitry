@@ -161,7 +161,7 @@ export function SelfieUploader({
 
       <div
         ref={dropRef}
-        className="flex flex-col h-full w-full max-w-md mx-auto gap-2 relative"
+        className="flex flex-col h-full w-full gap-2 relative"
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}

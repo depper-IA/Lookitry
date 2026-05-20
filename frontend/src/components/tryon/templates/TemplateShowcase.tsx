@@ -199,7 +199,7 @@ export function TemplateShowcase(props: TryOnTemplateProps) {
               </div>
 
               {selfiePreview && (
-                <div className="w-full max-w-xl mb-6 sm:mb-8 mx-auto px-4">
+                <div className="w-full max-w-lg sm:max-w-xl md:max-w-2xl mb-6 sm:mb-8 mx-auto px-4">
                   <SelfieUploader
                     onUpload={onSelfieUpload}
                     onReset={onReset}

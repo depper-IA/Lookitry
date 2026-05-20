@@ -50,7 +50,7 @@ export function UploadStepContent({
   onTermsAccepted,
 }: UploadStepContentProps) {
   return (
-    <div className="max-w-xl mx-auto space-y-4">
+    <div className="max-w-lg sm:max-w-xl md:max-w-2xl mx-auto space-y-4">
       {/* Back Button (to selection) */}
       <div className="flex justify-start mb-1">
         <button
