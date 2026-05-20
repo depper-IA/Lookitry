@@ -154,7 +154,7 @@ function ResultPanel({
         </p>
         <p className="mb-4 text-xs text-[var(--text-secondary)] leading-relaxed">
           {resultImage
-            ? 'Tus clientas vivirían esto en tu e-commerce ahora mismo. +30% conversión garantizado.'
+            ? 'Tus clientes vivirían esto en tu e-commerce ahora mismo. +30% conversión garantizado.'
             : 'Las tiendas con Lookitry duplican el tiempo de visita y venden más sin más tráfico.'}
         </p>
         <Link

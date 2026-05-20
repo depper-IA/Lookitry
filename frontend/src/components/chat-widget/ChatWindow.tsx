@@ -35,6 +35,12 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
 
   const handleBackdropClick = () => onClose();
 
+  const handleOpenExpanded = () => {
+    setIsOpening(true);
+    setIsExpanded(true);
+    setTimeout(() => setIsOpening(false), 300);
+  };
+
   const handleCloseExpanded = () => {
     setIsExpanded(false);
   };

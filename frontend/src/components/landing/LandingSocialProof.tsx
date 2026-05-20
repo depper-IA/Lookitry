@@ -133,7 +133,7 @@ const LandingSocialProof = () => {
                 {whatsapp.stat}
               </p>
               <p className="text-white/45 dark:text-gray-400 text-[10px] uppercase tracking-widest mt-1 font-semibold">
-                en clientas que usaron el probador
+                en clientes que usaron el probador
               </p>
             </div>
           </motion.div>
