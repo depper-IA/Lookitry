@@ -255,4 +255,15 @@ router.post('/generate', multerMem.single('selfie'), asyncHandler(async (req: an
   }
 }));
 
+// POST /api/home/tryon/clear-trials — Admin: limpiar todos los trials (resetear contadores)
+router.post('/clear-trials', asyncHandler(async (req: Request, res: Response) => {
+  const apiKey = req.headers['x-api-key'] as string;
+  if (!apiKey || apiKey !== process.env.ADMIN_SECRET_KEY) {
+    return res.status(401).json({ error: 'UNAUTHORIZED' });
+  }
+  const { error } = await supabaseAdmin.from('home_tryon_trials').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  if (error) throw error;
+  return res.json({ success: true, message: 'Home tryon trials cleared' });
+}));
+
 export default router;
