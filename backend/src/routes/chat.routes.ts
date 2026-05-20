@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { receiveWebhook, getConversations, getConversationMessages, replyToConversation, updateConversationStatus, widgetReply, trackPage, whatsappReply, updateLeadContact, getLeadContext, updateLeadProfileEndpoint } from '../controllers/chat.controller';
+import { receiveWebhook, getConversations, getConversationMessages, replyToConversation, updateConversationStatus, widgetReply, trackPage, whatsappReply, updateLeadContact, getLeadContext, updateLeadProfileEndpoint, getWidgetHistory, saveWidgetMessage } from '../controllers/chat.controller';
 import { adminAuthMiddleware } from '../middleware/adminAuth';
 import { rebeccaRateLimitBySession, rebeccaRateLimitByIP } from '../middleware/rebecca-rate-limit';
 
@@ -7,6 +7,10 @@ const router = Router();
 
 // Rebecca web chat widget — public, rate limited
 router.post('/widget', rebeccaRateLimitByIP, rebeccaRateLimitBySession, widgetReply);
+
+// Widget history — persistencia de chat (Spec: Rebecca bugs §3.1)
+router.get('/widget/history', getWidgetHistory);
+router.post('/widget/message', rebeccaRateLimitByIP, rebeccaRateLimitBySession, saveWidgetMessage);
 
 // Track page visits for abandoned cart detection (Spec: Rebecca 2.0 §6.4)
 router.post('/track-page', trackPage);

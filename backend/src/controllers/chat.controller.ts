@@ -521,3 +521,125 @@ export const updateLeadProfileEndpoint = async (req: Request, res: Response) => 
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+/**
+ * GET /api/chat/widget/history
+ * Carga historial de chat para persistencia web (Spec: Rebecca bugs §3.1)
+ * @query session_id - Session ID del widget (等同 platform_id en lead_conversations)
+ */
+export const getWidgetHistory = async (req: Request, res: Response) => {
+  try {
+    const session_id = req.query.session_id;
+
+    if (typeof session_id !== 'string' || session_id.trim().length === 0) {
+      return res.status(400).json({ error: 'session_id required' });
+    }
+
+    // Buscar conversación existente por platform_id (source = 'web')
+    const { data: conversation } = await supabaseAdmin
+      .from('lead_conversations')
+      .select('id, status, created_at, updated_at')
+      .eq('platform_id', session_id)
+      .eq('source', 'web')
+      .maybeSingle();
+
+    if (!conversation) {
+      return res.status(200).json({ messages: [], conversation_id: null });
+    }
+
+    // Cargar mensajes
+    const { data: messages, error } = await supabaseAdmin
+      .from('lead_messages')
+      .select('id, sender_type, content, created_at')
+      .eq('conversation_id', conversation.id)
+      .in('sender_type', ['lead', 'assistant'])
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    // Transformar al formato esperado por el frontend
+    const formattedMessages = (messages || []).map((msg) => ({
+      role: msg.sender_type === 'assistant' ? 'assistant' : 'user',
+      content: msg.content,
+      timestamp: new Date(msg.created_at).getTime(),
+    }));
+
+    return res.status(200).json({
+      messages: formattedMessages,
+      conversation_id: conversation.id,
+    });
+  } catch (error: any) {
+    console.error('[Chat] getWidgetHistory:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * POST /api/chat/widget/message
+ * Guarda mensaje de chat para persistencia web (Spec: Rebecca bugs §3.1)
+ */
+export const saveWidgetMessage = async (req: Request, res: Response) => {
+  try {
+    const { session_id, role, content } = req.body as {
+      session_id?: unknown;
+      role?: unknown;
+      content?: unknown;
+    };
+
+    if (typeof session_id !== 'string' || !session_id.trim()) {
+      return res.status(400).json({ error: 'session_id required' });
+    }
+    if (role !== 'user' && role !== 'assistant') {
+      return res.status(400).json({ error: 'role must be user or assistant' });
+    }
+    if (typeof content !== 'string' || !content.trim()) {
+      return res.status(400).json({ error: 'content required' });
+    }
+
+    // Obtener o crear conversación
+    let { data: conversation } = await supabaseAdmin
+      .from('lead_conversations')
+      .select('id')
+      .eq('platform_id', session_id)
+      .eq('source', 'web')
+      .maybeSingle();
+
+    if (!conversation) {
+      const { data: newConv, error: convError } = await supabaseAdmin
+        .from('lead_conversations')
+        .insert({
+          platform_id: session_id,
+          source: 'web',
+          status: 'active',
+        })
+        .select('id')
+        .single();
+
+      if (convError) throw convError;
+      conversation = newConv;
+    }
+
+    // Insertar mensaje
+    const senderType = role === 'assistant' ? 'assistant' : 'lead';
+    const { error: msgError } = await supabaseAdmin
+      .from('lead_messages')
+      .insert({
+        conversation_id: conversation.id,
+        sender_type: senderType,
+        content: content.trim(),
+      });
+
+    if (msgError) throw msgError;
+
+    // Actualizar updated_at de conversación
+    await supabaseAdmin
+      .from('lead_conversations')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', conversation.id);
+
+    return res.status(200).json({ success: true });
+  } catch (error: any) {
+    console.error('[Chat] saveWidgetMessage:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
