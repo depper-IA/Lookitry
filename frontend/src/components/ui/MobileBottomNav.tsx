@@ -26,7 +26,7 @@ export function MobileBottomNav({ pathname }: { pathname: string }) {
     <Link
       href={href}
       aria-current={active ? 'page' : undefined}
-      className="flex flex-1 flex-col items-center justify-center gap-[5px] py-2 transition-all duration-150 active:opacity-60"
+      className="relative flex flex-1 flex-col items-center justify-center gap-[5px] py-2 transition-all duration-150 active:opacity-60"
     >
       <span className={`transition-colors duration-150 ${active ? 'text-[#FF5C3A]' : 'text-black/30 dark:text-white/25'}`}>
         {icon}
@@ -47,7 +47,6 @@ export function MobileBottomNav({ pathname }: { pathname: string }) {
       role="navigation"
       aria-label="Navegación principal"
       className="fixed bottom-0 left-0 right-0 z-40 md:hidden"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="relative flex items-stretch border-t border-black/[0.06] dark:border-white/[0.06] bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
         <Item href="/" icon={<Home size={22} />} label="Inicio" active={isActive('/')} />
