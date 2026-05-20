@@ -162,8 +162,8 @@ export function TemplateBare(props: TryOnTemplateProps) {
 
       {/* Estado: generando */}
       {step === 'generating' && (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-sm">
+        <div className="flex-1 flex flex-col p-6 pb-8 min-h-0">
+          <div className="flex-1 min-h-0 w-full max-w-xs mx-auto">
             <GenerationLoader
               productName={selectedProduct?.name || ''}
               primaryColor={primaryColor}
@@ -172,8 +172,115 @@ export function TemplateBare(props: TryOnTemplateProps) {
         </div>
       )}
 
-      {/* Estados: select / upload / result */}
-      {step !== 'generating' && (
+      {/* ── Paso 2: Subida de selfie — bloque propio full-height sin scroll ── */}
+      {step === 'upload' && (
+        <div className="flex-1 flex flex-col px-4 pt-1 pb-4 min-h-0">
+          <div className="flex-1 min-h-0 flex flex-col max-w-md mx-auto w-full">
+            <ErrorBanner
+              error={error}
+              isService={errorIsService}
+              onDismiss={props.onDismissError}
+              textColor={textPrimary}
+              mutedColor={textMuted}
+              cardBg={cardBg}
+              cardBorder={borderColor}
+            />
+            <NoticeBanner notice={notice} onDismiss={props.onDismissNotice} />
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key="upload"
+                className="flex-1 min-h-0 flex flex-col gap-3"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* SelfieUploader full-height con back button incorporado */}
+                <div className="flex-1 min-h-0">
+                  <SelfieUploader
+                    onUpload={onSelfieUpload}
+                    onReset={onReset}
+                    onSelfieReset={onSelfieReset}
+                    onBack={onProductReset}
+                    currentPreview={selfiePreview}
+                    primaryColor={primaryColor}
+                    welcomeMessage={welcomeMessage}
+                    textColor={textPrimary}
+                    mutedColor={textMuted}
+                    cardBg={cardBg}
+                    cardBorder={borderColor}
+                  />
+                </div>
+
+                {/* CTA de generación — aparece al subir selfie */}
+                <AnimatePresence>
+                  {selfiePreview && (
+                    <motion.div
+                      key="generate-cta"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="flex-shrink-0 space-y-2 pb-2"
+                    >
+                      <button
+                        onClick={() => {
+                          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                            navigator.vibrate(50);
+                          }
+                          onGenerate();
+                        }}
+                        disabled={!termsAccepted}
+                        aria-label={alreadyGenerated ? 'Ver resultado guardado' : buttonText}
+                        className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-40"
+                        style={{
+                          backgroundColor: primaryColor,
+                          boxShadow: `0 8px 32px ${primaryGlow}`,
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                        <span className="relative z-10">
+                          {alreadyGenerated ? 'Ver resultado' : buttonText}
+                        </span>
+                        <svg
+                          className="w-4 h-4 relative z-10"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </button>
+
+                      {!termsAccepted && (
+                        <TermsCheckbox
+                          onAccepted={onTermsAccepted}
+                          isAccepted={termsAccepted}
+                          primaryColor={primaryColor}
+                          textColor={textPrimary}
+                          mutedColor={textMuted}
+                        />
+                      )}
+
+                      <p
+                        className="text-center text-[10px] font-black uppercase tracking-widest italic opacity-40"
+                        style={{ color: textMuted }}
+                      >
+                        {alreadyGenerated ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
+
+      {/* Estados: select / result */}
+      {step !== 'generating' && step !== 'upload' && (
         <div className="flex-1 flex flex-col items-center justify-center px-4 pt-2 pb-12 overflow-y-auto overflow-x-hidden">
           <div className="max-w-md mx-auto w-full">
             {/* Banners de error y aviso */}
@@ -261,155 +368,6 @@ export function TemplateBare(props: TryOnTemplateProps) {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                           </svg>
                         </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )}
-
-              {/* ── Paso 2: Subida de selfie ───────────────────────────────── */}
-              {step === 'upload' && (
-                <motion.div
-                  key="upload"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-5"
-                >
-                  {/* Producto Seleccionado Exterior */}
-                  {selectedProduct && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="relative group overflow-hidden rounded-2xl border transition-all duration-300"
-                      style={{ 
-                        backgroundColor: cardBg,
-                        borderColor: borderColor
-                      }}
-                    >
-                      <div className="p-3 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-white/5 overflow-hidden border border-white/10 shrink-0">
-                          <img 
-                            src={selectedProduct.imageUrl} 
-                            alt={selectedProduct.name} 
-                            className="w-full h-full object-cover" 
-                          />
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[8px] font-black uppercase tracking-[0.15em] opacity-40">
-                            Seleccionado
-                          </span>
-                          <h4 className="text-xs font-bold truncate pr-6" style={{ color: textPrimary }}>
-                            {selectedProduct.name}
-                          </h4>
-                        </div>
-
-                        <button
-                          onClick={onProductReset}
-                          className="absolute top-2 right-2 p-1.5 rounded-full bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-500 transition-all active:scale-90"
-                          title="Cambiar prenda"
-                        >
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  <div className="text-center space-y-1 mt-2">
-                    <h2
-                      className="text-2xl font-black italic uppercase tracking-tighter"
-                      style={{ color: textPrimary }}
-                    >
-                      Sube tu Foto
-                    </h2>
-                    <p
-                      className="text-[10px] font-bold uppercase tracking-[0.2em]"
-                      style={{ color: textMuted }}
-                    >
-                      Para procesar tu prueba virtual
-                    </p>
-                  </div>
-
-                  <SelfieUploader
-                    onUpload={onSelfieUpload}
-                    onReset={onReset}
-                    onSelfieReset={onSelfieReset}
-                    currentPreview={selfiePreview}
-                    selectedProduct={selectedProduct}
-                    primaryColor={primaryColor}
-                    welcomeMessage={welcomeMessage}
-                    privacyNotice="Procesamiento local seguro"
-                    textColor={textPrimary}
-                    mutedColor={textMuted}
-                    cardBg={cardBg}
-                    cardBorder={borderColor}
-                  />
-
-                  {/* Vista previa de la selfie antes de generar */}
-                  <AnimatePresence>
-                    {selfiePreview && (
-                      <motion.div
-                        key="generate-cta"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="space-y-3 pt-1 pb-8"
-                      >
-                        {/* El thumbnail ahora se muestra dentro de SelfieUploader */}
-
-                        {/* Botón de generación */}
-                        <button
-                          onClick={() => {
-                            if (typeof navigator !== 'undefined' && navigator.vibrate) {
-                              navigator.vibrate(50);
-                            }
-                            onGenerate();
-                          }}
-                          disabled={!termsAccepted}
-                          aria-label={alreadyGenerated ? 'Ver resultado guardado' : buttonText}
-                          className="w-full py-4 rounded-2xl font-black text-white text-xs uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-40"
-                          style={{
-                            backgroundColor: primaryColor,
-                            boxShadow: `0 8px 32px ${primaryGlow}`,
-                          }}
-                        >
-                          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                          <span className="relative z-10">
-                            {alreadyGenerated ? 'Ver resultado' : buttonText}
-                          </span>
-                          <svg
-                            className="w-4 h-4 relative z-10"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={3}
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                          </svg>
-                        </button>
-
-                        {/* Terms checkbox - solo se muestra si NO está aceptado */}
-                        {!termsAccepted && (
-                          <TermsCheckbox
-                            onAccepted={onTermsAccepted}
-                            isAccepted={termsAccepted}
-                            primaryColor={primaryColor}
-                            textColor={textPrimary}
-                            mutedColor={textMuted}
-                          />
-                        )}
-
-                        <p
-                          className="text-center text-[10px] font-black uppercase tracking-widest italic opacity-40"
-                          style={{ color: textMuted }}
-                        >
-                          {alreadyGenerated ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
-                        </p>
                       </motion.div>
                     )}
                   </AnimatePresence>

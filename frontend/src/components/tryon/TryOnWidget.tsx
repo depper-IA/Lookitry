@@ -14,6 +14,7 @@ import { UpgradeModal } from '@/components/ui/UpgradeModal';
 import FingerJS from '@fingerprintjs/fingerprintjs';
 
 const TERMS_STORAGE_KEY = 'tryon_terms_accepted';
+const getResultStorageKey = (slug: string) => `tryon_result_${slug}`;
 
 interface TryOnWidgetProps {
   brandSlug: string;
@@ -183,7 +184,40 @@ export function TryOnWidget({
     };
   }, [selfiePreview]);
 
+  // Restaurar último resultado al montar (persiste a través de refreshes de página)
+  useEffect(() => {
+    if (!brandSlug || loading) return;
+    const saved = sessionStorage.getItem(getResultStorageKey(brandSlug));
+    if (!saved) return;
+    try {
+      const { resultImageUrl: savedUrl, generationId: savedGenId, selectedProduct: savedProduct } = JSON.parse(saved);
+      if (savedUrl && savedProduct) {
+        setResultImageUrl(savedUrl);
+        setGenerationId(savedGenId ?? null);
+        setSelectedProduct(savedProduct);
+        setStep('result');
+      }
+    } catch {
+      sessionStorage.removeItem(getResultStorageKey(brandSlug));
+    }
+  }, [brandSlug, loading]);
+
+  // Guardar resultado en sessionStorage cuando el usuario llega al paso 'result'
+  useEffect(() => {
+    if (step !== 'result' || !resultImageUrl || !selectedProduct) return;
+    try {
+      sessionStorage.setItem(getResultStorageKey(brandSlug), JSON.stringify({
+        resultImageUrl,
+        generationId,
+        selectedProduct,
+      }));
+    } catch {
+      // sessionStorage no disponible
+    }
+  }, [step, resultImageUrl, generationId, selectedProduct, brandSlug]);
+
   const handleSelfieReset = useCallback(() => {
+    sessionStorage.removeItem(getResultStorageKey(brandSlug));
     setSelfiePreview(prev => {
       if (prev) URL.revokeObjectURL(prev);
       return null;
@@ -194,21 +228,22 @@ export function TryOnWidget({
     setGenerationId(null);
     setNotice(null);
     setGeneratedProducts(new Map());
-    // Volvemos al paso de subida para que pueda elegir otra foto
     setStep('upload');
-  }, []);
+  }, [brandSlug]);
 
   const handleProductReset = useCallback(() => {
+    sessionStorage.removeItem(getResultStorageKey(brandSlug));
     setSelectedProduct(null);
     setStep('select');
-  }, []);
+  }, [brandSlug]);
 
   const handleReset = useCallback(() => {
+    sessionStorage.removeItem(getResultStorageKey(brandSlug));
     if (selfieHash) {
       const key = getCacheKey(brandSlug, selfieHash);
       localStorage.removeItem(key);
     }
-    
+
     setSelfiePreview(prev => {
       if (prev) URL.revokeObjectURL(prev);
       return null;
@@ -220,7 +255,6 @@ export function TryOnWidget({
     setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
     setNotice(null);
     setGeneratedProducts(new Map());
-    // Nuevo flujo: Reset vuelve a select, a menos que el producto esté bloqueado, entonces vuelve a upload
     setStep(hasLockedProduct ? 'upload' : 'select');
   }, [brandSlug, selfieHash, hasLockedProduct]);
 
@@ -320,7 +354,7 @@ export function TryOnWidget({
       let processingTime: number | undefined;
 
       try {
-        const result = await tryonService.generate(brandSlug, { productId: activeProduct.id, selfieFile: activeFile, clientFingerprint });
+        const result = await tryonService.generate(brandSlug, { productId: activeProduct.id, selfieFile: activeFile, clientFingerprint, termsAccepted });
         imageUrl = result.imageUrl;
         genId = result.generationId ?? null;
         reused = result.reused ?? false;

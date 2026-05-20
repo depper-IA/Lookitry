@@ -247,7 +247,6 @@ export function ResultDisplay({
   whatsappContact,
 }: ResultDisplayProps) {
   const [lightboxOpen, setLightboxOpen]   = useState(false);
-  const [downloading, setDownloading]     = useState(false);
   const [sharing, setSharing]             = useState(false);
   const [shareError, setShareError]       = useState<string | null>(null);
 
@@ -273,41 +272,6 @@ export function ResultDisplay({
   // Focus trap refs para modales
   const feedbackTrapRef = useFocusTrap(feedbackOpen);
   const lightboxTrapRef = useFocusTrap(lightboxOpen);
-
-  const handleDownload = async () => {
-    const downloadUrl = getProxiedImageUrl(imageUrl, brandPlan, true);
-    
-    // Si detectamos Instagram/Facebook/TikTok, evitamos el truco del blob/URL.createObjectURL
-    // ya que suele fallar estrepitosamente o bloquear la navegación.
-    if (isIAB()) {
-      showToast('Mantén presionada la imagen para guardarla en tu galería.', 'info');
-      // Intentamos abrir la URL de descarga directa como fallback
-      window.open(downloadUrl, '_blank');
-      return;
-    }
-
-
-    setDownloading(true);
-    try {
-      const response = await fetch(downloadUrl);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `lookitry-${productName?.replace(/\s+/g, '-').toLowerCase() || 'generacion'}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error('Download error:', e);
-      showToast('No se pudo iniciar la descarga. Intenta abrir en otro navegador.', 'error');
-    } finally {
-      setDownloading(false);
-    }
-  };
-
 
   // Mensaje de compartir: usar custom del backend (PRO/ENTERPRISE) o generar dinámicamente
   // Custom message puede usar {producto} y {marca} como variables
@@ -623,27 +587,15 @@ export function ResultDisplay({
           )}
 
           <button
-            onClick={handleDownload}
-            disabled={downloading}
+            onClick={handleShare}
+            disabled={sharing}
             className="w-full py-3 md:py-3.5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest text-white shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
             style={{ backgroundColor: primaryColor }}
           >
-            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Descargar imagen
-          </button>
-
-          <button
-            onClick={handleShare}
-            disabled={sharing}
-            className="md:hidden w-full py-3 rounded-2xl font-black text-xs uppercase tracking-widest border-2 transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-sm"
-            style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6', color: textColor }}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
-            Compartir
+            {sharing ? 'Compartiendo...' : 'Compartir resultado'}
           </button>
 
           {/* "Probar otro" - baja jerarquía, texto plano */}
