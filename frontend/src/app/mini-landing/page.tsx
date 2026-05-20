@@ -120,11 +120,11 @@ const FAQ = [
   },
   {
     q: '¿Qué pasa si cancelo mi plan mensual?',
-    a: 'Si tu suscripción expira, la mini-landing se suspende temporalmente. Tras 90 días sin renovar, se elimina la configuración guardada.',
+    a: 'Si tu suscripción expira, tu tienda virtual se suspende temporalmente. Tras 90 días sin renovar, se elimina la configuración guardada.',
   },
   {
-    q: '¿La mini-landing incluye el probador virtual IA?',
-    a: 'Sí. El widget de IA está integrado directamente. Tus clientes pueden probarse la ropa sin salir de tu página, lo que reduce drásticamente las dudas antes de comprar.',
+    q: '¿Mi tienda virtual incluye el probador virtual IA?',
+    a: 'Sí. El probador virtual IA está integrado directamente. Tus clientes pueden probarse la ropa sin salir de tu página, lo que reduce drásticamente las dudas antes de comprar.',
   },
 ];
 
@@ -217,7 +217,7 @@ export default function MiniLandingPage() {
 
   const miniLandingPrice = pricing?.precio_unico_cop ?? 650000;
   const miniLandingOriginal = pricing?.precio_original_cop ?? 850000;
-  const buttonText = pricing?.boton_texto ?? 'Quiero mi mini-landing';
+  const buttonText = pricing?.boton_texto ?? 'Quiero mi tienda virtual';
   const discountPct = pricing?.descuento_porcentaje ?? 23;
 
   return (
@@ -573,7 +573,7 @@ export default function MiniLandingPage() {
               <SectionLabel text="Preguntas Frecuentes" />
               <h2 className="font-jakarta text-3xl md:text-4xl font-black mb-4 max-w-2xl leading-tight">
                 Todo lo que quieres saber antes de activar tu{' '}
-                <span className="text-[#FF5C3A]">mini-landing.</span>
+                <span className="text-[#FF5C3A]">tienda virtual.</span>
               </h2>
             </motion.div>
 
