@@ -56,7 +56,7 @@ export default function LandingMiniLanding() {
             <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 dark:border-black/10 shadow-2xl">
               <Image
                 src="/hero/promo_landing.png"
-                alt="Vista de una tienda Lookitry mostrando el catálogo con probador virtual integrado en el celular de una clienta"
+                alt="Vista de una tienda Lookitry mostrando el catálogo con probador virtual integrado en el celular de un cliente"
                 width={720}
                 height={480}
                 className="w-full h-auto"

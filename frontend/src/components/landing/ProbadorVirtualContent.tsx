@@ -215,7 +215,7 @@ function ReviewsSection() {
     {
       id: 'mock-2',
       rating: 5,
-      comment: "Increíble cómo cambió la percepción de mi marca. Mis clientas de WhatsApp ahora entran al link, prueban y compran. ¡Ahorro horas!",
+      comment: "Increíble cómo cambió la percepción de mi marca. Mis clientes de WhatsApp ahora entran al link, prueban y compran. ¡Ahorro horas!",
       reviewer_name: "Sofía Rodríguez",
       reviewer_plan: "BASIC",
       is_featured: true,

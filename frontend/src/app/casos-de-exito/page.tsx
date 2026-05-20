@@ -66,7 +66,7 @@ const CASES = [
     category: 'Moda y Alta Costura',
     result: '-28%',
     kpi: 'Devoluciones',
-    desc: 'El gran volumen de devoluciones por "no se me ve como a la modelo" generaba estrés logístico a Aura. Al brindar contexto realista con IA Generativa, Lookitry logró que las clientas sepan exactamente cómo caerá el vestido oscuro.',
+    desc: 'El gran volumen de devoluciones por "no se me ve como a la modelo" generaba estrés logístico a Aura. Al brindar contexto realista con IA Generativa, Lookitry logró que los clientes sepan exactamente cómo caerá el vestido oscuro.',
     icon: <RefreshCcw className="text-[#FF5C3A]" size={20} />
   },
   {
