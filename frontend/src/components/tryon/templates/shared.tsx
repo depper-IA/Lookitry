@@ -404,23 +404,25 @@ export function SelfieThumb({
 interface ErrorBannerProps {
   error: string | null;
   isService?: boolean;
+  isContentPolicy?: boolean;
   onDismiss?: () => void;
   cardBg?: string;
   cardBorder?: string;
   textColor?: string;
   mutedColor?: string;
-  autoDismiss?: number; // Time in ms, optional
+  autoDismiss?: number;
 }
 
-export function ErrorBanner({ 
-  error, 
-  isService = false, 
-  onDismiss, 
-  cardBg, 
-  cardBorder, 
-  textColor, 
+export function ErrorBanner({
+  error,
+  isService = false,
+  isContentPolicy = false,
+  onDismiss,
+  cardBg,
+  cardBorder,
+  textColor,
   mutedColor,
-  autoDismiss = 8000 // Default 8s for errors
+  autoDismiss = 8000
 }: ErrorBannerProps) {
   useEffect(() => {
     if (error && onDismiss && autoDismiss > 0) {
@@ -434,23 +436,62 @@ export function ErrorBanner({
   if (!error) return null;
 
   const isServiceError = isService || error === 'SERVICE_CREDITS_EXHAUSTED';
+  const isContentPolicyError = isContentPolicy || error === 'IMAGE_CONTENT_POLICY';
+
+  const bgClass = isServiceError
+    ? (cardBg ? '' : 'bg-gray-100')
+    : isContentPolicyError
+      ? 'bg-amber-50'
+      : 'bg-red-50';
+
+  const borderClass = isServiceError
+    ? (cardBorder ? '' : 'border-gray-200')
+    : isContentPolicyError
+      ? 'border-amber-200'
+      : 'border-red-200';
+
+  const iconColor = isServiceError
+    ? (mutedColor || '#6b7280')
+    : isContentPolicyError
+      ? '#d97706'
+      : '#ef4444';
+
+  const titleColor = isServiceError
+    ? (textColor || '#111827')
+    : isContentPolicyError
+      ? '#92400e'
+      : '#dc2626';
+
+  const bodyColor = isServiceError
+    ? (mutedColor || '#6b7280')
+    : isContentPolicyError
+      ? '#b45309'
+      : '#991b1b';
+
+  const title = isServiceError
+    ? 'La prueba virtual esta temporalmente no disponible'
+    : isContentPolicyError
+      ? 'Imagen no permitida por políticas de contenido'
+      : 'Algo salió mal';
+
+  const body = isServiceError
+    ? 'El servicio de generación se quedó sin capacidad temporalmente. Intenta de nuevo en unos minutos.'
+    : isContentPolicyError
+      ? 'La foto o prenda seleccionada no cumple con las políticas de contenido del servicio de IA. Intenta con una foto diferente.'
+      : error;
 
   return (
     <AnimatePresence>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, height: 0, y: -10 }}
         animate={{ opacity: 1, height: 'auto', y: 0 }}
         exit={{ opacity: 0, height: 0, y: -10 }}
         transition={{ duration: 0.3 }}
         className="mb-4 overflow-hidden"
       >
-        <div 
-          className={`p-3 md:p-4 rounded-2xl flex items-start gap-2 md:gap-3 border ${
-            isServiceError 
-              ? (cardBg ? '' : 'bg-gray-100') + ' ' + (cardBorder ? '' : 'border-gray-200')
-              : 'bg-red-50 border-red-200'
-          }`}
-          style={{ 
+        <div
+          className={`p-3 md:p-4 rounded-2xl flex items-start gap-2 md:gap-3 border ${bgClass} ${borderClass}`}
+          style={{
             ...(isServiceError && cardBg ? { backgroundColor: cardBg } : {}),
             ...(isServiceError && cardBorder ? { borderColor: cardBorder } : {})
           }}
@@ -460,27 +501,18 @@ export function ErrorBanner({
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           >
-            <AlertCircle 
-              className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isServiceError && !mutedColor ? 'text-gray-500' : (!isServiceError ? 'text-red-500' : '')}`} 
-              style={isServiceError && mutedColor ? { color: mutedColor } : {}} 
-              strokeWidth={2} 
+            <AlertCircle
+              className="w-5 h-5 flex-shrink-0 mt-0.5"
+              style={{ color: iconColor }}
+              strokeWidth={2}
             />
           </motion.div>
           <div className="flex-1 min-w-0">
-            <p 
-              className={`text-sm font-semibold ${isServiceError && !textColor ? 'text-gray-900' : (!isServiceError ? 'text-red-600' : '')}`} 
-              style={isServiceError && textColor ? { color: textColor } : {}}
-            >
-              {isServiceError ? 'La prueba virtual está temporalmente no disponible' : 'Algo salió mal'}
+            <p className="text-sm font-semibold" style={{ color: titleColor }}>
+              {title}
             </p>
-            <p 
-              className={`text-xs mt-0.5 ${isServiceError && !mutedColor ? 'text-gray-500' : (!isServiceError ? 'text-red-800' : '')}`} 
-              style={isServiceError && mutedColor ? { color: mutedColor } : {}}
-            >
-              {isServiceError 
-                ? 'El servicio de generación se quedó sin capacidad temporalmente. Intenta de nuevo en unos minutos.'
-                : error
-              }
+            <p className="text-xs mt-0.5" style={{ color: bodyColor }}>
+              {body}
             </p>
           </div>
           {onDismiss && (
@@ -491,10 +523,7 @@ export function ErrorBanner({
               whileTap={{ scale: 0.9 }}
               aria-label="Cerrar notificación"
             >
-              <X 
-                className={`w-4 h-4 ${isServiceError && !mutedColor ? 'text-gray-500' : (!isServiceError ? 'text-red-800' : '')}`} 
-                style={isServiceError && mutedColor ? { color: mutedColor } : {}} 
-              />
+              <X className="w-4 h-4" style={{ color: bodyColor }} />
             </motion.button>
           )}
         </div>

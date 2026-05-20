@@ -224,11 +224,23 @@ router.post('/generate', multerMem.single('selfie'), asyncHandler(async (req: an
     console.log(`[HomeTryon] n8n response text length: ${text?.length || 0}`);
 
     if (!text || !text.trim()) {
-      throw new Error('N8N returned empty response');
+      console.warn('[HomeTryon] N8N returned empty body — likely content policy rejection');
+      return res.status(422).json({
+        error: 'IMAGE_CONTENT_POLICY',
+        message: 'La imagen no pudo ser generada porque no cumple con las políticas de contenido. Intenta con una foto diferente.'
+      });
     }
 
-    const result = JSON.parse(text) as { result_image_url?: string; image_url?: string; imageUrl?: string; generation_id?: string };
+    const result = JSON.parse(text) as { result_image_url?: string; image_url?: string; imageUrl?: string; generation_id?: string; finishReason?: string; finishMessage?: string; error?: string };
     console.log(`[HomeTryon] parsed result:`, result);
+
+    if (result.finishReason === 'IMAGE_PROHIBITED_CONTENT' || result.error === 'IMAGE_PROHIBITED_CONTENT') {
+      console.warn('[HomeTryon] Content policy violation detected');
+      return res.status(422).json({
+        error: 'IMAGE_CONTENT_POLICY',
+        message: 'La imagen fue rechazada por políticas de contenido de IA. Intenta con una foto diferente.'
+      });
+    }
 
     // Record trial for non-whitelisted IPs
     if (!isTestIp) {

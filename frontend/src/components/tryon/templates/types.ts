@@ -38,6 +38,7 @@ export interface TryOnTemplateProps {
   generationId: string | null;
   error: string | null;
   errorIsService: boolean;
+  errorIsContentPolicy?: boolean;
   notice: string | null;
 
   generatedProducts: Map<string, string>;
