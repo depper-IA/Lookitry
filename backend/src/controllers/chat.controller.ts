@@ -324,7 +324,7 @@ export const widgetReply = async (req: Request, res: Response) => {
       .from('lead_messages')
       .insert({
         conversation_id: conversation.id,
-        sender_type: 'user',
+        sender_type: 'lead',
         content: message,
       });
 
@@ -591,7 +591,7 @@ export const getWidgetHistory = async (req: Request, res: Response) => {
       .from('lead_messages')
       .select('id, sender_type, content, created_at')
       .eq('conversation_id', conversation.id)
-      .in('sender_type', ['user', 'agent'])
+      .in('sender_type', ['lead', 'agent'])
       .order('created_at', { ascending: true });
 
     if (error) throw error;
@@ -658,8 +658,8 @@ export const saveWidgetMessage = async (req: Request, res: Response) => {
       conversation = newConv;
     }
 
-    // Insertar mensaje (sender_type enum: 'user' | 'agent')
-    const senderType = role === 'assistant' ? 'agent' : 'user';
+    // Insertar mensaje (sender_type enum: 'lead' | 'agent')
+    const senderType = role === 'assistant' ? 'agent' : 'lead';
     const { error: msgError } = await supabaseAdmin
       .from('lead_messages')
       .insert({
