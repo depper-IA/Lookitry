@@ -204,7 +204,7 @@ export default function LandingNav({
     { title: 'API Developer Hub', desc: 'IA nativa en tu propia app.', href: '/api-developer' },
   ];
 
-  const isHeroMode = transparent && !scrolled;
+  const isHeroMode = transparent && !scrolled && !hoverMenu;
   const navBg = isHeroMode
     ? 'bg-transparent'
     : 'bg-white dark:bg-black';
