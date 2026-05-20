@@ -28,11 +28,12 @@ export default function EmbedPage({ params }: EmbedPageProps) {
       }}
     >
       <TryOnWidget 
-        brandSlug={params.brandSlug} 
-        isEmbed={isEmbed} 
+        brandSlug={params.brandSlug}
+        isEmbed={isEmbed}
         externalId={externalId}
         initialProductId={productId}
         pluginView={pluginView}
+        lockProductSelection={pluginView}
       />
     </div>
   );
