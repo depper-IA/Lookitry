@@ -7,6 +7,8 @@ import { Sparkles, ArrowRight, ArrowDown, TrendingUp, RotateCcw, ShieldCheck, Za
 import dynamic from 'next/dynamic';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
+import { useCurrency } from '@/hooks/useCurrency';
+import { formatPrice } from '@/utils/currency';
 
 const TryOnDemoWidget = dynamic(() => import('@/components/tryon/TryOnDemoWidget'), { ssr: false });
 
@@ -63,7 +65,19 @@ function StepBadge({ step, label, done }: { step: number; label: string; done: b
 
 // ── ResultPanel ───────────────────────────────────────────────────────────────
 
-function ResultPanel({ resultImage, onReset }: { resultImage: string | null; onReset?: () => void }) {
+function ResultPanel({
+  resultImage,
+  onReset,
+  currency,
+  trialPriceCOP,
+  trm,
+}: {
+  resultImage: string | null;
+  onReset?: () => void;
+  currency: 'COP' | 'USD';
+  trialPriceCOP: number;
+  trm: number;
+}) {
   return (
     <div className="flex flex-col gap-5">
       {/* Image area */}
@@ -147,7 +161,7 @@ function ResultPanel({ resultImage, onReset }: { resultImage: string | null; onR
           href="/trial-checkout"
           className="mb-2.5 flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] py-3.5 text-sm font-black text-white shadow-lg shadow-[var(--accent)]/20 hover:brightness-110 active:scale-[0.98] transition-all"
         >
-          <Sparkles size={15} /> Activar trial 7 días — $20.000
+          <Sparkles size={15} /> Activar trial 7 días — {formatPrice(trialPriceCOP, currency, trm)}
         </Link>
         <Link
           href="/planes"
@@ -177,9 +191,25 @@ function ResultPanel({ resultImage, onReset }: { resultImage: string | null; onR
 // ── DemoPageClient ────────────────────────────────────────────────────────────
 
 export default function DemoPageClient() {
+  const { currency, setCurrency } = useCurrency();
+  const [trialPriceCOP, setTrialPriceCOP] = useState(20000);
+  const [trm, setTrm] = useState(4000);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+    Promise.all([
+      fetch(`${apiUrl}/api/trial/status`).then(r => r.ok ? r.json() : null),
+      fetch(`${apiUrl}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
+    ])
+      .then(([trialData, paySettings]) => {
+        if (trialData?.priceCOP && Number(trialData.priceCOP) > 0) setTrialPriceCOP(Number(trialData.priceCOP));
+        if (paySettings?.trm && Number(paySettings.trm) > 0) setTrm(Number(paySettings.trm));
+      })
+      .catch(() => {});
+  }, []);
 
   const handleResult = useCallback((url: string) => {
     setResultImage(url);
@@ -194,7 +224,7 @@ export default function DemoPageClient() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)] font-dm-sans">
-      <LandingNav transparent={false} />
+      <LandingNav transparent={false} currency={currency} onCurrencyChange={setCurrency} />
 
       {/* ── Hero compacto ──────────────────────────────────────────────── */}
       <section className="bg-[var(--bg-base)] pt-20 pb-10 px-6 sm:pt-24 sm:pb-12">
@@ -253,7 +283,13 @@ export default function DemoPageClient() {
             transition={{ duration: 0.5, delay: 0.2, ease: EASING }}
             className="lg:sticky lg:top-24"
           >
-            <ResultPanel resultImage={resultImage} onReset={() => setResultImage(null)} />
+            <ResultPanel
+              resultImage={resultImage}
+              onReset={() => setResultImage(null)}
+              currency={currency}
+              trialPriceCOP={trialPriceCOP}
+              trm={trm}
+            />
           </motion.div>
         </div>
       </section>
@@ -297,7 +333,7 @@ export default function DemoPageClient() {
             href="/trial-checkout"
             className="inline-flex items-center gap-2 rounded-2xl bg-[var(--accent)] px-10 py-4 text-base font-black text-white shadow-2xl shadow-[var(--accent)]/25 hover:brightness-110 active:scale-[0.98] transition-all"
           >
-            <Sparkles size={18} /> Empezar trial — $20.000 COP
+            <Sparkles size={18} /> Empezar trial — {formatPrice(trialPriceCOP, currency, trm)}
           </Link>
           <p className="mt-4 text-xs text-[var(--text-muted)]">Sin tarjeta requerida · Activa en menos de 3 minutos</p>
         </motion.div>
