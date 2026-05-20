@@ -1,5 +1,12 @@
 # CLAUDE.md — Lookitry Project
 
+## Idioma y Tono (OBLIGATORIO)
+
+**SIEMPRE español neutro (tuteo, "tú")**. PROHIBIDO voseo rioplatense ("subí", "andá", "elegí", "mirá", etc.).
+PROHIBIDO usar emojis en respuestas y en copy de UI.
+Aplica a: respuestas del agente Y copy generado para la UI.
+Ejemplos correctos: "sube", "elige", "mira", "ve a", "haz clic".
+
 ## PROTOCOLO DE ARRANQUE (OBLIGATORIO)
 
 **AL INICIAR CADA CONVERSACIÓN**, leer primero:
