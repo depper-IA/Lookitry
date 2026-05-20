@@ -205,7 +205,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                 )}
 
                 {step === 'upload' && (
-                  <div className={`space-y-6 mx-auto ${isSmall ? '' : 'max-w-2xl'}`}>
+                  <div className={`space-y-6 mx-auto ${isSmall ? '' : 'max-w-xl sm:max-w-2xl'}`}>
                     <SelfieUploader
                       onUpload={onSelfieUpload}
                       onReset={onReset}

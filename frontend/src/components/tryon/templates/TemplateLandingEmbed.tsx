@@ -139,7 +139,7 @@ export function TemplateLandingEmbed(props: TryOnTemplateProps) {
 
       {step !== 'generating' && step !== 'select' && (
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 overflow-y-auto overflow-x-hidden">
-          <div className={`${centerUploadInEmbed ? 'w-full max-w-md' : (pluginView && step === 'result' ? 'mx-auto w-full max-w-5xl' : 'max-w-md mx-auto w-full')}`}>
+          <div className={`${centerUploadInEmbed ? 'w-full max-w-lg sm:max-w-xl' : (pluginView && step === 'result' ? 'mx-auto w-full max-w-5xl' : 'max-w-lg sm:max-w-xl mx-auto w-full')}`}>
             <ErrorBanner
               error={error}
               isService={errorIsService}

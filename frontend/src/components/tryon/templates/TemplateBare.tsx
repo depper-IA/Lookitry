@@ -175,7 +175,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
       {/* ── Paso 2: Subida de selfie — bloque propio full-height sin scroll ── */}
       {step === 'upload' && (
         <div className="flex-1 flex flex-col px-4 pt-1 pb-4 min-h-0">
-          <div className="flex-1 min-h-0 flex flex-col max-w-md mx-auto w-full">
+          <div className="flex-1 min-h-0 flex flex-col max-w-lg sm:max-w-xl mx-auto w-full">
             <ErrorBanner
               error={error}
               isService={errorIsService}
@@ -282,7 +282,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
       {/* Estados: select / result */}
       {step !== 'generating' && step !== 'upload' && (
         <div className="flex-1 flex flex-col items-center justify-center px-4 pt-2 pb-12 overflow-y-auto overflow-x-hidden">
-          <div className="max-w-md mx-auto w-full">
+          <div className="max-w-lg sm:max-w-xl mx-auto w-full">
             {/* Banners de error y aviso */}
             <ErrorBanner
               error={error}
