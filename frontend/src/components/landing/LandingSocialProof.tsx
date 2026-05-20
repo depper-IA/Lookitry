@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, MessageCircle, Sparkles } from 'lucide-react';
+import { Instagram, MessageCircle, Sparkles, ArrowRight, Upload, Eye, ShoppingBag } from 'lucide-react';
 import { LANDING_COPY } from './LandingCopy';
 
 const fadeUp = {
@@ -23,16 +23,10 @@ const TikTokIcon = () => (
 // ── PhoneMockup ───────────────────────────────────────────────────────────────
 
 function PhoneMockup() {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <div className="relative flex items-center justify-center min-h-[480px]">
       {/* Ambient glow */}
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-accent/20 via-transparent to-purple-500/15 rounded-[3rem] blur-3xl"
-        animate={{ opacity: isHovered ? 0.9 : 0.5 }}
-        transition={{ duration: 0.4 }}
-      />
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-transparent to-purple-500/15 rounded-[3rem] blur-3xl" />
 
       {/* Floating orbs */}
       <motion.div
@@ -54,15 +48,13 @@ function PhoneMockup() {
       {/* Phone */}
       <motion.div
         className="relative z-10 w-full max-w-[240px]"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        animate={{ rotate: 5, y: isHovered ? -14 : 0 }}
+        animate={{ rotate: 5 }}
         transition={{ type: 'spring', stiffness: 160, damping: 20 }}
       >
         {/* Body */}
         <div className="relative rounded-[2.4rem] bg-gradient-to-b from-gray-800 to-gray-900 p-[6px] shadow-[0_50px_100px_-15px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.12)]">
           {/* Dynamic island */}
-          <div className="absolute top-[13px] left-1/2 -translate-x-1/2 w-18 h-[5px] rounded-full bg-black z-20" />
+          <div className="absolute top-[13px] left-1/2 -translate-x-1/2 w-[72px] h-[5px] rounded-full bg-black z-20" />
 
           {/* Screen */}
           <div className="relative rounded-[1.9rem] overflow-hidden bg-black aspect-[9/19]">
@@ -101,11 +93,7 @@ function PhoneMockup() {
         </div>
 
         {/* Glow shadow */}
-        <motion.div
-          className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-accent/30 via-purple-500/15 to-transparent blur-2xl -z-10"
-          animate={{ opacity: isHovered ? 0.8 : 0.4 }}
-          transition={{ duration: 0.3 }}
-        />
+        <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-accent/30 via-purple-500/15 to-transparent blur-2xl -z-10" />
       </motion.div>
 
       {/* Badges */}
@@ -165,6 +153,20 @@ function PhoneMockup() {
   );
 }
 
+// ── StepFlow ───────────────────────────────────────────────────────────────────
+
+const INSTAGRAM_STEPS = [
+  { icon: Upload, label: 'Tu clienta sube su foto' },
+  { icon: Eye, label: 'Elige la prenda que quiere' },
+  { icon: ShoppingBag, label: 'Compra con confianza' },
+];
+
+const WHATSAPP_STEPS = [
+  { icon: MessageCircle, label: 'Envías el link del probador' },
+  { icon: Upload, label: 'Tu clienta se prueba la ropa' },
+  { icon: ShoppingBag, label: 'Cierra la venta por WhatsApp' },
+];
+
 // ── ChannelCard ─────────────────────────────────────────────────────────────
 
 function ChannelCard({
@@ -172,20 +174,20 @@ function ChannelCard({
   iconBg,
   tag,
   title,
-  description,
+  steps,
   delay,
   accentColor,
-  isFirst,
 }: {
   icon: React.ReactNode;
   iconBg: string;
   tag: string;
   title: string;
-  description: string;
+  steps: { icon: React.ElementType; label: string }[];
   delay: number;
   accentColor?: string;
-  isFirst?: boolean;
 }) {
+  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
+
   return (
     <motion.div
       custom={delay}
@@ -193,12 +195,13 @@ function ChannelCard({
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-60px' }}
-      className="group relative rounded-2xl p-6 transition-all duration-400 hover:scale-[1.02]"
+      className="group relative rounded-2xl p-6 transition-all duration-400"
       style={{
-        background: `linear-gradient(135deg, ${accentColor || 'var(--accent)'}18 0%, ${accentColor || 'var(--accent)'}08 100%)`,
+        background: `linear-gradient(135deg, ${accentColor || 'var(--accent)'}20 0%, ${accentColor || 'var(--accent)'}08 100%)`,
       }}
     >
-      <div className="mb-4 flex items-center gap-2.5">
+      {/* Header */}
+      <div className="mb-5 flex items-center gap-2.5">
         <span
           className="flex h-9 w-9 items-center justify-center rounded-xl text-white"
           style={{ background: iconBg }}
@@ -208,14 +211,62 @@ function ChannelCard({
         </span>
         <span className="text-white/45 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-widest">{tag}</span>
       </div>
-      <h3 className="font-jakarta text-xl font-bold text-white dark:text-black mb-2 leading-tight">
+      <h3 className="font-jakarta text-xl font-bold text-white dark:text-black mb-5 leading-tight">
         {title}
       </h3>
-      <p className="text-white/55 dark:text-gray-500 text-sm leading-relaxed">
-        {description}
-      </p>
 
-      {/* Accent bar at bottom — fills on hover */}
+      {/* Steps */}
+      <div className="flex flex-col gap-2.5">
+        {steps.map((step, i) => {
+          const Icon = step.icon;
+          return (
+            <div key={i} className="flex items-center gap-3">
+              {/* Step number + line */}
+              <div className="flex flex-col items-center">
+                <div
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-black transition-all duration-300"
+                  style={{
+                    background: i === 0 ? (accentColor || 'var(--accent)') : `${accentColor || 'var(--accent)'}30`,
+                    color: i === 0 ? 'white' : (accentColor || 'var(--accent)'),
+                  }}
+                >
+                  {i + 1}
+                </div>
+                {i < steps.length - 1 && (
+                  <div
+                    className="w-[1px] flex-1 mt-1 mb-1"
+                    style={{ background: `${accentColor || 'var(--accent)'}30` }}
+                  />
+                )}
+              </div>
+
+              {/* Step content */}
+              <div
+                className="flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2.5 transition-all duration-300"
+                style={{
+                  background: hoveredStep === i ? `${accentColor || 'var(--accent)'}18` : 'transparent',
+                }}
+                onMouseEnter={() => setHoveredStep(i)}
+                onMouseLeave={() => setHoveredStep(null)}
+              >
+                <Icon
+                  size={14}
+                  className="flex-shrink-0 transition-colors duration-300"
+                  style={{ color: i === 0 ? (accentColor || 'var(--accent)') : '#ffffff50' }}
+                />
+                <span
+                  className="text-[12px] font-medium transition-colors duration-300"
+                  style={{ color: i === 0 ? 'white' : 'rgba(255,255,255,0.5)' }}
+                >
+                  {step.label}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Accent bar at bottom */}
       <div
         className="absolute bottom-0 left-0 right-0 h-[2px] rounded-b-2xl w-0 group-hover:w-full transition-all duration-500"
         style={{ background: accentColor || 'var(--accent)' }}
@@ -267,7 +318,7 @@ const LandingSocialProof = () => {
               iconBg="linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)"
               tag="Instagram"
               title={instagram.title}
-              description={instagram.description}
+              steps={INSTAGRAM_STEPS}
               delay={0.1}
             />
             <ChannelCard
@@ -275,7 +326,11 @@ const LandingSocialProof = () => {
               iconBg="#000"
               tag="TikTok"
               title={tiktok.title}
-              description={tiktok.description}
+              steps={[
+                { icon: Eye, label: 'Tu clienta ve la prenda en tu video' },
+                { icon: Upload, label: 'Sube su foto al probador' },
+                { icon: ShoppingBag, label: 'Decide comprar al instante' },
+              ]}
               delay={0.15}
             />
             <ChannelCard
@@ -283,7 +338,7 @@ const LandingSocialProof = () => {
               iconBg="#25D366"
               tag="WhatsApp"
               title={whatsapp.title}
-              description={`${whatsapp.description} ${whatsapp.stat}.`}
+              steps={WHATSAPP_STEPS}
               delay={0.2}
               accentColor="#25D366"
             />
