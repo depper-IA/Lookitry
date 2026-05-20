@@ -51,6 +51,7 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - Don't run destructive commands without asking.
 - `trash` > `rm` (recoverable beats gone forever)
 - When in doubt, ask.
+- **PROHIBIDO usar bordes (`border`) en componentes de UI** — usar sombras, gradientes de fondo, o contraste de color en su lugar. Esta regla aplica a TODOS los componentes, secciones y cards de la interfaz.
 
 ## 💰 Control de Costos y Uso de APIs (LÍMITE ESTRICTO)
 **Regla mandatoria para TODOS los agentes (incluyendo Sammy, Rebecca, Leo, etc.):**
