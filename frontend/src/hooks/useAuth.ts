@@ -71,6 +71,8 @@ export function useAuth() {
       setIsLoading(true);
       const response = await authService.login(data);
       setBrand(response.brand);
+      localStorage.setItem('brand', JSON.stringify(response.brand));
+      dispatchAuthStateChanged();
       router.push(redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dashboard');
       return response;
     } catch (err: any) {

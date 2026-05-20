@@ -206,50 +206,11 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
 
                 {step === 'upload' && (
                   <div className={`space-y-6 mx-auto ${isSmall ? '' : 'max-w-2xl'}`}>
-                    {/* Producto Seleccionado Exterior */}
-                    {selectedProduct && (
-                      <div 
-                        className="w-full relative group overflow-hidden rounded-2xl border transition-all duration-300 mb-6"
-                        style={{ 
-                          backgroundColor: 'rgba(0,0,0,0.2)',
-                          borderColor: borderColor
-                        }}
-                      >
-                        <div className="p-3 flex items-center gap-4">
-                          <div className="w-20 h-20 rounded-xl bg-white/5 overflow-hidden border border-white/10 shrink-0 shadow-lg">
-                            <img 
-                              src={selectedProduct.imageUrl} 
-                              alt={selectedProduct.name} 
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                            />
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 italic" style={{ color: primaryColor }}>
-                              Prenda seleccionada
-                            </span>
-                            <h4 className="text-lg font-black italic uppercase tracking-tighter truncate pr-10" style={{ color: textPrimary }}>
-                              {selectedProduct.name}
-                            </h4>
-                          </div>
-
-                          <button
-                            onClick={onProductReset}
-                            className="absolute top-4 right-4 p-2 rounded-full bg-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-500 transition-all active:scale-90 shadow-xl border border-white/5"
-                            title="Cambiar prenda"
-                          >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
                     <SelfieUploader
                       onUpload={onSelfieUpload}
                       onReset={onReset}
                       onSelfieReset={onSelfieReset}
+                      onBack={onProductReset}
                       currentPreview={selfiePreview}
                       selectedProduct={selectedProduct}
                       primaryColor={primaryColor}

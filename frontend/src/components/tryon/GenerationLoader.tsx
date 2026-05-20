@@ -26,20 +26,6 @@ export function GenerationLoader({
 }: GenerationLoaderProps) {
   const [msgIndex, setMsgIndex] = useState(0);
 
-  const orbStyles = `
-    @keyframes orb-breathe {
-      0%, 100% { transform: scale(1);    opacity: 0.85; }
-      50%       { transform: scale(1.1); opacity: 1;    }
-    }
-    @keyframes orb-glow {
-      0%, 100% { box-shadow: 0 0 24px 6px ${primaryColor}40; }
-      50%       { box-shadow: 0 0 48px 18px ${primaryColor}65; }
-    }
-    .orb-animated {
-      animation: orb-breathe 2.5s ease-in-out infinite, orb-glow 2.5s ease-in-out infinite;
-    }
-  `;
-
   useEffect(() => {
     const interval = setInterval(() => {
       setMsgIndex((i) => (i + 1) % messages.length);
@@ -48,57 +34,50 @@ export function GenerationLoader({
   }, [messages.length]);
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: orbStyles }} />
-
-      <div className="flex flex-col items-center justify-center py-12 px-4 w-full max-w-sm mx-auto">
-        {/* Orb de entrada */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="mb-8"
-        >
-          <div
-            className="w-20 h-20 rounded-full orb-animated"
-            style={{
-              ['--orb-color' as string]: primaryColor,
-              background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}90)`,
-            }}
-          />
-        </motion.div>
+    <motion.div
+      className="flex flex-col h-full w-full max-w-xs mx-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* Spinner + mensaje — centrado verticalmente en el espacio disponible */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-6">
+        {/* Spinner delgado */}
+        <div
+          className="w-10 h-10 rounded-full animate-spin"
+          style={{
+            borderWidth: '2px',
+            borderStyle: 'solid',
+            borderColor: `${primaryColor}25`,
+            borderTopColor: primaryColor,
+          }}
+        />
 
         {/* Mensaje rotativo */}
-        <div className="h-6 flex items-center justify-center mb-6">
+        <div className="h-5 flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.p
               key={msgIndex}
               className="text-sm font-medium text-center"
               style={{ color: mutedColor }}
-              initial={{ opacity: 0, y: 5 }}
+              initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.25 }}
             >
               {messages[msgIndex]}
             </motion.p>
           </AnimatePresence>
         </div>
-
-        {/* Separador */}
-        <div
-          className="w-16 h-px mb-6"
-          style={{ backgroundColor: `${mutedColor}30` }}
-        />
-
-        {/* Disclaimer */}
-        <p
-          className="text-[9px] text-center leading-relaxed max-w-[200px]"
-          style={{ color: mutedColor, opacity: 0.4 }}
-        >
-          Las imagenes generadas por IA pueden incluir errores. El ajuste y apariencia no seran exactos.
-        </p>
       </div>
-    </>
+
+      {/* Disclaimer — fijo al fondo del espacio disponible */}
+      <p
+        className="text-[10px] text-center leading-relaxed pb-2"
+        style={{ color: mutedColor, opacity: 0.65 }}
+      >
+        Las imagenes generadas por IA pueden incluir errores. El ajuste y apariencia no seran exactos.
+      </p>
+    </motion.div>
   );
 }

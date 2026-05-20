@@ -109,6 +109,9 @@ class TryOnService {
     if (data.clientFingerprint) {
       formData.append('clientFingerprint', data.clientFingerprint);
     }
+    if (data.termsAccepted !== undefined) {
+      formData.append('termsAccepted', String(data.termsAccepted));
+    }
 
     try {
       const response = await api.post<GenerateTryOnResponse>(

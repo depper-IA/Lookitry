@@ -5,12 +5,13 @@ import type { Product } from './templates/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { compressImage, validateImageFile } from '@/utils/imageCompression';
 import { ImageEditor } from './ImageEditor';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, ChevronLeft } from 'lucide-react';
 
 interface SelfieUploaderProps {
   onUpload: (file: File, preview: string) => void;
   onReset?: () => void;
   onSelfieReset?: () => void;
+  onBack?: () => void;
   currentPreview?: string | null;
   selectedProduct?: Product | null;
   primaryColor?: string;
@@ -40,6 +41,7 @@ export function SelfieUploader({
   onUpload,
   onReset,
   onSelfieReset,
+  onBack,
   currentPreview,
   primaryColor = '#FF5C3A',
   textColor = '#1a1a1a',
@@ -159,7 +161,7 @@ export function SelfieUploader({
 
       <div
         ref={dropRef}
-        className="max-w-lg mx-auto space-y-4 relative"
+        className="flex flex-col h-full w-full max-w-md mx-auto gap-2 relative"
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
@@ -185,162 +187,182 @@ export function SelfieUploader({
           )}
         </AnimatePresence>
 
-        {/* Chips de guia */}
-        <div className="flex flex-wrap gap-2 justify-center">
-          {CHIPS.map((chip) => (
-            <div
-              key={chip}
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 border"
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                borderColor: 'rgba(255,255,255,0.12)',
-              }}
+        {/* Fila superior: back button + chips */}
+        <div className="flex flex-col gap-2 flex-shrink-0">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1 self-start py-1 pr-3 rounded-full text-[11px] font-semibold transition-opacity hover:opacity-70 active:scale-95"
+              style={{ color: mutedColor }}
             >
-              <CheckIcon color={primaryColor} />
-              <span
-                className="text-[10px] font-semibold uppercase tracking-wide"
-                style={{ color: textColor, opacity: 0.7 }}
+              <ChevronLeft className="w-4 h-4" />
+              Atras
+            </button>
+          )}
+
+          <div className="flex flex-wrap gap-1.5 justify-center">
+            {CHIPS.map((chip) => (
+              <div
+                key={chip}
+                className="flex items-center gap-1 rounded-full px-2.5 py-1 border"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  borderColor: 'rgba(255,255,255,0.12)',
+                }}
               >
-                {chip}
-              </span>
-            </div>
-          ))}
+                <CheckIcon color={primaryColor} />
+                <span
+                  className="text-[9px] font-semibold uppercase tracking-wide"
+                  style={{ color: textColor, opacity: 0.7 }}
+                >
+                  {chip}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Zona central: imagen guia o preview */}
-        <AnimatePresence mode="wait">
-          {compressing ? (
-            <motion.div
-              key="loading"
-              className="py-12 flex flex-col items-center justify-center gap-4 bg-white/5 rounded-[2.5rem] border border-white/10"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-            >
-              <Loader2 className="w-10 h-10 animate-spin" style={{ color: primaryColor }} />
-              <p
-                className="text-[10px] font-black uppercase tracking-[0.3em] animate-pulse"
-                style={{ color: textColor }}
+        {/* Zona central: imagen guia o preview — toma todo el espacio restante */}
+        <div className="flex-1 min-h-0 flex items-end justify-center overflow-hidden">
+          <AnimatePresence mode="wait">
+            {compressing ? (
+              <motion.div
+                key="loading"
+                className="flex flex-col items-center justify-center gap-4 w-full h-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
               >
-                Optimizando imagen...
-              </p>
-            </motion.div>
-          ) : currentPreview ? (
-            <motion.div
-              key="preview"
-              className="relative group rounded-[2.5rem] overflow-hidden border-2 transition-all duration-500 hover:scale-[1.01] w-full max-w-sm mx-auto bg-black/20"
-              style={{
-                borderColor: primaryColor,
-                boxShadow: `0 24px 60px -12px ${primaryColor}40`,
-              }}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-            >
-              <img
-                src={currentPreview}
-                alt="Tu selfie"
-                className="w-full h-auto max-h-[60vh] object-contain mx-auto block"
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                <motion.button
-                  onClick={onSelfieReset || onReset}
-                  className="px-8 py-4 rounded-full bg-white text-black font-black uppercase text-xs tracking-widest shadow-2xl"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <Loader2 className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
+                <p
+                  className="text-[10px] font-black uppercase tracking-[0.3em] animate-pulse"
+                  style={{ color: textColor }}
                 >
-                  Cambiar foto
-                </motion.button>
-              </div>
-              <button
-                onClick={onSelfieReset || onReset}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all hover:bg-black/70 active:scale-90"
+                  Optimizando imagen...
+                </p>
+              </motion.div>
+            ) : currentPreview ? (
+              <motion.div
+                key="preview"
+                className="relative group rounded-[2rem] overflow-hidden border-2 transition-all duration-500 hover:scale-[1.01] w-full h-full bg-black/20"
+                style={{
+                  borderColor: primaryColor,
+                  boxShadow: `0 24px 60px -12px ${primaryColor}40`,
+                }}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
               >
-                <X className="w-5 h-5" />
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="guide"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-              className="flex justify-center"
+                <img
+                  src={currentPreview}
+                  alt="Tu selfie"
+                  className="w-full h-full object-contain"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                  <motion.button
+                    onClick={onSelfieReset || onReset}
+                    className="px-8 py-4 rounded-full bg-white text-black font-black uppercase text-xs tracking-widest shadow-2xl"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Cambiar foto
+                  </motion.button>
+                </div>
+                <button
+                  onClick={onSelfieReset || onReset}
+                  className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all hover:bg-black/70 active:scale-90"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="guide"
+                className="h-full flex items-end justify-center"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <img
+                  src="/rebecca_probador.png"
+                  alt="Ejemplo de pose"
+                  className="h-full w-auto max-w-full object-contain object-bottom"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Acciones inferiores */}
+        <div className="flex flex-col gap-1.5 flex-shrink-0">
+          {/* Boton primario */}
+          {!currentPreview && (
+            <button
+              onClick={() => inputRef.current?.click()}
+              className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-sm text-white transition-all hover:brightness-110 active:scale-[0.98]"
+              style={{
+                backgroundColor: primaryColor,
+                boxShadow: `0 4px 24px ${primaryColor}40`,
+              }}
             >
-              <img
-                src="/rebecca_probador.png"
-                alt="Ejemplo de pose"
-                className="max-h-[60vh] w-auto object-contain mx-auto block"
-              />
-            </motion.div>
+              Subir foto
+            </button>
           )}
-        </AnimatePresence>
 
-        {/* Boton primario */}
-        <button
-          onClick={() => inputRef.current?.click()}
-          className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm text-white transition-all hover:brightness-110 active:scale-[0.98]"
-          style={{
-            backgroundColor: primaryColor,
-            boxShadow: `0 4px 24px ${primaryColor}40`,
-          }}
-        >
-          Subir foto
-        </button>
-
-        {/* Link secundario: camara */}
-        {hasCamera && !currentPreview && (
-          <button
-            onClick={() => cameraRef.current?.click()}
-            className="w-full text-center text-xs underline underline-offset-2 py-1 transition-opacity hover:opacity-80"
-            style={{ color: mutedColor }}
-          >
-            Tomar foto con camara
-          </button>
-        )}
-
-        {/* Disclaimer legal */}
-        <p className="text-[9px] text-center leading-relaxed" style={{ color: mutedColor, opacity: 0.5 }}>
-          Solo sube una foto tuya. Aplican nuestra{' '}
-          <a
-            href="/politica-de-uso"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:opacity-80"
-          >
-            Politica de Uso
-          </a>{' '}
-          y{' '}
-          <a
-            href="/politicas-privacidad"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:opacity-80"
-          >
-            Politica de Privacidad
-          </a>
-          . Las imagenes generadas por IA pueden incluir errores.
-        </p>
-
-        {/* Error */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3"
+          {/* Link secundario: camara */}
+          {hasCamera && !currentPreview && (
+            <button
+              onClick={() => cameraRef.current?.click()}
+              className="w-full text-center text-[11px] underline underline-offset-2 py-1 transition-opacity hover:opacity-80"
+              style={{ color: mutedColor }}
             >
-              <X className="w-4 h-4 text-red-500 shrink-0" />
-              <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest flex-1">{error}</p>
-              <button onClick={() => setError(null)} className="opacity-40 hover:opacity-100 transition-opacity">
-                <X className="w-3 h-3" style={{ color: textColor }} />
-              </button>
-            </motion.div>
+              o Tomar foto con cámara
+            </button>
           )}
-        </AnimatePresence>
+
+          {/* Disclaimer legal */}
+          <p className="text-[9px] text-center leading-relaxed" style={{ color: mutedColor, opacity: 0.5 }}>
+            Solo sube una foto tuya. Aplican nuestra{' '}
+            <a
+              href="/politica-de-uso"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:opacity-80"
+            >
+              Politica de Uso
+            </a>{' '}
+            y{' '}
+            <a
+              href="/politicas-privacidad"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:opacity-80"
+            >
+              Politica de Privacidad
+            </a>
+            . Las imagenes generadas por IA pueden incluir errores.
+          </p>
+
+          {/* Error */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="p-3 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3"
+              >
+                <X className="w-4 h-4 text-red-500 shrink-0" />
+                <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest flex-1">{error}</p>
+                <button onClick={() => setError(null)} className="opacity-40 hover:opacity-100 transition-opacity">
+                  <X className="w-3 h-3" style={{ color: textColor }} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         <input
           ref={inputRef}

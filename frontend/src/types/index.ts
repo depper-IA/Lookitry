@@ -274,6 +274,7 @@ export interface GenerateTryOnDto {
   productId: string;
   selfieFile: File;
   clientFingerprint?: string;
+  termsAccepted?: boolean;
 }
 
 export interface GenerateTryOnResponse {

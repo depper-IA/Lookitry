@@ -19,6 +19,8 @@ import { UsageService } from '../services/usage.service';
 
 import { GenerationsService } from '../services/generations.service';
 
+import { generationConsentsService } from '../services/generation-consents.service';
+
 import { N8nClient } from '../services/n8n.client';
 
 import { sanitizeError } from '../utils/sanitizeError';
@@ -446,7 +448,7 @@ export class PruebaloController {
 
     const { brandSlug } = req.params;
 
-    const { productId, clientFingerprint } = req.body;
+    const { productId, clientFingerprint, termsAccepted } = req.body;
 
     const imageFile = req.file; // Multer manejará el archivo
 
@@ -593,6 +595,32 @@ export class PruebaloController {
 
 
     if (existingGeneration?.result_image_url) {
+
+      // Guardar consentimiento incluso para generaciones reutilizadas
+
+      if (termsAccepted !== undefined) {
+
+        const userIp = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+
+        const userAgent = req.headers['user-agent'] || '';
+
+        await generationConsentsService.createConsent({
+
+          generation_id: existingGeneration.id,
+
+          terms_accepted: termsAccepted === 'true' || termsAccepted === true,
+
+          user_ip: userIp,
+
+          user_agent: userAgent,
+
+        }).catch((consentError) => {
+
+          console.error('[pruebalo] No se pudo guardar consentimiento de reuso:', consentError);
+
+        });
+
+      }
 
       return res.status(200).json({
 
@@ -948,6 +976,34 @@ export class PruebaloController {
 
 
 
+      // 8.1 Guardar consentimiento de términos para auditoría legal
+
+      if (termsAccepted !== undefined) {
+
+        const userIp = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+
+        const userAgent = req.headers['user-agent'] || '';
+
+        await generationConsentsService.createConsent({
+
+          generation_id: finalGeneration.id,
+
+          terms_accepted: termsAccepted === 'true' || termsAccepted === true,
+
+          user_ip: userIp,
+
+          user_agent: userAgent,
+
+        }).catch((consentError) => {
+
+          console.error('[pruebalo] No se pudo guardar consentimiento:', consentError);
+
+        });
+
+      }
+
+
+
       const { count: successfulCount } = await supabaseAdmin
 
         .from('generations')
@@ -1029,6 +1085,32 @@ export class PruebaloController {
 
 
         if (dedupedGeneration?.result_image_url) {
+
+          // Guardar consentimiento para dedup también
+
+          if (termsAccepted !== undefined) {
+
+            const userIp = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+
+            const userAgent = req.headers['user-agent'] || '';
+
+            await generationConsentsService.createConsent({
+
+              generation_id: dedupedGeneration.id,
+
+              terms_accepted: termsAccepted === 'true' || termsAccepted === true,
+
+              user_ip: userIp,
+
+              user_agent: userAgent,
+
+            }).catch((consentError) => {
+
+              console.error('[pruebalo] No se pudo guardar consentimiento de dedup:', consentError);
+
+            });
+
+          }
 
           return res.status(200).json({
 
