@@ -56,6 +56,7 @@ export default function LandingNav({
   const [navVisible, setNavVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [hoverMenu, setHoverMenu] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const howItWorksRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
@@ -85,6 +86,7 @@ export default function LandingNav({
   }, [hoverMenu]);
 
   useEffect(() => {
+    setMounted(true);
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setHoverMenu(null);
@@ -529,7 +531,7 @@ export default function LandingNav({
 
           {/* ── Right side ── */}
           <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
-            {session ? (
+            {mounted && session ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -581,10 +583,10 @@ export default function LandingNav({
             <button
               onClick={toggleTheme}
               className="nav-theme-btn flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-black/5 text-black/60 transition-all duration-300 hover:scale-110 hover:border-accent/40 hover:text-accent dark:border-white/10 dark:bg-white/5 dark:text-white/60 dark:hover:text-accent"
-              aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              title={isDark ? 'Modo claro' : 'Modo oscuro'}
+              aria-label={mounted && isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              title={mounted && isDark ? 'Modo claro' : 'Modo oscuro'}
             >
-              {isDark ? <Sun size={14} /> : <Moon size={14} />}
+              {mounted && isDark ? <Sun size={14} /> : <Moon size={14} />}
             </button>
 
             <Link
