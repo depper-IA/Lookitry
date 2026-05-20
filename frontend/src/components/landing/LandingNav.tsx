@@ -285,7 +285,7 @@ export default function LandingNav({
 
               {/* HOW panel */}
               <div
-                className="absolute top-full left-0 right-0 z-50"
+                className={`absolute top-full left-0 right-0 z-50 ${hoverMenu === 'howItWorks' ? 'pointer-events-auto' : 'pointer-events-none'}`}
                 style={{ overflow: 'hidden' }}
                 onMouseEnter={() => handleMouseEnter('howItWorks')}
                 onMouseLeave={handleMouseLeave}
@@ -428,7 +428,7 @@ export default function LandingNav({
 
               {/* PRODUCTS panel */}
               <div
-                className="absolute top-full left-0 right-0 z-50"
+                className={`absolute top-full left-0 right-0 z-50 ${hoverMenu === 'products' ? 'pointer-events-auto' : 'pointer-events-none'}`}
                 style={{ overflow: 'hidden' }}
                 onMouseEnter={() => handleMouseEnter('products')}
                 onMouseLeave={handleMouseLeave}
