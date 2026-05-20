@@ -111,7 +111,7 @@ import { Analytics } from '@/components/analytics/Analytics';
 import { RouteChrome } from '@/components/layout/RouteChrome';
 import { Toaster } from 'sonner';
 import { ExitIntentProvider } from '@/components/landing/ExitIntentProvider';
-import { ChatWidget } from '@/components/chat-widget/ChatWidget';
+import { ChatWidgetWrapper } from '@/components/chat-widget/ChatWidgetWrapper';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
@@ -222,7 +222,7 @@ style={
                   },
                 }}
               />
-              <ChatWidget />
+              <ChatWidgetWrapper />
             </ExitIntentProvider>
           </Suspense>
         </ThemeProvider>
