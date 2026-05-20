@@ -47,14 +47,14 @@ function PhoneMockup() {
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-purple-500/5 rounded-[3rem] blur-3xl" />
 
-      {/* Phone frame */}
+      {/* Phone frame — rotated 20deg by default, 23deg on hover */}
       <motion.div
-        className="relative z-10 w-full max-w-[260px] transform perspective-[1000px]"
+        className="relative z-10 w-full max-w-[260px] transform"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         animate={{
+          rotate: isHovered ? 23 : 20,
           y: isHovered ? -8 : 0,
-          rotateY: isHovered ? 3 : 0,
         }}
         transition={{ type: 'spring', stiffness: 200, damping: 20 }}
         style={{ transformStyle: 'preserve-3d' }}
@@ -177,7 +177,7 @@ function PhoneMockup() {
 // ── LandingSocialProof ───────────────────────────────────────────────────────
 
 const LandingSocialProof = () => {
-  const { label, title, titleAccent, instagram, tiktok } = LANDING_COPY.social_proof;
+  const { label, title, titleAccent, instagram, tiktok, whatsapp } = LANDING_COPY.social_proof;
 
   return (
     <section className="py-20 sm:py-24 bg-black dark:bg-white" aria-label={title}>
@@ -207,70 +207,100 @@ const LandingSocialProof = () => {
           </motion.h2>
         </div>
 
-        {/* Grid: Instagram + TikTok (left) | Phone Mockup con Video (right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-4 sm:gap-5">
+        {/* Grid: 3 columns — Instagram | TikTok | WhatsApp + Phone Mockup */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
 
-          {/* Left col: Instagram + TikTok stacked */}
-          <div className="flex flex-col gap-4 sm:gap-5">
-
-            {/* Instagram */}
-            <motion.div
-              custom={0.1}
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-60px' }}
-              className="flex-1 bg-white/[0.07] dark:bg-gray-50 border border-white/10 dark:border-gray-200 rounded-2xl p-6 sm:p-8 transition-colors hover:bg-white/[0.10] dark:hover:bg-gray-100"
-            >
-              <div className="flex items-center gap-2.5 mb-5">
-                <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-500 to-orange-400 flex items-center justify-center flex-shrink-0" aria-hidden="true">
-                  <Instagram className="text-white w-4 h-4" />
-                </span>
-                <span className="text-white/45 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-widest">Instagram</span>
-              </div>
-              <h3 className="font-jakarta font-bold text-xl sm:text-2xl text-white dark:text-black mb-3 leading-tight">
-                {instagram.title}
-              </h3>
-              <p className="text-white/60 dark:text-gray-500 text-sm sm:text-base leading-relaxed">
-                {instagram.description}
-              </p>
-            </motion.div>
-
-            {/* TikTok */}
-            <motion.div
-              custom={0.15}
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-60px' }}
-              className="flex-1 bg-white/[0.07] dark:bg-gray-50 border border-white/10 dark:border-gray-200 rounded-2xl p-6 sm:p-8 transition-colors hover:bg-white/[0.10] dark:hover:bg-gray-100"
-            >
-              <div className="flex items-center gap-2.5 mb-5">
-                <span className="w-8 h-8 rounded-lg bg-black dark:bg-gray-900 border border-white/15 dark:border-gray-300 flex items-center justify-center flex-shrink-0 text-white" aria-hidden="true">
-                  <TikTokIcon />
-                </span>
-                <span className="text-white/45 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-widest">TikTok</span>
-              </div>
-              <h3 className="font-jakarta font-bold text-xl sm:text-2xl text-white dark:text-black mb-3 leading-tight">
-                {tiktok.title}
-              </h3>
-              <p className="text-white/60 dark:text-gray-500 text-sm sm:text-base leading-relaxed">
-                {tiktok.description}
-              </p>
-            </motion.div>
-          </div>
-
-          {/* Right col: Phone Mockup con Video Interactivo */}
+          {/* Instagram */}
           <motion.div
             custom={0.1}
             variants={fadeUp}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-60px' }}
-            className="bg-white/[0.07] dark:bg-gray-50 border border-white/10 dark:border-gray-200 rounded-2xl p-4 sm:p-6 flex items-center justify-center min-h-[420px] lg:min-h-0"
+            className="bg-white/[0.07] dark:bg-gray-50 border border-white/10 dark:border-gray-200 rounded-2xl p-6 sm:p-8 transition-colors hover:bg-white/[0.10] dark:hover:bg-gray-100"
           >
-            <PhoneMockup />
+            <div className="flex items-center gap-2.5 mb-5">
+              <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-500 to-orange-400 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                <Instagram className="text-white w-4 h-4" />
+              </span>
+              <span className="text-white/45 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-widest">Instagram</span>
+            </div>
+            <h3 className="font-jakarta font-bold text-xl sm:text-2xl text-white dark:text-black mb-3 leading-tight">
+              {instagram.title}
+            </h3>
+            <p className="text-white/60 dark:text-gray-500 text-sm sm:text-base leading-relaxed">
+              {instagram.description}
+            </p>
           </motion.div>
+
+          {/* TikTok */}
+          <motion.div
+            custom={0.15}
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            className="bg-white/[0.07] dark:bg-gray-50 border border-white/10 dark:border-gray-200 rounded-2xl p-6 sm:p-8 transition-colors hover:bg-white/[0.10] dark:hover:bg-gray-100"
+          >
+            <div className="flex items-center gap-2.5 mb-5">
+              <span className="w-8 h-8 rounded-lg bg-black dark:bg-gray-900 border border-white/15 dark:border-gray-300 flex items-center justify-center flex-shrink-0 text-white" aria-hidden="true">
+                <TikTokIcon />
+              </span>
+              <span className="text-white/45 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-widest">TikTok</span>
+            </div>
+            <h3 className="font-jakarta font-bold text-xl sm:text-2xl text-white dark:text-black mb-3 leading-tight">
+              {tiktok.title}
+            </h3>
+            <p className="text-white/60 dark:text-gray-500 text-sm sm:text-base leading-relaxed">
+              {tiktok.description}
+            </p>
+          </motion.div>
+
+          {/* Right col: WhatsApp + Phone Mockup stacked */}
+          <div className="flex flex-col gap-4">
+            {/* WhatsApp */}
+            <motion.div
+              custom={0.2}
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-60px' }}
+              className="bg-[#25D366]/[0.06] dark:bg-[#25D366]/[0.04] border border-[#25D366]/20 rounded-2xl p-5 sm:p-6 transition-colors hover:bg-[#25D366]/[0.09] dark:hover:bg-[#25D366]/[0.07]"
+            >
+              <div className="flex items-center gap-2.5 mb-4">
+                <span className="w-8 h-8 rounded-lg bg-[#25D366] flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                  <MessageCircle className="text-white w-4 h-4" />
+                </span>
+                <span className="text-[#25D366]/75 text-[10px] font-semibold uppercase tracking-widest">WhatsApp</span>
+              </div>
+              <h3 className="font-jakarta font-bold text-xl text-white dark:text-black mb-2 leading-tight">
+                {whatsapp.title}
+              </h3>
+              <p className="text-white/65 dark:text-gray-500 text-sm leading-relaxed mb-3">
+                {whatsapp.description}
+              </p>
+              <div className="pt-3 border-t border-[#25D366]/20">
+                <p className="text-xl font-bold font-jakarta text-white dark:text-black tracking-tight">
+                  {whatsapp.stat}
+                </p>
+                <p className="text-white/45 dark:text-gray-400 text-[10px] uppercase tracking-widest mt-0.5 font-semibold">
+                  en clientes que usaron el probador
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Phone Mockup — rotated 20deg, overlaps the card */}
+            <motion.div
+              custom={0.25}
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-60px' }}
+              className="flex items-center justify-center -mt-6 sm:-mt-8"
+            >
+              <PhoneMockup />
+            </motion.div>
+          </div>
         </div>
       </div>
     </section>
