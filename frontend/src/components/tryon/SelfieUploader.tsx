@@ -111,6 +111,7 @@ export function SelfieUploader({
   }, []);
 
   const handleEditorConfirm = (file: File, preview: string) => {
+    if (editingSrc) URL.revokeObjectURL(editingSrc);
     setEditingSrc(null);
     onUpload(file, preview);
   };
@@ -148,7 +149,10 @@ export function SelfieUploader({
         <ImageEditor
           src={editingSrc}
           onConfirm={handleEditorConfirm}
-          onCancel={() => setEditingSrc(null)}
+          onCancel={() => {
+            if (editingSrc) URL.revokeObjectURL(editingSrc);
+            setEditingSrc(null);
+          }}
           primaryColor={primaryColor}
         />
       )}
