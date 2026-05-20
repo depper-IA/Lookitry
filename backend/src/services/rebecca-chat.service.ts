@@ -51,10 +51,10 @@ const KNOWLEDGE_CACHE_TTL_MS = 5 * 60 * 1000;
 const CONFIG_CACHE_TTL_MS = 60 * 1000;
 
 // Límites de caracteres por canal - Section 5.2
-// WhatsApp: 800 chars, Web: 2400 chars para que Rebecca pueda dar respuestas completas con contexto
+// WhatsApp: 800 chars, Web: 1200 chars para evitar redundancia
 const CHANNEL_LIMITS = {
   whatsapp: 800,
-  web: 2400,
+  web: 1200,
 } as const;
 
 const knowledgeCache = new Map<'web', KnowledgeCacheEntry>();

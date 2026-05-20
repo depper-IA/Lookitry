@@ -25,9 +25,16 @@
 | n8n | https://n8n.wilkiedevs.com | root-n8n-1 |
 | Redis | redis://root-redis-1:6379 | root-redis-1 |
 
-**Nota**: Sammy (agente IA) no está desplegado en VPS.
+**Sammy**: Agente IA genérico, NO relacionado con el chat de la web. Ubicación: `./sammy/`. No desplegado en VPS.
 
-## Deployment
+**Rebecca**: Agente de chat WEB y WHATSAPP. Es el único agente de conversación.
+- Backend: `backend/src/services/rebecca-chat.service.ts`
+- WhatsApp: `supabase/functions/whatsapp-agent/`
+- Web chat widget: `frontend/src/components/chat-widget/`
+- Rate limit: `backend/src/middleware/rebecca-rate-limit.ts`
+- Admin controller: `backend/src/controllers/admin/rebecca.admin.controller.ts`
+
+## Recientes
 
 - **Deploy VPS**: Usar siempre `python scripts/_deploy_now.py` (NO GitHub Actions)
 - **GitHub Actions**: Solo para sync del plugin WordPress (`sync-plugin.yml`)

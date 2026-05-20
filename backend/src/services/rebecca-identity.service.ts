@@ -174,7 +174,7 @@ Tu trabajo es conseguir el dato + mandar el checkout link. Punto.
 - Cliente pide información extensa → Dai enlaces + resumen breve. No escribas párrafos.`;
 
 // Constante para identidad única de acento neutro LATAM
-const NEUTRAL_LATAM_IDENTITY = `Eres latina, de América Latina. Usas "tú" de forma natural. Expresiones universales LATAM: "¿Cómo estás?", "¡Claro!", "¡Perfecto!", "¡Genial!", "¿Qué tal?", "¡Dale!", "¡Listo!", "¡Claro que sí!" — sin regionalismos específicos.
+const NEUTRAL_LATAM_IDENTITY = `Eres latina, de América Latina. Usas "tú" de forma natural. Expresiones universales LATAM: "¿Cómo estás?", "¡Claro!", "¡Perfecto!", "¡Genial!", "¿Qué tal?", "¡Listo!", "¡Claro que sí!" — sin regionalismos específicos.
 
 REGLAS DE ACENTO (OBLIGATORIO):
 - Idioma único: español neutro para toda América Latina.
@@ -183,7 +183,7 @@ REGLAS DE ACENTO (OBLIGATORIO):
 - Si el cliente usa "vos" o regionalismos, simplemente responde en neutro sin imitarlos ni cambiar tu acento.
 - Mantén consistencia total: si empiezas con "tú", sigues con "tú" toda la conversación.`;
 
-const CHANNEL_INSTRUCTION_NEUTRAL = '- MÁXIMO 2 ORACIONES POR MENSAJE. Una pregunta por mensaje. Termina siempre tus ideas completas.';
+const CHANNEL_INSTRUCTION_NEUTRAL = '- Completa SIEMPRE tus pensamientos. MÁXIMO 2 ORACIONES POR MENSAJE. Una pregunta por mensaje. Termina siempre tus ideas completas.';
 
 const IDENTITY_BY_LOCALE: Record<string, { identity: string; channelInstruction: string }> = {
   // ACENTO ÚNICO: Español neutro latino — válido para toda LATAM
@@ -207,15 +207,7 @@ const IDENTITY_BY_LOCALE: Record<string, { identity: string; channelInstruction:
   },
 };
 
-const CHANNEL_INSTRUCTIONS_WEB: Record<string, string> = {
-  'es-CO': '- Completá SIEMPRE tus pensamientos. Si empezás una lista o explicación, terminá TODA la información antes de cerrar. NUNCA dejes oraciones a mitad. Si necesitas enviar muchos detalles, dividí en múltiples mensajes si es necesario.',
-  'es-AR': '- Completá SIEMPRE tus pensamientos. Si empezás una lista o explicación, terminá TODA la información antes de cerrar. NUNCA dejes oraciones a mitad. Si necesitas enviar muchos detalles, dividí en múltiples mensajes si es necesario.',
-  'es-MX': '- Completá SIEMPRE tus pensamientos. Si empezás una lista o explicación, terminá TODA la información antes de cerrar. NUNCA dejes oraciones a mitad. Si necesitas enviar muchos detalles, dividí en múltiples mensajes si es necesario.',
-  'es-ES': '- Completá SIEMPRE tus pensamientos. Si empezás una lista o explicación, terminá TODA la información antes de cerrar. NUNCA dejes oraciones a mitad. Si necesitas enviar muchos detalles, dividí en múltiples mensajes si es necesario.',
-  'en': '- ALWAYS complete your thoughts. If you start a list or explanation, finish ALL information before closing. NEVER leave sentences half-done. If you need to send many details, split into multiple messages if necessary.',
-  'pt-BR': '- Complete SEMPRE seus pensamentos. Se começar uma lista ou explicação, termine TODA a informação antes de fechar. NUNCA deixe frases pela metade. Se precisar enviar muitos detalhes, divida em várias mensagens se necessário.',
-  'default': '- Completá SIEMPRE tus pensamientos. Si empezás una lista o explicación, terminá TODA la información antes de cerrar. NUNCA dejes oraciones a mitad. Si necesitas enviar muchos detalles, dividí en múltiples mensajes si es necesario.',
-};
+const CHANNEL_INSTRUCTIONS_WEB_NEUTRAL = '- Completa SIEMPRE tus pensamientos. Si empiezas una lista o explicación, termina TODA la información antes de cerrar. NUNCA dejes oraciones a mitad. Si necesitas enviar muchos detalles, divide en múltiples mensajes si es necesario.';
 
 export class RebeccaIdentityService {
   // Detección de locale SOLO para logs/analytics, NO para cambiar el acento
@@ -268,7 +260,7 @@ export class RebeccaIdentityService {
 
     let channelInstruction: string;
     if (channel === 'web') {
-      channelInstruction = webInstructions || CHANNEL_INSTRUCTIONS_WEB[resolvedLocale] || CHANNEL_INSTRUCTIONS_WEB['default'];
+      channelInstruction = webInstructions || CHANNEL_INSTRUCTIONS_WEB_NEUTRAL;
     } else {
       channelInstruction = whatsappInstructions || IDENTITY_BY_LOCALE[resolvedLocale]?.channelInstruction || '- Máximo 200 caracteres por mensaje.';
     }
@@ -301,6 +293,7 @@ NUNCA termines una respuesta sobre Lookitry sin incluir un enlace.`;
     }
 
     // Phase 2: Rich page context block
+    let sentLinks: string[] = [];
     let pageContextBlock = '';
     if (pageContext) {
       const pageContextMap: Record<string, string> = {
@@ -320,12 +313,32 @@ Estás hablando con alguien que está en: ${pageContext.page_url || 'desconocida
 ${pageInstruction || 'No reconocemos la página específica, pero seguí conversando normalmente.'}`;
     }
 
+    // Extraer enlaces ya enviados en la conversación
+    if (contextualLinks) {
+      // Construir lista de enlaces ya "conocidos" por el modelo para evitar repeticiones
+      sentLinks = [
+        contextualLinks.plans_url,
+        contextualLinks.checkout_url,
+        contextualLinks.demo_url,
+        contextualLinks.faq_url,
+      ].filter(Boolean);
+    }
+
+    const linksBlock = sentLinks.length > 0 ? `
+
+## ENLACES DISPONIBLES
+- Planes y precios: ${contextualLinks?.plans_url || ''}
+- Checkout: ${contextualLinks?.checkout_url || ''}
+- Demo: ${contextualLinks?.demo_url || ''}
+
+Regla: Incluye el enlace relevante SOLO si no lo has enviado antes en esta conversación. Si el cliente pide información que ya le diste, resume sin repetir enlaces.` : '';
+
     return SYSTEM_PROMPT_TEMPLATE
       .replace('{IDENTITY_BLOCK}', identityBlock)
       .replace('{CHANNEL_INSTRUCTION}', channelInstruction)
       .replace('{KNOWLEDGE_CONTEXT}', knowledgeContext)
       + extraInstructions
-      + contextualLinksBlock
+      + linksBlock
       + pageContextBlock;
   }
 }
