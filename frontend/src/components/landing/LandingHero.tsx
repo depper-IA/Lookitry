@@ -56,6 +56,7 @@ export default function LandingHero() {
           className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-[58%] scale-[1.12] object-cover"
         >
           <source src="/videos/hero.webm" type="video/webm" />
+          <source src="/videos/hero.mp4" type="video/mp4" />
         </video>
         {/* Dark overlay — heavier on left, fades right */}
         <div
