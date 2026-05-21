@@ -54,7 +54,7 @@ function ChatWidgetInner() {
         {/* Círculo principal */}
         <span className="relative flex h-14 w-14 items-center justify-center rounded-full ring-[2.5px] ring-[#FF5C3A] ring-offset-[3px] ring-offset-white dark:ring-offset-[#0a0a0a] shadow-[0_6px_24px_rgba(255,92,58,0.45)] hover:shadow-[0_8px_32px_rgba(255,92,58,0.6)] hover:scale-105 transition-all duration-200 overflow-hidden">
           <Image
-            src="/rebecca-avatar.png"
+            src="/rebecca-avatar.webp"
             alt="Rebecca — asesora Lookitry"
             width={56}
             height={56}
