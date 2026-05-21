@@ -86,11 +86,11 @@ export const metadata: Metadata = {
       'Tu cliente se prueba la ropa antes de comprarla. Integra el probador virtual en tu tienda en 10 minutos. Sin apps, sin desarrollo.',
     images: [
       {
-        url: `${BASE_URL}/og-image.png`,
+        url: `${BASE_URL}/og-image.webp`,
         width: 1200,
         height: 630,
         alt: 'Lookitry — Probador virtual con IA para tiendas de ropa en Latinoamérica',
-        type: 'image/png',
+        type: 'image/webp',
       },
     ],
   },
@@ -99,7 +99,7 @@ export const metadata: Metadata = {
     title: 'Lookitry — Probador virtual con IA para tu tienda online',
     description:
       'Tu cliente se prueba la ropa antes de comprarla. Sin apps, sin desarrollo. Para tiendas en Latinoamérica.',
-    images: [`${BASE_URL}/og-image.png`],
+    images: [`${BASE_URL}/og-image.webp`],
   },
   alternates: {
     canonical: BASE_URL,
@@ -143,6 +143,7 @@ style={
         {/* DNS Prefetch y Preconnect para的性能优化 */}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://api.lookitry.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://api.lookitry.com" />
         <link rel="dns-prefetch" href="https://vkdooutklowctuudjnkl.supabase.co" />
         

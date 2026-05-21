@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: 'Planes y precios — Lookitry',
       description:
         `Probador virtual con IA para tu tienda. Plan Básico $${basicPrice.toLocaleString('es-CO')} COP/mes · Plan Pro $${proPrice.toLocaleString('es-CO')} COP/mes. Prueba por $20.000 COP.`,
-      images: [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630 }],
+      images: [{ url: `${BASE_URL}/og-image.webp`, width: 1200, height: 630 }],
     },
   };
 }

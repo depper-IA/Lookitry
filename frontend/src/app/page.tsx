@@ -38,7 +38,7 @@ export const metadata = {
     siteName: 'Lookitry',
     locale: 'es_CO',
     type: 'website',
-    images: [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630, alt: 'Lookitry — Probador Virtual con IA para tiendas de ropa en Latinoamérica' }],
+    images: [{ url: `${BASE_URL}/og-image.webp`, width: 1200, height: 630, alt: 'Lookitry — Probador Virtual con IA para tiendas de ropa en Latinoamérica' }],
   },
 };
 
