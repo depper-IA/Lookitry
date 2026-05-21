@@ -108,35 +108,47 @@ export default function LookBookShowcase() {
           />
 
           {/* Center: Selected Product */}
-          <AnimatePresence mode="wait">
+          <div className="relative w-56 h-72 rounded-2xl z-10 overflow-hidden shadow-2xl">
+            {/* Rotating gradient border */}
             <motion.div
-              key={selectedProduct.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-              className="relative z-10 bg-white dark:bg-[#141414] rounded-2xl shadow-2xl border-2 border-[#FF5C3A]/30 w-56 h-72 overflow-hidden group"
-            >
-              <div
-                className="absolute inset-0 opacity-[0.06] dark:opacity-[0.15]"
-                style={{
-                  backgroundImage: 'radial-gradient(circle, #FF5C3A 1px, transparent 1px)',
-                  backgroundSize: '8px 8px',
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center p-4">
-                <div className="relative w-44 h-56">
-                  <Image
-                    src={selectedProduct.src}
-                    alt={selectedProduct.name}
-                    fill
-                    className="object-contain"
-                    sizes="144px"
-                  />
+              className="absolute inset-0"
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}
+              style={{
+                background: 'conic-gradient(from 0deg, #FF5C3A 0deg, #3b82f6 90deg, #FF5C3A 180deg, transparent 270deg, transparent 360deg)',
+                transformOrigin: 'center',
+              }}
+            />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedProduct.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-[2px] bg-white dark:bg-[#141414] rounded-[14px] overflow-hidden group"
+              >
+                <div
+                  className="absolute inset-0 opacity-[0.06] dark:opacity-[0.15]"
+                  style={{
+                    backgroundImage: 'radial-gradient(circle, #FF5C3A 1px, transparent 1px)',
+                    backgroundSize: '8px 8px',
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center p-4">
+                  <div className="relative w-44 h-56">
+                    <Image
+                      src={selectedProduct.src}
+                      alt={selectedProduct.name}
+                      fill
+                      className="object-contain"
+                      sizes="144px"
+                    />
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           {/* Connector 2 */}
           <motion.div
