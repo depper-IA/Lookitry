@@ -39,7 +39,9 @@ const LandingPlugin = dynamic(() => import('./LandingPlugin'), { ssr: false });
 // New Components (Onboarding & Social Proof)
 const LandingOnboardingSteps = dynamic(() => import('./LandingOnboardingSteps'), { ssr: false });
 const LandingSocialProof = dynamic(() => import('./LandingSocialProof'), { ssr: false });
+const LandingMarqueeMessages = dynamic(() => import('./LandingMarqueeMessages'), { ssr: true });
 const LandingSteps = dynamic(() => import('./LandingSteps'), { ssr: false });
+const LookBookShowcase = dynamic(() => import('../lookbook/LookBookShowcase'), { ssr: false });
 
 // PromoBanner: carga inmediata
 const PromoBanner = dynamic(() => import('./PromoBanner').then(m => ({ default: m.PromoBanner })), { ssr: true });
@@ -107,8 +109,9 @@ export default function PremiumLanding({
         <LandingNav currency={navCurrency} onCurrencyChange={handleNavCurrencyChange} transparent={true} />
         <main className="relative">
           <LandingHero />
+          <LandingMarqueeMessages />
           <LandingStats />
-          <LandingSteps />
+          <LookBookShowcase />
           <LandingOnboardingSteps />
           <LandingSocialProof />
           <LandingMiniLanding />
