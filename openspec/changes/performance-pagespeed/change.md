@@ -65,3 +65,43 @@
 - `frontend/public/videos/hero-poster.webp` (nuevo, 46KB)
 
 ---
+### OG Image WebP
+- [x] `og-image.png` (74KB) -> `og-image.webp` (43KB) — 42% reduction
+- [x] Updated metadata in `layout.tsx`, `page.tsx`, `planes/page.tsx`
+
+### Preconnect API
+- [x] `dns-prefetch` -> `preconnect` for `api.lookitry.com` — potential 410ms LCP savings
+
+### Total SDD Summary (cumulative)
+- Video hero: `preload="none"` + poster 46KB
+- Image optimization: `unoptimized: false` + WebP/AVIF formats
+- Priority images: `LandingSteps.tsx`, `ReviewsSlider.tsx`
+- JSON-LD: `AggregateRating` + `Review[]`
+- LookBook images: ~3.8MB optimized to ~60KB
+- OG image: 74KB -> 43KB
+- Preconnect API: 410ms potential savings
+- Chat widget: `rebecca-avatar.png` 1.5MB -> 6.4KB
+
+---
+
+## Archivos Modificados (cumulative)
+
+- `frontend/src/components/landing/LandingHero.tsx`
+- `frontend/next.config.js`
+- `frontend/src/components/landing/LandingSteps.tsx`
+- `frontend/src/components/landing/ReviewsSlider.tsx`
+- `frontend/src/app/page.tsx`
+- `frontend/src/app/layout.tsx`
+- `frontend/src/app/planes/page.tsx`
+- `frontend/src/lib/seo/types.ts`
+- `frontend/src/lib/seo/review.ts` (nuevo)
+- `frontend/src/lib/seo/index.ts`
+- `frontend/src/components/landing/LandingPayments.tsx`
+- `frontend/src/components/lookbook/LookBookShowcase.tsx`
+- `frontend/src/components/chat-widget/ChatWidget.tsx`
+- `frontend/src/components/chat-widget/ChatWindow.tsx`
+- `frontend/public/videos/hero-poster.webp` (nuevo, 46KB)
+- `frontend/public/og-image.webp` (nuevo, 43KB)
+- `frontend/public/assets/tryon/showcase/*.webp` (nuevos optimizados)
+- `frontend/public/rebecca-avatar.webp` (nuevo, 6.4KB)
+- `frontend/public/rebecca.webp` (nuevo, 25KB)
