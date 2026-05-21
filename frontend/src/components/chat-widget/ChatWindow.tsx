@@ -68,7 +68,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
               <div className="relative flex-shrink-0">
                 <div className="h-14 w-14 rounded-2xl overflow-hidden ring-2 ring-white/30 shadow-lg">
                   <Image
-                    src="/rebecca-avatar.png"
+                    src="/rebecca-avatar.webp"
                     alt="Rebecca"
                     width={56}
                     height={56}
@@ -149,7 +149,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
           <div className="relative flex-shrink-0">
             <div className="h-10 w-10 rounded-xl overflow-hidden ring-2 ring-white/30">
               <Image
-                src="/rebecca-avatar.png"
+                src="/rebecca-avatar.webp"
                 alt="Rebecca"
                 width={40}
                 height={40}

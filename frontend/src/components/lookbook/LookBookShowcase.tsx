@@ -13,9 +13,9 @@ const products = [
 ];
 
 const models = [
-  { id: 'afro', name: 'Look Vinotinto', desc: 'Blusa de satin vinotinto', src: '/assets/tryon/showcase/satin-bg.png', productId: 'blouse' },
-  { id: 'asian', name: 'Look Azul', desc: 'Falda azul plisada', src: '/assets/tryon/showcase/falda-azul-bg.png', productId: 'skirt' },
-  { id: 'redhead', name: 'Look Blanco', desc: 'Vestido blanco midi', src: '/assets/tryon/showcase/vestido-blanco-bg.png', productId: 'dress' },
+  { id: 'afro', name: 'Look Vinotinto', desc: 'Blusa de satin vinotinto', src: '/assets/tryon/showcase/satin-bg.webp', productId: 'blouse' },
+  { id: 'asian', name: 'Look Azul', desc: 'Falda azul plisada', src: '/assets/tryon/showcase/falda-azul-bg.webp', productId: 'skirt' },
+  { id: 'redhead', name: 'Look Blanco', desc: 'Vestido blanco midi', src: '/assets/tryon/showcase/vestido-blanco-bg.webp', productId: 'dress' },
 ];
 
 export default function LookBookShowcase() {
