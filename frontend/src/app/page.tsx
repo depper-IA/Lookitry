@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 import { getPricingConfig, type PricingConfig } from '@/lib/pricing';
-import { organizationSchema, websiteSchema } from '@/lib/seo';
+import { organizationSchema, websiteSchema, reviewSchema, aggregateRatingSchema } from '@/lib/seo';
 
 // Carga dinámica para code splitting (SSR habilitado para buen FCP/LCP)
 const PremiumLanding = dynamic(
@@ -100,6 +100,14 @@ export default async function HomePage() {
       finalReviews.push(...mockReviews.slice(0, 5 - finalReviews.length));
   }
 
+
+  const totalRating = finalReviews.reduce((sum, r) => sum + (r.rating ?? 0), 0);
+  const avgRating = finalReviews.length > 0 ? totalRating / finalReviews.length : 4.8;
+  const reviewsSchemaList = finalReviews.slice(0, 5).map(r =>
+    reviewSchema({ reviewerName: r.reviewer_name, rating: r.rating ?? 5, comment: r.comment ?? '', date: r.created_at })
+  );
+  const aggregateRating = aggregateRatingSchema(finalReviews.length, avgRating);
+
   const baseOrgSchema = organizationSchema();
   const baseWebSchema = websiteSchema();
 
@@ -131,6 +139,7 @@ export default async function HomePage() {
         operatingSystem: 'Web',
         url: BASE_URL,
         description: 'Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamerica.',
+        aggregateRating,
         offers: [
           {
             '@type': 'Offer',
@@ -152,6 +161,7 @@ export default async function HomePage() {
           },
         ],
       },
+      ...reviewsSchemaList,
       {
         '@type': 'FAQPage',
         '@id': `${BASE_URL}/#faq`,

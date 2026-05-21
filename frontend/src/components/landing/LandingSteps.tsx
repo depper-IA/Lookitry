@@ -94,6 +94,7 @@ export default function LandingSteps() {
                   src={`/steps/paso-${i + 1}.webp`}
                   alt={step.title}
                   fill
+                  priority
                   className={`object-cover object-center transition-transform duration-500 group-hover:scale-105`}
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
