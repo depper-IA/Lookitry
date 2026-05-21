@@ -30,9 +30,25 @@
 
 ### Fase 5 — Verificacion
 - [x] T5.1: `pnpm build` exitoso — 0 errores
-- [ ] T5.2: Deploy pendiente (autorizacion de Sam)
-- [ ] T5.3: Medicion Pagespeed (post-deploy)
-- [ ] T5.4: Documentar metricas
+- [x] T5.2: Deploy completado (commit 92c7da3a)
+- [x] T5.3: Medicion Pagespeed real — masiva de imagenes 3.8MB identificadas
+- [x] T5.4: Optimizacion de imagenes del LookBook y chat widget
+
+### Imagenes Optimizadas (Ahorro ~3.8MB)
+
+| Archivo | Antes | Despues | Ahorro |
+|---------|-------|---------|--------|
+| `rebecca-avatar.png` | 1.5MB | 6.4KB (WebP) | 99.5% |
+| `rebecca.png` | 1.9MB | 25KB (WebP) | 98.7% |
+| `skirt-blue.webp` | 1.6MB | 2.6KB | 99.8% |
+| `garment-product.webp` | 118KB | 4.7KB | 96% |
+| `dress-white.webp` | 266KB | 5.5KB | 97.9% |
+| `satin-bg.png` | 275KB | 22KB (WebP) | 92% |
+| `falda-azul-bg.png` | 271KB | 29KB (WebP) | 89% |
+| `vestido-blanco-bg.png` | 320KB | 31KB (WebP) | 90% |
+| `blusa-satin-chica.jpg` | 412KB | 21KB (WebP) | 95% |
+| `vestido-blanco-chica.jpg` | 407KB | 21KB (WebP) | 95% |
+| `falda-azul-chica.jpg` | 409KB | 22KB (WebP) | 95% |
 
 ---
 
