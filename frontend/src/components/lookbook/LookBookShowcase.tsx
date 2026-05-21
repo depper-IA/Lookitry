@@ -274,19 +274,6 @@ export default function LookBookShowcase() {
         </motion.div>
       </div>
 
-      {/* Full-width proof banner — outside max-w container */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="-mx-4 sm:-mx-8 md:-mx-16 mt-16 bg-gray-950 dark:bg-black py-10 px-4 sm:px-8 md:px-16"
-      >
-        <p className="font-jakarta text-center text-xl sm:text-2xl lg:text-3xl font-medium text-white max-w-4xl mx-auto leading-snug">
-          Las marcas de e-commerce que usan modelos generados por IA para fotografia de moda y lookbooks consiguen{' '}
-          <span className="text-[#FF5C3A]">resultados medibles</span>.
-        </p>
-      </motion.div>
     </section>
   );
 }
