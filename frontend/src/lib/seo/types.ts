@@ -65,3 +65,46 @@ export interface BrandPageSchema extends BaseSchema {
     addressCountry?: string;
   };
 }
+
+export interface ReviewSchema extends BaseSchema {
+  '@type': 'Review';
+  reviewRating?: {
+    '@type': 'Rating';
+    ratingValue: string;
+    bestRating: string;
+    worstRating?: string;
+  };
+  author: {
+    '@type': 'Person';
+    name: string;
+  };
+  reviewBody?: string;
+  datePublished?: string;
+}
+
+export interface AggregateRatingSchema extends BaseSchema {
+  '@type': 'AggregateRating';
+  ratingValue: string;
+  reviewCount: string;
+  bestRating?: string;
+  worstRating?: string;
+}
+
+export interface SoftwareAppSchema extends BaseSchema {
+  '@type': 'SoftwareApplication';
+  name: string;
+  applicationCategory?: string;
+  operatingSystem?: string;
+  url?: string;
+  description?: string;
+  aggregateRating?: AggregateRatingSchema;
+  offers?: {
+    '@type': 'Offer';
+    name?: string;
+    price?: string;
+    priceCurrency?: string;
+    priceValidUntil?: string;
+    availability?: string;
+    url?: string;
+  }[];
+}

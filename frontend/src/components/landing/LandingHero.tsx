@@ -50,7 +50,8 @@ export default function LandingHero() {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="none"
+          poster="/videos/hero-poster.webp"
           onCanPlay={() => setVideoReady(true)}
           style={{ transition: 'opacity 0.6s ease', opacity: videoReady ? 1 : 0 }}
           className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-[58%] scale-[1.12] object-cover"

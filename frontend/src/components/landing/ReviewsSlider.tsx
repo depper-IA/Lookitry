@@ -263,6 +263,7 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
                                   alt={review.reviewer_name}
                                   width={40}
                                   height={40}
+                                  priority
                                   className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shrink-0"
                                 />
                               )
