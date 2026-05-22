@@ -1,4 +1,4 @@
-# 🧠 Arquitectura de Documentación: Lookitry
+# Arquitectura de Documentación: Lookitry
 
 Este es el mapa maestro del conocimiento del proyecto. Todos los documentos deben mantenerse sincronizados siguiendo las reglas de la **Documentación Viva**.
 
