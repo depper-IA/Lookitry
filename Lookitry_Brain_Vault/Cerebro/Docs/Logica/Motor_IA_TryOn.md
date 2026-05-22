@@ -32,16 +32,13 @@ Cuando un usuario pulsa "Reportar error":
 
 | Etapa | Modelo | Costo estimado |
 |-------|--------|----------------|
-| Segmentación | SAM 2 (Vertex) o MobileSAM local | ~$0.01-0.02 |
+| Segmentación | MobileSAM | - |
 | Generación | **Nano Banana (Gemini 2.5 Flash)** | ~$0.01-0.05 |
-| Fallback | n8n + OpenRouter | — |
 
-**Total por generación: ~$0.02-0.07 USD**
-
-> **Nota**: Imagen 3 fue removida del pipeline activo. El código existía pero nunca se llamaba. Nano Banana ofrece calidad aceptable a menor costo.
+**Total por generación: ~$0.01-0.05 USD**
 
 ## 6. Código Relacionado
 
-- `backend/src/services/vertex-ai.service.ts` — SAM 2 + Nano Banana
+- `backend/src/services/vertex-ai.service.ts` —  MobileSAM + Nano Banana
 - `backend/src/controllers/tryon.controller.ts` — Pipeline con fallback n8n
 - `backend/src/services/n8n.client.ts` — Cliente n8n
