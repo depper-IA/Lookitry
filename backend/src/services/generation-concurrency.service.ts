@@ -1,4 +1,5 @@
 import { redis } from '../config/redis';
+import { supabaseAdmin } from '../config/supabase';
 
 export interface ConcurrencyLimit {
   maxConcurrent: number;
@@ -35,6 +36,7 @@ export class GenerationConcurrencyService {
   }
 
   private async countActiveSlots(brandId: string): Promise<number> {
+    if (!redis.status || redis.status === 'wait') return 0;
     try {
       const key = this.getKey(brandId);
       const current = await redis.get(key);
@@ -48,119 +50,65 @@ export class GenerationConcurrencyService {
    * Atomically try to acquire a slot using Lua script.
    * Returns the new count if successful, or -1 if at capacity.
    */
-  private async tryAtomicIncrement(key: string, maxConcurrent: number, ttlSeconds: number): Promise<number> {
-    const luaScript = `
-      local current = tonumber(redis.call('GET', KEYS[1]) or '0')
-      local maxAllowed = tonumber(ARGV[1])
-      if current < maxAllowed then
-        redis.call('INCR', KEYS[1])
-        redis.call('EXPIRE', KEYS[1], ARGV[2])
-        return current + 1
-      end
-      return -1
-    `;
-    try {
-      const result = await redis.eval(luaScript, 1, key, String(maxConcurrent), String(ttlSeconds));
-      return Number(result);
-    } catch {
-      return -1;
-    }
-  }
-
-  private async incrementSlots(brandId: string): Promise<number> {
-    try {
-      const key = this.getKey(brandId);
-      const result = await redis.incr(key);
-      await redis.expire(key, SLOT_TTL_SECONDS);
-      return result;
-    } catch {
-      return 0;
-    }
-  }
-
-  private async decrementSlots(brandId: string): Promise<number> {
-    try {
-      const key = this.getKey(brandId);
-      const result = await redis.decr(key);
-      if (result < 0) {
-        await redis.set(key, '0');
-        return 0;
-      }
-      return result;
-    } catch {
-      return 0;
-    }
-  }
-
-  private generateSlotId(): string {
-    return `slot_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-  }
-
   async acquireSlot(brandId: string, plan: string): Promise<GenerationSlot> {
+    if (!redis.status || redis.status === 'wait') {
+      return { acquired: true, slotId: null, waitTimeMs: 0 };
+    }
+
     const limit = this.getPlanLimit(plan);
-    const startTime = Date.now();
     const key = this.getKey(brandId);
 
+    const luaScript = `
+      local current = tonumber(redis.call('GET', KEYS[1]) or '0')
+      local maxConcurrent = tonumber(ARGV[1])
+      local ttl = tonumber(ARGV[2])
+      if current < maxConcurrent then
+        redis.call('INCR', KEYS[1])
+        redis.call('EXPIRE', KEYS[1], ttl)
+        return current + 1
+      else
+        return -1
+      end
+    `;
+
     try {
-      for (;;) {
-        // Use atomic Lua script to avoid race conditions
-        const newCount = await this.tryAtomicIncrement(key, limit.maxConcurrent, SLOT_TTL_SECONDS);
+      const result = await redis.eval(
+        luaScript, 1, key,
+        limit.maxConcurrent.toString(),
+        SLOT_TTL_SECONDS.toString()
+      ) as number;
 
-        if (newCount > 0) {
-          const slotId = this.generateSlotId();
-          const slotKey = this.getSlotKey(brandId, slotId);
-          await redis.set(slotKey, '1', 'EX', SLOT_TTL_SECONDS * 2);
-
-          return {
-            acquired: true,
-            slotId,
-            waitTimeMs: Date.now() - startTime,
-          };
-        }
-
-        const elapsed = Date.now() - startTime;
-        if (elapsed >= limit.queueTimeoutMs) {
-          return {
-            acquired: false,
-            slotId: null,
-            waitTimeMs: elapsed,
-          };
-        }
-
-        const waitMs = Math.min(500, limit.queueTimeoutMs - elapsed);
-        await this.sleep(waitMs);
+      if (result === -1) {
+        return { acquired: false, slotId: null, waitTimeMs: limit.queueTimeoutMs };
       }
-    } catch (error: any) {
-      // Redis no disponible - permitir generación sin control de concurrencia
-      const errorMsg = error.message || '';
-      if (errorMsg.includes('MaxRetriesPerRequestError') ||
-          errorMsg.includes('ECONNREFUSED') ||
-          errorMsg.includes('max retries') ||
-          errorMsg.includes('Connection is closed')) {
-        console.warn('[Concurrency] Redis no disponible, saltando control de concurrencia');
-        return {
-          acquired: true,
-          slotId: `mock_slot_${Date.now()}`,
-          waitTimeMs: 0,
-        };
-      }
-      throw error;
+
+      const slotId = `${brandId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      await redis.setex(this.getSlotKey(brandId, slotId), SLOT_TTL_SECONDS, '1');
+
+      return { acquired: true, slotId, waitTimeMs: 0 };
+    } catch (err) {
+      console.error('[Concurrency] acquireSlot error:', err);
+      return { acquired: true, slotId: null, waitTimeMs: 0 };
     }
   }
 
   async releaseSlot(brandId: string, slotId: string | null): Promise<void> {
+    if (!slotId || !redis.status || redis.status === 'wait') return;
     try {
-      if (slotId && !slotId.startsWith('mock_')) {
-        const slotKey = this.getSlotKey(brandId, slotId);
-        await redis.del(slotKey);
-      }
-      await this.decrementSlots(brandId);
-    } catch (error: any) {
-      // Silenciar errores de Redis al liberar slot
-      if (!error.message?.includes('MaxRetriesPerRequestError') &&
-          !error.message?.includes('ECONNREFUSED')) {
-        console.warn('[Concurrency] Error liberando slot:', error.message);
-      }
+      const key = this.getKey(brandId);
+      const slotKey = this.getSlotKey(brandId, slotId);
+
+      const luaScript = `
+        redis.call('DECR', KEYS[1])
+        redis.call('DEL', KEYS[2])
+        local val = tonumber(redis.call('GET', KEYS[1]) or '0')
+        if val <= 0 then redis.call('DEL', KEYS[1]) end
+        return val
+      `;
+
+      await redis.eval(luaScript, 2, key, slotKey);
+    } catch (err) {
+      console.error('[Concurrency] releaseSlot error:', err);
     }
   }
 
@@ -185,8 +133,204 @@ export class GenerationConcurrencyService {
     };
   }
 
-  private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  /**
+   * Get global count of active generation slots across all brands.
+   * Uses SCAN (safer than KEYS in production, never blocks).
+   * Falls back to 0 if Redis is unavailable.
+   */
+  async getGlobalActiveCount(): Promise<number> {
+    if (!redis.status || redis.status === 'wait') {
+      // Fallback: contar generaciones recientes desde Supabase (últimos 2 min)
+      const cutoff = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+      const { count } = await supabaseAdmin
+        .from('generations')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['PENDING'])
+        .gte('generated_at', cutoff);
+      return count || 0;
+    }
+
+    try {
+      let cursor = '0';
+      let total = 0;
+      const pattern = 'generation:concurrency:*';
+
+      do {
+        const [nextCursor, keys] = await redis.scan(
+          cursor, 'MATCH', pattern, 'COUNT', 100
+        );
+        cursor = nextCursor;
+
+        if (keys.length > 0) {
+          const pipeline = redis.pipeline();
+          keys.forEach(key => pipeline.get(key));
+          const results = await Promise.race([
+            pipeline.exec(),
+            new Promise<null>((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000)),
+          ]) as any[][];
+          if (results) {
+            total += (results || []).reduce((sum, [err, val]) => {
+              if (err || !val) return sum;
+              return sum + parseInt(String(val), 10);
+            }, 0);
+          }
+        }
+      } while (cursor !== '0');
+
+      return total;
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
+   * Get all brands with active generation slots, including brand name and last activity.
+   * Uses SCAN (never blocks). Falls back to empty array if Redis unavailable.
+   */
+  async getBrandsWithActiveGenerations(): Promise<Array<{
+    brandId: string;
+    brandName: string;
+    active: number;
+    max: number;
+    lastActivity: string | null;
+  }>> {
+    if (!redis.status || redis.status === 'wait') {
+      // Fallback: usar Supabase para contar generaciones activas (últimos 2 min)
+      const cutoff = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+      const { data: recentGens } = await supabaseAdmin
+        .from('generations')
+        .select('brand_id, generated_at, brands(name)')
+        .in('status', ['PENDING'])
+        .gte('generated_at', cutoff)
+        .order('generated_at', { ascending: false });
+
+      if (!recentGens || recentGens.length === 0) return [];
+
+      const brandMap: Record<string, { name: string; latest: string | null }> = {};
+      for (const g of recentGens) {
+        if (!brandMap[g.brand_id]) {
+          brandMap[g.brand_id] = {
+            name: (g as any).brands?.name || 'Marca',
+            latest: g.generated_at,
+          };
+        }
+      }
+
+      return Object.entries(brandMap).map(([brandId, info]) => ({
+        brandId,
+        brandName: info.name,
+        active: recentGens.filter(g => g.brand_id === brandId).length,
+        max: PLAN_LIMITS.DEFAULT.maxConcurrent,
+        lastActivity: info.latest,
+      })).sort((a, b) => b.active - a.active).slice(0, 20);
+    }
+
+    try {
+      let cursor = '0';
+      const keys: string[] = [];
+      const pattern = 'generation:concurrency:*';
+
+      // Collect all matching keys via SCAN
+      do {
+        const [nextCursor, batch] = await Promise.race([
+          redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100),
+          new Promise<['0', string[]]>((_, reject) => setTimeout(() => reject(new Error('scan timeout')), 3000)),
+        ]) as [string, string[]];
+        cursor = nextCursor;
+        keys.push(...batch);
+      } while (cursor !== '0');
+
+      if (keys.length === 0) return [];
+
+      // Extract brand IDs from keys
+      const brandIds = keys.map(key => {
+        const parts = key.split(':');
+        return parts[parts.length - 1];
+      }).filter(Boolean);
+
+      // Get brand names from Supabase
+      const { data: brands } = await supabaseAdmin
+        .from('brands')
+        .select('id, name')
+        .in('id', brandIds.slice(0, 50));
+
+      // Get active counts via pipeline
+      const pipeline = redis.pipeline();
+      keys.forEach(key => pipeline.get(key));
+      const countResults = await Promise.race([
+        pipeline.exec(),
+        new Promise<null>((_, reject) => setTimeout(() => reject(new Error('pipeline timeout')), 2000)),
+      ]) as any[][];
+
+      // Get last generation timestamps per brand (from recent generations)
+      const recentCutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      const { data: recentGens } = await supabaseAdmin
+        .from('generations')
+        .select('brand_id, generated_at')
+        .in('brand_id', brandIds.slice(0, 50))
+        .gte('generated_at', recentCutoff)
+        .order('generated_at', { ascending: false });
+
+      const brandNameMap: Record<string, string> = {};
+      if (brands) brands.forEach((b: any) => { brandNameMap[b.id] = b.name; });
+
+      const lastGenMap: Record<string, string> = {};
+      if (recentGens) {
+        recentGens.forEach((g: any) => {
+          if (!lastGenMap[g.brand_id]) lastGenMap[g.brand_id] = g.generated_at;
+        });
+      }
+
+      const result: Array<{
+        brandId: string;
+        brandName: string;
+        active: number;
+        max: number;
+        lastActivity: string | null;
+      }> = [];
+
+      for (let i = 0; i < keys.length; i++) {
+        const brandId = brandIds[i];
+        const countArr = countResults?.[i];
+        const active = countArr && !countArr[0] ? parseInt(String(countArr[1] || '0'), 10) : 0;
+
+        result.push({
+          brandId,
+          brandName: brandNameMap[brandId] || 'Marca desconocida',
+          active,
+          max: PLAN_LIMITS.DEFAULT.maxConcurrent,
+          lastActivity: lastGenMap[brandId] || null,
+        });
+      }
+
+      return result.sort((a, b) => b.active - a.active).slice(0, 20);
+    } catch (err) {
+      console.error('[Concurrency] getBrandsWithActiveGenerations error:', err);
+      return [];
+    }
+  }
+
+  /**
+   * Get activity history for the last N hours.
+   * Reads from a Redis sorted set keyed by hour buckets.
+   * Falls back to empty array if Redis unavailable.
+   */
+  async getActivityHistory(hours: number): Promise<Array<{ hour: string; count: number }>> {
+    if (!redis.status || redis.status === 'wait') return [];
+
+    const history: Array<{ hour: string; count: number }> = [];
+    try {
+      for (let i = hours - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setHours(d.getHours() - i, 0, 0, 0);
+        const key = `generation:history:${d.toISOString().slice(0, 13)}`;
+        const count = await redis.get(key);
+        history.push({ hour: d.toISOString().slice(0, 13), count: parseInt(count || '0', 10) });
+      }
+      return history;
+    } catch {
+      return [];
+    }
   }
 }
 

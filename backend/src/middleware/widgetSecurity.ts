@@ -32,7 +32,7 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
     }
     console.log(`[widgetSecurity] Bloqueado: Falta Origin (Headers: ${JSON.stringify(req.headers)})`);
     // PERMITIR peticiones internas desde el mismo servidor (Next.js SSR) si no hay origin pero es localhost
-    const isInternalIp = req.ip === '::1' || req.ip === '127.0.0.1' || req.ip?.includes('172.');
+    const isInternalIp = req.ip === '::1' || req.ip === '127.0.0.1' || req?.ip?.includes('172.');
     if (isInternalIp) {
       console.log(`[widgetSecurity] Permitido por ser IP interna: ${req.ip}`);
       return next();
@@ -43,14 +43,25 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
   try {
     const brandSlug = req.params.brandSlug;
     let allowedOrigins: string[] = [];
+    const redisAvailable = redis.status === 'ready';
 
     if (brandSlug) {
       const cacheKey = `widget_origins:${brandSlug}`;
-      const cached = await redis.get(cacheKey);
 
-      if (cached) {
-        allowedOrigins = JSON.parse(cached);
-      } else {
+      // Intentar cache Redis solo si está disponible
+      if (redisAvailable) {
+        const timeoutPromise = new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 2000));
+        const redisPromise = redis.get(cacheKey).then((cached: string | null) => {
+          if (cached) return { type: 'hit', value: cached };
+          return null;
+        });
+        const result = await Promise.race([redisPromise, timeoutPromise]);
+        if (result !== 'timeout' && result) {
+          allowedOrigins = JSON.parse(result.value);
+        }
+      }
+
+      if (allowedOrigins.length === 0) {
         // Consultar a Supabase el campo social_links donde están los origenes permitidos
         const { data, error } = await supabaseAdmin
           .from('brands')
@@ -67,28 +78,42 @@ export const validateWidgetOrigin = async (req: Request, res: Response, next: Ne
           allowedOrigins = (data.social_links as any).allowed_origins;
         }
 
-        // Cachear los allowed_origins en Redis por 1 hora (3600 segundos)
-        await redis.setex(cacheKey, 3600, JSON.stringify(allowedOrigins));
+        // Cachear en Redis solo si está disponible
+        if (redisAvailable && allowedOrigins.length > 0) {
+          redis.setex(cacheKey, 3600, JSON.stringify(allowedOrigins)).catch(() => {});
+        }
       }
     } else {
       // Para rutas del widget sin brandSlug, usamos cache global de todos los origenes permitidos
       const cacheKey = 'widget_origins:global';
-      const cached = await redis.get(cacheKey);
-      
-      if (cached) {
-        allowedOrigins = JSON.parse(cached);
-      } else {
+
+      if (redisAvailable) {
+        const timeoutPromise = new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 2000));
+        const redisPromise = redis.get(cacheKey).then((cached: string | null) => {
+          if (cached) return { type: 'hit', value: cached };
+          return null;
+        });
+        const result = await Promise.race([redisPromise, timeoutPromise]);
+        if (result !== 'timeout' && result) {
+          allowedOrigins = JSON.parse(result.value);
+        }
+      }
+
+      if (allowedOrigins.length === 0) {
         const { data, error } = await supabaseAdmin
           .from('brands')
           .select('social_links');
-          
+
         if (!error && data) {
-          allowedOrigins = data.flatMap(d => {
-            if (d.social_links && Array.isArray((d.social_links as any).allowed_origins)) return (d.social_links as any).allowed_origins;
+          allowedOrigins = data.flatMap((d: any) => {
+            if (d.social_links && Array.isArray(d.social_links.allowed_origins)) return d.social_links.allowed_origins;
             return [];
           }).filter(Boolean);
         }
-        await redis.setex(cacheKey, 3600, JSON.stringify(allowedOrigins));
+
+        if (redisAvailable && allowedOrigins.length > 0) {
+          redis.setex(cacheKey, 3600, JSON.stringify(allowedOrigins)).catch(() => {});
+        }
       }
     }
 

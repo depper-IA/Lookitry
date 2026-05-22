@@ -36,6 +36,7 @@ interface Generation {
   productName: string;
   productImageUrl: string | null;
   resultImageUrl: string | null;
+  resultImageDeletedAt?: string | null;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
   error_message?: string | null;
   generatedAt: string;
@@ -77,7 +78,7 @@ const itemVariants = {
 };
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
-function Lightbox({ imageUrl, productName, onClose, brandPlan, onDelete, onReportError, hasFeedback }: { imageUrl: string; productName: string; onClose: () => void; brandPlan?: string; onDelete: () => void; onReportError: () => void; hasFeedback?: boolean }) {
+function Lightbox({ imageUrl, productName, onClose, brandPlan, onDelete, onReportError, hasFeedback, isExpired }: { imageUrl: string; productName: string; onClose: () => void; brandPlan?: string; onDelete: () => void; onReportError: () => void; hasFeedback?: boolean; isExpired?: boolean }) {
   const [downloading, setDownloading] = useState(false);
   const [zoom, setZoom] = useState(1);
   const isDragging = useRef(false);
@@ -120,8 +121,19 @@ function Lightbox({ imageUrl, productName, onClose, brandPlan, onDelete, onRepor
             onDragStart={(e) => { e.stopPropagation(); isDragging.current = true; }}
             onDragEnd={() => { setTimeout(() => { isDragging.current = false; }, 100); }}
             onClick={toggleZoom}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/800x1200?text=Resultado+expirado';
+            }}
           />
-          
+
+          {/* Expirado overlay */}
+          {isExpired && (
+            <div className="absolute inset-0 bg-[var(--bg-secondary)] flex flex-col items-center justify-center gap-3 z-20">
+              <Clock size={40} className="text-[var(--text-muted)]" />
+              <span className="text-sm text-[var(--text-muted)] font-bold text-center px-4">Resultado expirado tras 48h</span>
+            </div>
+          )}
+
           {/* Lupa Helper Indicator */}
           <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md rounded-full p-3 text-white pointer-events-none transition-opacity opacity-0 group-hover:opacity-100 z-20">
             {zoom === 1 ? <ZoomIn size={24} /> : <ZoomOut size={24} />}
@@ -338,8 +350,23 @@ const GenerationCard = React.forwardRef<HTMLDivElement, {
                 src={gen.resultImageUrl || '/placeholder-gen.jpg'}
                 alt={gen.productName}
                 className="w-full h-full object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x600?text=Error+Imagen'; }}
+                onError={(e) => {
+                  const el = e.target as HTMLImageElement;
+                  // Si el resultado fue expirado, mostrar placeholder específico
+                  if (gen.resultImageUrl === '[EXPIRADO]') {
+                    el.src = 'https://via.placeholder.com/400x600?text=Resultado+expirado';
+                  } else {
+                    el.src = 'https://via.placeholder.com/400x600?text=Error+Imagen';
+                  }
+                }}
               />
+              {/* Badge para resultado expirado */}
+              {gen.resultImageUrl === '[EXPIRADO]' && (
+                <div className="absolute inset-0 bg-[var(--bg-secondary)] flex flex-col items-center justify-center gap-1">
+                  <Clock size={16} className="text-[var(--text-muted)]" />
+                  <span className="text-[8px] text-[var(--text-muted)] font-bold text-center px-1">Resultado expirado</span>
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </>
           )}
@@ -684,7 +711,7 @@ export default function GenerationsPage() {
 
       {/* ══ MODALS ══ */}
       <AnimatePresence>
-        {lightbox && lightbox.resultImageUrl && (
+        {lightbox && (lightbox.resultImageUrl || lightbox.resultImageUrl === '[EXPIRADO]') && (
           <Lightbox 
             imageUrl={lightbox.resultImageUrl} 
             productName={lightbox.productName} 
@@ -698,6 +725,7 @@ export default function GenerationsPage() {
               setLightbox(null);
               setReportingError(lightbox);
             }}
+            isExpired={lightbox.resultImageUrl === '[EXPIRADO]'}
             hasFeedback={lightbox.has_feedback}
           />
         )}

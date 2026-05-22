@@ -8,7 +8,8 @@ import {
   ArrowRight, ExternalLink, BarChart2, AlertTriangle, XCircle,
   Clock, ChevronRight, Activity, Zap, Target, Plus,
   MoreHorizontal, Search, Filter, ArrowUpDown, Eye, Pencil, Trash2,
-  CheckCircle2, CircleDashed, Sparkles, Play, Pause, Star
+  CheckCircle2, CircleDashed, Sparkles, Play, Pause, Star,
+  Radio, Wifi
 } from 'lucide-react';
 import { adminApi } from '@/services/adminApi';
 
@@ -141,6 +142,29 @@ function formatDate(date: string) {
   return new Date(date).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function getRelativeTime(isoString: string): string {
+  const diff = Date.now() - new Date(isoString).getTime();
+  const secs = Math.floor(diff / 1000);
+  if (secs < 60) return `hace ${secs}s`;
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `hace ${mins}m`;
+  const hours = Math.floor(mins / 60);
+  return `hace ${hours}h`;
+}
+
+interface RealtimeStats {
+  globalActive: number;
+  activeBrands: Array<{
+    brandId: string;
+    brandName: string;
+    active: number;
+    max: number;
+    lastActivity: string | null;
+  }>;
+  activityHistory: Array<{ hour: string; count: number }>;
+  timestamp: string;
+}
+
 export default function AdminDashboardPage() {
   const [global, setGlobal] = useState<GlobalStats | null>(null);
   const [conversion, setConversion] = useState<ConversionStats | null>(null);
@@ -151,6 +175,8 @@ export default function AdminDashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlan, setSelectedPlan] = useState<string>('all');
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
+  const [realtime, setRealtime] = useState<RealtimeStats | null>(null);
+  const [realtimeLoading, setRealtimeLoading] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -158,13 +184,19 @@ export default function AdminDashboardPage() {
       adminApi.get('/admin/stats/conversion'),
       adminApi.get('/admin/brands?limit=8&sort=created_at:desc'),
       adminApi.get('/admin/revenue/payments?limit=5'),
+      adminApi.get('/admin/realtime/stats'),
     ])
-      .then(([stats, conv, brandsData, paymentsData]) => {
+      .then(([stats, conv, brandsData, paymentsData, realtimeStats]) => {
         if (stats.error) throw new Error(stats.message);
         setGlobal(stats);
         setConversion(conv);
         if (brandsData.brands) setBrands(brandsData.brands);
         if (paymentsData.payments) setRecentPayments(paymentsData.payments);
+        if (realtimeStats.error) {
+          console.warn('[Dashboard] Realtime stats unavailable:', realtimeStats.message);
+        } else {
+          setRealtime(realtimeStats);
+        }
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
@@ -174,6 +206,23 @@ export default function AdminDashboardPage() {
       if (data.failed) setAlerts(prev => ({ ...prev, failed: data.failed }));
       if (data.critical) setAlerts(prev => ({ ...prev, critical: data.critical }));
     }).catch(() => {});
+  }, []);
+
+  // Poll realtime stats every 5 seconds
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    const fetchRealtime = () => {
+      setRealtimeLoading(true);
+      adminApi.get('/admin/realtime/stats')
+        .then(data => {
+          if (!data.error) setRealtime(data);
+        })
+        .catch(() => {})
+        .finally(() => setRealtimeLoading(false));
+    };
+    fetchRealtime();
+    interval = setInterval(fetchRealtime, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const filteredBrands = brands.filter(brand => {
@@ -339,6 +388,110 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </motion.section>
+
+      {/* 🔴 Realtime Activity Monitor */}
+      {realtime && (
+        <motion.section
+          initial={{ opacity: 0, y: 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.04 }}
+          className="rounded-[2rem] border border-red-500/15 bg-gradient-to-br from-red-500/5 to-[var(--bg-card)] p-6 md:p-8"
+        >
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Radio className="h-5 w-5 text-red-400" />
+                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-400 animate-ping" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-red-400">
+                  En Vivo
+                </p>
+                <h2 className="mt-0.5 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Actividad en Tiempo Real
+                </h2>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+              <Wifi className="h-3.5 w-3.5" />
+              <span>Actualizando cada 5s</span>
+              {realtimeLoading && <span className="ml-1 text-red-400">·</span>}
+            </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Main counter */}
+            <div className="rounded-2xl border border-red-500/10 bg-[var(--bg-base)] p-6 text-center">
+              <p className="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-red-400">
+                Generaciones Activas
+              </p>
+              <p className="text-5xl font-black" style={{ color: 'var(--text-primary)' }}>
+                {realtime.globalActive}
+              </p>
+              <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                personas usando Lookitry ahora
+              </p>
+            </div>
+
+            {/* Activity history mini chart */}
+            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] p-5">
+              <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                Últimas 2 horas
+              </p>
+              {realtime.activityHistory.length > 0 ? (
+                <div className="flex items-end gap-1 h-12">
+                  {realtime.activityHistory.slice(-12).map((h, i) => {
+                    const maxCount = Math.max(...realtime.activityHistory.map(a => a.count), 1);
+                    const heightPct = Math.max(8, (h.count / maxCount) * 100);
+                    return (
+                      <div
+                        key={i}
+                        className="flex-1 rounded-sm bg-gradient-to-t from-red-500/60 to-red-400/80 transition-all"
+                        style={{ height: `${heightPct}%` }}
+                        title={`${h.hour}: ${h.count} gen`}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Sin datos recientes</p>
+              )}
+            </div>
+
+            {/* Active brands */}
+            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] p-5">
+              <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                Marcas Activas
+              </p>
+              {realtime.activeBrands.length > 0 ? (
+                <div className="space-y-2 max-h-24 overflow-y-auto">
+                  {realtime.activeBrands.slice(0, 6).map(brand => (
+                    <div key={brand.brandId} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+                        <span className="text-xs font-medium truncate max-w-[120px]" style={{ color: 'var(--text-primary)' }}>
+                          {brand.brandName}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-red-400">{brand.active}</span>
+                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>/{brand.max}</span>
+                        {brand.lastActivity && (
+                          <span className="text-[9px]" style={{ color: 'var(--text-muted)' }}>
+                            {getRelativeTime(brand.lastActivity)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Sin marcas activas</p>
+              )}
+            </div>
+          </div>
+        </motion.section>
+      )}
 
       {/* Brands Section - Main Focus */}
       <motion.section

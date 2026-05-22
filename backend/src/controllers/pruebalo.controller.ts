@@ -600,25 +600,43 @@ export class PruebaloController {
 
       if (termsAccepted !== undefined) {
 
-        const userIp = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+        // Registrar consentimiento diferenciado: TERMS y BIOMETRIC (Art. 10-C Ley 1581)
+        const consentPromises: Promise<any>[] = [];
 
-        const userAgent = req.headers['user-agent'] || '';
+        if (termsAccepted !== undefined) {
+          const userIp = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || '';
+          const userAgent = req.headers['user-agent'] || '';
 
-        await generationConsentsService.createConsent({
+          // Términos y Condiciones
+          consentPromises.push(
+            generationConsentsService.createTermsConsent({
+              generation_id: existingGeneration.id,
+              user_ip: userIp,
+              user_agent: userAgent,
+              client_fingerprint: clientFingerprint || undefined,
+              product_id: existingGeneration.product_id,
+              brand_id: existingGeneration.brand_id,
+            }).catch((consentError) => {
+              console.warn('[pruebalo] No se pudo guardar consentimiento TERMS de reuso:', consentError);
+            })
+          );
 
-          generation_id: existingGeneration.id,
+          // Consentimiento biométrico (Art. 10-C)
+          consentPromises.push(
+            generationConsentsService.createBiometricConsent({
+              generation_id: existingGeneration.id,
+              user_ip: userIp,
+              user_agent: userAgent,
+              client_fingerprint: clientFingerprint || undefined,
+              product_id: existingGeneration.product_id,
+              brand_id: existingGeneration.brand_id,
+            }).catch((consentError) => {
+              console.warn('[pruebalo] No se pudo guardar consentimiento BIOMETRIC de reuso:', consentError);
+            })
+          );
+        }
 
-          terms_accepted: termsAccepted === 'true' || termsAccepted === true,
-
-          user_ip: userIp,
-
-          user_agent: userAgent,
-
-        }).catch((consentError) => {
-
-          console.error('[pruebalo] No se pudo guardar consentimiento de reuso:', consentError);
-
-        });
+        await Promise.all(consentPromises);
 
       }
 
@@ -997,20 +1015,25 @@ export class PruebaloController {
 
         const userAgent = req.headers['user-agent'] || '';
 
-        await generationConsentsService.createConsent({
-
+        await generationConsentsService.createTermsConsent({
           generation_id: finalGeneration.id,
-
-          terms_accepted: termsAccepted === 'true' || termsAccepted === true,
-
           user_ip: userIp,
-
           user_agent: userAgent,
-
+          client_fingerprint: clientFingerprint || undefined,
+          product_id: product.id,
+          brand_id: brand.id,
         }).catch((consentError) => {
-
-          console.error('[pruebalo] No se pudo guardar consentimiento:', consentError);
-
+          console.warn('[pruebalo] No se pudo guardar consentimiento TERMS:', consentError);
+        });
+        await generationConsentsService.createBiometricConsent({
+          generation_id: finalGeneration.id,
+          user_ip: userIp,
+          user_agent: userAgent,
+          client_fingerprint: clientFingerprint || undefined,
+          product_id: product.id,
+          brand_id: brand.id,
+        }).catch((consentError) => {
+          console.warn('[pruebalo] No se pudo guardar consentimiento BIOMETRIC:', consentError);
         });
 
       }
@@ -1107,20 +1130,25 @@ export class PruebaloController {
 
             const userAgent = req.headers['user-agent'] || '';
 
-            await generationConsentsService.createConsent({
-
+            await generationConsentsService.createTermsConsent({
               generation_id: dedupedGeneration.id,
-
-              terms_accepted: termsAccepted === 'true' || termsAccepted === true,
-
               user_ip: userIp,
-
               user_agent: userAgent,
-
+              client_fingerprint: clientFingerprint || undefined,
+              product_id: dedupedGeneration.product_id,
+              brand_id: dedupedGeneration.brand_id,
             }).catch((consentError) => {
-
-              console.error('[pruebalo] No se pudo guardar consentimiento de dedup:', consentError);
-
+              console.warn('[pruebalo] No se pudo guardar consentimiento TERMS dedup:', consentError);
+            });
+            await generationConsentsService.createBiometricConsent({
+              generation_id: dedupedGeneration.id,
+              user_ip: userIp,
+              user_agent: userAgent,
+              client_fingerprint: clientFingerprint || undefined,
+              product_id: dedupedGeneration.product_id,
+              brand_id: dedupedGeneration.brand_id,
+            }).catch((consentError) => {
+              console.warn('[pruebalo] No se pudo guardar consentimiento BIOMETRIC dedup:', consentError);
             });
 
           }

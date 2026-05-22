@@ -1,5 +1,32 @@
 # MEMORY.md - Lookitry Session Memory
 
+## Desarrollo Local (localhost)
+
+**⚠️ REQUISITO: Redis local** — el probador y dashboard admin NO funcionan sin Redis.
+
+```bash
+# 1. Activar Redis en WSL (Docker Desktop debe estar corriendo)
+wsl -e sh -c "redis-server --daemonize yes"
+
+# 2. Verificar
+wsl -e sh -c "redis-cli ping"  # debe responder PONG
+
+# 3. Iniciar backend (detecta Redis automáticamente)
+cd backend && pnpm dev
+
+# 4. Iniciar frontend
+cd frontend && pnpm dev
+```
+
+- Backend: `http://localhost:3001`
+- Frontend: `http://localhost:3000`
+- Probador: `http://localhost:3000/marca/{brandSlug}`
+- Admin dashboard: `http://localhost:3000/admin/dashboard`
+
+**Ruta probador**: `/marca/` (no `/sitio/`)
+
+**Credenciales admin**: `info.samwilkie@gmail.com` / `Travis2305*`
+
 ## VPS Credentials (CRÍTICO)
 
 | Campo | Valor |
