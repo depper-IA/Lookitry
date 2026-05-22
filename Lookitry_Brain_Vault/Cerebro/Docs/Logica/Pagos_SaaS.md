@@ -1,4 +1,4 @@
-# 💰 Lógica Maestra: Pagos, Prorrateo y Upgrades
+# Lógica Maestra: Pagos, Prorrateo y Upgrades
 
 Este documento detalla cómo Lookitry gestiona la facturación, los cambios de plan y el crédito a favor del usuario. Es el motor financiero del SaaS.
 
