@@ -316,7 +316,8 @@ export interface AuthRequest extends Request {
 export interface N8nWebhookPayload {
   brand_id: string;
   product_id: string;
-  selfie_url: string;
+  selfie_url: string; // Signed URL temporal para acceso a la selfie en GCS (15 min TTL)
+  selfie_path?: string; // Path original en GCS (para logging/auditoría)
   product_image_url: string;
   prompt: string;
   mask_url?: string | null;

@@ -54,6 +54,7 @@ export class GenerationsController {
 
 
 
+    // Ley 1581 Art. 10-C: solo resultImageUrl (imagen generada sintética), nunca selfie_url
     const result = generations
 
       .map(g => ({
@@ -67,7 +68,7 @@ export class GenerationsController {
         productImageUrl: productMap[g.product_id]?.imageUrl ?? null,
 
         resultImageUrl: g.result_image_url,
-
+        resultImageDeletedAt: (g as any).result_image_deleted_at ?? null,
         status: g.status,
 
         error_message: g.error_message,

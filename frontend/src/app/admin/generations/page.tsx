@@ -581,24 +581,25 @@ export default function GenerationsPage() {
 
               {/* Images */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-xl border border-[var(--border-color)] p-4">
-                  <p className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Selfie</p>
-                  {selectedGeneration.selfie_url ? (
-                    <a href={selectedGeneration.selfie_url} target="_blank" rel="noopener noreferrer">
-                      <img
-                        src={selectedGeneration.selfie_url}
-                        alt="Selfie"
-                        className="w-full h-40 object-cover rounded-lg"
-                      />
-                    </a>
-                  ) : (
-                    <div className="h-40 flex items-center justify-center rounded-lg bg-[var(--bg-base)]">
-                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin imagen</p>
-                    </div>
-                  )}
+                <div className="rounded-xl border border-[var(--border-color)] p-4 relative overflow-hidden">
+                  <p className="text-xs uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Selfie
+                  </p>
+                  {/* PLACEHOLDER LEGAL — Dato biométrico eliminado tras procesamiento (Ley 1581 de 2012, Art. 10-C) */}
+                  <div className="w-full h-40 rounded-lg bg-[var(--bg-base)] flex flex-col items-center justify-center gap-2 border border-emerald-500/10">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <p className="text-[10px] text-emerald-400 font-semibold text-center leading-tight px-2">
+                      Dato biométrico eliminado tras procesamiento
+                    </p>
+                    <p className="text-[8px] text-[var(--text-muted)] text-center px-3">
+                      Ley 1581 de 2012, Art. 10-C · Archivo no disponible por protección de datos personales
+                    </p>
+                  </div>
                 </div>
                 <div className="rounded-xl border border-[var(--border-color)] p-4">
-                  <p className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Resultado</p>
+                  <p className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Resultado (imagen sintética - no biométrico)</p>
+                  {/* Ley 1581 Art. 10-C compliance */}
                   {selectedGeneration.result_url ? (
                     <a href={selectedGeneration.result_url} target="_blank" rel="noopener noreferrer">
                       <img

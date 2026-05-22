@@ -202,17 +202,29 @@ async function checkRedis(): Promise<ServiceResult> {
 
   try {
 
-    const result = await redis.ping();
+    // Si lazyConnect y no est√xa1 conectado, marcar down sin esperar
 
-    const latency = Date.now() - start;
+    if ((redis as any).status !== 'ready') {
 
-    if (result === 'PONG') {
-
-      return { status: 'ok', latency };
+      return { status: 'down', latency: Date.now() - start };
 
     }
 
-    return { status: 'degraded', latency };
+    const result = await Promise.race([
+
+      redis.ping(),
+
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000)),
+
+    ]) as string | null;
+
+    if (result === 'PONG') {
+
+      return { status: 'ok', latency: Date.now() - start };
+
+    }
+
+    return { status: 'degraded', latency: Date.now() - start };
 
   } catch (err: any) {
 

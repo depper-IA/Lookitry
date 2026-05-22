@@ -273,6 +273,43 @@ router.get('/generations/:id/feedback', requirePermission('brands'), getGenerati
 router.patch('/generations/:id/retry', requirePermission('brands'), retryGeneration);
 router.get('/brands/:brandId/generations', requirePermission('brands'), getBrandGenerations);
 
+// Monitor de Actividad en Tiempo Real
+router.get('/realtime/stats', requirePermission('conversion'), async (req: any, res: any) => {
+  const timeout = setTimeout(() => {
+    if (!res.headersSent) {
+      res.status(200).json({
+        globalActive: 0,
+        activeBrands: [],
+        activityHistory: [],
+        timestamp: new Date().toISOString(),
+        _warning: 'Redis unavailable, returned partial data',
+      });
+    }
+  }, 3000);
+
+  try {
+    const { generationConcurrencyService } = await import('../services/generation-concurrency.service');
+
+    const [globalActive, activeBrands, activityHistory] = await Promise.all([
+      generationConcurrencyService.getGlobalActiveCount(),
+      generationConcurrencyService.getBrandsWithActiveGenerations(),
+      generationConcurrencyService.getActivityHistory(2),
+    ]);
+
+    clearTimeout(timeout);
+    return res.json({
+      globalActive,
+      activeBrands,
+      activityHistory,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    clearTimeout(timeout);
+    console.error('[Admin/Realtime] Error:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: err.message });
+  }
+});
+
 // Tickets de Soporte
 router.get('/tickets', requirePermission('brands'), getTickets);
 router.get('/tickets/:id', requirePermission('brands'), getTicketById);

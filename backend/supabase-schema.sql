@@ -303,13 +303,30 @@ CREATE TABLE generations (
   brand_id uuid NOT NULL,
   product_id uuid NOT NULL,
   selfie_url text NOT NULL,
+  selfie_url_anonymized text, -- hashed reference sin URL real después de eliminación
+  selfie_deleted_at timestamptz, -- timestamp de eliminación del dato biométrico
   result_image_url text,
+  result_image_deleted_at timestamptz, -- timestamp de eliminación de resultado (48h después)
   status generation_status NOT NULL DEFAULT 'PENDING',
   error_message text,
   generated_at timestamptz NOT NULL DEFAULT now(),
   processing_time integer,
   prompt_used text,
-  input_fingerprint text
+  input_fingerprint text,
+  engine_used text CHECK (engine_used IN ('vertex', 'n8n'))
+);
+
+-- biometric_cleanup_log
+-- Registro de auditoría de todas las eliminaciones de datos biométricos
+CREATE TABLE biometric_cleanup_log (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  generation_id uuid NOT NULL REFERENCES generations(id),
+  selfie_path text NOT NULL, -- path original en MinIO/GCS
+  minio_deleted boolean NOT NULL DEFAULT false,
+  gcs_deleted boolean NOT NULL DEFAULT false,
+  selfie_url_anonymized text, -- valor que quedó en selfie_url después de anonimizar
+  cleanup_error text, -- mensaje de error si falló la eliminación
+  deleted_at timestamptz NOT NULL DEFAULT now()
 );
 
 -- payment_logs
@@ -578,6 +595,8 @@ CREATE INDEX idx_products_category ON products(category);
 
 -- generations
 CREATE INDEX idx_generations_brand_id ON generations(brand_id);
+CREATE INDEX idx_generations_engine_used ON generations(engine_used);
+CREATE INDEX idx_generations_generated_at ON generations(generated_at DESC);
 CREATE INDEX idx_generations_product_id ON generations(product_id);
 CREATE INDEX idx_generations_status ON generations(status);
 CREATE INDEX idx_generations_brand_date ON generations(brand_id, generated_at DESC);

@@ -22,6 +22,7 @@ export interface UpdateGenerationDto {
   error_message?: string;
   processing_time?: number;
   prompt_used?: string;
+  engine_used?: 'vertex' | 'n8n';
 }
 
 
@@ -277,5 +278,75 @@ export class GenerationsService {
 
   }
 
+
+  /**
+   * T-5: Purga im\u00e1genes generadas con m\u00e1s de 48h (Art. 10-B t\u00e9rminos)
+   * Elimina de GCS + marca result_image_url como '[EXPIRADO]'
+   */
+  async purgeExpiredResultImages(limit = 100): Promise<number> {
+    const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+    // Marca personal de Sam — nunca purgar sus generaciones (excepción manual)
+    const EXEMPT_BRAND_ID = 'cf95f272-8de9-45e2-9290-d026312f2c31';
+    const { data: expired, error } = await supabaseAdmin
+      .from('generations')
+      .select('id, result_image_url, brand_id')
+      .eq('status', 'SUCCESS')
+      .not('result_image_url', 'is', null)
+      .not('result_image_url', 'like', '[%')
+      .is('result_image_deleted_at', null)
+      .lt('generated_at', cutoff)
+      .neq('brand_id', EXEMPT_BRAND_ID)
+      .limit(limit);
+
+    if (error || !expired?.length) return 0;
+
+    let purged = 0;
+
+    for (const gen of expired) {
+      try {
+        const path = this._extractPathFromUrl(gen.result_image_url);
+        if (path) {
+          const { uploadService } = await import('./upload.service');
+          await uploadService.deleteFromGCS(path);
+        }
+      } catch (err) {
+        console.warn(`[purgeExpiredResultImages] No se pudo eliminar GCS para ${gen.id}:`, err);
+      }
+
+      const { error: updateError } = await supabaseAdmin
+        .from('generations')
+        .update({
+          result_image_url: '[EXPIRADO]',
+          result_image_deleted_at: new Date().toISOString(),
+        })
+        .eq('id', gen.id);
+
+      if (!updateError) purged++;
+    }
+
+    return purged;
+  }
+
+  private _extractPathFromUrl(url: string): string | null {
+    try {
+      const u = new URL(url);
+      const hostname = u.hostname;
+      let path = u.pathname;
+
+      if (hostname.includes('storage.googleapis.com')) {
+        path = path.replace(/^\//, '');
+        const segs = path.split('/');
+        if (segs.length > 1) segs.shift();
+        return segs.join('/');
+      }
+
+      const segs = path.split('/').filter(Boolean);
+      if (segs.length > 1) segs.shift();
+      return segs.join('/') || null;
+    } catch {
+      return null;
+    }
+  }
 }
 

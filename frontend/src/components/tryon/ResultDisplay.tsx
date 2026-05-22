@@ -299,64 +299,103 @@ export function ResultDisplay({
 
     try {
       const shareTargetUrl = pluginView ? imageUrl : getProxiedImageUrl(imageUrl, brandPlan);
+      const isWhatsApp = typeof navigator !== 'undefined' &&
+        /whatsapp|whatsappapp/i.test(navigator.userAgent || '');
 
       if (navigator.share) {
-        try {
-          const shareData: ShareData = {
-            title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
-            text: shareText,
-            url: shareTargetUrl,
-          };
-
-          // Compartir archivos en Instagram/IAB suele fallar o bloquearse.
-          // Priorizamos compartir solo Texto + URL en esos entornos.
-          const canShareFiles = !inApp && !pluginView && 
-                                navigator.canShare && 
-                                navigator.canShare({ files: [new File([], 'test.jpg', { type: 'image/jpeg' })] });
-
-          if (canShareFiles) {
-            try {
-              const res = await fetch(shareTargetUrl);
-              const blob = await res.blob();
-              const file = new File([blob], 'prueba-virtual.jpg', { type: blob.type || 'image/jpeg' });
-              if (navigator.canShare({ files: [file] })) {
-                shareData.files = [file];
-              }
-            } catch (fileErr) {
-              console.warn('Error al preparar archivo para compartir:', fileErr);
+        // ── WhatsApp: siempre enviar imagen + texto ──
+        // WhatsApp no abre la URL en tab nueva, muestra la imagen adjunta con el texto.
+        // Otros navegadores (Chrome Android) pueden romper si url+files juntos →
+        // el url abre en tab nueva en vez del share sheet.
+        if (isWhatsApp) {
+          try {
+            const res = await fetch(shareTargetUrl);
+            const blob = await res.blob();
+            const file = new File([blob], 'prueba-virtual.jpg', {
+              type: blob.type || 'image/jpeg',
+            });
+            if (navigator.canShare?.({ files: [file] })) {
+              await navigator.share({
+                title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
+                text: shareText,
+                files: [file],
+              });
+              setSharing(false);
+              return;
             }
+          } catch (fileErr) {
+            console.warn('[Share] WhatsApp file share failed, falling back:', fileErr);
           }
+        }
 
-          await navigator.share(shareData);
-          return;
-        } catch (_nativeShareError) {
-          // Si falla con archivos o URL completa, intentamos lo más simple
+        // ── Otras apps / escritorio: intentar navigator.share ──
+        // En móvil con Instagram/IAB: solo texto + url para no romper.
+        // En desktop: clipboard fallback abajo.
+        if (inApp || pluginView) {
           try {
             await navigator.share({
               title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
               text: shareText,
               url: shareTargetUrl,
             });
+            setSharing(false);
             return;
-          } catch (_urlShareError) {}
+          } catch (_) {
+            // continue to clipboard fallback
+          }
         }
-      }
 
-      if (inApp || pluginView) {
-        const popup = window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
-        if (popup) {
-          showToast('Imagen abierta para compartir.', 'info');
+        // ── Desktop / browsers que no soportan share con url+files juntos ──
+        // Android Chrome rompe con url + files. En ese caso solo text + url.
+        const canShareFiles = !inApp && !pluginView &&
+                              navigator.canShare &&
+                              navigator.canShare({ files: [new File([], 'test.jpg', { type: 'image/jpeg' })] });
+
+        if (canShareFiles) {
+          try {
+            const res = await fetch(shareTargetUrl);
+            const blob = await res.blob();
+            const file = new File([blob], 'prueba-virtual.jpg', {
+              type: blob.type || 'image/jpeg',
+            });
+            if (navigator.canShare?.({ files: [file] })) {
+              await navigator.share({
+                title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
+                text: shareText,
+                files: [file],
+              });
+              setSharing(false);
+              return;
+            }
+          } catch (fileErr) {
+            console.warn('[Share] File share failed:', fileErr);
+          }
+        }
+
+        // Fallback: compartir solo texto + url
+        try {
+          await navigator.share({
+            title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
+            text: shareText,
+            url: shareTargetUrl,
+          });
+          setSharing(false);
           return;
+        } catch (_) {
+          // continue to clipboard
         }
       }
 
+      // ── Fallback: copiar al clipboard ──
       if (navigator.clipboard && navigator.clipboard.writeText) {
         const clipboardText = `${shareText}\n\n${shareTargetUrl}`;
         await navigator.clipboard.writeText(clipboardText);
         showToast('Mensaje copiado. Pégalo en WhatsApp o Instagram.', 'success');
+        setSharing(false);
         return;
       }
 
+      // Último fallback: abrir imagen
       window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
     } catch (error) {
       console.error('Error al compartir:', error);

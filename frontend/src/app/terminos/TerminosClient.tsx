@@ -135,6 +135,12 @@ Del uso por el cliente final:
 - Lookitry no almacena fotografias de rostros mas alla del tiempo necesario para procesar la generacion, ni las asocia a datos personales permanentes.
 - Las imagenes procesadas NO seran utilizadas para entrenar modelos de inteligencia artificial ni para ningun fin distinto a la prestacion del servicio de probador virtual.
 
+De las imagenes generadas (resultados try-on):
+- Las imagenes generadas por el probador virtual son contenido sintetico producido por inteligencia artificial — no son fotografias reales del usuario final.
+- Por su caracter sintetico, las imagenes generadas NO estan sujetas al regimen de eliminacion inmediata de datos biometricos (Art. 10-C).
+- Lookitry conserva las imagenes generadas por un maximo de 48 horas para permitir a la marca verificar la calidad del resultado, reportar errores y gestionar feedback. Transcurrido ese plazo, las imagenes generadas se eliminan automaticamente.
+- El uso comercial de las imagenes generadas es responsabilidad de la marca y sus clientes finales, bajo las restricciones descritas en la seccion "Usos prohibidos" de este articulo.
+
 Usos prohibidos de las imagenes generadas:
 Queda expresamente prohibido utilizar las imagenes generadas para: crear deepfakes, suplantar identidades, difamar, generar contenido sexual o violento no consensuado, manipular politicamente, o cualquier uso contrario a la ley colombiana o del pais del usuario. Lookitry no se hace responsable por usos ilicitos que el cliente final realice de las imagenes generadas.
 
@@ -160,7 +166,54 @@ Para reportes de uso indebido de la funcionalidad de generacion virtual, escribi
   {
     id: 'art11',
     title: 'Articulo 11. Tratamiento de datos personales (Ley 1581 de 2012)',
-    content: 'Lookitry trata los datos personales de sus usuarios conforme a la Ley 1581 de 2012 y el Decreto 1377 de 2013, asi como a su Politica de Privacidad disponible en /politicas-privacidad.\n\nDatos recopilados:\n- Marcas: nombre, correo electronico, informacion de facturacion, datos de uso\n- Usuarios finales: selfies temporales para procesamiento\n- Navegacion: direccion IP, tipo de dispositivo, paginas visitadas\n\nFinalidad del tratamiento:\n- Prestacion del servicio de probador virtual\n- Gestion de cuentas y suscripciones\n- Comunicaciones relacionadas con el servicio\n- Mejora continua de la plataforma\n- Cumplimiento de obligaciones legales\n\nDerechos del titular (Derechos ARCO):\n- Acceder, rectificar, cancelar y oponerse al tratamiento de sus datos\n- Solicitar la eliminacion de su cuenta y datos asociados\n- Contacto: info@lookitry.com con asunto "Derechos ARCO"\n- Solicitudes auto gestionables desde la pagina de perfil del usuario\n\nMedidas de seguridad:\n- Cifrado en transito (HTTPS/TLS)\n- Autenticacion JWT con cookies HTTP-only\n- Control de acceso basado en roles (RBAC)\n- Auditorias de seguridad periodicas\n- Eliminacion automatica de selfies tras la generacion\n\nTerceros:\n- Proveedores de infraestructura (Supabase, servidores VPS) bajo acuerdos de confidencialidad\n- Pasarelas de pago (Wompi, PayPal) con sus propias politicas de privacidad\n- Autoridades cuando sea requerido por ley\n- Los datos NO se venden a terceros con fines comerciales\n- Los datos NO se utilizan para entrenar modelos de IA\n\nRetencion de datos:\n- Los registros financieros se conservan por obligaciones legales y de seguridad\n- Las solicitudes de anonimizacion se procesan eliminando datos identificables\n- Selfies: eliminadas automaticamente tras el procesamiento (minutos)\n- Datos de cuenta: 90 dias despues de la cancelacion definitiva\n- Registros financieros: 5 anos por obligacion legal contable\n\nTransferencia internacional de datos (Art. 26 Ley 1581 de 2012):\nLookitry informa que los datos personales pueden ser transferidos a servidores ubicados en paises con niveles de proteccion distintos a los de Colombia, dado que algunos proveedores tecnologicos operan fuera del territorio nacional:\n- Google Cloud (Vertex AI, Gemini): servidores en Estados Unidos\n- Supabase: infraestructura en Estados Unidos\n- OpenRouter: servidores en Estados Unidos\nSalvaguardas aplicadas: clausulas contractuales de confidencialidad con cada proveedor, cifrado HTTPS/TLS en toda transmision, los datos biometricos no se almacenan de forma permanente en servidores internacionales. Al aceptar estos Terminos, el usuario autoriza estas transferencias en los terminos descritos.',
+    content: `Lookitry trata los datos personales de sus usuarios conforme a la Ley 1581 de 2012 y el Decreto 1377 de 2013, asi como a su Politica de Privacidad disponible en /politicas-privacidad.
+
+Datos recopilados:
+- Marcas: nombre, correo electronico, informacion de facturacion, datos de uso
+- Usuarios finales: selfies temporales para procesamiento
+- Navegacion: direccion IP, tipo de dispositivo, paginas visitadas
+
+Finalidad del tratamiento:
+- Prestacion del servicio de probador virtual
+- Gestion de cuentas y suscripciones
+- Comunicaciones relacionadas con el servicio
+- Mejora continua de la plataforma
+- Cumplimiento de obligaciones legales
+
+Derechos del titular (Derechos ARCO):
+- Acceder, rectificar, cancelar y oponerse al tratamiento de sus datos
+- Solicitar la eliminacion de su cuenta y datos asociados
+- Contacto: info@lookitry.com con asunto "Derechos ARCO"
+- Solicitudes auto gestionables desde la pagina de perfil del usuario
+
+Medidas de seguridad:
+- Cifrado en transito (HTTPS/TLS)
+- Autenticacion JWT con cookies HTTP-only
+- Control de acceso basado en roles (RBAC)
+- Auditorias de seguridad periodicas
+- Eliminacion automatica de selfies tras la generacion
+
+Terceros:
+- Proveedores de infraestructura (Supabase, servidores VPS) bajo acuerdos de confidencialidad
+- Pasarelas de pago (Wompi, PayPal) con sus propias politicas de privacidad
+- Autoridades cuando sea requerido por ley
+- Los datos NO se venden a terceros con fines comerciales
+- Los datos NO se utilizan para entrenar modelos de IA
+
+Retencion de datos:
+- Los registros financieros se conservan por obligaciones legales y de seguridad
+- Las solicitudes de anonimizacion se procesan eliminando datos identificables
+- Selfies: eliminadas automaticamente tras la generacion del resultado (segundos a minutos). El dato biometrico se elimina de forma inmediata en cumplimiento del Art. 10-C de la Ley 1581 de 2012.
+- Imagenes generadas (resultados try-on): conservadas un maximo de 48 horas para uso operativo de la marca (verificacion de calidad, reporte de errores, gestion de feedback). No son datos biometricos; son contenido sintetico de IA y se eliminan automaticamente transcurrido ese plazo.
+- Datos de cuenta: 90 dias despues de la cancelacion definitiva
+- Registros financieros: 5 anos por obligacion legal contable
+
+Transferencia internacional de datos (Art. 26 Ley 1581 de 2012):
+Lookitry informa que los datos personales pueden ser transferidos a servidores ubicados en paises con niveles de proteccion distintos a los de Colombia, dado que algunos proveedores tecnologicos operan fuera del territorio nacional:
+- Google Cloud (Vertex AI, Gemini): servidores en Estados Unidos
+- Supabase: infraestructura en Estados Unidos
+- OpenRouter: servidores en Estados Unidos
+Salvaguardas aplicadas: clausulas contractuales de confidencialidad con cada proveedor, cifrado HTTPS/TLS en toda transmision, los datos biometricos no se almacenan de forma permanente en servidores internacionales. Al aceptar estos Terminos, el usuario autoriza estas transferencias en los terminos descritos.`,
   },
   {
     id: 'art11-b',

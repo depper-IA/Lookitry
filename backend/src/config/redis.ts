@@ -8,7 +8,7 @@ const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 // Track connection state to avoid calling commands on dead connections
 let connectionAlive = false;
 
-class RedisService {
+export class RedisService {
   private static instance: Redis | null = null;
 
   public static getInstance(): Redis {
