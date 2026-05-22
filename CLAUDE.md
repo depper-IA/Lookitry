@@ -10,7 +10,7 @@ Ejemplos correctos: "sube", "elige", "mira", "ve a", "haz clic".
 ## PROTOCOLO DE ARRANQUE (OBLIGATORIO)
 
 **AL INICIAR CADA CONVERSACIÓN**, leer primero:
-- `Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md` — reglas de implementación, agentes, diseño y seguridad
+- `Lookitry_Brain_Vault/Cerebro/MAPA_MAESTRO.md` — reglas de implementación, diseño y seguridad
 
 Esto es BLOQUEANTE. No proceder hasta leerlo.
 
