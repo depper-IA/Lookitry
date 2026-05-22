@@ -1,4 +1,4 @@
-# 🤖 Motor IA: Try-On y Generación
+# Motor IA: Try-On y Generación
 
 Este documento explica cómo funciona el corazón de Lookitry: la generación de pruebas virtuales. La lógica maestra reside en `pruebalo.controller.ts`.
 
