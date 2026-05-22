@@ -16,7 +16,7 @@ Este documento es la **fuente de verdad técnica** del sistema. Detalla stack, l
 | **Autenticación** | Dual JWT propio (HTTP-only) | — | Seguridad de sesión con Key Rotation |
 | **OAuth** | Google Sign-In | — | Login alternativo |
 | **IA / Try-On (primario)** | n8n + Google Vertex AI (Gemini 2.5 Flash ) | — | Pipeline nativo de Try-On |
-| **Segmentación (SAM)** | MobileSAM (Python/FastAPI) + Vertex AI SAM 2 | — | Generación de máscaras para Try-On |
+| **Segmentación (SAM)** | MobileSAM (Python/FastAPI) | — | Generación de máscaras para Try-On |
 | **Descriptor de Productos** | Vertex AI Gemini 2.5 Flash | — | Descripción automática de productos |
 | **RAG / Embeddings** | Gemini Embedding 001 (768-dim) + pgvector | — | Knowledge base de Rebecca |
 | **Styling** | Tailwind CSS | 3.4.0 | Diseño y UI |
