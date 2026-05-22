@@ -16,7 +16,7 @@
 
 | Plan | Precio | Productos Activos | Generaciones/mes | Badge |
 |------|--------|-------------------|-------------------|-------|
-| **TRIAL** | $20.000 COP (pago único) | 1 | 15 (configurable por campaña) | `#6366f1` violeta |
+| **TRIAL** | $20.000 COP (pago único) | 1 | 50 | `#6366f1` violeta |
 | **BASIC** | $150.000 COP/mes | 5 | 400 | N/A |
 | **PRO** | $250.000 COP/mes | 15 | 1.200 | N/A |
 | **ENTERPRISE** | $800.000 COP/mes | 50 | 2.000 | N/A |
@@ -131,11 +131,9 @@
 - **Colaboraciones**: Pixel+Melissa (frontend), Kira+Cipher (seguridad), Nadia+Marlo (datos)
 
 ### 3.9 Pipeline de Try-On con Vertex AI
-- **Motor primario**: Google Vertex AI — SAM 2 (segmentación) + Imagen 3 (inpainting) + Gemini 2.5 Flash Image (Nano Banana)
-- **Segmentación local**: MobileSAM (Python/FastAPI en `sam-service/`) como primera opción antes de Vertex
-- **Fallback automático**: n8n cuando Vertex falla
-- **Compresión de imágenes**: `image-compression.service.ts` comprime selfie + producto (max 1024px, JPEG 85%) antes de enviar a n8n o Vertex
-- **Flujo**: SAM Local → SAM Vertex (fallback) → Imagen 3 / Nano Banana → MinIO → Supabase
+- **Motor primario**: n8n + Google Vertex AI —  MobileSAM - Segmentacion (Python/FastAPI en `sam-service/`) + Gemini 2.5 Flash Image (Nano Banana)
+- **Compresión de imágenes**: `image-compression.service.ts` comprime selfie + producto (max 1024px, JPEG 85%) antes de enviar a n8n
+- **Flujo**: SAM Local → Nano Banana → MinIO → Supabase
 - **Detalle técnico completo**: Ver [[TECH_STACK]] sección 7.0
 
 ### 3.10 Knowledge Base de Rebecca + RAG
@@ -156,7 +154,7 @@
 - **Supervisión**: Admin puede ver todas las conversaciones y responder manualmente
 
 ### 3.12 AI Product Descriptor Polimórfico
-- **Motor**: Vertex AI Gemini 2.5 Flash (reemplaza proxy a n8n)
+- **Motor**: Vertex AI Gemini 2.5 Flash
 - **Patrón**: Strategy Pattern con formatters por categoría (Clothing, Accessory, Footwear)
 - **Validación**: Zod con unión discriminada por `product_type`
 - **Endpoint**: `POST /api/ai/describe-product`
@@ -177,8 +175,6 @@
 
 ### 3.15 GCP MCP Server
 - **Ubicación**: `mcp-gcp/` — servidor MCP Node.js para Google Cloud Platform
-- **Herramientas GCS**: `gcp_storage_list_buckets`, `gcp_storage_list_bucket_contents`, `gcp_storage_get_bucket_metadata`
-- **Herramientas Compute**: `gcp_compute_list_instances`, `gcp_compute_get_instance`, `gcp_compute_list_zones`
 - **Auth**: Service Account JSON, `GOOGLE_APPLICATION_CREDENTIALS`, o ADC
 
 ---
@@ -186,95 +182,86 @@
 ## 4. Flujos Principales
 
 ### 4.1 Flujo de Registro (Trial Pago)
-1. Usuario llena formulario en `/register`.
+1. Usuario llena formulario en `/checkout` o `/checkout-trial` Inicia flujo.
 2. Cloudflare Turnstile valida antispam.
 3. `POST /api/auth/register` crea marca.
-4. Redirección a `/trial-checkout` para pago ($20.000 COP).
+4. Redirección a flujo `/trial-checkout` para pago ($20.000 COP).
 5. Confirmación por webhook y acceso al dashboard.
 
-### 4.2 Flujo de Registro con Google OAuth
-1. Usuario inicia sesión con Google en `/register` o `/login`.
-2. Backend verifica `google_id` y crea/actualiza marca.
-3. Si es nuevo, se marca `needs_onboarding = true`.
-4. Redirección a `/register/google-setup` para completar perfil.
-5. Acceso al dashboard tras onboarding.
-
-### 4.3 Flujo de Try-On (IA) — Pipeline Nativo Vertex AI
-1. Usuario sube selfie en el widget.
+### 4.2 Flujo de Try-On (IA) — Pipeline Nativo Vertex AI
+1. Usuario sube foto/selfie en el widget.
 2. Backend valida la solicitud y encola el trabajo en una **cola de Redis**.
 3. Un **Worker de segundo plano** procesa la cola, gestiona la concurrencia.
 4. **Compresión de imágenes**: selfie + producto comprimidos a max 1024px, JPEG 85% via `image-compression.service.ts`.
 5. **SAM Local** (MobileSAM FastAPI en `sam-service/`) genera la máscara de segmentación.
-   - Si falla → **SAM Vertex AI** como fallback.
-6. **Vertex AI Imagen 3** (inpainting con máscara) o **Gemini 2.5 Flash Image** (Nano Banana, multimodal) genera el resultado.
-   - Si Vertex falla → **n8n** como fallback final (webhook `wPLypk7KhBcFLicX`).
+6. **Gemini 2.5 Flash Image** (Nano Banana, multimodal) genera el resultado. (webhook `wPLypk7KhBcFLicX`).
 7. Imagen resultado guardada en MinIO, Supabase actualizado con `status = SUCCESS`.
 8. Frontend hace **polling** hasta que `status = SUCCESS`.
 9. Usuario puede reportar error (feedback con embedding pgvector para RAG).
 - **Detalle del pipeline**: Ver [[TECH_STACK]] sección 7.0
 
-### 4.4 Flujo de Pago (Wompi)
+### 4.3 Flujo de Pago (Wompi)
 1. Usuario selecciona plan en checkout.
 2. Backend genera URL de pago Wompi (hosted checkout).
 3. Wompi notifica al webhook del Backend.
 4. Backend valida firma e integra y activa suscripción.
 
-### 4.5 Flujo de Pago (PayPal)
+### 4.4 Flujo de Pago (PayPal)
 1. Usuario selecciona plan en checkout (USD).
 2. Backend genera orden PayPal (sandbox o producción).
 3. Usuario completa pago en PayPal.
 4. Backend captura orden vía webhook y activa suscripción.
 
-### 4.6 Flujo de Upgrade con Prorrateo
+### 4.5 Flujo de Upgrade con Prorrateo
 1. Usuario con BASIC selecciona PRO.
 2. Backend calcula `creditAmount` (días restantes del plan actual).
 3. `amountToPay = max(0, precioNuevoPlan - creditAmount)`.
 4. El nuevo plan inicia inmediatamente tras el pago.
 5. Preview disponible en `/api/payments/wompi/upgrade-preview`.
 
-### 4.7 Flujo de Campaña de Trial
+### 4.6 Flujo de Campaña de Trial
 1. Si hay una campaña activa en `trial_campaigns`, el registro puede omitir el pago inicial.
 2. Se asignan días y generaciones de prueba automáticamente.
 3. Anti-abuso: IP + fingerprint tracking (`trial_registrations`).
 4. Guest trial: pago de trial antes de crear cuenta (`/trial-checkout`, `/trial-payment`).
 5. Al finalizar, se requiere upgrade a un plan de pago.
 
-### 4.8 Flujo de Cupones
+### 4.7 Flujo de Cupones
 1. Admin crea cupón con tipo (pct/fixed), valor, usos máximos, planes aplicables, expiración.
 2. Usuario ingresa código en checkout.
 3. `POST /api/coupons/validate` valida el cupón.
 4. `POST /api/coupons/redeem` aplica el descuento.
 5. Si cubre 100%, flujo de free upgrade directo (`/api/payments/wompi/apply-free-upgrade`).
 
-### 4.9 Flujo de Referidos
+### 4.8 Flujo de Referidos
 1. Cada marca tiene `referral_code` único.
 2. Nuevo usuario valida código en `/api/brands/me/referral/validate`.
 3. La marca referida reclama el código una sola vez en `/api/brands/me/referral/claim`.
 4. Cuando esa marca completa su primer pago mensual elegible (`BASIC`, `PRO`, `ENTERPRISE`), el referral pasa a `converted`.
 5. El referente recibe `500` créditos extra en `extra_credits_balance`.
 
-### 4.10 Flujo de Enterprise Sync
+### 4.9 Flujo de Enterprise Sync
 1. Admin configura sync en `/api/admin/enterprise/:brandId/sync-config`.
 2. Fuente externa (CSV/API) envía productos a n8n.
 3. n8n dispara webhook `/api/enterprise/sync-product` con `ENTERPRISE_SYNC_TOKEN`.
 4. Backend crea/actualiza productos automáticamente.
 5. Estado visible en dashboard de marca.
 
-### 4.11 Flujo de Feedback + RAG
+### 4.10 Flujo de Feedback + RAG
 1. Usuario reporta error en generación (`POST /api/pruebalo/:brandSlug/generation/:id/feedback`).
 2. Se guarda en `generation_feedback` con tipo de error y prompt usado.
 3. n8n genera embedding pgvector (768-dim) para búsqueda por similitud.
 4. Admin puede resolver feedback y ver patrones.
 5. Sistema RAG usa feedback similar para mejorar prompts futuros.
 
-### 4.12 Flujo de Blog
+### 4.11 Flujo de Blog
 1. Admin configura blog settings y categorías.
 2. n8n genera contenido y dispara webhook `/api/blog/webhook`.
 3. Posts se crean con categorías, imágenes y slug.
 4. Público visible en `/blog` y `/blog/[slug]`.
 5. Social image generada en `/api/blog/social-image`.
 
-### 4.13 Flujo de Alertas de Uso
+### 4.12 Flujo de Alertas de Uso
 1. Cron job ejecuta cada 6h (`usage alerts`).
 2. Si marca alcanza 80% o 100% de generaciones, se loguea en `usage_alerts_log`.
 3. Notificación enviada según preferencias de la marca (email/WhatsApp).
@@ -298,6 +285,7 @@
 - **Email Marketing**: Batching a 50 emails/10 min, límite 300 emails/día (Brevo free tier)
 - **Feedback RAG**: Errores de generación se embedden para mejorar IA con el tiempo.
 - **Admin permissions**: Sistema granular por rol (brands, subscriptions, revenue, etc.).
+- **Pagos Wompi**: Soporta sandbox y producción con credenciales separadas.
 - **Pagos PayPal**: Soporta sandbox y producción con credenciales separadas.
 - **Session TTL**: 7 días para sesiones de marca.
 - **Login Audit**: Logging de todos los intentos de login (successful/failed).
@@ -408,24 +396,11 @@
 - `/api/chat/conversations/:id` (GET) — Mensajes de una conversación
 - `/api/chat/conversations/:id/reply` (POST) — Respuesta manual del admin
 
-### 6.17 Agent / Knowledge RAG
-- `/api/agent/knowledge/search` (POST) — Búsqueda semántica en knowledge base de Rebecca
-- `/api/agent/knowledge/all` (GET) — Todo el knowledge base activo
-- `/api/agent/rag/search` (POST) — Búsqueda en Project Knowledge
-- `/api/agent/rag/stats` (GET) — Estadísticas de documentos indexados
-- `/api/agent/rag/list` (GET) — Lista documentos indexados
-- `/api/agent/rag/index` (POST) — Indexa documento manualmente
-- `/api/agent/activity` (POST/PUT) — Registro de actividad de agentes
-- `/api/agent/activities` (GET) — Consulta actividades con filtros
-- `/api/agent/stats` (GET) — Estadísticas agregadas de agentes
-- `/api/agent/heartbeat` (POST) — Heartbeat de agente
-- `/api/agent/alive` (GET) — Agentes activos
-
-### 6.18 Leads Públicos
+### 6.17 Leads Públicos
 - `/api/leads/public` (POST) — Captura lead desde formulario público
 - `/api/leads/public/check` (GET) — Verifica si email ya existe como lead
 
-### 6.19 Admin Knowledge
+### 6.18 Admin Knowledge
 - `/api/admin/knowledge` (GET) — Lista items del knowledge base con filtros
 - `/api/admin/knowledge` (POST) — Crea item
 - `/api/admin/knowledge/:id` (PATCH) — Edita item / toggle activo
@@ -434,18 +409,6 @@
 ---
 
 ## Issues Conocidos
-
-| Issue | Severidad | Estado |
-|-------|-----------|--------|
-| Secretos en docker-compose | CRÍTICO | ✅ Arreglado |
-| Precios inconsistentes /terminos vs /planes | CRÍTICO | ✅ Arreglado |
-| URLs 404 en sitemap | ALTO | ✅ Arreglado (redirecciones) |
-| Trial confundidor ($20.000 vs gratis) | ALTO | ✅ Arreglado |
-| Sin skeleton loaders | MEDIO | ✅ Arreglado (LandingSkeleton, ProductSkeleton) |
-| Testimoniales mock | MEDIO | ⚠️ Pendiente |
-| SAM Local sin GPU en VPS | ALTO | ⚠️ Pendiente (corre en CPU, lento) |
-| Vertex SAM 2 Endpoint no configurado en prod | ALTO | ⚠️ Pendiente (requiere deploy en Vertex AI) |
-| Chat queue worker no implementado en producción | MEDIO | ⚠️ Pendiente |
 
 ---
 
