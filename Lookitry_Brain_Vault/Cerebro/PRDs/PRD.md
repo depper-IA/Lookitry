@@ -17,8 +17,8 @@
 | Plan | Precio | Productos Activos | Generaciones/mes | Badge |
 |------|--------|-------------------|-------------------|-------|
 | **TRIAL** | $20.000 COP (pago único) | 1 | 50 | `#6366f1` violeta |
-| **BASIC** | $150.000 COP/mes | 5 | 400 | N/A |
-| **PRO** | $250.000 COP/mes | 15 | 1.200 | N/A |
+| **BASIC** | $180.000 COP/mes | 5 | 400 | N/A |
+| **PRO** | $350.000 COP/mes | 15 | 1.000 | N/A |
 | **ENTERPRISE** | $800.000 COP/mes | 50 | 2.000 | N/A |
 
 > Nota: Los valores de generaciones del plan PRO pueden variar entre `pricing_config` (1.200) y `plans.ts` (1.000). La fuente de verdad es la tabla `pricing_config`.
