@@ -1,4 +1,4 @@
-# 🔌 Plugin: WooCommerce Integration
+# Plugin: WooCommerce Integration
 
 El plugin de WooCommerce es el puente que conecta Lookitry con el ecosistema de comercio electrónico. Este documento detalla su arquitectura y reglas de operación.
 
