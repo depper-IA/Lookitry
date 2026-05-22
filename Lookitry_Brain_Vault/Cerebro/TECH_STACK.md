@@ -15,8 +15,7 @@ Este documento es la **fuente de verdad técnica** del sistema. Detalla stack, l
 | **Base de datos** | Supabase (PostgreSQL + pgvector) | — | Persistencia + RAG embeddings |
 | **Autenticación** | Dual JWT propio (HTTP-only) | — | Seguridad de sesión con Key Rotation |
 | **OAuth** | Google Sign-In | — | Login alternativo |
-| **IA / Try-On (primario)** | Google Vertex AI (Gemini 2.5 Flash + Imagen 3) | — | Pipeline nativo de Try-On |
-| **IA / Try-On (fallback)** | n8n + OpenRouter | — | Fallback cuando Vertex falla |
+| **IA / Try-On (primario)** | n8n + Google Vertex AI (Gemini 2.5 Flash ) | — | Pipeline nativo de Try-On |
 | **Segmentación (SAM)** | MobileSAM (Python/FastAPI) + Vertex AI SAM 2 | — | Generación de máscaras para Try-On |
 | **Descriptor de Productos** | Vertex AI Gemini 2.5 Flash | — | Descripción automática de productos |
 | **RAG / Embeddings** | Gemini Embedding 001 (768-dim) + pgvector | — | Knowledge base de Rebecca |
@@ -186,12 +185,6 @@ Este documento es la **fuente de verdad técnica** del sistema. Detalla stack, l
 | `addon_packages` | Paquetes de créditos extra |
 | `blog_topics`, `blog_draft_articles`, `blogs` | Blog CMS |
 
-### Tablas de Agentes (Mayo 2026)
-| Tabla | Propósito |
-|-------|-----------|
-| `agent_activities` | Registro de actividad de agentes |
-| `agent_sessions` | Sesiones activas de agentes |
-| `agent_delegations` | Delegaciones entre agentes |
 
 ### Vistas
 | Vista | Propósito |
@@ -266,7 +259,7 @@ Frontend polling detecta resultado
 - `GOOGLE_API_KEY` / `GOOGLE_APPLICATION_CREDENTIALS` — Auth GCP
 
 **Archivos clave:**
-- `backend/src/services/vertex-ai.service.ts` — Pipeline SAM + Imagen 3 + Nano Banana
+- `backend/src/services/vertex-ai.service.ts` — Pipeline SAM + Nano Banana
 - `backend/src/services/vertex.service.ts` — SDK `@google/genai` para Gemini (con fallback REST)
 - `backend/src/services/image-compression.service.ts` — Compresión sharp antes de enviar a n8n/Vertex
 - `sam-service/main.py` — FastAPI con MobileSAM (CPU, modelo `vit_t`)
@@ -348,20 +341,16 @@ Rebecca es la asesora de ventas IA de Lookitry para el canal web (`lookitry.com`
 | Archivo | Rol |
 |---------|-----|
 | `frontend/src/components/chat-widget/ChatWidget.tsx` | Widget embebido en el layout del frontend |
-| `backend/src/services/rebecca-identity.service.ts` | Sistema prompt + detección de idioma/acento |
+| `backend/src/services/rebecca-identity.service.ts` | Sistema prompt |
 | `backend/src/controllers/rebecca.controller.ts` | Endpoint HTTP del chat web |
 | `backend/src/services/rebecca-chat.service.ts` | Lógica de conversación + RAG |
 
 **Reglas del prompt (CRÍTICO):**
 - PROHIBIDO: "virtual try-on", "IA", "widget", "algoritmo", "tecnología", "integración", "onboarding", "conversión", "dashboard", "plataforma tecnológica"
 - Reemplazos obligatorios: "widget" → "un botón en tu tienda", "dashboard" → "tus estadísticas", etc.
-- Tuteo adaptado: "vos" para Argentina, "tú" para el resto
+- Tuteo adaptado
 - Captura de leads en orden natural: nombre → email → nombre de tienda → plataforma
 - Máximo un dato por mensaje, sin sonar a formulario
-
-**Identidades por locale:**
-- `es-AR`, `es-CO`, `es-MX`, `es-ES`, `en`, `pt-BR`, `default`
-- Cada locale tiene identity block + channel instructions diferenciadas (WhatsApp: 200 chars, Web: 3 párrafos)
 
 **Canal WhatsApp:** Sistema separado vía YCloud → `POST /api/chat/webhook` (ver §7.0c)
 
@@ -369,7 +358,7 @@ Rebecca es la asesora de ventas IA de Lookitry para el canal web (`lookitry.com`
 
 ### 7.0e AI Product Descriptor
 
-Reemplaza el proxy a n8n para descripción de productos. Usa Vertex AI Gemini 2.5 Flash directamente.
+Usa Vertex AI Gemini 2.5 Flash.
 
 **Patrón:** Strategy Pattern con formatters por categoría (Clothing, Accessory, Footwear)
 **Validación:** Zod con unión discriminada por `product_type`
