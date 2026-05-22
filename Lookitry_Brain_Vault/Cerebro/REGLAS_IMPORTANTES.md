@@ -13,9 +13,8 @@ inclusion: always
 
 ## 0. PROTOCOLO DE ARRANQUE (CRÍTICO)
 
-**AL INICIAR CADA CONVERSACIÓN CON SAM:**
-1. Leer CHANGELOG.md completo
-2. Verificar estado de deploys/tareas pendientes
+**AL INICIAR CADA CONVERSACIÓN:**
+1. Verificar estado de deploys/tareas pendientes
 3. Solo después proceder con la conversación
 
 **RAZÓN**: Evitar perder tiempo preguntando cosas que ya están documentadas
@@ -29,20 +28,6 @@ inclusion: always
 2. Estos documentos deben reflejar inmediatamente la realidad del sistema. Los documentos nunca deben quedar obsoletos.
 
 **REGLA DE ORO: NO ELIMINAR informacion tecnica que siga siendo valida o funcional (versiones de librerias, estructuras de carpetas, reglas previas). Solo se debe incluir la informacion que falta o se actualiza, manteniendo el historial y contexto previo.**
-
-### 0.1 Sync de Agentes (OBLIGATORIO)
-
-**CADA VEZ que se modifique AGENTS.md o la configuracion de agentes en openclaw.json:**
-1. **Sincronizar TODOS los archivos en `Lookitry_Brain_Vault/Cerebro/Agentes/`**
-2. Crear archivos faltantes (ej: `rebecca.md`, `leo.md`)
-3. Actualizar archivos existentes con nueva informacion
-4. Incluir: identidad, modelo, herramientas, MCPs, responsabilidades, colaboraciones
-5. **NUNCA dejar archivos de agentes desactualizados**
-
-**Responsable**: Lina (docs-writer)
-**Trigger**: Cualquier cambio en AGENTS.md, REGLAS_IMPORTANTES.md, o configuracion de agentes
-
----
 
 ## 1. Reglas de Git
 
