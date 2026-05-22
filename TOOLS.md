@@ -20,7 +20,6 @@ ssh -i "C:\Users\Matt\.ssh\lookitry_key" root@31.220.18.39
 | IP | 31.220.18.39 |
 | ID VPS | 1004711 |
 | Usuario | root |
-| Password | Travis18456916# |
 | Path Principal | `/root/virtual-tryon` |
 
 ---
