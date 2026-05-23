@@ -6,6 +6,40 @@ import { calculatePriceUSD } from '../utils/pricingCurrency';
 import type { VertexModelId } from './vertex.service';
 import { redis } from '../config/redis';
 
+// — Response cache for common questions (Redis-backed) —
+const RESPONSE_CACHE_TTL_S = 15 * 60; // 15 min
+type CachedResponse = { reply: string; cachedAt: number };
+
+function getResponseCacheKey(message: string, intent: string, channel: string, context?: ChatContext): string | null {
+  const lower = message.toLowerCase().trim();
+  // Don't cache messages with personal info (emails, phone numbers, money amounts)
+  if (/\$\d|@\w|\d{7,}|\+\d{10,}/.test(lower)) return null;
+  // Only cache FAQ-like intents
+  const cacheable = ['pricing_question', 'demo_request', 'info_request', 'greeting'];
+  if (!cacheable.includes(intent)) return null;
+  const pageKey = context?.page_url?.replace(/\W/g, '_') || 'none';
+  return `rebecca:cache:${channel}:${intent}:${pageKey}:${lower.substring(0, 80)}`;
+}
+
+async function getCachedResponse(key: string): Promise<string | null> {
+  if (!redis) return null;
+  try {
+    const raw = await redis.get(key);
+    if (!raw) return null;
+    const cached: CachedResponse = JSON.parse(raw);
+    if (Date.now() - cached.cachedAt < RESPONSE_CACHE_TTL_S * 1000) return cached.reply;
+    await redis.del(key);
+  } catch { /* cache miss */ }
+  return null;
+}
+
+async function setCachedResponse(key: string, reply: string): Promise<void> {
+  if (!redis || !key) return;
+  try {
+    await redis.set(key, JSON.stringify({ reply, cachedAt: Date.now() } as CachedResponse), 'EX', RESPONSE_CACHE_TTL_S);
+  } catch { /* cache write failed silently */ }
+}
+
 interface HistoryMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -308,6 +342,21 @@ export class RebeccaChatService {
     const reminderMessage = await getPendingReminder(sessionId);
     const enrichedMessage = reminderMessage ? `${reminderMessage}\n\n${message}` : message;
 
+    // — Try response cache first —
+    const cacheKey = getResponseCacheKey(message, intent, channel, context);
+    if (cacheKey) {
+      const cached = await getCachedResponse(cacheKey);
+      if (cached) {
+        await registerSalesPattern({
+          trigger_phrase: message,
+          rebecca_response: cached,
+          intent_detected: intent,
+          lead_session_id: sessionId,
+        });
+        return cached;
+      }
+    }
+
     // — Phase 1: Construir enlaces contextuales —
     const contextualLinks = context ? buildContextualLinks(context) : null;
 
@@ -316,10 +365,7 @@ export class RebeccaChatService {
 
     const trimmedHistory = history.slice(-config.max_history);
 
-// — Phase 1: Configurar maxOutputTokens por canal (Section 5.2) —
-// WhatsApp: 200 tokens (~800 chars) para respuestas completas
-// Web: 500 tokens (~2000 chars) para respuestas largas con contexto de conversación
-const maxTokens = channel === 'whatsapp' ? 200 : 500;
+    const maxTokens = channel === 'whatsapp' ? 200 : 500;
 
     const systemPrompt = rebeccaIdentityService.getSystemPrompt(
       channel,
@@ -370,6 +416,9 @@ const maxTokens = channel === 'whatsapp' ? 200 : 500;
     // — Phase 1: Truncar si es necesario (Section 5.3) —
     const maxChars = channel === 'whatsapp' ? CHANNEL_LIMITS.whatsapp : CHANNEL_LIMITS.web;
     const truncatedReply = truncateToLimit(reply, maxChars);
+
+    // Cache the response for future requests
+    if (cacheKey) await setCachedResponse(cacheKey, truncatedReply);
 
     // — Phase 1: Registrar patrón de ventas —
     await registerSalesPattern({
