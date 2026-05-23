@@ -22,42 +22,39 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
   const [showRating, setShowRating] = useState(false);
-  const [conversationEnded, setConversationEnded] = useState(false);
 
-  // Timer ref to cancel previous timer when new message comes
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track when Rebecca last responded — used to determine if user is idle after her msg
+  const lastRebeccaTimeRef = useRef<number | null>(null);
 
-  // Detect conversation end: when Rebecca sends + user is idle 5s
-  // Reset if user starts chatting again
+  // Rating: show 2s after user is idle 5s following Rebecca's last message
+  // Cancel if user sends a new message before the banner shows
   useEffect(() => {
     const lastMsg = messages[messages.length - 1];
     if (!lastMsg) return;
 
-    // If user sends a message, reset so rating re-appears after new pause
+    // User replied → hide banner, cancel pending rating timer
     if (lastMsg.role === 'user') {
-      if (conversationEnded) {
-        setConversationEnded(false);
-        setShowRating(false);
-      }
-      if (timerRef.current) clearTimeout(timerRef.current);
+      setShowRating(false);
+      lastRebeccaTimeRef.current = null;
       return;
     }
 
-    // Every time Rebecca responds, start idle timer
+    // Rebecca responded → set her timestamp, start idle timer
     if (lastMsg.role === 'assistant') {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
-        setConversationEnded(true);
-      }, 5000);
+      lastRebeccaTimeRef.current = Date.now();
+      setShowRating(false);
+
+      // User idle 5s after Rebecca's msg + 2s banner delay = 7s total
+      const timer = setTimeout(() => {
+        // Only show if user still hasn't replied
+        if (lastRebeccaTimeRef.current !== null && Date.now() - lastRebeccaTimeRef.current >= 5000) {
+          setShowRating(true);
+        }
+      }, 7000);
+
+      return () => clearTimeout(timer);
     }
   }, [messages]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Show rating 2s after conversation ended
-  useEffect(() => {
-    if (!conversationEnded || !onRate || showRating) return;
-    const timer = setTimeout(() => setShowRating(true), 2000);
-    return () => clearTimeout(timer);
-  }, [conversationEnded, onRate, showRating]);
 
   const handleRate = (rating: 'thumbs_up' | 'thumbs_down') => {
     onRate?.(rating);
@@ -206,7 +203,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
             <div ref={bottomRef} />
           </div>
 
-          {/* Rating banner (only show when conversation ended) */}
+          {/* Rating banner */}
           {showRating && onRate && <RatingBanner />}
 
           {/* Input */}
@@ -288,7 +285,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
         <div ref={bottomRef} />
       </div>
 
-      {/* Rating banner (only show when conversation ended) */}
+      {/* Rating banner */}
       {showRating && onRate && <RatingBanner />}
 
       <ChatInput onSend={onSend} isLoading={isLoading} isExpanded={false} />
