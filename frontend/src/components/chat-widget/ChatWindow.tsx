@@ -272,10 +272,15 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
         <div ref={bottomRef} />
       </div>
 
-      {/* Rating banner — shows when widget is closed after conversation */}
-      {showRating && <RatingBanner />}
-
-      <ChatInput onSend={onSend} isLoading={isLoading} isExpanded={false} />
+      {/* Rating banner — shows when chat is closed after conversation */}
+      {showRating ? (
+        <>
+          <RatingBanner />
+          <ChatInput onSend={onSend} isLoading={isLoading} isExpanded={false} />
+        </>
+      ) : (
+        <ChatInput onSend={onSend} isLoading={isLoading} isExpanded={false} />
+      )}
     </div>
   );
 }

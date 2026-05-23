@@ -33,6 +33,7 @@ export function ChatInput({ onSend, isLoading, isExpanded }: ChatInputProps) {
         placeholder="Escribí tu mensaje..."
         onKeyDown={handleKeyDown}
         disabled={isLoading}
+        autoFocus
         className={`flex-1 resize-none rounded-2xl border border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-zinc-700/50 px-4 py-3 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/30 disabled:opacity-50 max-h-32 overflow-y-auto transition-colors ${isExpanded ? 'text-base py-4' : 'text-sm py-2.5'}`}
         style={{ scrollbarWidth: 'none' }}
       />
