@@ -10,7 +10,7 @@
 
 import { Router, Request, Response } from 'express';
 import { rebeccaMessageRatingsService } from '../services/rebecca-message-ratings.service';
-import { sanitizeError } from '../utils/errors';
+import { sanitizeError } from '../utils/sanitizeError';
 
 const router = Router();
 

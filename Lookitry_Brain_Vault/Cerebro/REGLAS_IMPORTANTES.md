@@ -14,8 +14,10 @@ inclusion: always
 ## 0. PROTOCOLO DE ARRANQUE (CRÍTICO)
 
 **AL INICIAR CADA CONVERSACIÓN:**
-1. Verificar estado de deploys/tareas pendientes
-3. Solo después proceder con la conversación
+1. Leer SIEMPRE `Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md` (este archivo)
+2. Leer `memory/YYYY-MM-DD.md` (hoy y ayer) para contexto reciente
+3. Si es sesión principal, leer `MEMORY.md` para memoria de largo plazo
+4. Solo después proceder con la conversación
 
 **RAZÓN**: Evitar perder tiempo preguntando cosas que ya están documentadas
 
@@ -609,3 +611,79 @@ Ver: `Cerebro/Skills/code-sync-checker.md`
 
 ### 15.3 Auditoría de Seguridad
 - Antes de agregar cualquier librería nueva, se debe verificar en [Socket.dev](https://socket.dev) o herramientas similares para asegurar que no tenga comportamientos sospechosos (telemetría oculta, acceso a red no declarado).
+
+---
+
+## 16. Supabase API — Acceso y Reglas (CRÍTICO)
+
+### 16.1 Credenciales Disponibles
+
+| Variable | Valor |
+|----------|-------|
+| `SUPABASE_URL` | `https://vkdooutklowctuudjnkl.supabase.co` |
+| `SUPABASE_ANON_KEY` | Disponible en `.env` del backend |
+| `SUPABASE_SERVICE_KEY` | Disponible en `.env` del backend (service role) |
+
+### 16.2 Acceso Programático
+
+```typescript
+import { createClient } from '@supabase/supabase-js';
+
+// Cliente público (solo lectura en tablas públicas)
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Cliente admin (service role — acceso total)
+const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+```
+
+### 16.3 Reglas de Uso
+
+| Operación | Cliente | Requiere autorización? |
+|-----------|---------|------------------------|
+| SELECT en tablas públicas | `supabase` | No |
+| SELECT en tablas privadas | `supabase` | JWT |
+| INSERT/UPDATE/DELETE | `supabaseAdmin` | Service key |
+| queries de analytics/admin | `supabaseAdmin` | Service key |
+
+### 16.4 Tablas Principales de Lookitry
+
+```
+brands                    — marcas registradas
+lookitry_knowledge        — base de conocimiento de Rebecca
+rebecca_message_ratings    — ratings de feedback de Rebecca
+sales_patterns            — patrones de conversación
+pricing_config            — configuración de precios
+subscriptions             — suscripciones de marcas
+generations              — generaciones de Try-On
+```
+
+### 16.5 Queries Comunes
+
+```typescript
+// Obtener configuración de precios
+const { data } = await supabaseAdmin
+  .from('pricing_config')
+  .select('*')
+  .eq('is_active', true)
+  .order('monthly_price_cop', { ascending: true });
+
+// Obtener ratings sin revisar
+const { data } = await supabaseAdmin
+  .from('rebecca_message_ratings')
+  .select('*')
+  .eq('admin_reviewed', false)
+  .order('created_at', { ascending: false })
+  .limit(50);
+
+// Actualizar rating como revisado
+await supabaseAdmin
+  .from('rebecca_message_ratings')
+  .update({ admin_reviewed: true, admin_notes: '...' })
+  .eq('id', ratingId);
+```
+
+### 16.6 Regla de Oro
+
+**PROHIBIDO ejecutar operaciones destructivas (DELETE, DROP, TRUNCATE) en producción sin autorización explícita de Travis.**
+
+---

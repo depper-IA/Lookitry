@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { adminAuthMiddleware, requirePermission } from '../middleware/adminAuth';
 import { authRateLimiter, adminLoginRateLimiter } from '../middleware/rateLimiter';
+import { supabaseAdmin } from '../config/supabase';
 
 // Todas las funciones de controladores admin modularizados se exportan desde admin.controller facade
 import {
@@ -348,5 +349,65 @@ router.post('/knowledge/backfill-embeddings', requirePermission('settings'), bac
 // Rebecca AI Agent Config
 router.get('/rebecca/config', requirePermission('settings'), getRebeccaConfig);
 router.patch('/rebecca/config', requirePermission('settings'), updateRebeccaConfig);
+
+// Rebecca System Prompt (stored in rebecca_config as 'system_prompt' key)
+router.get('/rebecca/system-prompt', requirePermission('settings'), async (req: any, res: any) => {
+  try {
+    const { data } = await supabaseAdmin
+      .from('rebecca_config')
+      .select('config_value')
+      .eq('config_key', 'system_prompt')
+      .single();
+
+    return res.json({ config: data?.config_value || '' });
+  } catch (err: any) {
+    console.error('[RebeccaAdmin] getSystemPrompt:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener prompt' });
+  }
+});
+
+router.post('/rebecca/system-prompt', requirePermission('settings'), async (req: any, res: any) => {
+  try {
+    const { config } = req.body;
+    const adminEmail = req.admin?.email || 'unknown';
+    const now = new Date().toISOString();
+
+    const { error } = await supabaseAdmin
+      .from('rebecca_config')
+      .upsert({
+        config_key: 'system_prompt',
+        config_value: config || '',
+        updated_at: now,
+        updated_by: adminEmail,
+      }, { onConflict: 'config_key' });
+
+    if (error) throw error;
+
+    return res.json({ success: true });
+  } catch (err: any) {
+    console.error('[RebeccaAdmin] saveSystemPrompt:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al guardar prompt' });
+  }
+});
+
+// Rebecca Message Ratings (Feedback Loop)
+import {
+  getRatingsStats,
+  getUnreviewedRatings,
+  getNegativeRatings,
+  markRatingReviewed,
+  updateSessionOutcome,
+} from '../controllers/admin/rebecca-ratings.admin.controller';
+
+router.get('/chat/ratings/stats', requirePermission('settings'), getRatingsStats);
+router.get('/chat/ratings/unreviewed', requirePermission('settings'), getUnreviewedRatings);
+router.get('/chat/ratings/negative', requirePermission('settings'), getNegativeRatings);
+router.patch('/chat/ratings/:id/review', requirePermission('settings'), markRatingReviewed);
+router.patch('/chat/ratings/session/:sessionId/outcome', requirePermission('settings'), updateSessionOutcome);
+
+// Sales Patterns
+import { getSalesPatterns } from '../controllers/admin/rebecca.admin.controller';
+
+router.get('/sales-patterns', requirePermission('settings'), getSalesPatterns);
 
 export default router;
