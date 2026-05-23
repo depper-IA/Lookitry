@@ -33,6 +33,7 @@ import vertexRoutes from './vertex.routes';
 import aiRoutes from './ai.routes';
 import chatRoutes from './chat.routes';
 import ycloudRoutes from './ycloud.routes';
+import rebeccaRatingsController from '../controllers/rebecca-ratings.controller';
 
 const router = Router();
 
@@ -111,5 +112,6 @@ router.use('/vertex', vertexRoutes);
 router.use('/ai', aiRoutes);
 router.use('/chat', chatRoutes);
 router.use('/chat', ycloudRoutes);
+router.use('/chat', rebeccaRatingsController);
 
 export default router;
