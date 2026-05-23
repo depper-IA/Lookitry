@@ -69,6 +69,13 @@ export function useChatSend({
       if (!response.ok) {
         const body = await response.text().catch(() => '');
         console.error('[ChatWidget] API error:', response.status, body);
+
+        // Rate limit: show specific message
+        if (response.status === 429) {
+          const data = JSON.parse(body);
+          const mins = Math.ceil((data.retry_after_sec || 3600) / 60);
+          throw new Error(`rate_limit:${mins}`);
+        }
         throw new Error(`HTTP ${response.status}`);
       }
 
@@ -79,18 +86,25 @@ export function useChatSend({
       }
       addMessage('assistant', data.reply);
     } catch (err: any) {
-      // Only show error once, not on abort (user cancelled)
       if (err.name === 'AbortError') {
         setIsLoading(false);
         return;
       }
       console.error('[ChatWidget] send error:', err);
-      setError(GENERIC_ERROR);
-      // Prevent stacking duplicate errors when user retries
-      const history = getHistorySlice();
-      const lastMsg = history[history.length - 1];
-      if (!lastMsg || lastMsg.role !== 'assistant' || lastMsg.content !== GENERIC_ERROR) {
-        addMessage('assistant', GENERIC_ERROR);
+
+      // Rate limit → show user-friendly message
+      if (err.message?.startsWith('rate_limit:')) {
+        const mins = err.message.split(':')[1];
+        const msg = `Demasiados mensajes. Esperá ${mins} minuto${mins === '1' ? '' : 's'} antes de intentarlo de nuevo.`;
+        setError(msg);
+        addMessage('assistant', msg);
+      } else {
+        setError(GENERIC_ERROR);
+        const history = getHistorySlice();
+        const lastMsg = history[history.length - 1];
+        if (!lastMsg || lastMsg.role !== 'assistant' || lastMsg.content !== GENERIC_ERROR) {
+          addMessage('assistant', GENERIC_ERROR);
+        }
       }
     } finally {
       setIsLoading(false);
