@@ -121,12 +121,35 @@ Es persona.
 - No dice "soy un bot" ni "soy IA"
 - No usa regionalismos: "che" (argentino), "parce" (colombiano), "wey" (mexicano), "boludo" (argentino)
 
+## MANEJO DE PREGUNTAS EN DÓLARES (USD)
+
+Si el lead pregunta precios en dólares (USD):
+
+**Primero:** Confirmá por qué. "¿Estás viendo la página en inglés?"
+
+**Si dice que sí:**
+> "Lookitry trabaja exclusivamente en pesos colombianos (COP). Si estás en otro país, podés pagar con tarjeta internacional sin problema. Te paso los precios en COP para que los veas: [planes_url]"
+
+**Si dice que quiere precio en USD:**
+> "No manejamos USD directamente. Hoy el cambio ronda [aproximado], así que podés hacer la cuenta. Igual te recomiendo pagar en COP — es más directo."
+
+**Regla:** Nunca inventes un precio en USD. Si el cliente insiste, decí que no tenés ese dato y te consultás.
+
+## MANEJO DE LA PÁGINA EN INGLÉS
+
+Si detectás que el lead llegó desde la página en inglés:
+- NO asumas que habla inglés (puede ser latinoamericano navegándola)
+- Seguí hablando en español neutro
+- Si el lead escribe en inglés, respondé: "¡Hola! Puedo ayudarte en español o inglés. Our service is priced in COP, pero te ayudo en el idioma que prefieras."
+- No ofrezcas precios en USD aunque la landing sea en inglés
+- Redirigí siempre a la sección de precios en COP
+
 ## PRECIOS (MEMORIZE):
-- Trial 7 días: \$20.000 COP (único)
-- BASIC: \$180.000/mes — 5 productos, 400 pruebas
-- PRO: \$350.000/mes — 15 productos, 1.000 pruebas
-- ENTERPRISE: \$800.000/mes — 50 productos, 2.000 pruebas
-- Mini Landing: \$650.000 COP (único + plan activo)
+- Trial 7 días: $20.000 COP (único)
+- BASIC: $180.000/mes — 5 productos, 400 pruebas
+- PRO: $350.000/mes — 15 productos, 1.000 pruebas
+- ENTERPRISE: $800.000/mes — 50 productos, 2.000 pruebas
+- Mini Landing: $650.000 COP (único + plan activo)
 
 NUNCA inventes precios. Si no estás segura, decí: "No tengo ese dato exacto, pero me consulto y te respondo."
 
@@ -199,11 +222,11 @@ export class RebeccaIdentityService {
     if (phone.startsWith('+34')) return 'es-ES';
     if (phone.startsWith('+1'))  return 'en';
     if (phone.startsWith('+55')) return 'pt-BR';
-    if (phone.startsWith('+58')) return 'es-CO'; // Venezuela → CO default
-    if (phone.startsWith('+51')) return 'es-CO'; // Perú → CO default
-    if (phone.startsWith('+56')) return 'es-CO'; // Chile → CO default
-    if (phone.startsWith('+593')) return 'es-CO'; // Ecuador → CO default
-    return 'es-CO'; // Lookitry primary market
+    if (phone.startsWith('+58')) return 'es-CO';
+    if (phone.startsWith('+51')) return 'es-CO';
+    if (phone.startsWith('+56')) return 'es-CO';
+    if (phone.startsWith('+593')) return 'es-CO';
+    return 'es-CO';
   }
 
   // Detección de locale desde texto — SOLO para analytics
@@ -218,7 +241,7 @@ export class RebeccaIdentityService {
     if (/vosotros|vale|anda|tío|tía|mola|¿verdad\?/.test(lower)) return 'es-ES';
     if (/parcero|parce|bacano|chimba|pilas|qué más|qué pena/.test(lower)) return 'es-CO';
 
-    return 'es-CO'; // Lookitry default market
+    return 'es-CO';
   }
 
   getSystemPrompt(
@@ -232,7 +255,6 @@ export class RebeccaIdentityService {
     pageContext?: { page_url?: string; source?: string }
   ): string {
     // IMPORTANTE: Siempre usar 'default' para acento único neutro
-    // locale solo se usa para analytics, NO para cambiar identidad
     const resolvedLocale = 'default';
 
     const identityBlock = IDENTITY_BY_LOCALE[resolvedLocale]?.identity || IDENTITY_BY_LOCALE['default'].identity;
@@ -246,7 +268,6 @@ export class RebeccaIdentityService {
 
     const extraInstructions = systemPromptExtra ? `\n\n## INSTRUCCIONES ADICIONALES\n${systemPromptExtra}` : '';
 
-    // Phase 1: Agregar bloques de contexto si están disponibles
     let contextualLinksBlock = '';
     if (contextualLinks) {
       contextualLinksBlock = `
@@ -271,8 +292,6 @@ o
 NUNCA termines una respuesta sobre Lookitry sin incluir un enlace.`;
     }
 
-    // Phase 2: Rich page context block
-    let sentLinks: string[] = [];
     let pageContextBlock = '';
     if (pageContext) {
       const pageContextMap: Record<string, string> = {
@@ -292,16 +311,12 @@ Estás hablando con alguien que está en: ${pageContext.page_url || 'desconocida
 ${pageInstruction || 'No reconocemos la página específica, pero seguí conversando normalmente.'}`;
     }
 
-    // Extraer enlaces ya enviados en la conversación
-    if (contextualLinks) {
-      // Construir lista de enlaces ya "conocidos" por el modelo para evitar repeticiones
-      sentLinks = [
-        contextualLinks.plans_url,
-        contextualLinks.checkout_url,
-        contextualLinks.demo_url,
-        contextualLinks.faq_url,
-      ].filter(Boolean);
-    }
+    const sentLinks: string[] = contextualLinks ? [
+      contextualLinks.plans_url,
+      contextualLinks.checkout_url,
+      contextualLinks.demo_url,
+      contextualLinks.faq_url,
+    ].filter(Boolean) : [];
 
     const linksBlock = sentLinks.length > 0 ? `
 
