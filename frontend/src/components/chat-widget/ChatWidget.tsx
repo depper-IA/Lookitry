@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import { ChatWindow } from './ChatWindow';
 import { ChatInvite } from './ChatInvite';
@@ -9,10 +9,35 @@ import { useChatSend } from './hooks/useChatSend';
 
 const WIDGET_ENABLED = process.env.NEXT_PUBLIC_REBECCA_WIDGET_ENABLED === 'true' || process.env.NODE_ENV === 'development';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'https://api.lookitry.com';
+
 function ChatWidgetInner() {
   const [isOpen, setIsOpen] = useState(false);
   const { sessionId, messages, addMessage, getHistorySlice } = useChatSession();
   const { send, isLoading } = useChatSend({ sessionId, getHistorySlice, addMessage });
+
+  // Handle rating from chat messages
+  const handleRate = useCallback(async (rating: 'thumbs_up' | 'thumbs_down') => {
+    // Get the last assistant message
+    const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
+    if (!lastAssistantMsg) return;
+
+    try {
+      await fetch(`${API_BASE}/api/chat/rating`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          message_index: messages.filter(m => m.role === 'assistant').length - 1,
+          message_content: lastAssistantMsg.content,
+          rating: rating === 'thumbs_up' ? 5 : 2,
+          rating_label: rating,
+        }),
+      });
+    } catch (err) {
+      console.error('[ChatWidget] Error sending rating:', err);
+    }
+  }, [sessionId, messages]);
 
   // Invite se muestra solo cuando el chat está cerrado
   const showInvite = !isOpen;
@@ -24,6 +49,7 @@ function ChatWidgetInner() {
         isLoading={isLoading}
         onSend={send}
         onClose={() => setIsOpen(false)}
+        onRate={handleRate}
       />
     );
   }
@@ -40,18 +66,14 @@ function ChatWidgetInner() {
         type="button"
         onClick={() => setIsOpen(true)}
         aria-label="Abrir chat con Rebecca"
-        // Mobile: sube sobre el bottom nav (68px nav + 8px gap)
-        // Desktop: posición estándar bottom-6
         className="fixed bottom-[calc(env(safe-area-inset-bottom)+76px)] right-5 md:bottom-6 md:right-6 z-[9999] group focus:outline-none"
       >
-        {/* Glow ring exterior animado */}
         <span
           className="absolute inset-0 rounded-full bg-[#FF5C3A]/20 scale-110 animate-ping group-hover:bg-[#FF5C3A]/30"
           style={{ animationDuration: '2.4s' }}
           aria-hidden="true"
         />
 
-        {/* Círculo principal */}
         <span className="relative flex h-14 w-14 items-center justify-center rounded-full ring-[2.5px] ring-[#FF5C3A] ring-offset-[3px] ring-offset-white dark:ring-offset-[#0a0a0a] shadow-[0_6px_24px_rgba(255,92,58,0.45)] hover:shadow-[0_8px_32px_rgba(255,92,58,0.6)] hover:scale-105 transition-all duration-200 overflow-hidden">
           <Image
             src="/rebecca-avatar.webp"
@@ -62,7 +84,6 @@ function ChatWidgetInner() {
           />
         </span>
 
-        {/* Indicador online */}
         <span
           className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white dark:border-[#0a0a0a] z-10"
           aria-hidden="true"
