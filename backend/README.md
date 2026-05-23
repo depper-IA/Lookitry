@@ -1,4 +1,4 @@
-# Virtual Try-On SaaS — Backend
+# Lookitry SaaS — Backend
 
 API REST construida con Express + TypeScript. Gestiona autenticación, productos, generaciones de try-on, suscripciones y pagos.
 
