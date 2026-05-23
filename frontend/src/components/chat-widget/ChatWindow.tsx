@@ -14,9 +14,10 @@ interface ChatWindowProps {
   isLoading: boolean;
   onSend: (message: string) => void;
   onClose: () => void;
+  onRate?: (rating: 'thumbs_up' | 'thumbs_down') => void;
 }
 
-export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowProps) {
+export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
@@ -115,7 +116,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
               </div>
             )}
             {messages.map((msg) => (
-              <ChatMessage key={msg.timestamp} message={msg} isExpanded={true} />
+              <ChatMessage key={msg.timestamp} message={msg} isExpanded={true} onRate={onRate} />
             ))}
             {isLoading && (
               <div className="flex justify-start">
@@ -194,7 +195,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose }: ChatWindowP
           </div>
         )}
         {messages.map((msg) => (
-          <ChatMessage key={msg.timestamp} message={msg} isExpanded={false} />
+          <ChatMessage key={msg.timestamp} message={msg} isExpanded={false} onRate={onRate} />
         ))}
         {isLoading && (
           <div className="flex justify-start mb-2">
