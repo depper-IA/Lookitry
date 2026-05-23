@@ -48,11 +48,12 @@ export function ChatMessage({ message, isExpanded }: ChatMessageProps) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-2`}>
       <div
-        className={`max-w-[75%] rounded-2xl leading-relaxed ${
+        className={`max-w-[75%] rounded-2xl leading-relaxed pointer-events-auto ${
           isUser
             ? 'bg-accent text-white rounded-br-sm'
             : 'bg-gray-100 text-gray-800 rounded-bl-sm dark:bg-zinc-700 dark:text-gray-100'
         } ${isExpanded ? 'text-base px-4 py-3' : 'text-sm px-3 py-2'}`}
+        style={{ wordBreak: 'break-word' }}
       >
         {renderContentWithLinks(message.content)}
       </div>
