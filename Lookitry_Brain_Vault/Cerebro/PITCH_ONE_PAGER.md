@@ -33,7 +33,7 @@ La clienta sube su foto, selecciona una prenda del catálogo, y ve cómo le qued
 
 | Plan | Precio | Incluye |
 |------|--------|---------|
-| Trial | $20 USD (pago único) | 15 generaciones, 1 producto |
+| Trial | $20 USD (pago único) | 50 generaciones, 1 producto |
 | Basic | $45 USD/mes | 400 generaciones, 5 productos |
 | Pro | $80 USD/mes | 1,200 generaciones, 15 productos |
 | Enterprise | $250 USD/mes | 2,000 generaciones, 50 productos + API |

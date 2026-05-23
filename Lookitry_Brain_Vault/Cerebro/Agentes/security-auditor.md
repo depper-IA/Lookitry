@@ -103,7 +103,7 @@ Cuando: necesita cambios en infraestructura
 backend/src/services/wompi.service.ts
 backend/src/services/paypal.service.ts
 backend/src/middleware/auth.middleware.ts
-scripts/_deploy_now.py
+scripts/tools/_deploy_now.py
 ```
 
 ## Prompt de Activación

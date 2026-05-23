@@ -86,16 +86,16 @@ n8n.lookitry.com → n8n
 
 ## Script de Deploy
 
-**Ubicación**: `scripts/_deploy_now.py`
+**Ubicación**: `scripts/tools/_deploy_now.py`
 
 Este script es el ÚNICO método de deploy permitido según REGLAS_IMPORTANTES.md. **NUNCA usar GitHub Actions CI/CD**.
 
 ```bash
 # Usar SIEMPRE _deploy_now.py
-python scripts/_deploy_now.py              # normal
-python scripts/_deploy_now.py --force      # rebuild aunque no haya cambios
-python scripts/_deploy_now.py --restart    # solo reiniciar contenedores
-python scripts/_deploy_now.py --no-cache    # rebuild completo
+python scripts/tools/_deploy_now.py              # normal
+python scripts/tools/_deploy_now.py --force      # rebuild aunque no haya cambios
+python scripts/tools/_deploy_now.py --restart    # solo reiniciar contenedores
+python scripts/tools/_deploy_now.py --no-cache    # rebuild completo
 ```
 
 ---
@@ -188,8 +188,8 @@ docker-compose.yml
 docker-compose.override.yml
 frontend/Dockerfile
 backend/Dockerfile
-scripts/_deploy_now.py
-scripts/sync_project_knowledge.py
+scripts/tools/_deploy_now.py
+scripts/tools/sync_project_knowledge.py
 ```
 
 ---

@@ -8,7 +8,7 @@ kb_active: true
 
 Lookitry ofrece un trial de 7 días por $20.000 COP (pago único). No es gratuito, pero es un costo mínimo para probar el servicio completo.
 
-El trial incluye acceso al plan BASIC con 1 producto y 15 generaciones.
+El trial incluye acceso al plan BASIC con 1 producto y 50 generaciones.
 
 Para activarlo: https://lookitry.com/trial-checkout
 

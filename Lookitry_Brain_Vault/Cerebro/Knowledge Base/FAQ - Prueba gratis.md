@@ -8,7 +8,7 @@ kb_active: true
 
 Sí. Lookitry ofrece un trial de 7 días por $20.000 COP (pago único). Es un costo mínimo para probar el servicio real con tu marca.
 
-El trial incluye 1 producto en el probador y 15 generaciones.
+El trial incluye 1 producto en el probador y 50 generaciones.
 
 Regístrate en: https://lookitry.com/trial-checkout
 

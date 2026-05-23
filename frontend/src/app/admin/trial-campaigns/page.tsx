@@ -200,7 +200,7 @@ function CampaignFormModal({
   const [form, setForm] = useState({
     name: campaign?.name || '',
     trial_days: campaign?.trial_days || 7,
-    trial_generations_limit: campaign?.trial_generations_limit || 15,
+    trial_generations_limit: campaign?.trial_generations_limit || 50,
     price_cop: campaign?.price_cop || 0,
     ends_at: campaign?.ends_at ? campaign.ends_at.split('T')[0] : '',
     require_card_verification: campaign?.require_card_verification ?? true,
@@ -302,7 +302,7 @@ function CampaignFormModal({
                 min={1}
                 max={500}
                 value={form.trial_generations_limit}
-                onChange={e => setForm(f => ({ ...f, trial_generations_limit: parseInt(e.target.value) || 15 }))}
+                onChange={e => setForm(f => ({ ...f, trial_generations_limit: parseInt(e.target.value) || 50 }))}
                 className="w-full h-12 px-4 rounded-xl border text-sm outline-none transition-colors focus:border-[var(--accent)]/50"
                 style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               />

@@ -8,7 +8,7 @@ kb_active: true
 
 Cada cliente puede hacer pruebas con cualquier producto del catálogo. El límite es el número de generaciones del plan de la marca:
 
-- Trial: 15 generaciones en total
+- Trial: 50 generaciones en total
 - BASIC: 400 generaciones/mes
 - PRO: 1.000 generaciones/mes
 - ENTERPRISE: 2.000 generaciones/mes

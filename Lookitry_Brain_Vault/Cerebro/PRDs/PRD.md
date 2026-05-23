@@ -14,9 +14,11 @@
 
 ### 2.1 Planes de Suscripción
 
+> ⚠️ **NOTA:** Los valores de precios y generaciones son dinámicos vía `pricing_config` de Supabase. Este documento puede no reflejar cambios recientes. Consultar `pricing_config` como fuente de verdad.
+
 | Plan | Precio | Productos Activos | Generaciones/mes | Badge |
 |------|--------|-------------------|-------------------|-------|
-| **TRIAL** | $20.000 COP (pago único) | 1 | 50 | `#6366f1` violeta |
+| **TRIAL** | $20.000 COP (pago único) | 1 | 15 | `#6366f1` violeta |
 | **BASIC** | $180.000 COP/mes | 5 | 400 | N/A |
 | **PRO** | $350.000 COP/mes | 15 | 1.000 | N/A |
 | **ENTERPRISE** | $800.000 COP/mes | 50 | 2.000 | N/A |

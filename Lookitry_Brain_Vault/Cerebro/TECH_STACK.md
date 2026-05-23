@@ -46,7 +46,7 @@ Este documento es la **fuente de verdad técnica** del sistema. Detalla stack, l
 | `gsap` | 3.14.2 | Animaciones |
 | `@gsap/react` | 2.1.2 | GSAP React |
 | `lucide-react` | 0.577.0 | Iconos |
-| `sharp` | 0.33.1 | Procesamiento de imágenes |
+| `sharp` | 0.34.5 | Procesamiento de imágenes |
 | `@fingerprintjs/fingerprintjs` | 4.6.2 | Fingerprinting anti-abuso |
 | `country-state-city` | 3.2.1 | Datos de países/ciudades |
 
@@ -424,7 +424,6 @@ LOOKITRY/
 ├── scripts/                    # Deploy (_deploy_now.py)
 ├── lookitry-woocommerce/       # Plugin WordPress/WooCommerce
 ├── sam-service/               # Python/FastAPI MobileSAM
-├── mission-control/            # Dashboard de agentes IA
 ├── mcp-gcp/                  # GCP MCP Server
 └── Lookitry_Brain_Vault/     # Documentación del Cerebro
 ```
@@ -441,7 +440,7 @@ LOOKITRY/
 ### Backend
 - `pnpm install`: Instalar dependencias
 - `pnpm dev`: Hot-reload con ts-node-dev
-- `python scripts/_deploy_now.py`: Deploy al VPS
+- `python scripts/tools/_deploy_now.py`: Deploy al VPS
 
 ---
 

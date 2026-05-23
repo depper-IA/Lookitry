@@ -2,6 +2,8 @@
 
 Este documento visualiza la interconexion entre todos los componentes del sistema, sirviendo como guia de navegacion para desarrolladores y agentes de IA.
 
+**Última actualización:** Mayo 2026
+
 ---
 
 ## 1. Diagrama de Arquitectura (High Level)
@@ -13,14 +15,19 @@ graph TD
     
     BE --> DB[(Supabase - PostgreSQL)]
     BE --> S3[(MinIO - Storage)]
-    BE --> AI{n8n - IA Engine}
+    BE --> Redis[Redis - Cache/Queue]
+    BE --> n8n{n8n - Orchestrator}
     
-    AI --> OpenRouter[OpenRouter / Gemini / Replicate]
-    AI --> BE
+    n8n --> SAM[MobileSAM - Local]
+    n8n --> Vertex[Vertex AI - Gemini 2.5 Flash]
     
     BE --> Pay[Pasarelas: Wompi / PayPal]
     Pay --> BE
 ```
+
+### Stack de IA (Pipeline Try-On)
+1. **SAM Local** (`sam-service/`) → Genera máscara de silueta
+2. **Vertex AI** (`gemini-2.5-flash-image`) → Genera imagen final
 
 ---
 
@@ -28,16 +35,19 @@ graph TD
 
 La joya de la corona del sistema.
 
-1.  **Frontend (`/probador-virtual/[slug]`)**: El cliente sube su selfie y selecciona un producto.
+1.  **Frontend**: El cliente sube selfie y selecciona producto.
 2.  **API Gateway (`POST /api/pruebalo/[slug]/generate`)**:
-    - Valida creditos en `brands`.
-    - Sanitiza imagenes y sube a `MinIO`.
-    - Envoca Webhook de **n8n**.
-3.  **n8n (`Workflow wPLypk7KhBcFLicX`)**:
-    - Procesa imagen con IA.
-    - Notifica cumplimiento al Backend.
-4.  **Backend (`syncProductWebhook`)**: Guarda resultado en `generations` y actualiza estado.
-5.  **Frontend**: Realiza polling hasta mostrar el resultado final.
+    - Valida créditos en `brands`.
+    - Comprime imágenes (max 1024px, JPEG 85%).
+    - Encola trabajo en Redis.
+3.  **Queue Worker**:
+    - Procesa selfie con **MobileSAM** (máscara PNG).
+    - Envía a **Vertex AI** (`gemini-2.5-flash-image`).
+    - Guarda resultado en MinIO.
+    - Actualiza Supabase (`status = SUCCESS`).
+4.  **Frontend**: Polling detecta resultado y muestra imagen.
+
+**Costo por generación:** ~$0.01-0.05 USD
 
 ---
 
@@ -47,37 +57,68 @@ La joya de la corona del sistema.
 - `src/app/`
     - `dashboard/`: Panel de control de la marca.
     - `admin/`: Panel global de Lookitry.
-    - `probador-virtual/`: El widget embebible.
+    - `pruebalo/`: Widget de Try-On.
     - `blog/`: Plataforma de contenido.
-- `src/services/`: Clientes HTTP (`api.ts`, `auth.service.ts`).
+- `src/services/`: Clientes HTTP.
+- `src/lib/pricing.ts`: Precios dinámicos desde Supabase.
 
 ### Backend (Express)
-- `src/routes/`
+- `src/routes/` (40+ archivos):
     - `auth.routes.ts`: Registro, Login, JWT.
-    - `brand.routes.ts`: Perfil y configuracion de marca.
-    - `enterprise.routes.ts`: Sincronizacion masiva (The Sync).
-    - `agent.routes.ts`: Endpoint para agentes de IA internos.
-- `src/services/`: Logica pura (`subscription.service.ts`, `lead-enrichment.service.ts`).
+    - `brands.routes.ts`: Perfil y configuración.
+    - `products.routes.ts`: CRUD de productos.
+    - `pruebalo.routes.ts`: Widget Try-On.
+    - `enterprise.routes.ts`: Sincronización masiva.
+    - `ai.routes.ts`: AI Product Descriptor.
+    - `chat.routes.ts`: WhatsApp Chat.
+    - `leadsPublic.routes.ts`: Leads públicos.
+- `src/services/`: Lógica pura.
+- `src/controllers/`: Handlers de rutas.
+- `src/middleware/`: Auth, rate limiting, security.
 
 ---
 
 ## 4. Persistencia y CDN
 
-- **Supabase**: 
-    - 27 tablas core.
-    - Motores RAG via `pgvector`.
+- **Supabase** (`vkdooutklowctuudjnkl.supabase.co`): 
+    - 57+ tablas (brands, products, generations, etc.)
+    - Motores RAG via `pgvector` (768-dim embeddings).
     - Auth JWT propio (no nativo de Supabase).
+    - Pricing dinámico via `pricing_config`.
 - **MinIO** (`minio.wilkiedevs.com`):
-    - Cubeta `images`: Selfies, productos y resultados.
-    - CDN optimizado para baja latencia en Try-On.
+    - Buckets: `lookitry-selfies`, `lookitry-products`, `lookitry-results`.
+- **Redis**:
+    - Brand config cache (TTL 5 min).
+    - Job queue para Try-On.
+    - Chat queue para WhatsApp.
 
 ---
 
-## 5. Ecosistema de Automatizacion (Scripts)
+## 5. Ecosistema de Scripts
 
-Ubicados en `scripts/` y documentados en `Utilidades_Scripts.md`.
+Ubicados en `scripts/tools/` (activos) y `scripts/archive/` (diagnóstico).
 
-- `_deploy_now.py`: CI/CD manual al VPS de Hostinger.
-- `stress_test.py`: Pruebas de carga para el motor de IA.
-- `check_integrity.py`: Validador de consistencia DB vs Storage.
-- `opencode.json`: Configuracion de Agentes IA que operan el sistema.
+| Script | Función |
+|--------|---------|
+| `_deploy_now.py` | Deploy al VPS (inteligente, detecta cambios) |
+| `generate_image.py` | Imágenes de marketing con Vertex AI |
+| `sync_project_knowledge.py` | Sincroniza docs con Obsidian |
+
+**Otros scripts (en `scripts/archive/`):**
+- `check_containers.py`, `check_redis.py`, `check_n8n_*.py` — Diagnóstico
+
+---
+
+## 6. Agentes IA
+
+Configuración en `opencode.json`:
+- **sammy** — Orquestador
+- **webwizard** — Frontend/UX
+- **devguardian** — QA/Security
+- **dataalchemist** — DB/IA/n8n
+- **growthpilot** — CRM/Marketing
+- **architectai** — Infra/DevOps
+- **docs-writter** — Documentación
+- **security-auditor** — Auditoría
+
+**Modelo default:** `MiniMax-M2.7`

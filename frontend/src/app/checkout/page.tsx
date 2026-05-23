@@ -79,7 +79,7 @@ const PLAN_FEATURES: Record<PlanKey, string[]> = {
   ],
   TRIAL: [
     '1 producto en el probador',
-    '15 generaciones incluidas',
+    '50 generaciones incluidas',
     '7 días de acceso completo',
     'Logo y colores de marca',
     'Widget embebible (iframe)',
