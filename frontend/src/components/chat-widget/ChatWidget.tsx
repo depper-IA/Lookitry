@@ -9,7 +9,8 @@ import { useChatSend } from './hooks/useChatSend';
 
 const WIDGET_ENABLED = process.env.NEXT_PUBLIC_REBECCA_WIDGET_ENABLED === 'true' || process.env.NODE_ENV === 'development';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'https://api.lookitry.com';
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ?? 'https://api.lookitry.com';
 
 function ChatWidgetInner() {
   const [isOpen, setIsOpen] = useState(false);

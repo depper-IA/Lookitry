@@ -24,21 +24,39 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
   const [showRating, setShowRating] = useState(false);
   const [conversationEnded, setConversationEnded] = useState(false);
 
-  // Detect conversation end: user sent messages and there's been a pause
-  useEffect(() => {
-    if (messages.length >= 3 && !conversationEnded) {
-      // Give user time to finish their last message
-      const timer = setTimeout(() => setConversationEnded(true), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [messages, conversationEnded]);
+  // Timer ref to cancel previous timer when new message comes
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Show rating when conversation ended and widget is still open
+  // Detect conversation end: when Rebecca sends + user is idle 5s
+  // Reset if user starts chatting again
   useEffect(() => {
-    if (conversationEnded && onRate && !showRating) {
-      const timer = setTimeout(() => setShowRating(true), 2000);
-      return () => clearTimeout(timer);
+    const lastMsg = messages[messages.length - 1];
+    if (!lastMsg) return;
+
+    // If user sends a message, reset so rating re-appears after new pause
+    if (lastMsg.role === 'user') {
+      if (conversationEnded) {
+        setConversationEnded(false);
+        setShowRating(false);
+      }
+      if (timerRef.current) clearTimeout(timerRef.current);
+      return;
     }
+
+    // Every time Rebecca responds, start idle timer
+    if (lastMsg.role === 'assistant') {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        setConversationEnded(true);
+      }, 5000);
+    }
+  }, [messages]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show rating 2s after conversation ended
+  useEffect(() => {
+    if (!conversationEnded || !onRate || showRating) return;
+    const timer = setTimeout(() => setShowRating(true), 2000);
+    return () => clearTimeout(timer);
   }, [conversationEnded, onRate, showRating]);
 
   const handleRate = (rating: 'thumbs_up' | 'thumbs_down') => {
