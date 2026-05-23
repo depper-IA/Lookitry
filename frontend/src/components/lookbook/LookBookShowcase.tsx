@@ -254,6 +254,7 @@ export default function LookBookShowcase() {
                         fill
                         className="object-contain group-hover:scale-110 transition-transform duration-500"
                         sizes="(max-width: 640px) 100vw, 34vw"
+                        unoptimized
                       />
                     </motion.div>
                   </AnimatePresence>
