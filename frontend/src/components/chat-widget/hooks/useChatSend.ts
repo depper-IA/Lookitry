@@ -50,9 +50,13 @@ export function useChatSend({
     const context = getPageContext();
 
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
       const response = await fetch(`${API_BASE}/api/chat/widget`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           session_id: sessionId,
           message: userMessage,
@@ -60,16 +64,34 @@ export function useChatSend({
           context,
         }),
       });
+      clearTimeout(timeout);
 
       if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        console.error('[ChatWidget] API error:', response.status, body);
         throw new Error(`HTTP ${response.status}`);
       }
 
       const data: WidgetApiResponse = await response.json();
+      if (!data.reply) {
+        console.error('[ChatWidget] No reply in response:', data);
+        throw new Error('No reply from API');
+      }
       addMessage('assistant', data.reply);
-    } catch {
+    } catch (err: any) {
+      // Only show error once, not on abort (user cancelled)
+      if (err.name === 'AbortError') {
+        setIsLoading(false);
+        return;
+      }
+      console.error('[ChatWidget] send error:', err);
       setError(GENERIC_ERROR);
-      addMessage('assistant', GENERIC_ERROR);
+      // Prevent stacking duplicate errors when user retries
+      const history = getHistorySlice();
+      const lastMsg = history[history.length - 1];
+      if (!lastMsg || lastMsg.role !== 'assistant' || lastMsg.content !== GENERIC_ERROR) {
+        addMessage('assistant', GENERIC_ERROR);
+      }
     } finally {
       setIsLoading(false);
     }
