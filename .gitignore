@@ -125,3 +125,6 @@ scripts/n8n-docker-compose.yml
 test_proxy.py
 *.test.output
 vps_diag.txt
+node_modules/
+.env.local
+.env.production
