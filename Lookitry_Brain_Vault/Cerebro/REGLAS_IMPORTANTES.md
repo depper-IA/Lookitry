@@ -34,14 +34,14 @@ inclusion: always
 ## 1. Reglas de Git
 
 - **Auto-commit**: DESPUÉS de cada tarea significativa, hacer commit automáticamente con mensaje descriptivo (conventional commits: `feat:`, `fix:`, `docs:`, etc.)
-- **Auto-push**: Hacer push después de cada commit exitoso
+- **Auto-push**: NO hacer push automático. Hacer push solo cuando el código compila y tests pasan, o por autorización del usuario.
 - **NO hacer deploy** sin autorizacion explícita del usuario
 
 ### 1.1 Deploy
 
-- **SIEMPRE usar el script _deploy_now.py** Located in `scripts/_deploy_now.py` (raíz del proyecto: `/home/travis/Lookitry/Lookitry/scripts/_deploy_now.py`)
+- **SIEMPRE usar el script _deploy_now.py** Located in `scripts/tools/_deploy_now.py` (raíz del proyecto: `/home/travis/Lookitry/Lookitry/scripts/tools/_deploy_now.py`)
 - **NUNCA usar GitHub Actions CI/CD** para deploys
-- Para ejecutar: `python3 scripts/_deploy_now.py` desde la raíz del proyecto
+- Para ejecutar: `python3 scripts/tools/_deploy_now.py` desde la raíz del proyecto
 
 **Flags disponibles:**
 | Flag | Efecto |
@@ -61,7 +61,7 @@ Cuando el usuario autorice el deploy, seguir estos pasos:
 1. **Verificar cambios locales** con `git status` y `git diff`
 2. **Hacer commit** con mensaje descriptivo (usar conventional commits: `fix:`, `feat:`, etc.)
 3. **Hacer push** a origin main
-4. **Ejecutar deploy** con `python scripts/_deploy_now.py --force`
+4. **Ejecutar deploy** con `python scripts/tools/_deploy_now.py --force`
 5. **Verificar** que el health check devuelve 200 y los endpoints funcionan
 6. **Si hay errores**, diagnosticar y arreglar antes de reportar exito
 
@@ -69,14 +69,14 @@ Cuando el usuario autorice el deploy, seguir estos pasos:
 
 ## 1.3 Generación de Imágenes con Vertex AI
 
-**Script:** `scripts/generate_image.py`
+**Script:** `scripts/tools/generate_image.py`
 **Modelo:** Vertex AI Imagen 3 (`imagen-3.0-generate-002`)
 **Key:** `backend/secrets/vertex-key.json` (service account, NO commitear)
 
 ### Uso básico
 
 ```bash
-python3 scripts/generate_image.py "descripción de la imagen" \
+python3 scripts/tools/generate_image.py "descripción de la imagen" \
   --out frontend/public/carpeta/nombre.webp \
   --aspect 4:3
 ```
@@ -109,22 +109,22 @@ python3 scripts/generate_image.py "descripción de la imagen" \
 
 ```bash
 # Megamenu card (4:3, 1280×960)
-python3 scripts/generate_image.py \
+python3 scripts/tools/generate_image.py \
   "Latin American woman trying on clothes virtually using AI" \
   --out frontend/public/megamenu/demo.webp --aspect 4:3
 
 # Hero banner (16:9, 1408×768)
-python3 scripts/generate_image.py \
+python3 scripts/tools/generate_image.py \
   "Fashion e-commerce hero, warm orange tones, Colombian brand" \
   --out frontend/public/hero/nueva-imagen.webp --aspect 16:9
 
 # Product card (3:4, 960×1280) — 4 variantes
-python3 scripts/generate_image.py \
+python3 scripts/tools/generate_image.py \
   "White sneaker on clean background, product photography" \
   --out frontend/public/products/sneaker.webp --aspect 3:4 --count 4
 
 # Sin sufijo de marca (fotografía técnica, UI, etc.)
-python3 scripts/generate_image.py \
+python3 scripts/tools/generate_image.py \
   "Abstract dark tech background, orange glow" \
   --out frontend/public/bg/tech.webp --aspect 16:9 --no-brand
 ```
@@ -301,18 +301,6 @@ nadia + marlo:
   - "Marlo: métricas y campaigns"
 ```
 
-### 3.7 TTS / Voz de Sammantha
-
-```yaml
-sammantha_voice:
-  motor: "Gemini 2.5 Flash TTS"
-  ubicacion: "/home/travis/Lookitry/Lookitry/backend/scripts/sammantha_voice.sh"
-  
-  regla: "Solo generar audio cuando Sam ENVÍA audio primero O lo pide explícitamente"
-  
-  estado: "/home/travis/Lookitry/Lookitry/backend/.tts_state"
-```
-
 ---
 
 ## 4. Reglas de Diseño
@@ -351,7 +339,7 @@ Para evitar corrupciones de codigo y caidas del sistema:
 - **Vertex AI (GCP)**: Pipeline PRIMARIO de Try-On e imágenes. Usa Gemini 2.5 Flash + Imagen 3 vía `@google-cloud/vertexai`. TODA generación de imágenes pasa por aquí.
 - **MobileSAM (Python/FastAPI)**: Servicio LOCAL para generación de máscaras antes del pipeline Try-On. Corre en Docker. PROHIBIDO reemplazar por llamada externa sin autorización explícita.
 - **OpenRouter**: SOLO accesible vía n8n como FALLBACK cuando Vertex AI falla. PROHIBIDO llamar directamente desde el backend — la integración directa fue eliminada (ver commits `2bb94eb6`, `e281c8a8`).
-- **GROQ**: ~~API directa~~ → **ELIMINADO del proyecto**. No referenciar ni reinstalar.
+- **GROQ**: Solo como `small_model` fallback de emergencia. No usar para requests normales.
 
 ### 5.5 Blindaje contra Overload de MiniMax (CRÍTICO)
 
@@ -483,20 +471,16 @@ Los agentes ya NO necesitan notificar por Telegram cuando completan tareas. Esta
 - Regla 1.1: Deploy flags documentados (`--frontend`, `--backend`, `--force`, `--no-cache`)
 - Regla 10: Refactorización obligatoria por tamaño de archivo (600 líneas)
 - Regla 10.3: Detección y reporte de código muerto obligatorio
-- Regla 5.4: Vertex AI primario, OpenRouter solo vía n8n fallback, GROQ eliminado, MobileSAM local documentado
+- Regla 5.4: Vertex AI primario, OpenRouter solo vía n8n fallback, GROQ fallback, MobileSAM local documentado
 
 ---
 
 ## 🔧 VPS PRODUCCIÓN - INFO IMPORTANTE
 
-### Credenciales VPS (Guardadas en backend/.env)
-- **VPS IP**: 31.220.18.39
-- **SSH**: root@31.220.18.39:22
-- **Contraseña**: Travis18456916#
+### Credenciales VPS
+Las credenciales del VPS (IP, SSH, contraseña) están en `backend/.env` (que está en .gitignore y NO se commitea). Consultar con Sam Wilkie para acceso.
 
-### MCPs Configurados
-- **n8n**: https://n8n.wilkiedevs.com (API key en config)
-- **VPS SSH**: Usar sshpass para automatización
+> ⚠️ **NOTA**: No documentar credenciales reales en ningún archivo del repositorio público.
 
 ---
 

@@ -12,7 +12,7 @@ Cuando se agotan las generaciones del mes, la marca puede:
 2. Hacer upgrade de plan en cualquier momento (el upgrade aplica prorrateo del tiempo restante del plan actual)
 
 Límites por plan:
-- Trial: 15 generaciones (total, no mensual)
+- Trial: 50 generaciones (total, no mensual)
 - BASIC: 400 generaciones/mes
 - PRO: 1.000 generaciones/mes
 - ENTERPRISE: 2.000 generaciones/mes

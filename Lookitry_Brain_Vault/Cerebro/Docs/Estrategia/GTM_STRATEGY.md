@@ -85,7 +85,7 @@
 
 ### Trial Pagado
 - **Qué:** $20.000 COP por 7 días
-- **Incluye:** 15 generaciones, acceso full
+- **Incluye:** 50 generaciones, acceso full
 - **Objetivo:** Qualificar leads antes de comprometer dinero
 
 ---

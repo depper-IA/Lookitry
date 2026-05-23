@@ -10,7 +10,7 @@ Precio: $20.000 COP (pago único, precio original $29.000 — 93% de descuento).
 
 Incluye:
 - 1 producto en el probador
-- 15 generaciones activas
+- 50 generaciones activas
 - 7 días de acceso
 - Logo y colores de marca
 - Widget embebible (iframe)

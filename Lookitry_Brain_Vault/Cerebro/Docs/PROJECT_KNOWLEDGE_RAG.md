@@ -110,21 +110,21 @@ Sistema bidireccional de conocimiento para indexar documentación del proyecto y
 
 ### 5. Script de Sincronización
 
-**Archivo:** `scripts/sync_project_knowledge.py`
+**Archivo:** `scripts/tools/sync_project_knowledge.py`
 
 **Uso:**
 ```bash
 # Modo hook (automático en git push)
-python scripts/sync_project_knowledge.py --git-hook
+python scripts/tools/sync_project_knowledge.py --git-hook
 
 # Indexar archivos específicos
-python scripts/sync_project_knowledge.py --files "PRD.md,TECH_STACK.md" --commit "abc123"
+python scripts/tools/sync_project_knowledge.py --files "PRD.md,TECH_STACK.md" --commit "abc123"
 
 # Full sync (todos los archivos core)
-python scripts/sync_project_knowledge.py --no-drive
+python scripts/tools/sync_project_knowledge.py --no-drive
 
 # Help
-python scripts/sync_project_knowledge.py --help
+python scripts/tools/sync_project_knowledge.py --help
 ```
 
 ## Instalación

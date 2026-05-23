@@ -19,7 +19,8 @@
 ### Modelo Default: MiniMax-M2.7
 
 - **Mantenido**: Todos los agentes usan `minimax/MiniMax-M2.7`
-- Groq y DeepSeek siguen removidos de todos los systemPromptOverride
+- Groq disponible solo como `small_model` fallback de emergencia (no para uso regular)
+- DeepSeek removido de todos los systemPromptOverride
 
 ---
 
@@ -33,7 +34,7 @@
 | **Nadia** | dataalchemist | Alquimista de Datos | MiniMax-M2.7 |
 | **Marlo** | growthpilot | Piloto de Crecimiento | MiniMax-M2.7 |
 | **Zephyr** | architectai | Arquitecto de Infra | MiniMax-M2.7 |
-| **Lina** | docs-writer | Documentadora | MiniMax-M2.7 |
+| **Lina** | docs-writter | Documentadora | MiniMax-M2.7 |
 | **Cipher** | security-auditor | Hacker Ético | MiniMax-M2.7 |
 
 ---

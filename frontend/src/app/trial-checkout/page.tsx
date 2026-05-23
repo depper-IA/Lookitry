@@ -461,7 +461,7 @@ export default function TrialCheckoutPage() {
                   <div className="grid gap-3 mb-8">
                     {[
                       '1 producto activo en el catálogo',
-                      '15 generaciones con IA',
+                      '50 generaciones con IA',
                       'Widget personalizable para tu sitio',
                       'Logo y colores de tu marca',
                     ].map((item) => (
