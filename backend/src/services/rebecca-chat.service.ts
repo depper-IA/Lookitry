@@ -318,8 +318,8 @@ export class RebeccaChatService {
 
 // — Phase 1: Configurar maxOutputTokens por canal (Section 5.2) —
 // WhatsApp: 200 tokens (~800 chars) para respuestas completas
-// Web: 600 tokens (~2400 chars) para respuestas largas con contexto
-const maxTokens = channel === 'whatsapp' ? 200 : 600;
+// Web: 300 tokens (~1200 chars) para respuestas largas con contexto
+const maxTokens = channel === 'whatsapp' ? 200 : 300;
 
     const systemPrompt = rebeccaIdentityService.getSystemPrompt(
       channel,

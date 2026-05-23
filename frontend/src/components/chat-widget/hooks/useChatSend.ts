@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { Message, WidgetApiResponse, ChatContext } from '../chat-widget.types';
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? 'https://api.lookitry.com';
+  process.env.NEXT_PUBLIC_API_URL ?? 'https://api.lookitry.com';
 
 const GENERIC_ERROR = 'Lo siento, ocurrió un error. Por favor intentá de nuevo.';
 

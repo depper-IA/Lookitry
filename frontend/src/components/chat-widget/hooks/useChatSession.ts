@@ -30,7 +30,7 @@ function getSessionId(): string {
 // Cargar historial desde backend
 async function loadHistory(sessionId: string): Promise<Message[]> {
   try {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? 'https://api.lookitry.com';
+    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.lookitry.com';
     const response = await fetch(`${apiBase}/api/chat/widget/history?session_id=${encodeURIComponent(sessionId)}`);
     
     if (!response.ok) return [];
@@ -45,7 +45,7 @@ async function loadHistory(sessionId: string): Promise<Message[]> {
 // Guardar mensaje en backend
 async function saveMessage(sessionId: string, role: 'user' | 'assistant', content: string): Promise<void> {
   try {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? 'https://api.lookitry.com';
+    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.lookitry.com';
     await fetch(`${apiBase}/api/chat/widget/message`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
