@@ -1,3 +1,12 @@
+## Descripción
+Microservicio Python que segmenta la selfie del usuario para aislar la figura humana (mask PNG) antes de pasarla a Vertex AI. Corre como `lookitry-sam-local` en Docker (puerto 8000).
+
+**Tech Stack:** Python 3.10-slim + FastAPI + uvicorn + MobileSAM (`mobile_sam.pt`, 39MB, device: CPU)
+
+**Documentación detallada:** [[sam-service README|../../sam-service/README.md]]
+
+---
+
 # Tech Stack — Lookitry
 
 Este documento es la **fuente de verdad técnica** del sistema. Detalla stack, librerías, infraestructura, schema de DB y arquitectura de flujos IA. La lógica de negocio y flujos están en [[PRD]].
