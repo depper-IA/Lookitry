@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Maximize2, Minimize2, X } from 'lucide-react';
 import { ChatMessage } from './ChatMessage';
@@ -21,20 +21,49 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
   const bottomRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
+  const [showRating, setShowRating] = useState(false);
+  const [conversationEnded, setConversationEnded] = useState(false);
+
+  // Detect conversation end: user sent messages and there's been a pause
+  useEffect(() => {
+    if (messages.length >= 3 && !conversationEnded) {
+      // Give user time to finish their last message
+      const timer = setTimeout(() => setConversationEnded(true), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [messages, conversationEnded]);
+
+  // Show rating when conversation ended and widget is still open
+  useEffect(() => {
+    if (conversationEnded && onRate && !showRating) {
+      const timer = setTimeout(() => setShowRating(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [conversationEnded, onRate, showRating]);
+
+  const handleRate = (rating: 'thumbs_up' | 'thumbs_down') => {
+    onRate?.(rating);
+    setShowRating(false);
+  };
+
+  const handleClose = () => {
+    setShowRating(false);
+    onClose();
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleBackdropClick = () => onClose();
+  const handleBackdropClick = () => handleClose();
 
   const handleOpenExpanded = () => {
     setIsOpening(true);
@@ -44,19 +73,45 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
 
   const handleCloseExpanded = () => {
     setIsExpanded(false);
+    setShowRating(false);
   };
+
+  // Rating banner component
+  const RatingBanner = () => (
+    <div className="flex items-center justify-center gap-3 px-3 py-2 bg-gray-50 dark:bg-zinc-700 border-t border-gray-200 dark:border-zinc-600">
+      <span className="text-xs text-gray-500 dark:text-gray-400">¿Te fue útil?</span>
+      <button
+        onClick={() => handleRate('thumbs_down')}
+        className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded"
+        aria-label="No fue útil"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.94-1.56L2.16 5.636a2 2 0 012.16-2.56h4.5a2 2 0 012 1.36 2 2 0 00.65 1.86v5.1a2 2 0 01-.65 1.36L4 14.236a2 2 0 01-1.56-1.94L3.16 6.6a2 2 0 012-1.36h.5a2 2 0 001.94.56L11 9" />
+        </svg>
+      </button>
+      <button
+        onClick={() => handleRate('thumbs_up')}
+        className="text-gray-400 hover:text-emerald-500 transition-colors p-1 rounded"
+        aria-label="Fue útil"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 1.11L19 16v2a2 2 0 01-2 2h-3M5 8h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.293.707V15a1 1 0 01-1 1H5a1 1 0 01-1-1v-2a1 1 0 00-1-1H4a1 1 0 00-.707-.293L1.293 9.707A1 1 0 012 9h2" />
+        </svg>
+      </button>
+    </div>
+  );
 
   if (isExpanded) {
     return (
       <>
-        {/* Backdrop oscuro con transition */}
+        {/* Backdrop */}
         <div
           className={`fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm transition-opacity duration-200 ${isOpening ? 'opacity-0' : 'opacity-100'}`}
           onClick={handleBackdropClick}
           aria-hidden="true"
         />
 
-        {/* Modal centrado elegante */}
+        {/* Modal */}
         <div
           className={`fixed left-1/2 top-1/2 z-[9999] -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[600px] h-[85vh] max-h-[700px] rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border border-gray-200/30 bg-white dark:bg-zinc-800 overflow-hidden flex flex-col transition-all duration-300 ${isOpening ? 'scale-95 opacity-0' : 'scale-100 opacity-100'}`}
           role="dialog"
@@ -94,10 +149,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  handleCloseExpanded();
-                  setTimeout(() => onClose(), 200);
-                }}
+                onClick={handleClose}
                 aria-label="Cerrar chat"
                 className="text-white/80 hover:text-white transition-colors p-2.5 rounded-xl hover:bg-white/10"
               >
@@ -116,7 +168,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
               </div>
             )}
             {messages.map((msg) => (
-              <ChatMessage key={msg.timestamp} message={msg} isExpanded={true} onRate={onRate} />
+              <ChatMessage key={msg.timestamp} message={msg} isExpanded={true} />
             ))}
             {isLoading && (
               <div className="flex justify-start">
@@ -135,6 +187,9 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
             )}
             <div ref={bottomRef} />
           </div>
+
+          {/* Rating banner (only show when conversation ended) */}
+          {showRating && onRate && <RatingBanner />}
 
           {/* Input */}
           <ChatInput onSend={onSend} isLoading={isLoading} isExpanded={true} />
@@ -175,7 +230,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Cerrar chat"
             className="text-white/80 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 ml-1"
           >
@@ -195,7 +250,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
           </div>
         )}
         {messages.map((msg) => (
-          <ChatMessage key={msg.timestamp} message={msg} isExpanded={false} onRate={onRate} />
+          <ChatMessage key={msg.timestamp} message={msg} isExpanded={false} />
         ))}
         {isLoading && (
           <div className="flex justify-start mb-2">
@@ -214,6 +269,9 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
         )}
         <div ref={bottomRef} />
       </div>
+
+      {/* Rating banner (only show when conversation ended) */}
+      {showRating && onRate && <RatingBanner />}
 
       <ChatInput onSend={onSend} isLoading={isLoading} isExpanded={false} />
     </div>
