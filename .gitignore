@@ -128,3 +128,4 @@ vps_diag.txt
 node_modules/
 .env.local
 .env.production
+.next/
