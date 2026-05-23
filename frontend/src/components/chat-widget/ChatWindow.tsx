@@ -22,73 +22,60 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
   const [showRating, setShowRating] = useState(false);
+  const [chatWasUsed, setChatWasUsed] = useState(false);
 
-  // Track when Rebecca last responded — used to determine if user is idle after her msg
-  const lastRebeccaTimeRef = useRef<number | null>(null);
-
-  // Rating: show 2s after user is idle 5s following Rebecca's last message
-  // Cancel if user sends a new message before the banner shows
+  // Track if user sent any message (chat had activity)
   useEffect(() => {
-    const lastMsg = messages[messages.length - 1];
-    if (!lastMsg) return;
-
-    // User replied → hide banner, cancel pending rating timer
-    if (lastMsg.role === 'user') {
-      setShowRating(false);
-      lastRebeccaTimeRef.current = null;
-      return;
+    if (messages.some(m => m.role === 'user')) {
+      setChatWasUsed(true);
     }
-
-    // Rebecca responded → set her timestamp, start idle timer
-    if (lastMsg.role === 'assistant') {
-      lastRebeccaTimeRef.current = Date.now();
-      setShowRating(false);
-
-      // User idle 5s after Rebecca's msg + 2s banner delay = 7s total
-      const timer = setTimeout(() => {
-        // Only show if user still hasn't replied
-        if (lastRebeccaTimeRef.current !== null && Date.now() - lastRebeccaTimeRef.current >= 5000) {
-          setShowRating(true);
-        }
-      }, 7000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [messages]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [messages]);
 
   const handleRate = (rating: 'thumbs_up' | 'thumbs_down') => {
     onRate?.(rating);
     setShowRating(false);
   };
 
-  const handleClose = () => {
+  // Close expanded → minimize to collapsed widget + show rating if there was activity
+  const handleCloseExpanded = () => {
+    setIsExpanded(false);
+    if (onRate && chatWasUsed) {
+      setShowRating(true);
+    }
+  };
+
+  // Fully close widget (X button in expanded, X in collapsed)
+  const handleCloseFully = () => {
     setShowRating(false);
     onClose();
   };
 
+  // Escape key closes expanded or fully closes
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
+      if (e.key === 'Escape') {
+        if (isExpanded) {
+          handleCloseExpanded();
+        } else {
+          handleCloseFully();
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isExpanded]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleBackdropClick = () => handleClose();
+  const handleBackdropClick = () => handleCloseExpanded();
 
   const handleOpenExpanded = () => {
     setIsOpening(true);
     setIsExpanded(true);
-    setTimeout(() => setIsOpening(false), 300);
-  };
-
-  const handleCloseExpanded = () => {
-    setIsExpanded(false);
     setShowRating(false);
+    setTimeout(() => setIsOpening(false), 300);
   };
 
   // Rating banner component
@@ -164,7 +151,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
               </button>
               <button
                 type="button"
-                onClick={handleClose}
+                onClick={handleCloseFully}
                 aria-label="Cerrar chat"
                 className="text-white/80 hover:text-white transition-colors p-2.5 rounded-xl hover:bg-white/10"
               >
@@ -204,7 +191,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
           </div>
 
           {/* Rating banner */}
-          {showRating && onRate && <RatingBanner />}
+          {showRating && <RatingBanner />}
 
           {/* Input */}
           <ChatInput onSend={onSend} isLoading={isLoading} isExpanded={true} />
@@ -245,7 +232,7 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
           </button>
           <button
             type="button"
-            onClick={handleClose}
+            onClick={handleCloseFully}
             aria-label="Cerrar chat"
             className="text-white/80 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 ml-1"
           >
@@ -285,8 +272,8 @@ export function ChatWindow({ messages, isLoading, onSend, onClose, onRate }: Cha
         <div ref={bottomRef} />
       </div>
 
-      {/* Rating banner */}
-      {showRating && onRate && <RatingBanner />}
+      {/* Rating banner — shows when widget is closed after conversation */}
+      {showRating && <RatingBanner />}
 
       <ChatInput onSend={onSend} isLoading={isLoading} isExpanded={false} />
     </div>
