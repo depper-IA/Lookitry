@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - --api.insecure=false
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      - --providers.docker.network=proxy
+      - --providers.docker.exposedByDefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesResolvers.mytlschallenge.acme.email=samwilkiedevs@gmail.com
+      - --certificatesResolvers.mytlschallenge.acme.storage=/certs/acme.json
+      - --certificatesResolvers.mytlschallenge.acme.httpchallenge.entrypoint=web
+      - --log.level=INFO
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/certs
+    networks:
+      - proxy
+    restart: unless-stopped
+
+networks:
+  proxy:
+    external: true

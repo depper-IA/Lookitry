@@ -5,6 +5,18 @@
 
 ---
 
+## Protocolo de Arranque
+
+**Ver protocolo completo en**: `Lookitry_Brain_Vault/Cerebro/Protocolos/ARRANQUE_UNIVERSAL.md`
+
+**Secuencia obligatoria:**
+1. `Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md` (siempre)
+2. `Lookitry_Brain_Vault/Cerebro/MAPA_MAESTRO.md` (siempre)
+3. `memory/YYYY-MM-DD.md` (cuando disponible)
+4. `MEMORY.md` (solo sesión principal con Travis)
+
+---
+
 ## Stack Técnico
 
 | Capa | Tecnología |
@@ -19,7 +31,7 @@
 | Antispam | Cloudflare Turnstile |
 | Email | SMTP Hostinger e integración con Brevo API |
 | Deploy | Docker Compose en VPS Hostinger |
-| CI/CD | Script Python `scripts/_deploy_now.py` + GitHub |
+| CI/CD | Script Python `scripts/tools/_deploy_now.py` + GitHub |
 
 ---
 
@@ -116,7 +128,7 @@ Lookitry/
 
 ## Deployment
 *   **VPS**: `31.220.18.39` (Root access).
-*   **Método**: `python scripts/_deploy_now.py`. Este script sincroniza con GitHub, reconstruye contenedores afectados (backend/frontend) y gestiona una pantalla de mantenimiento automática durante el proceso.
+*   **Método**: `python scripts/tools/_deploy_now.py`. Este script sincroniza con GitHub, reconstruye contenedores afectados (backend/frontend) y gestiona una pantalla de mantenimiento automática durante el proceso.
 
 ---
 
@@ -138,20 +150,20 @@ Configurados en `C:\Users\Matt\Lookitry\opencode.json`.
 
 | MCP | Variable | Valor |
 |-----|----------|-------|
-| Telegram | `TELEGRAM_BOT_TOKEN` | `8353367320:AAFxmMJ4lFteK-XQaVBcjQx7rZXojpDxH-A` |
+| Telegram | `TELEGRAM_BOT_TOKEN` | `[ver backend/.env o opencode.json local]` |
 | Telegram | `TELEGRAM_CHAT_ID` | `1049458877` |
 | n8n | `N8N_BASE_URL` | `https://n8n.wilkiedevs.com` |
-| n8n | `N8N_API_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NGUxZTYyYi1kY2M0LTRiZGUtOWFjZS02OTBmMjAxMGIyMDAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiZWE2NmI1N2ItNTBiNS00ZTViLWJhYzYtZDE2MWFkM2NkZTkzIiwiaWF0IjoxNzczMjc5MzMyfQ.ZuYsz4K4ifpp9ho_nZzpDypTy49_APNx9hkecKridJw` |
-| Hostinger | `API_TOKEN` | `ytiLMZYXYfVupYfuoZ16Yc6rFPetc4ViUczUEZqG37c8b8f0` |
-| Context7 | `CONTEXT7_API_KEY` | `ctx7sk-2a79898f-a150-4027-b9af-9d339aec2e81` |
+| n8n | `N8N_API_KEY` | `[ver backend/.env o opencode.json local]` |
+| Hostinger | `API_TOKEN` | `[ver backend/.env o opencode.json local]` |
+| Context7 | `CONTEXT7_API_KEY` | `[ver backend/.env o opencode.json local]` |
 | Obsidian | `OBSIDIAN_VAULT` | `Lookitry` |
 
 ### Modelos AI (opencode.json)
 
 | Proveedor | Modelo | API Key |
 |-----------|--------|---------|
-| MiniMax (default) | `MiniMax-M2.7` | `sk-cp-sPgdKbqLq4Ms_...` (en opencode.json) |
-| Groq (small) | `llama-3.3-70b-versatile` | `gsk_NdZQ5mkPP9Kw...` (en opencode.json) |
+| MiniMax (default) | `MiniMax-M2.7` | `[ver opencode.json local]` |
+| Groq (small) | `llama-3.3-70b-versatile` | `[ver opencode.json local]` |
 | Google Vertex | Gemini models | project `gen-lang-client-0591001769` |
 
 ### Agentes OpenCode

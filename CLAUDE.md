@@ -9,10 +9,11 @@ Ejemplos correctos: "sube", "elige", "mira", "ve a", "haz clic".
 
 ## PROTOCOLO DE ARRANQUE (OBLIGATORIO)
 
-**AL INICIAR CADA CONVERSACIÓN**, leer primero:
-- `Lookitry_Brain_Vault/Cerebro/Docs/ARCHITECTURE_OVERVIEW.md` — reglas de implementación, diseño y seguridad
+**Protocolo canónico**: `Lookitry_Brain_Vault/Cerebro/Protocolos/ARRANQUE_UNIVERSAL.md`
 
-Esto es BLOQUEANTE. No proceder hasta leerlo.
+**Resumen para Lookitry:** Leer `REGLAS_IMPORTANTES.md` → `MAPA_MAESTRO.md` → `memory` reciente → `MEMORY.md` (solo sesión principal).
+
+Ver `ARCHITECTURE_OVERVIEW.md` para reglas de implementación, diseño y seguridad.
 
 ## Gestión de Paquetes
 

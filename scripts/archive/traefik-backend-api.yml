@@ -1,0 +1,12 @@
+http:
+  routers:
+    lookitry-api:
+      rule: "Host(`api.lookitry.com`)"
+      service: lookitry-api-service
+      tls:
+        certresolver: mytlschallenge
+  services:
+    lookitry-api-service:
+      loadBalancer:
+        servers:
+          - url: "http://lookitry-backend:3001"
