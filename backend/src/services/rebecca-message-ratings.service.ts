@@ -167,7 +167,7 @@ export class RebeccaMessageRatingsService {
       const unreviewed = ratings.filter(r => !r.admin_reviewed).length;
 
       // Group by intent
-      const by_intent: Record<string, { count: number; avg_rating: number }> = {};
+      const by_intent: Record<string, { count: number; total_rating: number }> = {};
       for (const r of ratings) {
         if (r.lead_intent) {
           if (!by_intent[r.lead_intent]) {
