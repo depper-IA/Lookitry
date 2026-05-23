@@ -2,6 +2,10 @@
 
 ## El Cetro de Verdad
 - **[[REGLAS_IMPORTANTES]]**: El documento sagrado que rige todo el proyecto. Leelo siempre primero. Lo que sigue es la ejecucion tecnica de estas reglas.
+- **[[ARRANQUE_UNIVERSAL]]**: Protocolo obligatorio de inicio para todas las IAs y agentes.
+
+## Docs y Sincronizacion
+- **[[OBSIDIAN_SYNC]]**: Contrato Cerebro-Obsidian. Jerarquia de verdad, archivos siempre-carga, links internos y reglas de sincronizacion.
 
 ## Nucleo del Proyecto (Documentacion Viva)
 - **[[TECH_STACK]]**: Nuestra pila tecnologica y arquitectura.

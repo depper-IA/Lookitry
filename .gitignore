@@ -80,3 +80,36 @@ __pycache__/
 *.pyo
 # Local Pi runtime state
 .atl/
+
+# ============================================================
+# CREDENCIALES — NUNCA TRACKEAR
+# ============================================================
+opencode.json
+scripts/n8n_api_key.txt
+scripts/id_rsa_lookitry
+bedrock-long-term-api-key.csv
+*-api-key*.csv
+*-credentials*.csv
+*-api-key*
+
+# ============================================================
+# SCRIPTS — ARTEFACTOS DE DIAGNÓSTICO
+# ============================================================
+scripts/*.log
+scripts/*.txt
+scripts/vps_*.txt
+scripts/backend_logs*.txt
+scripts/docker_build_*.log
+scripts/telegram_msg.json
+scripts/descriptor_workflow.json
+scripts/traefik-api.yml
+scripts/traefik-backend-api.yml
+scripts/traefik-compose-fixed.yml
+scripts/n8n-docker-compose.yml
+
+# ============================================================
+# ARCHIVOS TEMPORALES DE TEST
+# ============================================================
+test_proxy.py
+*.test.output
+vps_diag.txt

@@ -1,0 +1,108 @@
+{
+  "name": "Describir con IA (Simplificado)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "descriptor",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [4112, 1088],
+      "id": "0dfcfc2e-481c-4b6e-abc4-e8398d8843e1",
+      "name": "Webhook",
+      "webhookId": "c51d8213-cc3e-4f79-a19a-6f20c832c6ae"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst imageUrl = (body?.image_url || '').trim();\nconst productName = (body?.product_name || '').trim();\nconst category = (body?.category || '').trim();\nif (!imageUrl) throw new Error('image_url es requerido');\nif (!imageUrl.startsWith('http')) throw new Error('image_url invalida: ' + imageUrl.substring(0, 80));\nreturn [{ json: { imageUrl, productName, category } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4304, 1088],
+      "id": "4c12a7cd-cdba-4e3d-8a2c-89c27bd992f7",
+      "name": "Extraer parametros"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/ai/describe-product",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"{{ $json.productName }}\",\n  \"category\": \"{{ $json.category }}\",\n  \"imageUrl\": \"{{ $json.imageUrl }}\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [4544, 1088],
+      "id": "bdf87c96-b8ac-4bd8-a2bc-49e638b57878",
+      "name": "Call Backend AI Descriptor"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst d = response;\nconst parts = [];\nif (d.garment_type) parts.push(d.garment_type + (d.silhouette ? ' de silueta ' + d.silhouette : ''));\nif (d.primary_color) parts.push('Color principal: ' + d.primary_color);\nif (d.secondary_colors?.length) parts.push('Colores secundarios: ' + d.secondary_colors.join(', '));\nif (d.patterns) parts.push('Estampado: ' + d.patterns);\nif (d.materials) parts.push('Material: ' + d.materials);\nif (d.fit) parts.push('Fit: ' + d.fit);\nif (d.accessory_type) parts.push('Tipo: ' + d.accessory_type);\nif (d.placement) parts.push('Posicion: ' + d.placement);\nif (d.material) parts.push('Material: ' + d.material);\nif (d.footwear_type) parts.push('Tipo: ' + d.footwear_type);\nif (d.heel_height) parts.push('Taco: ' + d.heel_height);\nconst category = d.product_type;\nconst enrichedPrompt = response.enrichedPrompt || '';\nreturn [{ json: { description: parts.join('. ') + '.', category, enrichedPrompt } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4752, 1088],
+      "id": "53698c6e-a4aa-4e53-b519-8686b5deada9",
+      "name": "Formatear respuesta"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [5200, 1088],
+      "id": "9616af98-09f4-41f1-853e-c31bfe51180e",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "Extraer parametros", "type": "main", "index": 0}]]
+    },
+    "Extraer parametros": {
+      "main": [[{"node": "Call Backend AI Descriptor", "type": "main", "index": 0}]]
+    },
+    "Call Backend AI Descriptor": {
+      "main": [[{"node": "Formatear respuesta", "type": "main", "index": 0}]]
+    },
+    "Formatear respuesta": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedMode": "fixed"
+  },
+  "versionId": "bd268e91-079d-478f-ba8d-b0ce369b15eb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+  },
+  "id": "ZjVTV3QxoPEi60GX",
+  "tags": [{"updatedAt": "2026-03-15T19:05:45.164Z", "createdAt": "2026-03-15T19:05:45.164Z", "id": "bidpNCaxW9N10X8S", "name": "SaaS"}]
+}

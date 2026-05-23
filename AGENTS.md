@@ -8,12 +8,17 @@ If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out w
 
 ## Session Startup
 
-Before doing anything else:
+**Protocolo canónico**: `Lookitry_Brain_Vault/Cerebro/Protocolos/ARRANQUE_UNIVERSAL.md`
 
+For Lookitry projects, the mandatory startup sequence is:
+1. `Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md` (always)
+2. `Lookitry_Brain_Vault/Cerebro/MAPA_MAESTRO.md` (always)
+3. `memory/YYYY-MM-DD.md` (today + yesterday, when available)
+4. `MEMORY.md` (only in main/direct sessions — not group chats or shared contexts)
+
+Then:
 1. Read `SOUL.md` — this is who you are
 2. Read `USER.md` — this is who you're helping
-3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 
 Don't ask permission. Just do it.
 

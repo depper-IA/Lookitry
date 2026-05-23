@@ -1,0 +1,214 @@
+{
+  "_comment": "Template de configuración para OpenCode. Copiar como opencode.json y completar con credenciales reales. Este archivo SÍ se trackea en git — opencode.json NO.",
+  "model": "minimax/MiniMax-M2.7",
+  "small_model": "groq/llama-3.3-70b-versatile",
+  "provider": {
+    "minimax": {
+      "options": {
+        "apiKey": "TU_MINIMAX_API_KEY"
+      },
+      "models": {
+        "MiniMax-M2.7": {
+          "name": "MiniMax-M2.7"
+        }
+      }
+    },
+    "google-vertex": {
+      "npm": "@ai-sdk/google-vertex",
+      "options": {
+        "project": "gen-lang-client-0591001769",
+        "location": "us-central1",
+        "timeout": 120000,
+        "googleAuthOptions": {
+          "keyFilename": "/home/travis/Lookitry/Lookitry/backend/secrets/vertex-key.json"
+        }
+      },
+      "models": {
+        "gemini-3-pro-preview": { "name": "gemini-3-pro-preview" },
+        "gemini-2.5-pro": { "name": "gemini-2.5-pro" },
+        "gemini-2.5-flash": { "name": "gemini-2.5-flash" },
+        "gemini-2.0-flash-001": { "name": "gemini-2.0-flash-001" },
+        "gemini-2.5-flash-lite": { "name": "gemini-2.5-flash-lite" },
+        "gemini-3.1-pro-preview": { "name": "gemini-3.1-pro-preview" },
+        "gemini-3.1-flash-preview": { "name": "gemini-3.1-flash-preview" },
+        "gemini-3.0-pro-preview": { "name": "gemini-3.0-pro-preview" },
+        "gemini-3.0-flash-preview": { "name": "gemini-3.0-flash-preview" },
+        "gemini-2.5-pro-preview-05-06": { "name": "gemini-2.5-pro-preview-05-06" },
+        "gemini-2.5-pro-preview-06-05": { "name": "gemini-2.5-pro-preview-06-05" },
+        "imagen-3.0-generate-001": { "name": "imagen-3.0-generate-001" },
+        "imagen-3.0-generate-002": { "name": "imagen-3.0-generate-002" },
+        "imagen-3.0-fast-generate-001": { "name": "imagen-3.0-fast-generate-001" },
+        "imagen-4.0-generate-001": { "name": "imagen-4.0-generate-001" },
+        "imagen-4.0-fast-generate-001": { "name": "imagen-4.0-fast-generate-001" },
+        "imagen-4.0-ultra-generate-001": { "name": "imagen-4.0-ultra-generate-001" },
+        "gemini-2.5-flash-image": { "name": "gemini-2.5-flash-image" },
+        "gemini-3.1-flash-image-preview": { "name": "gemini-3.1-flash-image-preview" },
+        "gemini-3-pro-image-preview": { "name": "gemini-3-pro-image-preview" },
+        "veo-3.1-generate-001": { "name": "veo-3.1-generate-001" },
+        "veo-3.1-fast-generate-001": { "name": "veo-3.1-fast-generate-001" },
+        "veo-3.0-generate-001": { "name": "veo-3.0-generate-001" },
+        "veo-3.0-fast-generate-001": { "name": "veo-3.0-fast-generate-001" },
+        "veo-2.0-generate-001": { "name": "veo-2.0-generate-001" },
+        "text-embedding-005": { "name": "text-embedding-005" },
+        "gemini-embedding-2-preview": { "name": "gemini-embedding-2-preview" }
+      }
+    },
+    "groq": {
+      "options": {
+        "timeout": 120000,
+        "apiKey": "TU_GROQ_API_KEY"
+      }
+    },
+    "openrouter": {
+      "options": {
+        "timeout": 120000
+      }
+    }
+  },
+  "agent": {
+    "sammy": {
+      "description": "Orquestador principal del equipo de agentes Lookitry",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "Sammy es el orquestador maestro de Lookitry. Su cerebro funcional es Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Recibe tareas y delega al agente especialista indicado. PROHIBIDO ejecutar o delegar sin validar primero que la tarea cumple con las directivas de REGLAS_IMPORTANTES. NO edita codigo directamente.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    "webwizard": {
+      "description": "Agente de Frontend y UX — UI, componentes, landing, checkout, dashboard",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "WebWizard maneja todo el Frontend y UX bajo la disciplina de Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Maneja UI, componentes React, widget de try-on, landing y dashboard. OBLIGATORIO: Validar cada cambio visual contra el archivo de reglas. Colores: #FF5C3A (acento), #0a0a0a (fondo), #141414 (cards). Tipografía: Plus Jakarta Sans/DM Sans. Iconos: lucide-react únicamente. Optional chaining obligatorio.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    "devguardian": {
+      "description": "Agente de Calidad, Debugging y Seguridad",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "DevGuardian es el guardián de la calidad y seguridad, guiado por Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Revisa seguridad, pagos, auth JWT y webhooks. Usa razonamiento profundo para validar que ninguna implementación viole las reglas de seguridad o arquitectura del proyecto. NUNCA expone API keys. Backend usa supabaseAdmin. Usa maybeSingle() por seguridad de datos.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "deny",
+        "bash": "allow"
+      }
+    },
+    "dataalchemist": {
+      "description": "Agente de Base de Datos, IA y n8n — MiniMax para todas las tareas",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "DataAlchemist maneja datos, IA y flujos n8n de Lookitry. Modelo principal: MiniMax. MCPs: Supabase, n8n, Context7. Respetar límites de Gemini (1500 req/día). PROHIBIDO crear workflows n8n sin autorización. Siempre verificar índices antes de queries en tablas de alto volumen.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    "growthpilot": {
+      "description": "Agente de CRM, Marketing y Leads",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "GrowthPilot maneja campañas, leads, prospecting, referidos y email marketing. Tareas principalmente de lógica de negocio y configuración — no requiere razonamiento profundo.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    "architectai": {
+      "description": "Agente de Infraestructura, DevOps y Arquitectura de Sistema",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "ArchitectAI maneja Infra, DevOps y Arquitectura basándose en Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md. Administra Docker, VPS, Traefik y despliegues. PROHIBIDO realizar cambios de infraestructura sin validar contra las reglas de despliegue y arquitectura. Usa el script de deploy oficial. Razona paso a paso antes de actuar.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    "docs-writter": {
+      "description": "Agente de Documentación — mantiene PRD, TECH_STACK, AGENTS, llms.txt y CHANGELOG actualizados",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "DocsWriter mantiene documentación crítica: PRD.md, TECH_STACK.md, AGENTS.md, llms.txt y CHANGELOG.md. Registrar en CHANGELOG.md: fecha, descripción, archivos modificados y motivo. Archivar CHANGELOG.md cuando supere 500 líneas o 30 días → CHANGELOG_ARCHIVE_YYYY_MM.md.",
+      "permissions": {
+        "read": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": "deny"
+      }
+    }
+  },
+  "instructions": [
+    "Lookitry_Brain_Vault/Cerebro/AGENTS.md",
+    "Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md",
+    "Lookitry_Brain_Vault/Cerebro/TECH_STACK.md",
+    "Lookitry_Brain_Vault/Cerebro/MAPA_MAESTRO.md",
+    "Lookitry_Brain_Vault/Cerebro/Agentes/Skills.md"
+  ],
+  "mcp": {
+    "sequentialthinking": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "enabled": true
+    },
+    "telegram": {
+      "type": "local",
+      "command": [
+        "node",
+        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/telegram-mcp/dist/index.js"
+      ],
+      "enabled": false,
+      "environment": {
+        "TELEGRAM_BOT_TOKEN": "TU_TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID": "TU_TELEGRAM_CHAT_ID"
+      }
+    },
+    "n8n": {
+      "type": "local",
+      "command": [
+        "node",
+        "/home/travis/Lookitry/Lookitry/.opencode/mcp-servers/n8n-mcp-server/dist/index.js"
+      ],
+      "enabled": true,
+      "environment": {
+        "N8N_BASE_URL": "https://n8n.wilkiedevs.com",
+        "N8N_API_KEY": "TU_N8N_API_KEY"
+      }
+    },
+    "hostinger-mcp": {
+      "type": "local",
+      "command": ["npx", "-y", "hostinger-api-mcp"],
+      "enabled": true,
+      "environment": {
+        "API_TOKEN": "TU_HOSTINGER_API_TOKEN"
+      }
+    },
+    "context7": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true,
+      "environment": {
+        "CONTEXT7_API_KEY": "TU_CONTEXT7_API_KEY"
+      }
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "-y", "@pepk/mcp-memory-sqlite"],
+      "enabled": true
+    },
+    "obsidian": {
+      "type": "local",
+      "command": ["npx", "-y", "@zethictech/obsidian-mcp"],
+      "enabled": true,
+      "environment": {
+        "OBSIDIAN_VAULT": "Lookitry"
+      }
+    }
+  }
+}
