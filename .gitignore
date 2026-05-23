@@ -92,6 +92,18 @@ bedrock-long-term-api-key.csv
 *-credentials*.csv
 *-api-key*
 
+# Supabase CLI temporal (generado en cada ejecución)
+supabase/.temp/
+supabase/.branches/
+
+# TypeScript build cache
+*.tsbuildinfo
+frontend/nul
+
+# Misc temporales
+supabase/.branches/
+openspec/cache/
+
 # ============================================================
 # SCRIPTS — ARTEFACTOS DE DIAGNÓSTICO
 # ============================================================
