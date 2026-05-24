@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:analyze": "ANALYZE=true pnpm run build",
+    "build:analyze": "cross-env ANALYZE=true pnpm run build",
+    "analyze": "cross-env ANALYZE=true next build",
     "build:prod": "pnpm run lint && next build",
     "start": "next start",
     "start:prod": "cross-env NODE_ENV=production next start",
@@ -56,6 +57,7 @@
     "rimraf": "^5.0.10",
     "tailwindcss": "^3.4.0",
     "typescript": "5.9.3",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "webpack-bundle-analyzer": "^5.3.0"
   }
 }
