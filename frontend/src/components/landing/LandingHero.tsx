@@ -50,11 +50,11 @@ export default function LandingHero() {
           muted
           loop
           playsInline
-          preload="none"
+          preload="metadata"
           poster="/videos/hero-poster.webp"
           onCanPlay={() => setVideoReady(true)}
           style={{ transition: 'opacity 0.6s ease', opacity: videoReady ? 1 : 0 }}
-          className="absolute top-1/2 left-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full -translate-x-1/2 -translate-y-[58%] scale-[1.12] object-cover"
+          className="absolute inset-0 w-full h-full object-cover"
         >
           <source src="/videos/hero.webm" type="video/webm" />
           <source src="/videos/hero.mp4" type="video/mp4" />
@@ -76,7 +76,7 @@ export default function LandingHero() {
         >
           <h1
             className="mb-5 font-jakarta font-black leading-[1.05] tracking-[-0.03em] text-white sm:mb-7"
-            style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
+            style={{ fontSize: 'clamp(2.2rem, 7vw, 4rem)' }}
           >
             <span className="block">{LANDING_COPY.hero.title}</span>
             <span className="relative block h-[1.15em] overflow-hidden">
