@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative h-12 w-12 shrink-0">
-                <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" priority />
+                <Image src="/logo.svg" alt="Lookitry" fill sizes="48px" className="object-contain" priority />
               </div>
               <span className="font-jakarta font-extrabold text-2xl tracking-tight transition-colors" 
                     style={{ color: isDark ? '#ffffff' : '#0a0a0a' }}>

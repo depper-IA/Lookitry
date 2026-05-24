@@ -33,6 +33,16 @@ export const getRebeccaConfig = async (req: AdminAuthRequest, res: Response) => 
   }
 };
 
+export const getSalesPatterns = async (req: AdminAuthRequest, res: Response) => {
+  try {
+    // TODO: implementar cuando se defina la tabla/estructura de sales patterns
+    return res.status(200).json({ patterns: [], total: 0 });
+  } catch (error: any) {
+    console.error('[RebeccaAdmin] Error in getSalesPatterns:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+  }
+};
+
 export const updateRebeccaConfig = async (req: AdminAuthRequest, res: Response) => {
   try {
     const updates = req.body as Record<string, string>;

@@ -227,8 +227,8 @@ export default function LandingNav({
           <div className="flex items-center gap-2 md:gap-5">
             <Link href="/" className="nav-logo flex shrink-0 items-center gap-2.5 group" aria-label="Lookitry - Inicio">
               <div className="relative h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110">
-                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className={`object-contain transition-opacity duration-300 ${isHeroMode ? 'opacity-0' : 'dark:opacity-0 opacity-100'}`} priority />
-                <Image src="/logo.svg" alt="Lookitry" fill className={`object-contain transition-opacity duration-300 ${isHeroMode ? 'opacity-100' : 'dark:opacity-100 opacity-0'}`} priority />
+                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill sizes="32px" className={`object-contain transition-opacity duration-300 ${isHeroMode ? 'opacity-0' : 'dark:opacity-0 opacity-100'}`} priority />
+                <Image src="/logo.svg" alt="Lookitry" fill sizes="32px" className={`object-contain transition-opacity duration-300 ${isHeroMode ? 'opacity-100' : 'dark:opacity-100 opacity-0'}`} priority />
               </div>
               <span className={`nav-logo-text font-jakarta text-xl font-bold tracking-tighter sm:text-2xl transition-colors duration-300 group-hover:text-dark dark:group-hover:text-white ${isHeroMode ? 'text-white' : 'text-black dark:text-white'}`}>
                 Look<span className="text-accent">itry</span>
@@ -482,7 +482,7 @@ export default function LandingNav({
                                     </span>
                                   )}
                                   {logo && (
-                                    <Image src={logo} alt="" width={48} height={16} className="object-contain opacity-60 group-hover:opacity-100 transition-opacity" />
+                                    <Image src={logo} alt="" width={48} height={16} className="object-contain opacity-60 group-hover:opacity-100 transition-opacity" style={{ width: 'auto', height: 'auto' }} />
                                   )}
                                 </div>
                                 <p className="text-[10px] text-text-secondary leading-snug">{desc}</p>

@@ -7,15 +7,22 @@ import type { VertexModelId } from './vertex.service';
 import { redis } from '../config/redis';
 
 // — Response cache for common questions (Redis-backed) —
-const RESPONSE_CACHE_TTL_S = 15 * 60; // 15 min
+const RESPONSE_CACHE_TTL_S = 30 * 60; // 30 min
 type CachedResponse = { reply: string; cachedAt: number };
 
 function getResponseCacheKey(message: string, intent: string, channel: string, context?: ChatContext): string | null {
   const lower = message.toLowerCase().trim();
   // Don't cache messages with personal info (emails, phone numbers, money amounts)
   if (/\$\d|@\w|\d{7,}|\+\d{10,}/.test(lower)) return null;
-  // Only cache FAQ-like intents
-  const cacheable = ['pricing_question', 'demo_request', 'info_request', 'greeting'];
+  // Cacheable intents (production: more aggressive for cost savings)
+  const cacheable = [
+    'pricing_question',
+    'demo_request',
+    'info_request',
+    'greeting',
+    'checkout_intent',
+    'objection',
+  ];
   if (!cacheable.includes(intent)) return null;
   const pageKey = context?.page_url?.replace(/\W/g, '_') || 'none';
   return `rebecca:cache:${channel}:${intent}:${pageKey}:${lower.substring(0, 80)}`;
