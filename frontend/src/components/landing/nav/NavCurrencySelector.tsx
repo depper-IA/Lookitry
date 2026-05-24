@@ -31,7 +31,7 @@ export function NavCurrencySelector({
             ? 'text-accent scale-110'
             : isHeroMode
             ? 'text-white/50 hover:text-white'
-            : 'text-black/45 hover:text-dark dark:text-white/50 dark:hover:text-white'
+            : 'text-black/45 hover:text-black dark:text-white/50 dark:hover:text-white'
         }`}
       >
         COP
@@ -50,7 +50,7 @@ export function NavCurrencySelector({
             ? 'text-accent scale-110'
             : isHeroMode
             ? 'text-white/50 hover:text-white'
-            : 'text-black/45 hover:text-dark dark:text-white/50 dark:hover:text-white'
+            : 'text-black/45 hover:text-black dark:text-white/50 dark:hover:text-white'
         }`}
       >
         USD

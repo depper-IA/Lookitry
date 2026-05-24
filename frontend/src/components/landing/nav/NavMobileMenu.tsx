@@ -147,7 +147,7 @@ export function NavMobileMenu({
                   <div key={step.label} className="flex items-center gap-3 rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3 dark:border-white/5 dark:bg-white/5">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent"><Icon size={14} /></div>
                     <div>
-                      <p className="text-[11px] font-bold text-dark dark:text-white">{step.label}</p>
+                      <p className="text-[11px] font-bold text-black dark:text-white">{step.label}</p>
                       <p className="text-[9px] text-text-secondary">{step.desc}</p>
                     </div>
                   </div>
@@ -156,7 +156,7 @@ export function NavMobileMenu({
               {howItWorksLinks.map((link) => (
                 <motion.div key={link.href} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Link href={link.href} onClick={onClose} className={`mobile-nav-link group flex items-center justify-between rounded-2xl px-4 py-3.5 text-left transition-all duration-200 ${link.highlight ? 'bg-accent text-white' : 'border border-black/8 bg-black/[0.03] hover:border-accent/30 hover:bg-accent/5 dark:border-white/5 dark:bg-white/5'}`}>
-                    <span className={`text-[11px] font-bold uppercase tracking-wider ${link.highlight ? 'text-white' : 'text-dark dark:text-white group-hover:text-accent'}`}>{link.label}</span>
+                    <span className={`text-[11px] font-bold uppercase tracking-wider ${link.highlight ? 'text-white' : 'text-black dark:text-white group-hover:text-accent'}`}>{link.label}</span>
                     <ArrowRight size={14} className={link.highlight ? 'text-white' : 'text-accent opacity-0 group-hover:opacity-100'} />
                   </Link>
                 </motion.div>
@@ -169,7 +169,7 @@ export function NavMobileMenu({
               {menuLinks.map((link) => (
                 <motion.div key={link.href} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Link href={link.href} onClick={onClose} className="mobile-nav-link group flex items-center justify-between rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3.5 text-left transition-all duration-200 hover:border-accent/30 hover:bg-accent/5 dark:border-white/5 dark:bg-white/5 dark:hover:border-accent/30 dark:hover:bg-accent/10">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-dark transition-colors duration-200 group-hover:text-accent dark:text-white dark:group-hover:text-accent">{link.label}</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-black transition-colors duration-200 group-hover:text-accent dark:text-white dark:group-hover:text-accent">{link.label}</span>
                     <ArrowRight size={14} className="text-accent opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                   </Link>
                 </motion.div>
@@ -186,7 +186,7 @@ export function NavMobileMenu({
                       <ArrowRight size={16} className="text-accent" />
                     </motion.div>
                     <div className="text-left">
-                      <p className="text-[11px] font-black uppercase tracking-wider text-dark transition-colors duration-200 group-hover:text-accent dark:text-white dark:group-hover:text-accent">{prod.title}</p>
+                      <p className="text-[11px] font-black uppercase tracking-wider text-black transition-colors duration-200 group-hover:text-accent dark:text-white dark:group-hover:text-accent">{prod.title}</p>
                       <p className="text-[10px] font-medium text-black/35 transition-colors duration-200 group-hover:text-accent/70 dark:text-white/35 dark:group-hover:text-accent/70">{prod.desc}</p>
                     </div>
                   </Link>
@@ -198,13 +198,13 @@ export function NavMobileMenu({
             <motion.div custom={9} variants={mobileCardVariants} className="flex w-full flex-col gap-2">
               {session ? (
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link href="/dashboard" onClick={onClose} className="mobile-panel-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-dark transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
+                  <Link href="/dashboard" onClick={onClose} className="mobile-panel-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-black transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
                     Mi Panel
                   </Link>
                 </motion.div>
               ) : (
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link href="/login" onClick={onClose} className="mobile-login-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-dark transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
+                  <Link href="/login" onClick={onClose} className="mobile-login-btn flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.15em] text-black transition-all duration-200 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
                     Ingresar
                   </Link>
                 </motion.div>

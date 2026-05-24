@@ -8,6 +8,8 @@ import { PricingConfig } from '@/lib/pricing';
 import { PublicReview } from '@/types';
 import { useCurrency } from '@/hooks/useCurrency';
 import { LandingSkeleton } from './LandingSkeleton';
+import LandingNav from './LandingNav';
+import LandingHero from './LandingHero';
 
 // ============================================================================
 // CODE SPLITTING - Lazy loading de componentes below-the-fold
@@ -15,15 +17,6 @@ import { LandingSkeleton } from './LandingSkeleton';
 
 // Skeleton reutilizable para secciones above-the-fold
 const HeroSkeleton = () => <LandingSkeleton variant="hero" />;
-
-// Nav: carga inmediata para que siempre esté lista
-const LandingNav = dynamic(() => import('./LandingNav'), { ssr: true });
-
-// Hero: skeleton mientras carga - es lo primero que ve el usuario
-const LandingHero = dynamic(() => import('./LandingHero'), {
-  ssr: false,
-  loading: () => <HeroSkeleton />
-});
 
 // Stats: carga directa
 const LandingStats = dynamic(() => import('./LandingStats'), { ssr: false });

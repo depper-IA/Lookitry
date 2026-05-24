@@ -38,11 +38,11 @@ export default function LookBookShowcase() {
             Como funciona
           </div>
           <h3 className="font-jakarta text-3xl lg:text-5xl text-center text-gray-900 dark:text-white font-medium mb-6">
-            Tres pasos.
-            <span className="block">Fotos de <em className="text-[#FF5C3A] not-italic">moda profesional</em>.</span>
+            Menos devoluciones,<br className="hidden lg:block" />
+            <span className="text-[#FF5C3A]">más ventas.</span>
           </h3>
           <p className="text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed text-center">
-            Sube la foto de tu prenda, elige el estilo y Lookitry genera las fotos con modelo en segundos. Sin estudio. Sin modelos. Sin costos.
+            Tus clientes ven cómo les queda antes de pagar. Sin estudio. Sin modelos. Sin costos.
           </p>
         </motion.div>
 
@@ -57,7 +57,7 @@ export default function LookBookShowcase() {
             className="flex flex-col items-center gap-2"
           >
           <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-white/40">Elige una prenda</p>
-          <div className="relative z-10 bg-white dark:bg-[#141414] rounded-2xl shadow-lg border border-gray-200 dark:border-white/10 px-5 w-48 h-24 flex flex-row items-end justify-center gap-2 overflow-visible">
+          <div className="relative z-10 bg-white dark:bg-[#141414] rounded-2xl shadow-lg border border-gray-200 dark:border-white/10 border-2 border-[#FF5C3A]/20 px-5 w-48 h-24 flex flex-row items-end justify-center gap-2 overflow-visible">
             {products.map((product) => {
               const isSelected = selectedProductId === product.id;
               return (
@@ -65,18 +65,22 @@ export default function LookBookShowcase() {
                   key={product.id}
                   onClick={() => setSelectedProductId(product.id)}
                   animate={{
-                    y: isSelected ? -14 : 0,
-                    scale: isSelected ? 1.15 : 1,
-                    opacity: isSelected ? 1 : 0.45,
+                    y: isSelected ? -10 : 0,
+                    scale: isSelected ? 1.1 : 1,
+                    opacity: isSelected ? 1 : 0.4,
                   }}
                   whileHover={{
-                    y: isSelected ? -16 : -10,
-                    scale: isSelected ? 1.2 : 1.1,
+                    y: isSelected ? -12 : -6,
+                    scale: isSelected ? 1.15 : 1.05,
                     opacity: 1,
                   }}
                   whileTap={{ scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                  className="relative flex flex-col items-center gap-1 pb-2 cursor-pointer"
+                  transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                  className={`relative flex flex-col items-center gap-1 pb-2 cursor-pointer rounded-xl px-2 py-2 border-2 transition-colors ${
+                    isSelected
+                      ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-lg'
+                      : 'border-transparent hover:border-gray-300 dark:hover:border-white/20'
+                  }`}
                 >
                   <div className="relative w-10 h-12">
                     <Image
@@ -110,23 +114,17 @@ export default function LookBookShowcase() {
           {/* Center: Selected Product */}
           <div className="relative w-56 h-72 rounded-2xl z-10 overflow-hidden shadow-2xl">
             {/* Rotating gradient border */}
-            <motion.div
-              className="absolute inset-0"
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}
-              style={{
-                background: 'conic-gradient(from 0deg, #FF5C3A 0deg, #3b82f6 90deg, #FF5C3A 180deg, transparent 270deg, transparent 360deg)',
-                transformOrigin: 'center',
-              }}
-            />
+            <div className="absolute inset-0 rounded-2xl" style={{
+                  boxShadow: '0 0 0 1px rgba(255,92,58,0.15), 0 0 20px rgba(255,92,58,0.15), 0 0 40px rgba(255,92,58,0.08), 0 8px 32px rgba(0,0,0,0.12)',
+                }} />
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedProduct.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
-                className="absolute inset-[2px] bg-white dark:bg-[#141414] rounded-[14px] overflow-hidden group"
+                exit={{ opacity: 0, scale: 1.05 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                className="absolute inset-[4px] bg-white dark:bg-[#141414] rounded-[18px] overflow-hidden group"
               >
                 <div
                   className="absolute inset-0 opacity-[0.06] dark:opacity-[0.15]"

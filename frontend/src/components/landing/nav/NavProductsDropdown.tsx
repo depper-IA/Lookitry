@@ -44,10 +44,9 @@ export function NavProductsDropdown({
         aria-expanded={hoverMenu === 'products'}
         className={`nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 ${
           isHeroMode
-            ? 'text-white/80 hover:text-white'
-            : 'text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white'
+            ? 'text-white/80 hover:text-accent'
+            : 'text-black/60 hover:text-accent dark:text-white/60 dark:hover:text-accent'
         }`}
-        style={{ color: hoverMenu === 'products' ? 'var(--accent)' : undefined }}
       >
         Productos
         <ChevronDown
@@ -103,7 +102,7 @@ export function NavProductsDropdown({
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-[12px] font-bold text-dark dark:text-white group-hover:text-accent transition-colors duration-200">
+                           <p className="text-[12px] font-bold text-black dark:text-white group-hover:text-accent transition-colors duration-200">
                             {title}
                           </p>
                           {badge && (
@@ -129,7 +128,7 @@ export function NavProductsDropdown({
                 </div>
 
                 {/* CTA lateral */}
-                <div className="w-52 shrink-0 flex flex-col rounded-2xl overflow-hidden bg-black/[0.03] dark:bg-white/[0.03]">
+                <div className="w-52 shrink-0 flex flex-col rounded-2xl overflow-hidden bg-white border border-black/[0.06] dark:border-white/5 dark:bg-neutral-950/40 shadow-sm">
                   <div className="relative h-36">
                     <Image
                       src="/megamenu/productos-cta.webp"

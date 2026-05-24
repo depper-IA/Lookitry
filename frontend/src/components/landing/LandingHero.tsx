@@ -113,7 +113,7 @@ export default function LandingHero() {
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href="/demo"
-              className="flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-black text-dark shadow-xl transition-all hover:scale-[1.03] hover:-translate-y-0.5 hover:bg-white/90 active:scale-[0.97] sm:text-base"
+              className="flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-black text-black shadow-xl transition-all hover:scale-[1.03] hover:-translate-y-0.5 hover:bg-white/90 active:scale-[0.97] sm:text-base"
             >
               {LANDING_COPY.hero.cta_primary}
             </Link>

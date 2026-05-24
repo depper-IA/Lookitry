@@ -29,12 +29,12 @@ export default function LandingMarqueeMessages() {
 
   return (
     <section 
-      className="relative overflow-hidden bg-[var(--color-dark)] py-4 sm:py-5 -mx-4 sm:-mx-8 md:-mx-16" 
+      className="relative overflow-hidden bg-[#0a0a0a] py-4 sm:py-5 -mx-4 sm:-mx-8 md:-mx-16" 
       aria-label="Mensajes destacados"
     >
       {/* Gradiente de fade en los bordes */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[var(--bg-base)] to-transparent sm:w-32 md:w-40" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[var(--bg-base)] to-transparent sm:w-32 md:w-40" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#0a0a0a] to-transparent sm:w-32 md:w-40" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[#0a0a0a] to-transparent sm:w-32 md:w-40" />
 
       <div className="relative">
         <div className="overflow-hidden">
@@ -50,10 +50,10 @@ export default function LandingMarqueeMessages() {
                     className="shrink-0 text-accent sm:w-[18px] sm:h-[18px]" 
                     aria-hidden="true" 
                   />
-                  <span className="whitespace-nowrap text-xs font-bold uppercase tracking-[0.15em] text-[var(--text-primary)] sm:text-sm sm:tracking-[0.2em]">
+                  <span className="whitespace-nowrap text-xs font-bold uppercase tracking-[0.15em] text-white/90 sm:text-sm sm:tracking-[0.2em]">
                     {msg.text}
                   </span>
-                  <span className="mx-2 text-[var(--text-muted)]" aria-hidden="true">|</span>
+                  <span className="mx-2 text-white/20" aria-hidden="true">|</span>
                 </div>
               </div>
             ))}
