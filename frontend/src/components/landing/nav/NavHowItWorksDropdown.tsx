@@ -34,10 +34,9 @@ export function NavHowItWorksDropdown({
         aria-expanded={hoverMenu === 'howItWorks'}
         className={`nav-products-btn flex h-full items-center gap-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.15em] transition-colors duration-300 ${
           isHeroMode
-            ? 'text-white/80 hover:text-white'
-            : 'text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white'
+            ? 'text-white/80 hover:text-accent'
+            : 'text-black/60 hover:text-accent dark:text-white/60 dark:hover:text-accent'
         }`}
-        style={{ color: hoverMenu === 'howItWorks' ? 'var(--accent)' : undefined }}
       >
         Cómo funciona
         <ChevronDown

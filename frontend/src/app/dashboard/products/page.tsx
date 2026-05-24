@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductList, type ViewMode } from '@/components/dashboard/ProductList';
+import { ProductSkeletonGrid } from '@/components/dashboard/ProductSkeleton';
 import { ProductForm } from '@/components/dashboard/ProductForm';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
@@ -307,14 +308,7 @@ export default function ProductsPage() {
     localStorage.setItem('products-view-mode', viewMode);
   }, [viewMode]);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-        <Spinner size="lg" />
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] animate-pulse">Cargando Catálogo...</p>
-      </div>
-    );
-  }
+  // Remove blocking loader to allow shell + skeletons to render instantly
 
   return (
     <motion.div
@@ -335,7 +329,7 @@ export default function ProductsPage() {
             <h1 className="text-3xl md:text-5xl font-[950] tracking-tighter text-[var(--text-primary)] uppercase leading-none font-jakarta">Catálogo</h1>
           </div>
           <p className="text-[10px] md:text-[11px] font-black tracking-[0.3em] text-[var(--text-muted)] uppercase opacity-60">
-            Productos Activos: <span className="text-[#FF5C3A] font-[950]">{products.length}</span> / <span className="text-indigo-400 font-[950] font-mono">{productsLimit}</span>
+            Productos Activos: <span className="text-[#FF5C3A] font-[950]">{isLoading ? '...' : products.length}</span> / <span className="text-indigo-400 font-[950] font-mono">{isLoading ? '...' : productsLimit}</span>
           </p>
         </div>
 
@@ -482,19 +476,26 @@ export default function ProductsPage() {
                     </div>
                   </div>
 
-                  <ProductList
-                    products={filteredProducts}
-                    viewMode={viewMode}
-                    onEdit={(p) => { setEditingProduct(p); setShowForm(true); }}
-                    onDelete={handleDeleteProduct}
-                    widgetProductIds={widgetProductIds}
-                    onAddToWidget={handleAddToWidget}
-                    canAddToWidget={canAddToWidget}
-                    sortBy={sortBy}
-                    onSortChange={setSortBy}
-                  />
+                  {isLoading ? (
+                    <ProductSkeletonGrid
+                      count={viewMode === 'list' ? 3 : viewMode === 'thumbnails' ? 8 : 6}
+                      variant={viewMode === 'thumbnails' ? 'thumbnail' : (viewMode === 'list' ? 'list' : 'grid')}
+                    />
+                  ) : (
+                    <ProductList
+                      products={filteredProducts}
+                      viewMode={viewMode}
+                      onEdit={(p) => { setEditingProduct(p); setShowForm(true); }}
+                      onDelete={handleDeleteProduct}
+                      widgetProductIds={widgetProductIds}
+                      onAddToWidget={handleAddToWidget}
+                      canAddToWidget={canAddToWidget}
+                      sortBy={sortBy}
+                      onSortChange={setSortBy}
+                    />
+                  )}
 
-                  {products.length === 0 && (
+                  {products.length === 0 && !isLoading && (
                     <div className="py-40 text-center space-y-10 border-2 border-dashed border-[var(--border-color)] rounded-[5rem] bg-[var(--bg-card)]/30">
                       <div className="relative inline-block">
                         <Package size={120} strokeWidth={0.5} className="text-[var(--text-muted)] opacity-20" />

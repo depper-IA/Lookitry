@@ -98,7 +98,7 @@ function PhoneMockup() {
 
           {/* Side buttons */}
           <div className="absolute right-[-2px] top-20 w-[2px] h-9 rounded-r bg-gray-700" />
-          <div className="absolute right-[-2px] top-34 w-[2px] h-5 rounded-r bg-gray-700" />
+          <div className="absolute right-[-2px] top-36 w-[2px] h-5 rounded-r bg-gray-700" />
           <div className="absolute left-[-2px] top-24 w-[2px] h-12 rounded-l bg-gray-700" />
         </div>
 

@@ -191,7 +191,9 @@ export default function LandingNav({
   ];
 
   const isHeroMode = Boolean(transparent && !scrolled && !hoverMenu);
-  const navBg = isHeroMode ? 'bg-transparent' : 'bg-white dark:bg-black';
+  const navBg = isHeroMode
+    ? 'bg-transparent border-b border-transparent'
+    : 'bg-white/85 dark:bg-black/85 backdrop-blur-md border-b border-black/[0.04] dark:border-white/5 shadow-sm';
 
   return (
     <>
@@ -214,7 +216,7 @@ export default function LandingNav({
                 <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill sizes="32px" className={`object-contain transition-opacity duration-300 ${isHeroMode ? 'opacity-0' : 'dark:opacity-0 opacity-100'}`} priority />
                 <Image src="/logo.svg" alt="Lookitry" fill sizes="32px" className={`object-contain transition-opacity duration-300 ${isHeroMode ? 'opacity-100' : 'dark:opacity-100 opacity-0'}`} priority />
               </div>
-              <span className={`nav-logo-text font-jakarta text-xl font-bold tracking-tighter sm:text-2xl transition-colors duration-300 group-hover:text-dark dark:group-hover:text-white ${isHeroMode ? 'text-white' : 'text-black dark:text-white'}`}>
+              <span className={`nav-logo-text font-jakarta text-xl font-bold tracking-tighter sm:text-2xl transition-colors duration-300 group-hover:text-black dark:group-hover:text-white ${isHeroMode ? 'text-white' : 'text-black dark:text-white'}`}>
                 Look<span className="text-accent">itry</span>
               </span>
             </Link>
@@ -253,10 +255,10 @@ export default function LandingNav({
               <Link
                 key={item.label}
                 href={item.href}
-                className={`nav-link group relative flex items-center text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${isHeroMode ? 'text-white/60 hover:text-white' : 'text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white'}`}
+                className={`group relative flex items-center py-1 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${isHeroMode ? 'text-white/80 hover:text-accent' : 'text-black/60 hover:text-accent dark:text-white/60 dark:hover:text-accent'}`}
               >
                 {item.label}
-                <span className="nav-link-underline absolute bottom-0 left-0 right-0 h-[1px] origin-center scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" />
+                <span className="absolute bottom-0 left-0 right-0 h-[1.5px] origin-center scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" />
               </Link>
             ))}
           </div>
@@ -267,16 +269,20 @@ export default function LandingNav({
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="nav-user-btn group flex items-center gap-2 rounded-full border border-black/10 bg-black/5 p-1 pr-3 transition-all duration-300 hover:bg-black/10 hover:border-black/15 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:border-white/15"
+                  className={`nav-user-btn group flex items-center gap-2 rounded-full border p-1 pr-3 transition-all duration-300 ${
+                    isHeroMode
+                      ? 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'
+                      : 'border-black/10 bg-black/5 hover:bg-black/10 hover:border-black/15 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:border-white/15'
+                  }`}
                 >
                   <div className="nav-user-avatar flex h-7 w-7 items-center justify-center rounded-full bg-accent text-xs font-bold text-white transition-transform duration-300 sm:h-8 sm:w-8 group-hover:scale-105">
                     {initials}
                   </div>
                   <div className="mr-1 hidden flex-col items-start sm:flex">
-                    <span className="max-w-[100px] truncate text-[10px] font-bold text-dark dark:text-white">{session.name}</span>
-                    <span className="text-[8px] uppercase tracking-widest leading-none text-black/30 dark:text-white/30">Mi Panel</span>
+                    <span className={`max-w-[100px] truncate text-[10px] font-bold ${isHeroMode ? 'text-white' : 'text-black dark:text-white'}`}>{session.name}</span>
+                    <span className={`text-[8px] uppercase tracking-widest leading-none ${isHeroMode ? 'text-white/50' : 'text-black/30 dark:text-white/30'}`}>Mi Panel</span>
                   </div>
-                  <ChevronDown size={14} className={`text-black/20 transition-transform duration-300 dark:text-white/20 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} className={`transition-transform duration-300 ${isHeroMode ? 'text-white/30' : 'text-black/20 dark:text-white/20'} ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {dropdownOpen && (
@@ -287,7 +293,7 @@ export default function LandingNav({
                       className="nav-dropdown-link group flex items-center gap-3 px-4 py-3 transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
                     >
                       <User size={16} className="text-black/30 transition-colors duration-200 group-hover:text-accent dark:text-white/30" />
-                      <span className="text-[12px] font-bold text-black/80 transition-colors duration-200 group-hover:text-dark dark:text-white/80 dark:group-hover:text-white">
+                      <span className="text-[12px] font-bold text-black/80 transition-colors duration-200 group-hover:text-black dark:text-white/80 dark:group-hover:text-white">
                         Dashboard General
                       </span>
                     </Link>
@@ -306,7 +312,7 @@ export default function LandingNav({
             ) : (
               <Link
                 href="/login"
-                className={`nav-login-link hidden text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 sm:block flex items-center ${isHeroMode ? 'text-white/60 hover:text-white' : 'text-black/60 hover:text-dark dark:text-white/60 dark:hover:text-white'}`}
+                className={`nav-login-link hidden text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 sm:block flex items-center ${isHeroMode ? 'text-white/60 hover:text-white' : 'text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white'}`}
               >
                 Ingresar
               </Link>
@@ -327,7 +333,7 @@ export default function LandingNav({
             />
 
             <button
-              className={`nav-mobile-menu-btn p-2 transition-all duration-300 hover:scale-110 lg:hidden ${isHeroMode ? 'text-white hover:text-white' : 'text-dark/80 hover:text-dark dark:text-white/80 dark:hover:text-white'}`}
+              className={`nav-mobile-menu-btn p-2 transition-all duration-300 hover:scale-110 lg:hidden ${isHeroMode ? 'text-white hover:text-white' : 'text-black/80 hover:text-black dark:text-white/80 dark:hover:text-white'}`}
               onClick={() => {
                 setMobileMenuOpen(!mobileMenuOpen);
                 if (!mobileMenuOpen) fetchTrialDataIfNeeded();
