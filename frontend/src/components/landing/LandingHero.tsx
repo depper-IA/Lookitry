@@ -92,7 +92,7 @@ export default function LandingHero() {
             style={{ fontSize: 'clamp(2.2rem, 7vw, 4rem)' }}
           >
             <span className="block">{LANDING_COPY.hero.title}</span>
-            <span className="relative block h-[1.15em] overflow-hidden">
+            <span className="relative block h-[2.5em] sm:h-[1.15em] overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={wordIndex}
