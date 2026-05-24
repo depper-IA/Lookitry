@@ -80,38 +80,6 @@ export function LandingSkeleton({ variant = 'hero', className = '' }: LandingSke
     );
   }
 
-  if (variant === 'stats') {
-    return (
-      <section
-        className={`relative py-12 sm:py-16 lg:py-20 bg-black -mx-4 sm:-mx-8 md:-mx-16 px-4 sm:px-8 md:px-16 ${className}`}
-        aria-hidden="true"
-      >
-        <div className="bg-[#0a0a0a] rounded-3xl py-12 lg:py-16 px-8 lg:px-12 max-w-6xl mx-auto relative overflow-hidden border border-white/5">
-          {/* Orbes de blur mock */}
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#FF5C3A]/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#FF5C3A]/5 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col items-center">
-            {/* Header skeleton */}
-            <Skeleton width="80%" height={24} borderRadius="6px" className="max-w-xl bg-white/10 mb-12" />
-
-            {/* Stats grid (matches the 5 items perfectly) */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-5 md:gap-x-2 lg:gap-x-6 justify-center items-start w-full">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="text-center flex flex-col items-center gap-2 w-full">
-                  <Skeleton width={48} height={48} borderRadius="50%" className="bg-accent/15 mb-1" />
-                  <Skeleton width={80} height={40} borderRadius="8px" className="bg-white/15" />
-                  <Skeleton width="100%" height={12} borderRadius="4px" className="bg-white/5" />
-                  <Skeleton width="70%" height={10} borderRadius="4px" className="bg-white/5" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   if (variant === 'steps') {
     return (
       <div className={`py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-white dark:bg-black ${className}`}>
