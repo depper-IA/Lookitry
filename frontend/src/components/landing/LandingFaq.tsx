@@ -194,7 +194,7 @@ export default function LandingFaq() {
                   aria-expanded={open}
                   className="w-full py-5 sm:py-6 md:py-7 flex items-center justify-between text-left group"
                 >
-                  <span className={`font-jakarta text-base sm:text-lg font-bold pr-4 transition-all duration-300 ${open ? 'text-accent' : 'text-dark dark:text-white/70 group-hover:text-dark dark:group-hover:text-white'
+                  <span className={`font-jakarta text-base sm:text-lg font-bold pr-4 transition-all duration-300 ${open ? 'text-accent' : 'text-text-primary group-hover:text-text-primary'
                     }`}>
                     {item.q}
                   </span>
@@ -230,7 +230,7 @@ export default function LandingFaq() {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-12 sm:mt-16 relative overflow-hidden rounded-3xl bg-dark border border-border-active dark:border-white/10 p-8 sm:p-10 md:p-12 text-center"
+          className="mt-12 sm:mt-16 relative overflow-hidden rounded-3xl bg-[#0a0a0a] border border-border-active dark:border-white/10 p-8 sm:p-10 md:p-12 text-center"
         >
           {/* Decorative elements */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[1px] bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
