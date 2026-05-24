@@ -89,13 +89,13 @@ export default function LandingStats() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
-            className="flex flex-col gap-8 md:flex-row md:gap-4 lg:gap-8 justify-center items-center"
+            className="grid grid-cols-2 gap-x-4 gap-y-8 md:flex md:flex-row md:gap-4 lg:gap-8 justify-center items-start md:items-center"
           >
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
                 variants={itemVariants}
-                className="text-center flex-1 group cursor-default"
+                className="text-center flex-none group cursor-default"
               >
                 {/* Icon */}
                 <motion.div
