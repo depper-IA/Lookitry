@@ -67,7 +67,6 @@ export default function LandingHero() {
           aria-describedby="hero-video-desc"
         >
           <source src="/videos/hero-compressed.webm" type="video/webm" />
-          <source src="/videos/hero-compressed.mp4" type="video/mp4" />
         </video>
         <span id="hero-video-desc" className="sr-only">Video de fondo mostrando una modelo probándose ropa virtualmente con la tecnología de IA de Lookitry</span>
         {/* Dark overlay — heavier on left, fades right */}
