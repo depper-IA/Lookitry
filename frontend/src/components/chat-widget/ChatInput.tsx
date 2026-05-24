@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type KeyboardEvent } from 'react';
+import { useRef, useEffect, type KeyboardEvent } from 'react';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -24,6 +24,13 @@ export function ChatInput({ onSend, isLoading, isExpanded }: ChatInputProps) {
     onSend(value);
     if (textareaRef.current) textareaRef.current.value = '';
   }
+
+  // Auto-focus when component mounts or when chat becomes visible
+  useEffect(() => {
+    if (!isLoading && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isLoading]);
 
   return (
     <div className={`flex items-end gap-3 border-t border-gray-200 dark:border-zinc-700 ${isExpanded ? 'p-5' : 'p-3'}`}>

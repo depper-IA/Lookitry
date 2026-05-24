@@ -1,8 +1,10 @@
 import { supabaseAdmin } from '../config/supabase';
 import { rebeccaIdentityService } from './rebecca-identity.service';
 import { vertexService } from './vertex.service';
+import { minimaxService } from './minimax.service';
 import { pricingService } from './pricing.service';
 import { calculatePriceUSD } from '../utils/pricingCurrency';
+import { detectPromptInjection, addNegativePromptToSystemPrompt } from './prompt-injection.service';
 import type { VertexModelId } from './vertex.service';
 import { redis } from '../config/redis';
 
@@ -345,9 +347,16 @@ export class RebeccaChatService {
     // — Phase 1: Detectar intención —
     const intent = detectIntent(message);
 
+    // — SEGURIDAD: Detectar prompt injection —
+    const injectionCheck = detectPromptInjection(message);
+    if (injectionCheck.isSuspicious) {
+      console.warn('[RebeccaChatService] Prompt injection detected:', injectionCheck.reason);
+    }
+    const sanitizedMessage = injectionCheck.sanitizedInput;
+
     // — Phase 1: Obtener contexto de recordatorios —
     const reminderMessage = await getPendingReminder(sessionId);
-    const enrichedMessage = reminderMessage ? `${reminderMessage}\n\n${message}` : message;
+    const enrichedMessage = reminderMessage ? `${reminderMessage}\n\n${sanitizedMessage}` : sanitizedMessage;
 
     // — Try response cache first —
     const cacheKey = getResponseCacheKey(message, intent, channel, context);
@@ -374,20 +383,22 @@ export class RebeccaChatService {
 
     const maxTokens = channel === 'whatsapp' ? 200 : 500;
 
-    const systemPrompt = rebeccaIdentityService.getSystemPrompt(
-      channel,
-      knowledgeContext,
-      locale,
-      config.web_instructions,
-      config.whatsapp_instructions,
-      config.system_prompt_extra,
-      contextualLinks ? {
-        plans_url: contextualLinks.plans,
-        checkout_url: contextualLinks.checkout,
-        demo_url: contextualLinks.demo,
-        faq_url: contextualLinks.faq,
-      } : undefined,
-      context
+    const systemPrompt = addNegativePromptToSystemPrompt(
+      rebeccaIdentityService.getSystemPrompt(
+        channel,
+        knowledgeContext,
+        locale,
+        config.web_instructions,
+        config.whatsapp_instructions,
+        config.system_prompt_extra,
+        contextualLinks ? {
+          plans_url: contextualLinks.plans,
+          checkout_url: contextualLinks.checkout,
+          demo_url: contextualLinks.demo,
+          faq_url: contextualLinks.faq,
+        } : undefined,
+        context
+      )
     );
     const model = config.model as VertexModelId;
 
@@ -399,25 +410,51 @@ export class RebeccaChatService {
       { role: 'user', parts: [{ text: enrichedMessage }] },
     ];
 
-    const result = await vertexService.generateContent({
-      model,
-      contents,
-      systemInstruction: {
-        parts: [{ text: systemPrompt }],
-      },
-      generationConfig: {
-        maxOutputTokens: maxTokens,
-        temperature: config.temperature,
-      },
-    });
+    let reply: string;
 
-    if (result.error) {
-      throw new Error(`[RebeccaChatService] Vertex error: ${result.error}`);
-    }
+    try {
+      const result = await vertexService.generateContent({
+        model,
+        contents,
+        systemInstruction: {
+          parts: [{ text: systemPrompt }],
+        },
+        generationConfig: {
+          maxOutputTokens: maxTokens,
+          temperature: config.temperature,
+        },
+      });
 
-    const reply = result.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!reply) {
-      throw new Error('[RebeccaChatService] Empty response from Vertex');
+      if (result.error) {
+        throw new Error(`[RebeccaChatService] Vertex error: ${result.error}`);
+      }
+
+      reply = result.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      if (!reply) {
+        throw new Error('[RebeccaChatService] Empty response from Vertex');
+      }
+    } catch (vertexError: any) {
+      // Fallback to MiniMax if Vertex fails (overload, timeout, etc.)
+      console.warn('[RebeccaChatService] Vertex failed, trying MiniMax:', vertexError.message);
+
+      try {
+        const minimaxHistory = trimmedHistory.map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+        }));
+
+        reply = await minimaxService.callMiniMax(systemPrompt, enrichedMessage, minimaxHistory);
+
+        if (!reply) {
+          throw new Error('[RebeccaChatService] Empty response from MiniMax');
+        }
+      } catch (minimaxError: any) {
+        console.error('[RebeccaChatService] Both Vertex and MiniMax failed:', {
+          vertexError: vertexError.message,
+          minimaxError: minimaxError.message,
+        });
+        throw new Error('[RebeccaChatService] All AI providers failed');
+      }
     }
 
     // — Phase 1: Truncar si es necesario (Section 5.3) —
