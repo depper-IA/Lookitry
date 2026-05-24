@@ -1,7 +1,12 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { ChatWidget as ChatWidgetComponent } from './ChatWidget';
+import dynamic from 'next/dynamic';
+
+const ChatWidgetComponent = dynamic(
+  () => import('./ChatWidget').then((mod) => mod.ChatWidget),
+  { ssr: false }
+);
 
 // Rutas donde SÍ aparece el chat (landing pages)
 const ALLOWED_PATHS = [

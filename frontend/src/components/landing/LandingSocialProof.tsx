@@ -67,7 +67,7 @@ function PhoneMockup() {
           {/* Screen */}
           <div className="relative rounded-[1.9rem] overflow-hidden bg-black aspect-[9/19]">
             <video
-              src="/videos/demo-lookitry.mp4"
+              src="/videos/demo-compressed.mp4"
               autoPlay
               loop
               muted

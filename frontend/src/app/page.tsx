@@ -1,12 +1,6 @@
-import dynamic from 'next/dynamic';
 import { getPricingConfig, type PricingConfig } from '@/lib/pricing';
 import { organizationSchema, websiteSchema, reviewSchema, aggregateRatingSchema } from '@/lib/seo';
-
-// Carga dinámica para code splitting (SSR habilitado para buen FCP/LCP)
-const PremiumLanding = dynamic(
-  () => import('@/components/landing/PremiumLanding'),
-  { ssr: true }
-);
+import PremiumLanding from '@/components/landing/PremiumLanding';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
@@ -55,10 +49,16 @@ export default async function HomePage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
-  // Reviews: fetch asíncrono NO bloqueante
+  // Reviews: fetch asíncrono NO bloqueante con timeout para evitar colgar el build
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000);
+
   const reviewsData = await fetch(`${API_URL}/api/reviews/public`, {
-    next: { revalidate: 1800 }
+    next: { revalidate: 1800 },
+    signal: controller.signal,
   }).then(res => res.ok ? res.json().catch(() => ({ reviews: [] })) : { reviews: [] }).catch(() => ({ reviews: [] }));
+  
+  clearTimeout(timeoutId);
   const dynamicReviews = reviewsData?.reviews ?? [];
 
   // Testimonios curados para la home premium como fallback si falla la bd o hay pocas
@@ -101,12 +101,12 @@ export default async function HomePage() {
   }
 
 
-  const totalRating = finalReviews.reduce((sum, r) => sum + (r.rating ?? 0), 0);
-  const avgRating = finalReviews.length > 0 ? totalRating / finalReviews.length : 4.8;
-  const reviewsSchemaList = finalReviews.slice(0, 5).map(r =>
+  const totalRating = dynamicReviews.reduce((sum: any, r: any) => sum + (r.rating ?? 0), 0);
+  const avgRating = dynamicReviews.length > 0 ? totalRating / dynamicReviews.length : 4.8;
+  const reviewsSchemaList = dynamicReviews.slice(0, 5).map((r: any) =>
     reviewSchema({ reviewerName: r.reviewer_name, rating: r.rating ?? 5, comment: r.comment ?? '', date: r.created_at })
   );
-  const aggregateRating = aggregateRatingSchema(finalReviews.length, avgRating);
+  const aggregateRating = dynamicReviews.length > 0 ? aggregateRatingSchema(dynamicReviews.length, avgRating) : undefined;
 
   const baseOrgSchema = organizationSchema();
   const baseWebSchema = websiteSchema();
@@ -139,7 +139,7 @@ export default async function HomePage() {
         operatingSystem: 'Web',
         url: BASE_URL,
         description: 'Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamerica.',
-        aggregateRating,
+        ...(aggregateRating ? { aggregateRating } : {}),
         offers: [
           {
             '@type': 'Offer',

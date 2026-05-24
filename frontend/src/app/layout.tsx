@@ -141,8 +141,6 @@ style={
         <meta property="og:locale" content="es_CO" />
         <meta name="twitter:site" content="@lookitry" />
         {/* DNS Prefetch y Preconnect para的性能优化 */}
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://api.lookitry.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://api.lookitry.com" />
         <link rel="dns-prefetch" href="https://vkdooutklowctuudjnkl.supabase.co" />
@@ -166,17 +164,17 @@ style={
             ></iframe>
           </noscript>
         )}
-        {/* Google Tag Manager (script) — afterInteractive para no bloquear LCP mobile */}
+        {/* Google Tag Manager (script) — lazyOnload para no bloquear LCP mobile */}
         {GTM_ID && (
           <Script
             id="gtm-script"
-            strategy="afterInteractive"
+            strategy="lazyOnload"
             src={`https://www.googletagmanager.com/gtag.js?id=${GTM_ID}`}
           />
         )}
 
         {/* Meta Pixel Code */}
-        <Script id="meta-pixel" strategy="afterInteractive">
+        <Script id="meta-pixel" strategy="lazyOnload">
           {`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
