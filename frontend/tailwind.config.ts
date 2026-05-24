@@ -23,24 +23,24 @@ const config: Config = {
       },
 
       // ============================================================================
-      // Mission Control Colors
+      // Mission Control Colors (Mapped to CSS variables for dynamic themes)
       // ============================================================================
       colors: {
         accent: {
-          DEFAULT: '#FF5C3A',
-          dim: 'rgba(255,92,58,0.4)',
-          subtle: 'rgba(255,92,58,0.1)',
-          bright: '#FF7A5C',
+          DEFAULT: 'var(--color-accent)',
+          dim: 'var(--color-accent-dim)',
+          subtle: 'var(--color-accent-subtle)',
+          bright: 'var(--color-accent-bright)',
         },
         dark: {
-          DEFAULT: '#0a0a0a',
-          card: '#111111',
-          cardHover: '#161616',
-          surface: '#141414',
-          overlay: '#0d0d0d',
-          input: '#1a1a1a',
+          DEFAULT: 'var(--bg-base)',
+          card: 'var(--bg-card)',
+          cardHover: 'var(--bg-hover)',
+          surface: 'var(--bg-dark-surface)',
+          overlay: 'var(--bg-dark-overlay)',
+          input: 'var(--bg-input)',
         },
-        warm: '#f5f2ee',
+        warm: 'var(--color-warm)',
         
         // Status colors
         status: {
@@ -52,7 +52,7 @@ const config: Config = {
         
         // Chart colors
         chart: {
-          1: '#FF5C3A',
+          1: 'var(--color-accent)',
           2: '#00E5A0',
           3: '#FFB547',
           4: '#5C8AFF',
@@ -61,18 +61,18 @@ const config: Config = {
         
         // Border colors
         border: {
-          subtle: '#1e1e1e',
-          active: '#2a2a2a',
+          subtle: 'var(--border-subtle)',
+          active: 'var(--border-active)',
           accent: 'rgba(255,92,58,0.2)',
           glow: 'rgba(255,92,58,0.4)',
         },
         
         // Text colors
         text: {
-          primary: '#F0F0F0',
-          secondary: '#888888',
-          muted: '#666666',
-          accent: '#FF5C3A',
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
+          accent: 'var(--color-accent)',
           positive: '#00E5A0',
           negative: '#FF3A5C',
         },
