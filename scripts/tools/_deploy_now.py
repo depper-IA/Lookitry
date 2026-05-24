@@ -34,7 +34,7 @@ import paramiko
 from dotenv import load_dotenv
 
 
-load_dotenv(os.path.join(os.path.dirname(__file__), "../backend/.env"))
+load_dotenv(os.path.join(os.path.dirname(__file__), "../../backend/.env"))
 
 HOST = os.getenv("VPS_HOST", "31.220.18.39")
 USER = os.getenv("VPS_USER", "root")
