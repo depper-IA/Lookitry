@@ -72,6 +72,8 @@ function PhoneMockup() {
               loop
               muted
               playsInline
+              preload="none"
+              poster="/videos/demo-poster.webp"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/25" />
@@ -110,7 +112,7 @@ function PhoneMockup() {
 
       {/* Badges */}
       <motion.div
-        className="absolute -bottom-2 left-4 flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-sm px-3 py-1 shadow-lg"
+        className="absolute -bottom-2 left-4 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 shadow-lg"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
@@ -124,7 +126,7 @@ function PhoneMockup() {
       </motion.div>
 
       <motion.div
-        className="absolute -top-2 right-4 flex items-center gap-1 rounded-full bg-white/95 backdrop-blur-sm px-2.5 py-0.5 shadow-md"
+        className="absolute -top-2 right-4 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-0.5 shadow-md"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}

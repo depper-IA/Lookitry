@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, Clock, Sparkles } from 'lucide-react';
 import { LANDING_COPY } from './LandingCopy';
+import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 
 const EASING = [0.22, 1, 0.36, 1] as const;
 
@@ -12,6 +13,7 @@ export default function LandingHero() {
   const [wordIndex, setWordIndex] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const isVisible = useIntersectionObserver(videoRef);
   const words = LANDING_COPY.hero.rotating_words;
 
   useEffect(() => {
@@ -45,14 +47,18 @@ export default function LandingHero() {
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="none"
           poster="/videos/hero-poster.webp"
           onCanPlay={() => setVideoReady(true)}
           style={{ transition: 'opacity 0.6s ease', opacity: videoReady ? 1 : 0 }}
           className="absolute inset-0 w-full h-full object-cover"
         >
-          <source src="/videos/hero.webm" type="video/webm" />
-          <source src="/videos/hero.mp4" type="video/mp4" />
+          {isVisible && (
+            <>
+              <source src="/videos/hero.webm" type="video/webm" />
+              <source src="/videos/hero.mp4" type="video/mp4" />
+            </>
+          )}
         </video>
         {/* Dark overlay — heavier on left, fades right */}
         <div
@@ -110,13 +116,13 @@ export default function LandingHero() {
           </div>
 
           <div className="mt-10 flex flex-wrap items-center gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white/55 sm:gap-10">
-            <div className="flex items-center gap-2 hover:text-white/80 transition-colors">
+            <div className="nav-link flex items-center gap-2">
               <ShieldCheck size={13} className="shrink-0 text-accent" aria-hidden="true" /> 100% Seguro
             </div>
-            <div className="flex items-center gap-2 hover:text-white/80 transition-colors">
+            <div className="nav-link flex items-center gap-2">
               <Clock size={13} className="shrink-0 text-accent" aria-hidden="true" /> Activación 10min
             </div>
-            <div className="flex items-center gap-2 hover:text-white/80 transition-colors">
+            <div className="nav-link flex items-center gap-2">
               <Sparkles size={13} className="shrink-0 text-accent" aria-hidden="true" /> IA Generativa
             </div>
           </div>
