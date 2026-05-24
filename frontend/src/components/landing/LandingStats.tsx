@@ -79,7 +79,7 @@ export default function LandingStats() {
             className="text-center mb-12"
           >
             <p className="text-white/70 text-base lg:text-lg font-medium max-w-3xl mx-auto leading-relaxed">
-              Las tiendas que ofrecen probador virtual reducen devoluciones, aumentan la confianza del comprador y convierten mas visitas en ventas
+              Las tiendas que ofrecen probador virtual reducen devoluciones, aumentan la confianza del comprador y convierten más visitas en ventas
             </p>
           </motion.div>
 
@@ -89,13 +89,13 @@ export default function LandingStats() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
-            className="grid grid-cols-2 gap-x-4 gap-y-8 md:flex md:flex-row md:gap-4 lg:gap-8 justify-center items-start md:items-center"
+            className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-5 md:gap-x-2 lg:gap-x-6 justify-center items-start w-full"
           >
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
                 variants={itemVariants}
-                className="text-center flex-none group cursor-default"
+                className="text-center flex flex-col items-center w-full group cursor-default"
               >
                 {/* Icon */}
                 <motion.div
