@@ -1,11 +1,9 @@
 # SDD: Auditoría Integral del Cerebro — LOOKITRY
 
-**Change:** cerebro-audit-v1  
-**Status:** active  
-**Started:** 2026-05-23  
-**Type:** documentation / audit  
-**Execution mode:** auto (delegated to sub-agents)  
-**artifact_store:** openspec  
+**Change:** cerebro-audit-v1
+**Status:** ✅ ARCHIVED
+**Completed:** 2026-05-23
+**Archived:** 2026-05-23  
 
 ---
 
