@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Menu, X, ChevronDown, User, LogOut, Upload, Zap, Share2, TrendingUp, Layers, Smartphone, ShoppingBag, Code2 } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, Layers, Smartphone, ShoppingBag, Code2 } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { usePromoBanner } from '@/contexts/PromoBannerContext';
 import { usePublicSession } from '@/hooks/usePublicSession';
@@ -168,20 +168,6 @@ export default function LandingNav({
     : '?';
 
   const menuLinks = [{ label: 'Planes', href: '/planes' }];
-
-  const howItWorksSteps = [
-    { icon: Upload, label: 'Subí tu catálogo', desc: 'WooCommerce, Shopify o manual en minutos.' },
-    { icon: Zap, label: 'IA genera el probador', desc: 'Sin código. Listo para usar al instante.' },
-    { icon: Share2, label: 'Compartí con clientes', desc: 'Por WhatsApp, Instagram o en tu tienda.' },
-    { icon: TrendingUp, label: 'Más ventas, menos devoluciones', desc: 'Clientes compran con confianza real.' },
-  ];
-
-  const howItWorksLinks = [
-    { label: 'Ver demo en vivo', href: '/demo', highlight: true },
-    { label: 'Casos de éxito', href: '/casos-de-exito', highlight: false },
-    { label: 'Blog', href: '/blog', highlight: false },
-    { label: 'Sobre nosotros', href: '/sobre-nosotros', highlight: false },
-  ];
 
   const productLinks = [
     { icon: Layers, title: 'Probador Virtual', desc: 'Tus clientes se prueban la ropa virtualmente antes de comprar.', href: 'https://lookitry.com/probador-virtual', badge: 'Más popular', logo: null },
@@ -365,8 +351,6 @@ export default function LandingNav({
         trialPriceCOP={trialPriceCOP}
         trm={trm}
         fetchTrialDataIfNeeded={fetchTrialDataIfNeeded}
-        howItWorksSteps={howItWorksSteps}
-        howItWorksLinks={howItWorksLinks}
         menuLinks={menuLinks}
         productLinks={productLinks}
       />

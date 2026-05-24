@@ -38,8 +38,6 @@ interface NavMobileMenuProps {
   trialPriceCOP: number;
   trm: number;
   fetchTrialDataIfNeeded: () => void;
-  howItWorksSteps: any[];
-  howItWorksLinks: any[];
   menuLinks: any[];
   productLinks: any[];
 }
@@ -55,8 +53,6 @@ export function NavMobileMenu({
   trialPriceCOP,
   trm,
   fetchTrialDataIfNeeded,
-  howItWorksSteps,
-  howItWorksLinks,
   menuLinks,
   productLinks,
 }: NavMobileMenuProps) {
@@ -136,31 +132,6 @@ export function NavMobileMenu({
                   {isDark ? <Sun size={14} /> : <Moon size={14} />}
                 </motion.button>
               </div>
-            </motion.div>
-
-            {/* Cómo funciona */}
-            <motion.div custom={1} variants={mobileCardVariants} className="flex w-full flex-col gap-2">
-              <p className="text-[9px] font-black uppercase tracking-[0.25em] text-accent/80">Cómo funciona</p>
-              {howItWorksSteps.map((step) => {
-                const Icon = step.icon;
-                return (
-                  <div key={step.label} className="flex items-center gap-3 rounded-2xl border border-black/8 bg-black/[0.03] px-4 py-3 dark:border-white/5 dark:bg-white/5">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent"><Icon size={14} /></div>
-                    <div>
-                      <p className="text-[11px] font-bold text-black dark:text-white">{step.label}</p>
-                      <p className="text-[9px] text-text-secondary">{step.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
-              {howItWorksLinks.map((link) => (
-                <motion.div key={link.href} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link href={link.href} onClick={onClose} className={`mobile-nav-link group flex items-center justify-between rounded-2xl px-4 py-3.5 text-left transition-all duration-200 ${link.highlight ? 'bg-accent text-white' : 'border border-black/8 bg-black/[0.03] hover:border-accent/30 hover:bg-accent/5 dark:border-white/5 dark:bg-white/5'}`}>
-                    <span className={`text-[11px] font-bold uppercase tracking-wider ${link.highlight ? 'text-white' : 'text-black dark:text-white group-hover:text-accent'}`}>{link.label}</span>
-                    <ArrowRight size={14} className={link.highlight ? 'text-white' : 'text-accent opacity-0 group-hover:opacity-100'} />
-                  </Link>
-                </motion.div>
-              ))}
             </motion.div>
 
             {/* Planes */}
