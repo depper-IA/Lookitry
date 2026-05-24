@@ -3,7 +3,7 @@ import RedisStore from 'rate-limit-redis';
 import { Request, Response } from 'express';
 import { redis } from '../config/redis';
 
-const MAX = parseInt(process.env.REBECCA_WIDGET_RATE_LIMIT_MAX ?? '20', 10);
+const MAX = parseInt(process.env.REBECCA_WIDGET_RATE_LIMIT_MAX ?? '60', 10);
 const WINDOW_MS = parseInt(process.env.REBECCA_WIDGET_RATE_LIMIT_WINDOW_MS ?? '3600000', 10);
 const RETRY_AFTER_SEC = Math.ceil(WINDOW_MS / 1000);
 
