@@ -96,9 +96,9 @@ export function LandingSkeleton({ variant = 'hero', className = '' }: LandingSke
             <Skeleton width="80%" height={24} borderRadius="6px" className="max-w-xl bg-white/10 mb-12" />
 
             {/* Stats grid (matches the 5 items perfectly) */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:flex md:flex-row md:gap-4 lg:gap-8 justify-center items-start md:items-center w-full">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-5 md:gap-x-2 lg:gap-x-6 justify-center items-start w-full">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="text-center flex-1 flex flex-col items-center gap-2 min-w-[120px]">
+                <div key={i} className="text-center flex flex-col items-center gap-2 w-full">
                   <Skeleton width={48} height={48} borderRadius="50%" className="bg-accent/15 mb-1" />
                   <Skeleton width={80} height={40} borderRadius="8px" className="bg-white/15" />
                   <Skeleton width="100%" height={12} borderRadius="4px" className="bg-white/5" />

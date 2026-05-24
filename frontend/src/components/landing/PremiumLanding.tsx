@@ -26,11 +26,8 @@ const LandingHero = dynamic(() => import('./LandingHero'), {
   loading: () => <HeroSkeleton />
 });
 
-// Stats: skeleton mientras carga
-const LandingStats = dynamic(() => import('./LandingStats'), {
-  ssr: false,
-  loading: () => <LandingSkeleton variant="stats" />
-});
+// Stats: carga directa
+const LandingStats = dynamic(() => import('./LandingStats'), { ssr: false });
 
 // MiniLanding: skeleton mientras carga
 const LandingMiniLanding = dynamic(() => import('./LandingMiniLanding'), { ssr: false });
