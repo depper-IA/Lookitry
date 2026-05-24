@@ -1,6 +1,4 @@
-import dynamic from 'next/dynamic';
-
-const DemoPageClient = dynamic(() => import('./DemoPageClient'), { ssr: false });
+import DemoPageWrapper from './DemoPageWrapper';
 
 export const metadata = {
   title: 'Probador Virtual Gratis — Lookitry',
@@ -8,5 +6,5 @@ export const metadata = {
 };
 
 export default function DemoPage() {
-  return <DemoPageClient />;
+  return <DemoPageWrapper />;
 }
