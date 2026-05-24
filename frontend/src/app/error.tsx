@@ -35,7 +35,7 @@ export default function Error({
         <div className="flex justify-center mb-16">
           <div className="flex shrink-0 items-center gap-3">
             <div className="relative h-8 w-8">
-              <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" priority />
+              <Image src="/logo.svg" alt="Lookitry" fill sizes="32px" className="object-contain" priority />
             </div>
             <span className="font-jakarta text-2xl font-black tracking-tighter text-white">
               Look<span className="text-[#FF5C3A]">itry</span>

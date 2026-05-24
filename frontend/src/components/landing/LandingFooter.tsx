@@ -348,8 +348,8 @@ export default function LandingFooter() {
             >
               <Link href="/" className="group mb-6 inline-flex items-center gap-2.5 sm:mb-8 sm:gap-3 md:mb-10">
                 <div className="relative h-8 w-8 transition-transform duration-300 group-hover:scale-110 sm:h-9 sm:w-9 md:h-10 md:w-10">
-                  <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
-                  <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
+                  <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill sizes="32px" className="object-contain dark:hidden" />
+                  <Image src="/logo.svg" alt="Lookitry" fill sizes="32px" className="hidden object-contain dark:block" />
                 </div>
                 <span className="font-jakarta text-2xl font-bold tracking-tighter text-black dark:text-white sm:text-3xl">
                   Look<span className="text-accent">itry</span>

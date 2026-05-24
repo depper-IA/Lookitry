@@ -65,7 +65,7 @@ export default function MaintenancePage() {
         <div className="flex justify-center mb-16">
           <div className="flex shrink-0 items-center gap-3">
             <div className="relative h-10 w-10">
-              <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" priority />
+              <Image src="/logo.svg" alt="Lookitry" fill sizes="40px" className="object-contain" priority />
             </div>
             <span className="font-jakarta text-3xl font-black tracking-tighter text-[#0a0a0a] dark:text-white">
               Look<span className="text-[#FF5C3A]">itry</span>

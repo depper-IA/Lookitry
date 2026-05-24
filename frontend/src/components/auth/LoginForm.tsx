@@ -159,8 +159,8 @@ export default function LoginForm({
           <div className={`flex justify-center ${compact ? 'mb-5' : 'mb-8'}`}>
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="relative h-11 w-11 shrink-0">
-                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
-                <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
+                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill sizes="44px" className="object-contain dark:hidden" priority />
+                <Image src="/logo.svg" alt="Lookitry" fill sizes="44px" className="hidden object-contain dark:block" priority />
               </div>
               <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
                 Look<span style={{ color: 'var(--accent)' }}>itry</span>
