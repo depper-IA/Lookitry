@@ -187,12 +187,16 @@ export interface PlanPriceOverride {
  * Incluye fallback a DEFAULTS si la consulta falla.
  */
 export async function getPricingConfig(): Promise<PricingConfig> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000);
+
   try {
     // Get pricing config from backend (uses service_role key internally)
     // This avoids the broken anon key issue
     const [configRes, promosRes] = await Promise.all([
       fetch(`${PRICING_BACKEND_URL}/api/pricing-config`, {
         cache: 'no-store',
+        signal: controller.signal,
       }),
       fetch(`${SUPABASE_URL}/rest/v1/promotions?active=eq.true&select=type,config,starts_at,ends_at`, {
         headers: {
@@ -200,8 +204,11 @@ export async function getPricingConfig(): Promise<PricingConfig> {
           Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY!}`,
         },
         next: { revalidate: 300, tags: ['pricing'] },
+        signal: controller.signal,
       })
     ]);
+
+    clearTimeout(timeoutId);
 
     if (!configRes.ok) throw new Error(`Backend pricing error: ${configRes.status}`);
 
@@ -305,6 +312,9 @@ export function precioEnUSD(precioCop: number, trm: number): number {
  * Usar en Server Components con revalidate corto (ej: 300s).
  */
 export async function getPriceOverrides(): Promise<PlanPriceOverride[]> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000);
+
   try {
     const now = new Date().toISOString();
     const url =
@@ -321,7 +331,10 @@ export async function getPriceOverrides(): Promise<PlanPriceOverride[]> {
         Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY!}`,
       },
       next: { revalidate: 300 },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!res.ok) return [];
     const rows: { config: PlanPriceOverride; ends_at?: string }[] = await res.json();

@@ -70,12 +70,12 @@ function ChatWidgetInner() {
         className="fixed bottom-[calc(env(safe-area-inset-bottom)+76px)] right-5 md:bottom-6 md:right-6 z-[9999] group focus:outline-none"
       >
         <span
-          className="absolute inset-0 rounded-full bg-[#FF5C3A]/20 scale-110 animate-ping group-hover:bg-[#FF5C3A]/30"
+          className="absolute inset-0 rounded-full bg-accent/20 scale-110 animate-ping group-hover:bg-accent/30"
           style={{ animationDuration: '2.4s' }}
           aria-hidden="true"
         />
 
-        <span className="relative flex h-14 w-14 items-center justify-center rounded-full ring-[2.5px] ring-[#FF5C3A] ring-offset-[3px] ring-offset-white dark:ring-offset-[#0a0a0a] shadow-[0_6px_24px_rgba(255,92,58,0.45)] hover:shadow-[0_8px_32px_rgba(255,92,58,0.6)] hover:scale-105 transition-all duration-200 overflow-hidden">
+        <span className="relative flex h-14 w-14 items-center justify-center rounded-full ring-[2.5px] ring-accent ring-offset-[3px] ring-offset-white dark:ring-offset-[#0a0a0a] shadow-[0_6px_24px_rgba(255,92,58,0.45)] hover:shadow-[0_8px_32px_rgba(255,92,58,0.6)] hover:scale-105 transition-all duration-200 overflow-hidden">
           <Image
             src="/rebecca-avatar.webp"
             alt="Rebecca — asesora Lookitry"

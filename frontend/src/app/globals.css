@@ -246,6 +246,21 @@ h1, h2, h3, h4, h5, h6 {
     border-color: rgba(255, 92, 58, 0.3);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   }
+
+  .glass-panel,
+  .glass-panel-dark,
+  .glass-panel-hover {
+    will-change: filter;
+  }
+}
+
+/* Reduced blur on mobile for performance */
+@media (max-width: 767px) {
+  .glass-panel,
+  .glass-panel-dark {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -456,6 +471,10 @@ textarea:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  
+  .animate-ping {
+    animation: none !important;
   }
 }
 

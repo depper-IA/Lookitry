@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, Clock, Sparkles } from 'lucide-react';
 import { LANDING_COPY } from './LandingCopy';
-import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 
 const EASING = [0.22, 1, 0.36, 1] as const;
 
@@ -13,8 +12,21 @@ export default function LandingHero() {
   const [wordIndex, setWordIndex] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const isVisible = useIntersectionObserver(videoRef);
+  const [isVisible, setIsVisible] = useState(false);
   const words = LANDING_COPY.hero.rotating_words;
+
+  // IntersectionObserver solo en cliente para lazy load del video
+  useEffect(() => {
+    if (!videoRef.current) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsVisible(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.1 });
+    observer.observe(videoRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -52,14 +64,12 @@ export default function LandingHero() {
           onCanPlay={() => setVideoReady(true)}
           style={{ transition: 'opacity 0.6s ease', opacity: videoReady ? 1 : 0 }}
           className="absolute inset-0 w-full h-full object-cover"
+          aria-describedby="hero-video-desc"
         >
-          {isVisible && (
-            <>
-              <source src="/videos/hero.webm" type="video/webm" />
-              <source src="/videos/hero.mp4" type="video/mp4" />
-            </>
-          )}
+          <source src="/videos/hero-compressed.webm" type="video/webm" />
+          <source src="/videos/hero-compressed.mp4" type="video/mp4" />
         </video>
+        <span id="hero-video-desc" className="sr-only">Video de fondo mostrando una modelo probándose ropa virtualmente con la tecnología de IA de Lookitry</span>
         {/* Dark overlay — heavier on left, fades right */}
         <div
           className="absolute inset-0"
