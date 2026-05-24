@@ -38,11 +38,6 @@ export default function LandingHero() {
     >
       {/* ── Video Background ─────────────────────────────────────────── */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        {/* Fallback gradient — always visible, shown while iframe loads */}
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg, #1a0e0a 0%, #080810 50%, #0a0808 100%)' }}
-        />
         {/* Local video — no YouTube UI, no play buttons, loops cleanly */}
         <video
           ref={videoRef}
