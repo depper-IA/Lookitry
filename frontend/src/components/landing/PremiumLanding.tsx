@@ -15,7 +15,6 @@ import { LandingSkeleton } from './LandingSkeleton';
 
 // Skeleton reutilizable para secciones above-the-fold
 const HeroSkeleton = () => <LandingSkeleton variant="hero" />;
-const NavSkeleton = () => <LandingSkeleton variant="stats" />;
 
 // Nav: carga inmediata para que siempre esté lista
 const LandingNav = dynamic(() => import('./LandingNav'), { ssr: true });
