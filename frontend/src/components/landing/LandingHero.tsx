@@ -35,19 +35,21 @@ export default function LandingHero() {
     return () => clearInterval(interval);
   }, [words.length]);
 
-  // Si el video ya tiene datos suficientes al montar (cache del navegador), marcarlo listo de inmediato
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     if (v.readyState >= 3) {
       setVideoReady(true);
+    } else {
+      v.load();
+      v.play().catch(() => {});
     }
   }, []);
 
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen items-end overflow-hidden bg-black pb-20 sm:pb-28"
+      className="relative flex min-h-screen items-end overflow-hidden bg-black pb-28 sm:pb-28"
       aria-label="Sección principal"
     >
       {/* ── Video Background ─────────────────────────────────────────── */}
@@ -66,6 +68,7 @@ export default function LandingHero() {
           className="absolute inset-0 w-full h-full object-cover"
           aria-describedby="hero-video-desc"
         >
+          <source src="/videos/hero.mp4" type="video/mp4" />
           <source src="/videos/hero-compressed.webm" type="video/webm" />
         </video>
         <span id="hero-video-desc" className="sr-only">Video de fondo mostrando una modelo probándose ropa virtualmente con la tecnología de IA de Lookitry</span>
