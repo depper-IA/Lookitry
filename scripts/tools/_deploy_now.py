@@ -106,7 +106,13 @@ def wait_for_health(ssh, attempts=8, delay=5):
 
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-ssh.connect(HOST, username=USER, password=PASS, timeout=30)
+
+key_path = os.path.expanduser("~/.ssh/lookitry_key")
+if os.path.exists(key_path):
+    k = paramiko.RSAKey.from_private_key_file(key_path)
+    ssh.connect(HOST, username=USER, password=PASS, pkey=k, timeout=30)
+else:
+    ssh.connect(HOST, username=USER, password=PASS, timeout=30)
 
 print(
     f"Conectado al VPS  [no-cache={no_cache}  backend={do_backend}  frontend={do_frontend}  "
@@ -193,11 +199,11 @@ run(ssh, f"cd {REPO} && docker compose -f docker-compose.errors.yml up -d")
 if do_backend:
     print("\n=== Rebuild SAM LOCAL ===")
     build_cmd_sam = (
-        f"cd {REPO} && docker compose -f vps-docker-compose.yml build {build_flag} sam-local > docker_build_sam.log 2>&1 || "
+        f"cd {REPO} && docker compose -f docker-compose.backend.yml build {build_flag} sam-local > docker_build_sam.log 2>&1 || "
         f"{{ tail -20 docker_build_sam.log; exit 1; }}"
     )
     run(ssh, build_cmd_sam, timeout=600)
-    run(ssh, f"cd {REPO} && docker compose -f vps-docker-compose.yml up -d sam-local")
+    run(ssh, f"cd {REPO} && docker compose -f docker-compose.backend.yml up -d sam-local")
 
     print("\n=== Rebuild BACKEND ===")
     # Subir env file de Sammy si no existe en VPS
