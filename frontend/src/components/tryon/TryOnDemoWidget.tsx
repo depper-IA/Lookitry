@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Sparkles, Camera, Check, Loader2, X, RotateCcw, ImageIcon } from 'lucide-react';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
 import { PostDemoModal } from '@/components/landing/PostDemoModal';
+import { getProxiedUrl } from '@/utils/imageProxy';
 import Link from 'next/link';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -246,7 +247,7 @@ export default function TryOnDemoWidget({ onResult, showBrowserChrome = true }: 
             >
               <div className="absolute top-2 left-4 text-[6px] font-bold uppercase tracking-widest text-[var(--text-muted)] sm:text-[8px]">Tu Foto</div>
               <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden sm:h-16 sm:w-16">
-                {selfiePreview ? <img src={selfiePreview} alt="Preview" className="h-full w-full object-cover" loading="lazy" decoding="async" /> : <Camera size={24} strokeWidth={1} className="text-[var(--text-muted)]" aria-hidden="true" />}
+                {selfiePreview ? <img src={getProxiedUrl(selfiePreview)} alt="Preview" className="h-full w-full object-cover" loading="lazy" decoding="async" /> : <Camera size={24} strokeWidth={1} className="text-[var(--text-muted)]" aria-hidden="true" />}
               </div>
               <div className="mt-3 flex gap-2">
                 <label className="cursor-pointer rounded-lg bg-[var(--accent)]/15 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--accent)] hover:bg-[var(--accent)]/25 sm:text-[11px] min-h-11 flex items-center justify-center gap-2">
@@ -276,7 +277,7 @@ export default function TryOnDemoWidget({ onResult, showBrowserChrome = true }: 
             <div className="flex flex-col items-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] p-4 text-center hover:border-[var(--text-muted)] sm:p-6">
               {selfiePreview ? (
                 <div className="relative mb-3 h-32 w-32 overflow-hidden rounded-xl sm:h-40 sm:w-40">
-                  <img src={selfiePreview} alt="Tu selfie" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                  <img src={getProxiedUrl(selfiePreview)} alt="Tu selfie" className="h-full w-full object-cover" loading="lazy" decoding="async" />
                   <button onClick={() => { setSelfie(null); setSelfiePreview(null); }} className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--bg-card)] text-[var(--text-primary)] backdrop-blur-sm hover:bg-[var(--bg-hover)]">
                     <X size={12} />
                   </button>
@@ -333,7 +334,7 @@ export default function TryOnDemoWidget({ onResult, showBrowserChrome = true }: 
         {step === 'result' && resultImage && (
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="flex flex-col gap-3 sm:gap-4">
             <div className="relative overflow-hidden rounded-xl shadow-lg shadow-[var(--accent)]/10 aspect-square">
-              <img src={selfiePreview || ''} alt="Tu foto original" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+              <img src={getProxiedUrl(selfiePreview || '')} alt="Tu foto original" className="h-full w-full object-cover" loading="lazy" decoding="async" />
               <div className="absolute top-2 left-2 rounded-full bg-[var(--text-muted)] px-2 py-0.5 text-[6px] font-black uppercase text-white shadow-xl sm:text-[8px]">Antes</div>
               <button onClick={handleBack} className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-white/60 backdrop-blur-sm hover:bg-black/60 hover:text-white" aria-label="Limpiar">
                 <RotateCcw size={12} />

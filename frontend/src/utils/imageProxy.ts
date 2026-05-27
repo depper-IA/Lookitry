@@ -29,9 +29,14 @@ export function getProxiedImageUrl(src: string, plan?: string, download?: boolea
  */
 export function getProxiedUrl(url: string): string {
   if (!url) return '';
-  
+
   // GCS URLs are already public and fast, no need to proxy
   if (url.includes('storage.googleapis.com')) {
+    return url;
+  }
+
+  // Data URLs (base64) should be returned as-is
+  if (url.startsWith('data:')) {
     return url;
   }
 
