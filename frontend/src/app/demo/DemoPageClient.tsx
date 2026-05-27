@@ -7,8 +7,7 @@ import { Sparkles, ArrowRight, ArrowDown, TrendingUp, RotateCcw, ShieldCheck, Za
 import dynamic from 'next/dynamic';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
-import { useCurrency } from '@/hooks/useCurrency';
-import { formatPrice } from '@/utils/currency';
+import { getProxiedUrl } from '@/utils/imageProxy';
 
 const TryOnDemoWidget = dynamic(() => import('@/components/tryon/TryOnDemoWidget'), { ssr: false });
 
@@ -92,7 +91,7 @@ function ResultPanel({
               transition={{ duration: 0.6, ease: EASING }}
               className="absolute inset-0"
             >
-              <img src={resultImage} alt="Resultado del probador virtual" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+              <img src={getProxiedUrl(resultImage)} alt="Resultado del probador virtual" className="h-full w-full object-cover" loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute top-3 left-3 rounded-full bg-[var(--accent)] px-2.5 py-0.5 text-[9px] font-black uppercase tracking-tight text-white shadow-md">
                 Generado por IA
