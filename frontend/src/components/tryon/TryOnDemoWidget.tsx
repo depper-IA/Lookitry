@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Sparkles, Camera, Check, Loader2, X, RotateCcw, ImageIcon } from 'lucide-react';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
@@ -51,7 +50,7 @@ const ProductItem = React.memo(({ prod, selectedProduct, onSelect }: {
       aria-label={`Seleccionar ${prod.name}`}
     >
       <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[var(--border-color)] sm:h-14 sm:w-14">
-        <Image src={prod.image_url} alt={prod.name} fill className="object-cover" sizes="56px" />
+        <img src={getProxiedUrl(prod.image_url)} alt={prod.name} className="h-full w-full object-cover" loading="lazy" decoding="async" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <span className={`truncate text-[9px] font-bold sm:text-[11px] ${isSelected ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>{prod.name}</span>
@@ -302,7 +301,7 @@ export default function TryOnDemoWidget({ onResult, showBrowserChrome = true }: 
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] p-3 hover:border-[var(--text-muted)]">
               <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-[var(--border-color)]">
-                <Image src={selectedProduct.image_url} alt={selectedProduct.name} fill className="object-cover" />
+                <img src={getProxiedUrl(selectedProduct.image_url)} alt={selectedProduct.name} className="h-full w-full object-cover" loading="lazy" decoding="async" />
               </div>
               <div className="flex min-w-0 flex-1">
                 <div>
