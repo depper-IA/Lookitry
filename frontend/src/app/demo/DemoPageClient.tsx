@@ -8,6 +8,8 @@ import dynamic from 'next/dynamic';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
 import { getProxiedUrl } from '@/utils/imageProxy';
+import { useCurrency } from '@/hooks/useCurrency';
+import { formatPrice } from '@/utils/currency';
 
 const TryOnDemoWidget = dynamic(() => import('@/components/tryon/TryOnDemoWidget'), { ssr: false });
 
