@@ -1096,6 +1096,11 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
 
 
+    // Verificar email confirmado
+    if (!brand.email_verified) {
+      throw new Error('EMAIL_NOT_VERIFIED');
+    }
+
     // Verificar contraseña
 
     const isPasswordValid = await bcrypt.compare(data.password, brand.password);

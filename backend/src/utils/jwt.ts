@@ -9,6 +9,10 @@ if (!JWT_SECRET) {
 
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m'; // Access token is short-lived
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || JWT_SECRET;
+
+if (!process.env.JWT_REFRESH_SECRET) {
+  console.warn('[jwt] JWT_REFRESH_SECRET not set — falling back to JWT_SECRET. Set a separate secret in production.');
+}
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d'; // Refresh token is long-lived
 
 export const generateAccessToken = (payload: JwtPayload): string => {

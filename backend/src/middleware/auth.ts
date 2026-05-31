@@ -111,10 +111,7 @@ if (!payload.brandId) {
 
 
 // Verificar que la marca existe
-    console.log('[DEBUG authMiddleware] brandId del token:', payload.brandId);
-
     const brand = await authService.getBrandById(payload.brandId);
-    console.log('[DEBUG authMiddleware] brand encontrado:', brand);
 
     if (!brand) {
       res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');

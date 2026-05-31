@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { vertexService, VERTEX_MODELS } from '../services/vertex.service';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ router.get('/models', (req: Request, res: Response) => {
  * POST /api/vertex/generate
  * Generate content using Vertex AI
  */
-router.post('/generate', async (req: Request, res: Response) => {
+router.post('/generate', authMiddleware, async (req: Request, res: Response) => {
   try {
     const { model, contents, systemInstruction, generationConfig, safetySettings } = req.body;
 
@@ -56,7 +57,7 @@ router.post('/generate', async (req: Request, res: Response) => {
  * POST /api/vertex/stream
  * Stream generate content using Vertex AI
  */
-router.post('/stream', async (req: Request, res: Response) => {
+router.post('/stream', authMiddleware, async (req: Request, res: Response) => {
   try {
     const { model, contents, systemInstruction, generationConfig } = req.body;
 

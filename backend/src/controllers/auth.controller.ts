@@ -968,7 +968,7 @@ export class AuthController {
 
         .from('brands')
 
-        .select('id, name, email, plan, subscription_status')
+        .select('id')
 
         .eq('email', email.toLowerCase())
 
@@ -997,10 +997,6 @@ export class AuthController {
       return res.status(200).json({
 
         exists: true,
-
-        plan: brand.plan,
-
-        subscription_status: brand.subscription_status,
 
       });
 
