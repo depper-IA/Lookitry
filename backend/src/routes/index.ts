@@ -45,7 +45,10 @@ router.use('/generations', generationsRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/payments', paymentsRoutes);
 // KB sync endpoints — used by n8n / scripts (x-admin-key, no JWT)
-const KB_SYNC_KEY = 'lookitry_kb_sync_2026';
+const KB_SYNC_KEY = process.env.KB_SYNC_KEY;
+if (!KB_SYNC_KEY) {
+  throw new Error('KB_SYNC_KEY env var required');
+}
 
 router.post('/admin/embed', async (req: any, res: any) => {
   if (req.headers['x-admin-key'] !== KB_SYNC_KEY) {

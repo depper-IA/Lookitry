@@ -1,9 +1,17 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { receiveWebhook, getConversations, getConversationMessages, replyToConversation, updateConversationStatus, widgetReply, trackPage, whatsappReply, updateLeadContact, getLeadContext, updateLeadProfileEndpoint, getWidgetHistory, saveWidgetMessage } from '../controllers/chat.controller';
 import { adminAuthMiddleware } from '../middleware/adminAuth';
 import { rebeccaRateLimitBySession, rebeccaRateLimitByIP } from '../middleware/rebecca-rate-limit';
 
 const router = Router();
+
+const n8nKeyMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  const n8nKey = process.env.N8N_WEBHOOK_SECRET;
+  if (!n8nKey || req.headers['x-n8n-key'] !== n8nKey) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  return next();
+};
 
 // Rebecca web chat widget — public, rate limited
 router.post('/widget', rebeccaRateLimitByIP, rebeccaRateLimitBySession, widgetReply);
@@ -23,9 +31,9 @@ router.get('/lead/:phone', getLeadContext);
 // Webhook for incoming WhatsApp messages
 router.post('/webhook', receiveWebhook);
 
-// n8n WhatsApp workflow endpoints — no auth, called server-to-server
-router.post('/whatsapp', whatsappReply);
-router.patch('/conversations/:id/status', updateConversationStatus);
+// n8n WhatsApp workflow endpoints — server-to-server, protected by N8N_WEBHOOK_SECRET
+router.post('/whatsapp', n8nKeyMiddleware, whatsappReply);
+router.patch('/conversations/:id/status', n8nKeyMiddleware, updateConversationStatus);
 
 // Admin endpoints
 router.get('/conversations', adminAuthMiddleware, getConversations);
