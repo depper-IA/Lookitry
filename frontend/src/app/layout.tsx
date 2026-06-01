@@ -1,19 +1,21 @@
 import type { Metadata } from 'next';
-import { Inter, Outfit } from 'next/font/google';
+import localFont from 'next/font/local';
 import Script from 'next/script';
 import { Suspense } from 'react';
 import './globals.css';
 
-const inter = Inter({
-  subsets: ['latin'],
+const inter = localFont({
+  src: '../fonts/inter-variable-latin.woff2',
   display: 'swap',
   variable: '--font-inter',
+  weight: '100 900',
 });
 
-const outfit = Outfit({
-  subsets: ['latin'],
+const outfit = localFont({
+  src: '../fonts/outfit-variable-latin.woff2',
   display: 'swap',
   variable: '--font-outfit',
+  weight: '100 900',
 });
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
