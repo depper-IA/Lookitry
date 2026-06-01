@@ -116,7 +116,7 @@ describe('ProductsController — describeProductWithAI', () => {
       });
     });
 
-    it('does NOT pass image_url to descriptorService', async () => {
+    it('passes image_url to descriptorService for multimodal analysis', async () => {
       mockDescribeProduct.mockResolvedValue({
         product_type: 'CLOTHING',
         short_description: 'A dress',
@@ -133,14 +133,13 @@ describe('ProductsController — describeProductWithAI', () => {
 
       await controller.describeProductWithAI(req, res);
 
-      // image_url should NOT be passed to descriptorService
-      expect(mockDescribeProduct).toHaveBeenCalledWith({
-        name: 'Vestido',
-        category: 'VESTIDO',
-        brand_description: undefined,
-      });
-      expect(mockDescribeProduct).not.toHaveBeenCalledWith(
-        expect.objectContaining({ image_url: expect.any(String) })
+      // image_url IS forwarded so the descriptor can analyze the product image.
+      expect(mockDescribeProduct).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Vestido',
+          category: 'VESTIDO',
+          image_url: 'https://example.com/image.jpg',
+        })
       );
     });
   });
@@ -164,11 +163,16 @@ describe('ProductsController — describeProductWithAI', () => {
       await controller.describeProductWithAI(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
+      // Controller wraps the structured result in { description, raw_data, category }.
       expect(res.json).toHaveBeenCalledWith({
-        product_type: 'CLOTHING',
-        short_description: 'A beautiful red dress',
-        features: ['Elegant', 'Flowing', 'Comfortable'],
-        suggested_use_cases: ['Party', 'Date night'],
+        description: expect.any(String),
+        raw_data: {
+          product_type: 'CLOTHING',
+          short_description: 'A beautiful red dress',
+          features: ['Elegant', 'Flowing', 'Comfortable'],
+          suggested_use_cases: ['Party', 'Date night'],
+        },
+        category: 'VESTIDO',
       });
     });
   });
@@ -193,10 +197,14 @@ describe('ProductsController — describeProductWithAI', () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
-        product_type: 'ACCESSORY',
-        short_description: 'Leather handbag',
-        features: ['Genuine leather', 'Spacious'],
-        material_notes: 'Full grain leather',
+        description: expect.any(String),
+        raw_data: {
+          product_type: 'ACCESSORY',
+          short_description: 'Leather handbag',
+          features: ['Genuine leather', 'Spacious'],
+          material_notes: 'Full grain leather',
+        },
+        category: 'BOLSA',
       });
     });
   });
@@ -222,11 +230,15 @@ describe('ProductsController — describeProductWithAI', () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
-        product_type: 'FOOTWEAR',
-        short_description: 'Formal black shoes',
-        features: ['Leather upper', 'Cushioned sole'],
-        style_notes: 'Classic design',
-        comfort_features: ['Arch support', 'Breathable'],
+        description: expect.any(String),
+        raw_data: {
+          product_type: 'FOOTWEAR',
+          short_description: 'Formal black shoes',
+          features: ['Leather upper', 'Cushioned sole'],
+          style_notes: 'Classic design',
+          comfort_features: ['Arch support', 'Breathable'],
+        },
+        category: 'ZAPATOS',
       });
     });
   });

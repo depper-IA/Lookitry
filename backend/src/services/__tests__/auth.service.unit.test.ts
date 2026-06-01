@@ -26,6 +26,33 @@ jest.mock('../../config/supabase', () => ({
 
 
 
+// Redis backs the login lockout (isLockedOut / record / reset). Stub it so unit
+// tests don't hang waiting on a real connection. ttl=-2 means "key absent" -> not locked.
+
+jest.mock('../../config/redis', () => ({
+
+  redis: {
+
+    ttl: jest.fn().mockResolvedValue(-2),
+
+    incr: jest.fn().mockResolvedValue(1),
+
+    expire: jest.fn().mockResolvedValue(1),
+
+    setex: jest.fn().mockResolvedValue('OK'),
+
+    del: jest.fn().mockResolvedValue(1),
+
+    get: jest.fn().mockResolvedValue(null),
+
+    set: jest.fn().mockResolvedValue('OK'),
+
+  },
+
+}));
+
+
+
 jest.mock('../../utils/jwt', () => ({
 
   generateToken: jest.fn().mockReturnValue('mock-jwt-token'),
