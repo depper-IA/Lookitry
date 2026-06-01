@@ -236,7 +236,7 @@ if do_frontend:
             check=False,
         )
         # Extraer solo variables NEXT_PUBLIC_* y permitidas para crear .env que docker-compose usa
-        ALLOWED_SERVER_KEYS = ["SUPABASE_SERVICE_KEY", "TURNSTILE_SECRET_KEY", "JWT_SECRET"]
+        ALLOWED_SERVER_KEYS = ["SUPABASE_SERVICE_KEY", "TURNSTILE_SECRET_KEY", "JWT_SECRET", "INTERNAL_PROXY_SECRET"]
         env_lines = []
         for line in frontend_env_content.splitlines():
             line = line.strip()

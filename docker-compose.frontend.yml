@@ -21,6 +21,7 @@ services:
     restart: unless-stopped
     environment:
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - INTERNAL_PROXY_SECRET=${INTERNAL_PROXY_SECRET}
     volumes:
       - /home/travis/.openclaw/agents:/home/travis/.openclaw/agents:ro
     networks:
