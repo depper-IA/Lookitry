@@ -10,7 +10,60 @@ import { isWhitelistedSync } from '../middleware/rateLimiter';
 
 import multer from 'multer';
 
+import { timingSafeEqual } from 'crypto';
+
 const router = Router();
+
+// Shared secret authenticating the Next.js proxy -> backend hop.
+// Must be identical in the backend env and the Next.js proxy env.
+if (!process.env.INTERNAL_PROXY_SECRET) {
+  console.error(
+    '[HomeTryon] CRITICAL: INTERNAL_PROXY_SECRET is not set. Demo try-on requests will be rejected (fail-closed). Set it in the backend env AND the Next.js proxy env.'
+  );
+}
+
+// Constant-time comparison to avoid leaking the secret via response timing.
+function secretsMatch(provided: string, expected: string): boolean {
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
+/**
+ * Resolves the real end-user IP for demo rate-limiting.
+ *
+ * The backend is reached server-side by the Next.js proxy, so req.ip and cf-connecting-ip
+ * resolve to infra IPs that are CONSTANT for every visitor — keying the trial counter on
+ * them collapses all users into a single shared bucket (the "límite alcanzado" modal for
+ * everyone). The real client IP only exists in the header forwarded by our proxy.
+ *
+ * To stop header spoofing (a direct caller forging a fresh IP per request to get unlimited
+ * free generations), the forwarded IP is trusted ONLY when the shared secret matches.
+ *
+ * Returns the client IP, or null after writing a fail-closed error response.
+ */
+function resolveTrustedClientIp(req: Request, res: Response): string | null {
+  const expectedSecret = process.env.INTERNAL_PROXY_SECRET || '';
+  if (!expectedSecret) {
+    res.status(503).json({ error: 'PROXY_NOT_CONFIGURED', message: 'Service temporarily unavailable' });
+    return null;
+  }
+
+  const providedSecret = (req.headers['x-internal-proxy-secret'] as string | undefined) || '';
+  if (!secretsMatch(providedSecret, expectedSecret)) {
+    res.status(403).json({ error: 'FORBIDDEN', message: 'Request must originate from the Lookitry proxy' });
+    return null;
+  }
+
+  const ip = (req.headers['x-real-client-ip'] as string | undefined)?.trim();
+  if (!ip) {
+    res.status(400).json({ error: 'CLIENT_IP_REQUIRED', message: 'Could not resolve client IP' });
+    return null;
+  }
+
+  return ip;
+}
 
 // Multer middleware for multipart binary upload (avoids base64 inflation)
 const multerMem = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -72,7 +125,8 @@ router.get('/config', asyncHandler(async (req, res) => {
 
 // GET /api/home/tryon/check - Check if IP has already trialed for a specific product
 router.get('/check', asyncHandler(async (req, res) => {
-  const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 'unknown';
+  const ip = resolveTrustedClientIp(req, res);
+  if (!ip) return;
   const productId = req.query.productId as string;
 
   // Whitelisted IPs (Travis & Sam's dev PCs) bypass trial limit
@@ -116,8 +170,9 @@ router.get('/check', asyncHandler(async (req, res) => {
 router.post('/generate', multerMem.single('selfie'), asyncHandler(async (req: any, res) => {
   const productId = req.body.productId as string;
 
-  // Support both multipart (binary) and JSON (base64 legacy)
-  const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 'unknown';
+  // Resolve the real client IP from our trusted proxy (fail-closed on spoof/missing).
+  const ip = resolveTrustedClientIp(req, res);
+  if (!ip) return;
 
   const isTestIp = isWhitelistedSync(ip);
 

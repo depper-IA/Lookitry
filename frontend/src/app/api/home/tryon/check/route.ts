@@ -3,14 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+    const proxySecret = process.env.INTERNAL_PROXY_SECRET || '';
     const clientIP = request.headers.get('cf-connecting-ip')
+      || request.headers.get('x-real-ip')
       || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
       || '';
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId') || '';
     const response = await fetch(`${apiUrl}/api/home/tryon/check?productId=${productId}`, {
       headers: {
-        'x-forwarded-for': clientIP,
+        'x-real-client-ip': clientIP,
+        'x-internal-proxy-secret': proxySecret,
         'user-agent': request.headers.get('user-agent') || '',
       },
     });

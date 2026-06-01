@@ -5,7 +5,9 @@ export async function POST(request: NextRequest) {
     const contentType = request.headers.get('content-type') || '';
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+    const proxySecret = process.env.INTERNAL_PROXY_SECRET || '';
     const realClientIP = request.headers.get('cf-connecting-ip')
+      || request.headers.get('x-real-ip')
       || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
       || '';
 
@@ -17,7 +19,8 @@ export async function POST(request: NextRequest) {
       response = await fetch(`${apiUrl}/api/home/tryon/generate`, {
         method: 'POST',
         headers: {
-          'x-forwarded-for': realClientIP,
+          'x-real-client-ip': realClientIP,
+          'x-internal-proxy-secret': proxySecret,
           'user-agent': request.headers.get('user-agent') || '',
         },
         body: formData,
@@ -40,7 +43,8 @@ export async function POST(request: NextRequest) {
       response = await fetch(`${apiUrl}/api/home/tryon/generate`, {
         method: 'POST',
         headers: {
-          'x-forwarded-for': realClientIP,
+          'x-real-client-ip': realClientIP,
+          'x-internal-proxy-secret': proxySecret,
           'user-agent': request.headers.get('user-agent') || '',
         },
         body: proxyFormData,
