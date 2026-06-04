@@ -20,9 +20,8 @@ export class RedisService {
           if (process.env.NODE_ENV === 'development') {
             return 10000;
           }
-          // En producción, reintentos limitados
-          if (times > 10) return null;
-          return Math.min(times * 100, 3000);
+          // En producción, reintentos infinitos con backoff (máx 5s) para auto-recuperación
+          return Math.min(times * 200, 5000);
         },
         lazyConnect: true, // No intentar conectar inmediatamente al crear instancia
         enableReadyCheck: false, // Desactivar check de ready para evitar cuelgues si no hay Redis
