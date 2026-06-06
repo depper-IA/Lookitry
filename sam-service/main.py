@@ -36,6 +36,10 @@ predictor = SamPredictor(mobile_sam)
 class PredictRequest(BaseModel):
     image: str # base64
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 @app.post("/predict")
 async def predict(request: PredictRequest):
     try:

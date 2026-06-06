@@ -47,7 +47,7 @@ import { syncProductWebhook } from './controllers/enterprise.controller';
 
 import { getPublicPaymentSettings } from './controllers/paymentSettings.controller';
 
-import { getHealthStatus } from './controllers/health.controller';
+import { getHealth, getHealthDeep } from './controllers/health.controller';
 
 import { uploadImage, uploadSelfie, cleanupTempSelfies, multerMemory } from './controllers/upload.controller';
 
@@ -230,7 +230,8 @@ app.get('/api/sitemap/landings', async (_req, res) => {
 
 
 
-app.get('/health', getHealthStatus);
+app.get('/health', getHealth);
+app.get('/health/deep', getHealthDeep);
 
 
 

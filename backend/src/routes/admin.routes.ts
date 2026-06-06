@@ -210,8 +210,8 @@ router.get('/brands/:id/full', requirePermission('brands'), getBrandFull);
 
 // Health check para panel admin (extended info)
 router.get('/health', requirePermission('health'), async (_req: any, res: any) => {
-  const { getHealthStatus } = await import('../controllers/health.controller');
-  return getHealthStatus(_req, res);
+  const { getHealthDeep } = await import('../controllers/health.controller');
+  return getHealthDeep(_req, res);
 });
 
 // Gestión de Suscripciones

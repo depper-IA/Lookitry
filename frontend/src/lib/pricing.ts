@@ -195,7 +195,7 @@ export async function getPricingConfig(): Promise<PricingConfig> {
     // This avoids the broken anon key issue
     const [configRes, promosRes] = await Promise.all([
       fetch(`${PRICING_BACKEND_URL}/api/pricing-config`, {
-        cache: 'no-store',
+        next: { revalidate: 60 },
         signal: controller.signal,
       }),
       fetch(`${SUPABASE_URL}/rest/v1/promotions?active=eq.true&select=type,config,starts_at,ends_at`, {

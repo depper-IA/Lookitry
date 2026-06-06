@@ -202,7 +202,7 @@ async function checkRedis(): Promise<ServiceResult> {
 
   try {
 
-    // Si lazyConnect y no estÃxa1 conectado, marcar down sin esperar
+    // Si lazyConnect y no estï¿½xa1 conectado, marcar down sin esperar
 
     if ((redis as any).status !== 'ready') {
 
@@ -332,7 +332,11 @@ async function notifyServiceChange(name: string, prev: ServiceStatus, current: S
 
 
 
-export async function getHealthStatus(_req: Request, res: Response): Promise<void> {
+export async function getHealth(_req: Request, res: Response): Promise<void> {
+  res.status(200).json({ status: 'ok' });
+}
+
+export async function getHealthDeep(_req: Request, res: Response): Promise<void> {
 
   const [supabaseResult, n8nResult, emailResult, minioResult, redisResult] = await Promise.allSettled([
 
