@@ -29,7 +29,7 @@ Lookitry es una plataforma B2B SaaS de Virtual Try-On impulsada por inteligencia
 - Frontend: Next.js 14, React 18, Tailwind CSS 3.4
 - Backend: Node.js, Express
 - Base de Datos: Supabase (PostgreSQL)
-- IA: n8n, OpenRouter
+- IA: Vertex AI (Gemini 2.5 Flash Image), n8n como respaldo
 
 *Last updated: ${new Date().toISOString().split('T')[0]}*
 `;

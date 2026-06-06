@@ -32,7 +32,7 @@ Esta documentación técnica se proporciona únicamente con fines informativos y
 
 ## Propuesta de Valor
 
-Lookitry es una plataforma SaaS B2B diseñada para revolucionar la forma en que se compra ropa, accesorios y calzado en línea. Mediante el uso de Inteligencia Artificial (impulsada por OpenRouter a través de n8n), los clientes finales pueden subir una selfie y visualizar cómo les quedaría un producto específico.
+Lookitry es una plataforma SaaS B2B diseñada para revolucionar la forma en que se compra ropa, accesorios y calzado en línea. Mediante el uso de Inteligencia Artificial (impulsada por Vertex AI, con n8n como respaldo), los clientes finales pueden subir una selfie y visualizar cómo les quedaría un producto específico.
 
 Nuestra solución se integra fácilmente a través de un **widget script** (`/widget.js`) o una **mini-landing page** personalizada, ideal para marcas en Colombia, México, Argentina, Chile y Perú. El método iframe (`/embed/[brandSlug]`) es legacy y solo para casos especiales donde el script no esté disponible.
 
@@ -64,8 +64,8 @@ La arquitectura de Lookitry está construida para ser rápida, escalable y ofrec
 
 ### IA & Workflows
 
-- **Orquestador:** n8n
-- **Modelos IA:** OpenRouter (para generación de imágenes y descripción de productos).
+- **Orquestador:** n8n (respaldo del pipeline de Try-On)
+- **Motor de imágenes Try-On:** Vertex AI — Gemini 2.5 Flash Image (Nano Banana). Segmentación de máscara con MobileSAM (servicio local).
 
 ### Pagos
 
@@ -97,7 +97,7 @@ graph TD;
     C <-->|"PostgreSQL (Admin Key)"| D[("Supabase")]
     C -->|"Subida de Imágenes"| E[("MinIO Storage")]
     C -->|"Webhook Seguro"| F("n8n Workflows")
-    F <-->|"API"| G("OpenRouter / Modelos IA")
+    F <-->|"API"| G("Vertex AI / Gemini")
     F -->|"Imágenes Generadas"| E
     C <-->|"Cobros COP"| H("Wompi")
     C <-->|"Cobros USD"| I("PayPal")

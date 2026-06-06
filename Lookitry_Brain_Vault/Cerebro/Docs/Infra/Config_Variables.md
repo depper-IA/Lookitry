@@ -2,7 +2,7 @@
 
 Este documento mapea qué servicios externos utiliza Lookitry y qué variables de entorno (`.env`) controlan cada uno.
 
-## 1. Motores de IA (OpenRouter / n8n)
+## 1. Motores de IA (Vertex AI / n8n)
 | Variable | Propósito |
 |----------|-----------|
 | `N8N_WEBHOOK_URL` | URL donde el backend envía las peticiones de imagen. |

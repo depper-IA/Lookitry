@@ -39,7 +39,7 @@ Las acciones correctivas identificadas en la auditoría fueron implementadas dur
 | Dato | Clasificación | Ubicación en sistema | Sensible |
 |---|---|---|---|
 | Selfie (imagen facial del usuario) | Dato biométrico / Sensible | MinIO (temporal) + GCS (temporal) | ✅ Sí |
-| Máscara SAM2 generada de la selfie | Subproducto biométrico | MinIO + GCS (temporal) | ✅ Sí |
+| Máscara MobileSAM generada de la selfie | Subproducto biométrico | MinIO + GCS (temporal) | ✅ Sí |
 | Hash de deduplicación de selfie | Metadato biométrico (referencia) | Generations.selfie_url_anonymized (hash opaco) | Parcial |
 | IP del usuario que sube la selfie | Datos personales | biometric_consents.user_ip | ⚠️ Menor |
 | User-Agent del navegador | Datos personales menores | biometric_consents.user_agent | ⚠️ Menor |
@@ -65,15 +65,15 @@ Lookitry actúa como **encargado del tratamiento** en nombre de las marcas suscr
 2. Consentimiento capturado ──→ biometric_consents (BIOMETRIC + TERMS)
 3. Pipeline inicia procesamiento
 4. Selfie subida a MinIO + GCS (privado, sin public:true)
-5. SAM2 genera máscara de la selfie
+5. MobileSAM genera máscara de la selfie
 6. IA generativa (Vertex o n8n) produce imagen try-on
 7. ✅ SUCCESS:
    a. result_image_url almacenado en generations
    b. cleanupBiometricData() llamado INLINE:
       - Selfie eliminada de MinIO
       - Selfie eliminada de GCS
-      - Máscara SAM2 eliminada de MinIO
-      - Máscara SAM2 eliminada de GCS
+      - Máscara MobileSAM eliminada de MinIO
+      - Máscara MobileSAM eliminada de GCS
       - selfie_url en DB → [ELIMINADO-{hash}]
       - selfie_url_anonymized → hash opaco SHA-256
       - selfie_deleted_at → timestamp UTC
@@ -88,7 +88,7 @@ Lookitry actúa como **encargado del tratamiento** en nombre de las marcas suscr
 ### 4.2 Tiempo de retención real
 
 - **Selfie original:** 0 segundos (eliminación inline tras generación exitosa o fallida)
-- **Máscara SAM2:** 0 segundos (eliminación simultánea con selfie)
+- **Máscara MobileSAM:** 0 segundos (eliminación simultánea con selfie)
 - **Resultado try-on:** 48 horas (contenido sintético, luego purge automático)
 - **Metadatos de consentimiento:** Retención indefinida (auditoría legal)
 
@@ -141,7 +141,7 @@ Este warning no bloquea el pipeline (soft validation) pero deja evidencia audit 
 | Dato | Retención | Base legal |
 |---|---|---|
 | Selfie (dato biométrico) | Eliminación inmediata (segundos post-generación) | Art. 10-C Ley 1581 |
-| Máscara SAM2 (subproducto biométrico) | Eliminación inmediata (simultánea con selfie) | Art. 10-C Ley 1581 |
+| Máscara MobileSAM (subproducto biométrico) | Eliminación inmediata (simultánea con selfie) | Art. 10-C Ley 1581 |
 | Imagen generada try-on | 48 horas desde generación | Art. 10-B Términos y Condiciones |
 | Hash selfie (anonimizado) | Indefinida (auditoría legal) | Art. 10-C + interés legítimo |
 | Registro de consentimiento | Indefinida (auditoría legal) | Ley 1581 |
@@ -181,7 +181,7 @@ Job programado en `scheduler.ts` — cada 6 horas:
 - **GCS:** Todos los objetos subidos como **privados** (`public: false`, `cacheControl: 'private, max-age=0'`)
 - **Acceso temporal:** Solo mediante **signed URLs** con TTL:
   - Selfie: 15 minutos
-  - Máscara SAM2: 5 minutos
+  - Máscara MobileSAM: 5 minutos
 - **No existen objetos públicos** en el bucket GCS de producción
 
 ### 7.3 Roles y API Keys

@@ -20,7 +20,7 @@ Lookitry no envía un texto estático a la IA. El prompt se construye por capas:
 |--------|-------------|
 | `PENDING` | El trabajo está en la cola de RabbitMQ/n8n. |
 | `SUCCESS` | Imagen generada y guardada en MinIO. |
-| `FAILED` | Error técnico o créditos agotados en el proveedor (OpenRouter). |
+| `FAILED` | Error técnico o créditos agotados en el proveedor (Vertex AI). |
 
 ## 4. Sistema de Feedback (Bucle de Aprendizaje)
 Cuando un usuario pulsa "Reportar error":
