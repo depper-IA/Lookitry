@@ -548,9 +548,9 @@ export class StatsAdminService {
 
 
 
-    const COST_PER_GEN_OPENROUTER = 0.039;
+    const COST_PER_GEN = 0.039;
 
-    const estimatedCostPerGen = COST_PER_GEN_OPENROUTER;
+    const estimatedCostPerGen = COST_PER_GEN;
 
 
 

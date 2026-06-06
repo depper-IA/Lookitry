@@ -1,7 +1,7 @@
 /**
  * Servicio de Vertex AI para Try-On
  *
- * Motor principal: SAM 2 (máscara) + Nano Banana / Gemini 2.5 Flash (generación)
+ * Motor principal: MobileSAM (máscara) + Nano Banana / Gemini 2.5 Flash Image (generación)
  * Fallback automático: n8n cuando Vertex falla
  *
  * Auth GCP: Bearer token via GOOGLE_API_KEY o ADC via GOOGLE_APPLICATION_CREDENTIALS
@@ -11,15 +11,12 @@
 import axios from 'axios';
 import crypto from 'crypto';
 import { GoogleAuth } from 'google-auth-library';
-import sharp from 'sharp';
 
 // ============== CONFIGURACIÓN ==============
 
 const VERTEX_PROJECT_ID = process.env.VERTEX_PROJECT_ID || '';
 const VERTEX_LOCATION = process.env.VERTEX_LOCATION || 'us-central1';
-const VERTEX_SAM2_ENDPOINT = process.env.VERTEX_SAM2_ENDPOINT || '';
 const SAM_LOCAL_URL = process.env.SAM_LOCAL_URL || '';
-const VERTEX_IMAGEN_MODEL = process.env.VERTEX_IMAGEN_MODEL || 'imagen-3.0-generate-002';
 const VERTEX_TIMEOUT_MS = parseInt(process.env.VERTEX_TIMEOUT_MS || '25000', 10);
 const VERTEX_API_KEY = process.env.GOOGLE_API_KEY || '';
 
@@ -270,151 +267,54 @@ async function vertexAIRequest<T>(
   }
 }
 
-// ============== GENERACIÓN DE MÁSCARA (SAM 2) ==============
+// ============== GENERACIÓN DE MÁSCARA (MobileSAM) ==============
 
 /**
- * Genera máscara de segmentación usando SAM 2 en Vertex AI Endpoint
+ * Genera máscara de segmentación con MobileSAM (servicio local en sam-service).
  *
  * @param selfieUrl URL de la selfie en MinIO
  * @returns URL de la máscara PNG con canal alfa en MinIO
  */
-export async function generateMaskWithSAM2(selfieUrl: string): Promise<MaskGenerationResult> {
+export async function generateMaskWithMobileSAM(selfieUrl: string): Promise<MaskGenerationResult> {
   const startTime = Date.now();
 
-  console.log(`[VertexAI] Generando máscara SAM para: ${selfieUrl}`);
+  console.log(`[VertexAI] Generando máscara con MobileSAM para: ${selfieUrl}`);
+
+  if (!SAM_LOCAL_URL) {
+    throw new VertexAIError(
+      VertexAIErrorCode.ENDPOINT_NOT_CONFIGURED,
+      'SAM_LOCAL_URL no configurado. El servicio MobileSAM local es requerido para generar la máscara.'
+    );
+  }
 
   const imageBuffer = await downloadImageFromURL(selfieUrl);
   const base64Image = imageBuffer.toString('base64');
 
-  // Si hay URL local, usarla (Opción 2)
-  if (SAM_LOCAL_URL) {
-    try {
-      console.log(`[SAM-Local] Usando servicio local en: ${SAM_LOCAL_URL}`);
-      
-      const response = await axios.post(`${SAM_LOCAL_URL}/predict`, {
-        image: base64Image,
-      }, {
-        timeout: 45000,
-      });
-
-      const data = response.data;
-      const maskBase64 = data.predictions?.[0]?.maskBase64;
-      
-      if (!maskBase64) throw new Error('SAM Local no devolvió máscara');
-
-      const maskFilename = `mask_local_${Date.now()}.png`;
-      const maskUrl = await saveImageToMinIO(Buffer.from(maskBase64, 'base64'), maskFilename, 'image/png');
-      
-      const processingTimeMs = Date.now() - startTime;
-      console.log(`[SAM-Local] Máscara generada localmente: ${maskUrl} (${processingTimeMs}ms)`);
-      return { maskUrl, processingTimeMs };
-    } catch (localError: any) {
-      const errorDetails = axios.isAxiosError(localError) ? (localError.response?.data || localError.message) : (localError.message || localError);
-      console.error('[SAM-Local] Falló servicio local, intentando Vertex:', JSON.stringify(errorDetails));
-    }
-  }
-
-  if (!VERTEX_SAM2_ENDPOINT) {
-    throw new VertexAIError(
-      VertexAIErrorCode.ENDPOINT_NOT_CONFIGURED,
-      'VERTEX_SAM2_ENDPOINT no configurado. Despliega SAM 2 en un Vertex AI Endpoint.'
-    );
-  }
-
-  const endpointUrl = `${VERTEX_SAM2_ENDPOINT}:predict`;
-
   try {
-    const response = await vertexAIRequest<{ predictions: Array<{ maskBase64?: string; mask?: string }> }>(
-      endpointUrl,
-      {
-        instances: [
-          {
-            image: base64Image,
-          },
-        ],
-        parameters: {
-          confidenceThreshold: 0.5,
-          maskBase64: true,
-        },
-      }
-    );
+    console.log(`[SAM-Local] Usando servicio MobileSAM local en: ${SAM_LOCAL_URL}`);
 
-    const predictions = response.predictions || [];
-    
-    // Si la respuesta incluye 'masks' como array en lugar de maskBase64
-    const anyPred = predictions[0] as any;
-    let maskUrl = '';
-    
-    if (anyPred && anyPred.masks && Array.isArray(anyPred.masks)) {
-      const masks = anyPred.masks;
-      console.log(`[VertexAI] Procesando array booleano de máscaras: ${masks.length}x${masks[0].length}x${masks[0][0].length}`);
-      
-      // Tomamos la primera máscara (o la que tenga mayor área)
-      const targetMask = masks[0]; // array 2D de booleans [height][width]
-      const height = targetMask.length;
-      const width = targetMask[0].length;
-      
-      // Crear un buffer de píxeles RGBA (4 bytes por píxel)
-      const pixelBuffer = Buffer.alloc(width * height * 4);
-      
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          const isMasked = targetMask[y][x];
-          const idx = (y * width + x) * 4;
-          if (isMasked) {
-            // Blanco opaco para la máscara
-            pixelBuffer[idx] = 255;     // R
-            pixelBuffer[idx + 1] = 255; // G
-            pixelBuffer[idx + 2] = 255; // B
-            pixelBuffer[idx + 3] = 255; // Alpha
-          } else {
-            // Transparente para el fondo
-            pixelBuffer[idx] = 0;
-            pixelBuffer[idx + 1] = 0;
-            pixelBuffer[idx + 2] = 0;
-            pixelBuffer[idx + 3] = 0;
-          }
-        }
-      }
-      
-      // Convertir el buffer raw a PNG usando sharp
-      const maskPngBuffer = await sharp(pixelBuffer, {
-        raw: {
-          width: width,
-          height: height,
-          channels: 4
-        }
-      })
-      .png()
-      .toBuffer();
-      
-      const maskFilename = `mask_${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
-      maskUrl = await saveImageToMinIO(maskPngBuffer, maskFilename, 'image/png');
-    } else {
-      const maskBase64 = predictions[0]?.maskBase64 || predictions[0]?.mask;
+    const response = await axios.post(`${SAM_LOCAL_URL}/predict`, {
+      image: base64Image,
+    }, {
+      timeout: 45000,
+    });
 
-      if (!maskBase64) {
-        console.log('Respuesta cruda de SAM:', JSON.stringify(response, null, 2));
-        throw new VertexAIError(
-          VertexAIErrorCode.GENERATION_FAILED,
-          'SAM 2 no devolvió máscara. Respuesta inesperada.'
-        );
-      }
+    const data = response.data;
+    const maskBase64 = data.predictions?.[0]?.maskBase64;
 
-      const maskFilename = `mask_${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
-      const maskBuffer = Buffer.from(maskBase64, 'base64');
-      maskUrl = await saveImageToMinIO(maskBuffer, maskFilename, 'image/png');
-    }
+    if (!maskBase64) throw new Error('MobileSAM no devolvió máscara');
+
+    const maskFilename = `mask_local_${Date.now()}.png`;
+    const maskUrl = await saveImageToMinIO(Buffer.from(maskBase64, 'base64'), maskFilename, 'image/png');
 
     const processingTimeMs = Date.now() - startTime;
-    console.log(`[VertexAI] Máscara generada: ${maskUrl} (${processingTimeMs}ms)`);
-
+    console.log(`[SAM-Local] Máscara generada localmente: ${maskUrl} (${processingTimeMs}ms)`);
     return { maskUrl, processingTimeMs };
   } catch (error) {
     if (error instanceof VertexAIError) throw error;
     throw new VertexAIError(
       VertexAIErrorCode.GENERATION_FAILED,
-      `Error en generateMaskWithSAM2: ${(error as Error).message}`,
+      `Error generando máscara con MobileSAM: ${(error as Error).message}`,
       error
     );
   }
@@ -547,8 +447,7 @@ export function validateVertexAIConfig(): { valid: boolean; errors: string[] } {
 
   if (!VERTEX_PROJECT_ID) errors.push('VERTEX_PROJECT_ID no configurado');
   if (!VERTEX_LOCATION) errors.push('VERTEX_LOCATION no configurado');
-  if (!VERTEX_SAM2_ENDPOINT) errors.push('VERTEX_SAM2_ENDPOINT no configurado');
-  if (!VERTEX_IMAGEN_MODEL) errors.push('VERTEX_IMAGEN_MODEL no configurado');
+  if (!SAM_LOCAL_URL) errors.push('SAM_LOCAL_URL no configurado');
 
   const valid = errors.length === 0;
   if (valid) {
@@ -561,7 +460,7 @@ export function validateVertexAIConfig(): { valid: boolean; errors: string[] } {
 // ============== EXPORT ==============
 
 export const vertexAIService = {
-  generateMaskWithSAM2,
+  generateMaskWithMobileSAM,
   generateWithNanoBanana,
   validateConfig: validateVertexAIConfig,
   VertexAIError,

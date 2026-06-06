@@ -150,7 +150,7 @@ class GenerationsLogService {
       product_id: job.product_id,
       selfie_url: job.selfie_url,
       status: 'processing',
-      model_used: job.model_used || 'openrouter',
+      model_used: job.model_used || 'vertex',
       retry_count: job.retry_count || 0,
       metadata: {
         original_generation_id: job.generation_id,
