@@ -27,7 +27,7 @@
 | Autenticación | JWT propio (no Supabase Auth) |
 | Almacenamiento | MinIO (`minio.wilkiedevs.com`) |
 | Pagos | Wompi (Colombia) y PayPal (Internacional) |
-| IA / Try-On | n8n + OpenRouter (flujo `wPLypk7KhBcFLicX`) |
+| IA / Try-On | Vertex AI (Gemini 2.5 Flash Image), n8n como respaldo |
 | Antispam | Cloudflare Turnstile |
 | Email | SMTP Hostinger e integración con Brevo API |
 | Deploy | Docker Compose en VPS Hostinger |

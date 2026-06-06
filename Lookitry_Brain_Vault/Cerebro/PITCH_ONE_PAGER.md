@@ -121,7 +121,7 @@ Diseñamos Lookitry para que sea tan fácil como usar Facebook.
 | Generaciones totales | 76 | ✅ Estrés técnico |
 | Tasa de éxito AI | 68% | 📈 En mejora |
 | Plugin WooCommerce | Listo | ✅ Funcional |
-| Pipeline AI (SAM 2 + Gemini) | Operativo | ✅ Estable |
+| Pipeline AI (MobileSAM + Gemini) | Operativo | ✅ Estable |
 
 **Estado del proyecto:** MVP 100% funcional. Hemos procesado +70 generaciones reales de prueba, validando la estabilidad del pipeline AI y la integración con el widget. Actualmente operamos con 3 marcas en modo 'active testing' para pulir el UX antes del lanzamiento masivo.
 

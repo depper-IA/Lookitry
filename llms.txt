@@ -13,9 +13,9 @@ Lookitry es una plataforma B2B SaaS que permite a las marcas de moda integrar un
 | Backend | Node.js + Express, TypeScript |
 | Base de Datos | Supabase (PostgreSQL) |
 | Almacenamiento | MinIO (S3-Compatible) |
-| Automatizacion | n8n (Webhooks para IA) |
-| Pagos | Wompi (COP) |
-| IA Modelos | OpenRouter (Flujos estables) |
+| Automatizacion | n8n (respaldo del pipeline de IA) |
+| Pagos | Wompi (COP), PayPal (USD) |
+| IA Modelos | Vertex AI — Gemini 2.5 Flash Image (Nano Banana); máscara con MobileSAM local |
 
 ## Estandares de Diseño
 
@@ -39,7 +39,7 @@ Lookitry es una plataforma B2B SaaS que permite a las marcas de moda integrar un
 
 ### Probador Virtual (Widget)
 - Multiples plantillas: `Modern`, `Bold`, `Studio`.
-- Procesamiento en tiempo real via n8n.
+- Procesamiento en tiempo real via Vertex AI (n8n como respaldo).
 - Integracion via Iframe o Script directo.
 
 ### Motor de Leads y Referidos

@@ -96,7 +96,7 @@
 - Ficha 360 de marca (perfil completo).
 - Gestión de admins con permisos granulares (brands, subscriptions, revenue, conversion, health, notifications, settings, admins).
 - Gestión de WooCommerce (brands summary, productos, toggle activo).
-- Monitoreo de créditos OpenRouter y Replicate.
+- Monitoreo de créditos de proveedores de IA (Replicate).
 - Reprocesamiento de pagos Wompi fallidos.
 - Suspensión/restauración de mini-landings.
 - Email Campaigns (Brevo SMTP + API tracking, batching, scheduling).
@@ -366,7 +366,7 @@
 - `/api/admin/admins/me/password`
 - `/api/admin/trial-campaign` (GET, POST, PATCH)
 - `/api/admin/feedback` (GET), `/api/admin/feedback/:id` (resolve, DELETE), `/api/admin/feedback/count-unresolved`, `/api/admin/feedback/stats`
-- `/api/admin/openrouter-credits`, `/api/admin/replicate-credits`
+- `/api/admin/replicate-credits`
 - `/api/admin/system/stats`, `/api/admin/audit-log`
 - `/api/admin/revenue/stats`, `/api/admin/revenue/payments`
 - `/api/admin/reprocess-wompi/:reference`

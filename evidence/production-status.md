@@ -225,7 +225,7 @@ Lookitry — Probador Virtual con IA para tu Tienda de Ropa
                     │   Vertex AI    │
                     │   (GCP)        │
                     │ Gemini 2.5 Flash│
-                    │   Imagen 3      │
+                    │   Nano Banana   │
                     └─────────────────┘
 ```
 
@@ -245,7 +245,7 @@ Lookitry — Probador Virtual con IA para tu Tienda de Ropa
 | **Database** | Supabase PostgreSQL | - |
 | **Vector DB** | pgvector | - |
 | **AI** | Vertex AI Gemini 2.5 Flash | - |
-| **AI** | Vertex AI Imagen 3 | - |
+| **AI** | Vertex AI Gemini 2.5 Flash Image (Nano Banana) | - |
 | **AI** | MobileSAM | - |
 | **Workflow** | n8n | latest |
 | **Storage** | MinIO | latest |

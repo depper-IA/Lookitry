@@ -243,14 +243,11 @@ Backend valida créditos y encola en Redis
         ↓
 Queue Worker procesa el trabajo
         ↓
-[Opción A] SAM Local (MobileSAM FastAPI en sam-service/)
-        ↓
-[Opción B] Vertex AI SAM 2 Endpoint (si SAM local falla)
+MobileSAM local (FastAPI en sam-service/) genera la máscara
         ↓
 Máscara PNG generada → guardada en MinIO
         ↓
-Vertex AI Imagen 3 (inpainting con máscara)
-  ó Gemini 2.5 Flash Image (Nano Banana, multimodal)
+Vertex AI — Gemini 2.5 Flash Image (Nano Banana, `gemini-2.5-flash-image`)
         ↓
 Imagen resultado → guardada en MinIO
         ↓
@@ -262,8 +259,6 @@ Frontend polling detecta resultado
 **Variables de entorno:**
 - `VERTEX_PROJECT_ID` — GCP project ID (`gen-lang-client-0591001769`)
 - `VERTEX_LOCATION` — Región (`us-central1`)
-- `VERTEX_SAM2_ENDPOINT` — URL del endpoint SAM 2
-- `VERTEX_IMAGEN_MODEL` — Modelo (`imagen-3.0-generate-002`)
 - `SAM_LOCAL_URL` — URL del servicio MobileSAM local (`http://sam-service:8000`)
 - `GOOGLE_API_KEY` / `GOOGLE_APPLICATION_CREDENTIALS` — Auth GCP
 

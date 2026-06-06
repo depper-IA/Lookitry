@@ -336,9 +336,9 @@ Para evitar corrupciones de codigo y caidas del sistema:
 - Usar maybeSingle() o validaciones manuales en lugar de .single()
 
 ### 5.4 Gestion de APIs de IA
-- **Vertex AI (GCP)**: Pipeline PRIMARIO de Try-On e imágenes. Usa Gemini 2.5 Flash + Imagen 3 vía `@google-cloud/vertexai`. TODA generación de imágenes pasa por aquí.
+- **Vertex AI (GCP)**: Pipeline PRIMARIO de Try-On. Usa Gemini 2.5 Flash Image (Nano Banana, `gemini-2.5-flash-image`) vía Vertex AI. TODA generación de Try-On pasa por aquí.
 - **MobileSAM (Python/FastAPI)**: Servicio LOCAL para generación de máscaras antes del pipeline Try-On. Corre en Docker. PROHIBIDO reemplazar por llamada externa sin autorización explícita.
-- **OpenRouter**: SOLO accesible vía n8n como FALLBACK cuando Vertex AI falla. PROHIBIDO llamar directamente desde el backend — la integración directa fue eliminada (ver commits `2bb94eb6`, `e281c8a8`).
+- **n8n (fallback)**: pipeline de respaldo cuando Vertex AI falla o está deshabilitado (`VERTEX_AI_ENABLED=false`). PROHIBIDO reintroducir OpenRouter en el backend — la integración directa fue eliminada (ver commits `2bb94eb6`, `e281c8a8`).
 - **GROQ**: Solo como `small_model` fallback de emergencia. No usar para requests normales.
 
 ### 5.5 Blindaje contra Overload de MiniMax (CRÍTICO)
