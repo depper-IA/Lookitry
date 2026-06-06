@@ -99,7 +99,7 @@ export async function executeTryOnPipeline(
   if (samLocalUrl) {
     try {
       console.log('[TryOnPipeline] Paso 0: Generando máscara con SAM local...');
-      const maskResult = await vertexAIService.generateMaskWithSAM2(selfieSignedUrl);
+      const maskResult = await vertexAIService.generateMaskWithMobileSAM(selfieSignedUrl);
       payload.maskUrl = maskResult.maskUrl;
       console.log(`[TryOnPipeline] Máscara SAM generada: ${maskResult.maskUrl} (${maskResult.processingTimeMs}ms)`);
     } catch (samError) {
@@ -122,10 +122,10 @@ export async function executeTryOnPipeline(
   let resultImageUrl: string | null = null;
 
   try {
-    // 1a. Si no hay máscara de SAM local, intentar con SAM 2 de Vertex
+    // 1a. Si no se generó la máscara en el paso 0, generarla ahora con MobileSAM
     if (!maskUrl) {
-      console.log('[TryOnPipeline] Paso 1: Generando máscara con SAM 2 (Vertex)...');
-      const maskResult = await vertexAIService.generateMaskWithSAM2(selfieSignedUrl);
+      console.log('[TryOnPipeline] Paso 1: Generando máscara con MobileSAM...');
+      const maskResult = await vertexAIService.generateMaskWithMobileSAM(selfieSignedUrl);
       maskUrl = maskResult.maskUrl;
       payload.maskUrl = maskUrl;
       console.log(`[TryOnPipeline] Máscara generada: ${maskUrl} (${maskResult.processingTimeMs}ms)`);

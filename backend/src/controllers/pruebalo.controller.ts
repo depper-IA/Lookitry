@@ -1297,7 +1297,7 @@ export class PruebaloController {
 
               generationId: generation.id,
 
-              provider: 'openrouter',
+              provider: 'vertex',
 
             },
 
@@ -1311,7 +1311,7 @@ export class PruebaloController {
 
           'SERVICE_CREDITS_EXHAUSTED',
 
-          'openrouter'
+          'vertex'
 
         );
 
