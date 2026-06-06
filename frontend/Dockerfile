@@ -20,10 +20,13 @@ ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
 ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
 ENV NEXT_PUBLIC_REBECCA_WIDGET_ENABLED=$NEXT_PUBLIC_REBECCA_WIDGET_ENABLED
 ENV SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY
-COPY package*.json pnpm-lock.yaml .npmrc ./
+
 RUN apk add --no-cache vips-dev
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
-RUN pnpm install
+
+COPY package*.json pnpm-lock.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile
+
 COPY . .
 RUN pnpm run build
 
@@ -31,12 +34,16 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=768
+
 RUN apk add --no-cache curl vips
+
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+
 RUN rm -rf node_modules/sharp node_modules/@img
 COPY --from=builder /app/node_modules/sharp ./node_modules/sharp
 COPY --from=builder /app/node_modules/@img ./node_modules/@img
+
 EXPOSE 3000
 CMD ["node", "server.js"]

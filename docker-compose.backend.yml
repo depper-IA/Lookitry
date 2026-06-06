@@ -31,10 +31,13 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
 
 
 networks:
   proxy:
     external: true
-

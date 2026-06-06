@@ -214,10 +214,10 @@ if do_backend:
 
     build_cmd_backend = (
         f"cd {REPO} && docker compose -f docker-compose.backend.yml down && "
-        f"docker compose -f docker-compose.backend.yml build {build_flag} > docker_build_backend.log 2>&1 || "
+        f"nice -n 15 docker compose -f docker-compose.backend.yml build {build_flag} > docker_build_backend.log 2>&1 || "
         f"{{ tail -20 docker_build_backend.log; exit 1; }}"
     )
-    run(ssh, build_cmd_backend, timeout=300)
+    run(ssh, build_cmd_backend, timeout=360)
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.backend.yml up -d")
 
 if do_frontend:
@@ -255,10 +255,10 @@ if do_frontend:
         )
     build_cmd = (
         f"cd {REPO} && docker compose -f docker-compose.frontend.yml down && "
-        f"docker compose -f docker-compose.frontend.yml build {build_flag} > docker_build_frontend.log 2>&1 || "
+        f"nice -n 15 docker compose -f docker-compose.frontend.yml build {build_flag} > docker_build_frontend.log 2>&1 || "
         f"{{ tail -20 docker_build_frontend.log; exit 1; }}"
     )
-    run(ssh, build_cmd, timeout=360)
+    run(ssh, build_cmd, timeout=420)
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml up -d")
 
 run(ssh, "docker ps --format 'table {{.Names}}\\t{{.Status}}'")
@@ -267,6 +267,10 @@ wait_for_health(ssh)
 
 print("\n=== Limpiando pantalla de mantenimiento ===")
 run(ssh, f"cd {REPO} && docker compose -f docker-compose.errors.yml down")
+
+print("\n=== Limpiando imágenes Docker viejas (>24h) ===")
+run(ssh, "docker image prune -f --filter 'until=24h'", check=False)
+run(ssh, "docker builder prune -f --filter 'until=24h'", check=False)
 
 ssh.close()
 print("\nDeploy completado.")
