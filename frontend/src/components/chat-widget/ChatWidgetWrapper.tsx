@@ -36,7 +36,6 @@ const BLOCKED_PATHS = [
   '/plugin-woocommerce',
   '/mini-landing',
   '/trial',
-  '/command-center',
   '/estado',
   '/api-developer',
 ];
