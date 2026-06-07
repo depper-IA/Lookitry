@@ -53,13 +53,19 @@ async def predict(request: PredictRequest):
         
         h, w, _ = input_image.shape
         
-        # Multiple points to capture the whole person (chest, waist, legs)
+        # Multiple points distributed horizontally and vertically to capture the entire human figure
+        # This handles split-color clothing (e.g. half-plaid, half-white shirts) and off-center poses
         input_point = np.array([
-            [w // 2, int(h * 0.3)],  # upper body / chest
-            [w // 2, int(h * 0.5)],  # mid body / waist
-            [w // 2, int(h * 0.7)]   # lower body / legs
+            [w // 2, int(h * 0.15)],       # Head / Face center
+            [int(w * 0.4), int(h * 0.35)], # Upper torso / Left chest
+            [w // 2, int(h * 0.35)],       # Upper torso / Center chest
+            [int(w * 0.6), int(h * 0.35)], # Upper torso / Right chest
+            [int(w * 0.4), int(h * 0.55)], # Mid torso / Left waist
+            [w // 2, int(h * 0.55)],       # Mid torso / Center waist
+            [int(w * 0.6), int(h * 0.55)], # Mid torso / Right waist
+            [w // 2, int(h * 0.75)],       # Lower body / Center legs
         ])
-        input_label = np.array([1, 1, 1])
+        input_label = np.array([1, 1, 1, 1, 1, 1, 1, 1])
         
         masks, scores, logits = predictor.predict(
             point_coords=input_point,
