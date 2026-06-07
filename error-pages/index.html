@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actualizando | Lookitry</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0A0A0A;
+            --bg-color: #0a0a0a;
             --text-primary: #FFFFFF;
-            --text-secondary: #9CA3AF;
-            --accent: #E8FF71; /* Accent color matching Lookitry aesthetic */
+            --text-secondary: #999999;
+            --accent: #FF5C3A; /* Accent color matching Lookitry aesthetic */
         }
         
         body {
@@ -23,7 +23,7 @@
             align-items: center;
             background-color: var(--bg-color);
             color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
+            font-family: 'DM Sans', sans-serif;
             text-align: center;
             overflow: hidden;
             position: relative;
@@ -34,7 +34,7 @@
             position: absolute;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 70%);
+            background: radial-gradient(circle, rgba(255, 92, 58, 0.03) 0%, rgba(0,0,0,0) 70%);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -52,7 +52,7 @@
         }
 
         .logo {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 2rem;
             font-weight: 700;
             letter-spacing: -0.05em;
@@ -65,15 +65,15 @@
         .spinner {
             width: 48px;
             height: 48px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--text-primary);
+            border: 3px solid rgba(255, 92, 58, 0.1);
+            border-top-color: var(--accent);
             border-radius: 50%;
             animation: spin 1s infinite linear;
             margin-bottom: 2rem;
         }
 
         h1 {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 1.75rem;
             font-weight: 500;
             margin: 0 0 1rem 0;
@@ -108,11 +108,11 @@
     <div class="container">
         <div class="logo">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
-                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#FF5C3A"/>
+                <path d="M2 17L12 22L22 17" stroke="#FF5C3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="#FF5C3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Lookitry
+            Look<span style="color: #FF5C3A">itry</span>
         </div>
         
         <div class="spinner"></div>
