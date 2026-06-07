@@ -65,6 +65,44 @@ Cuando el usuario autorice el deploy, seguir estos pasos:
 5. **Verificar** que el health check devuelve 200 y los endpoints funcionan
 6. **Si hay errores**, diagnosticar y arreglar antes de reportar exito
 
+### 1.2b Deploys Rápidos y Quirúrgicos (Sin timeouts en VPS de recursos limitados)
+
+**PROBLEMA:** Las compilaciones de Next.js (frontend) o pnpm install completas son muy pesadas y pueden provocar que el script de deploy `_deploy_now.py` alcance el timeout o sature la CPU/RAM del VPS, dejando la página de mantenimiento activa por error.
+
+**SOLUCIÓN / PROTOCOLO MANDATORIO PARA DEPLOYS SIMPLES:**
+
+1. **Sincronización por Git:**
+   - Realizar `git push` desde el entorno local.
+   - En el VPS, entrar a `/root/virtual-tryon` y correr `git pull` para actualizar el código sin compilar.
+
+2. **Reconstrucción quirúrgica:**
+   - **Solo Backend (cambios en Express/API):**
+     ```bash
+     # En el VPS (/root/virtual-tryon)
+     docker compose -f docker-compose.backend.yml build
+     docker compose -f docker-compose.backend.yml up -d
+     ```
+   - **Solo Frontend (cambios menores en React/Next.js):**
+     ```bash
+     # En el VPS (/root/virtual-tryon)
+     docker compose -f docker-compose.frontend.yml build
+     docker compose -f docker-compose.frontend.yml up -d
+     ```
+   - **Solo SAM (cambios de endpoints en Python):**
+     ```bash
+     # En el VPS (/root/virtual-tryon)
+     docker build -t virtual-tryon-sam-local sam-service/
+     docker stop lookitry-sam-local && docker rm lookitry-sam-local
+     docker run -d --name lookitry-sam-local --network proxy --restart unless-stopped virtual-tryon-sam-local
+     ```
+
+3. **Verificación post-deploy:**
+   - Correr `docker ps` para confirmar que los contenedores estén `healthy`.
+   - Si la página de mantenimiento quedó arriba por error, bajarla con:
+     ```bash
+     docker compose -f docker-compose.errors.yml down
+     ```
+
 ---
 
 ## 1.3 Generación de Imágenes con Vertex AI
