@@ -111,14 +111,15 @@ export function NavProductsDropdown({
                             </span>
                           )}
                           {logo && (
-                            <Image
-                              src={logo}
-                              alt=""
-                              width={48}
-                              height={16}
-                              className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-                              style={{ width: 'auto', height: 'auto' }}
-                            />
+                            <div className="relative h-3.5 w-16 shrink-0">
+                              <Image
+                                src={logo}
+                                alt=""
+                                fill
+                                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                                sizes="64px"
+                              />
+                            </div>
                           )}
                         </div>
                         <p className="text-[10px] text-text-secondary leading-snug">{desc}</p>
