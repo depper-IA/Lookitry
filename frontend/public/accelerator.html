@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lookitry — One Pager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:    #FF5C3A;
+      --bg:       #0a0a0a;
+      --surface:  #141414;
+      --surface2: #1a1a1a;
+      --border:   #2a2a2a;
+      --text:     #ffffff;
+      --text-sec: #bbbbbb;
+      --text-mut: #777777;
+      --jakarta:  'Plus Jakarta Sans', system-ui, sans-serif;
+      --dm:       'DM Sans', system-ui, sans-serif;
+      --radius-card: 12px;
+      --radius-sm:   8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--dm);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LANG TOGGLE ── */
+    .lang-bar {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 100;
+      display: flex;
+      background: var(--surface2);
+      border-radius: 100px;
+      padding: 4px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-family: var(--jakarta);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-mut);
+      padding: 6px 14px;
+      border-radius: 100px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .lang-btn.active {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 64px 32px 96px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 80px;
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-svg { width: 34px; height: 32px; flex-shrink: 0; }
+
+    .logo-text {
+      font-family: var(--jakarta);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: var(--text);
+    }
+    .logo-text em { color: var(--brand); font-style: normal; }
+
+    .header-meta {
+      text-align: right;
+    }
+    .header-meta p {
+      font-size: 12px;
+      color: var(--text-mut);
+      line-height: 1.9;
+      max-width: none;
+      opacity: 1;
+      transform: none;
+    }
+    .header-meta strong { color: var(--text-sec); font-weight: 500; }
+
+    /* ── REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+
+    .reveal-d1 { transition-delay: 0.05s; }
+    .reveal-d2 { transition-delay: 0.10s; }
+    .reveal-d3 { transition-delay: 0.15s; }
+
+    /* ── SECTIONS ── */
+    .section { margin-bottom: 64px; }
+
+    .eyebrow {
+      font-family: var(--jakarta);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      font-family: var(--jakarta);
+      font-size: clamp(20px, 3vw, 26px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+      margin-bottom: 14px;
+    }
+
+    p {
+      font-size: 15px;
+      color: var(--text-sec);
+      margin-bottom: 12px;
+      max-width: 66ch;
+    }
+    p:last-child { margin-bottom: 0; }
+    p strong { color: var(--text); font-weight: 500; }
+
+    /* ── HERO STATEMENT ── */
+    .hero-stat {
+      font-family: var(--jakarta);
+      font-size: clamp(30px, 5.5vw, 46px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      text-wrap: balance;
+      margin-bottom: 24px;
+    }
+    .hero-stat span { color: var(--brand); }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: var(--surface2);
+      margin: 56px 0;
+    }
+
+    /* ── METRICS STRIP ── */
+    .metrics {
+      display: flex;
+      gap: 0;
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      margin-top: 24px;
+    }
+
+    .metric {
+      flex: 1;
+      padding: 20px 22px;
+      position: relative;
+    }
+
+    .metric + .metric::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 20%; height: 60%;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .metric-num {
+      font-family: var(--jakarta);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-mut);
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+
+    /* ── FEATURE LIST ── */
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+    }
+
+    .feature-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--brand);
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+
+    .feature-item p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* ── COMPETITOR TABLE ── */
+    .cmp-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 13px;
+    }
+
+    .cmp-table th {
+      text-align: left;
+      padding: 9px 14px;
+      background: var(--surface);
+      color: var(--text-mut);
+      font-size: 11px;
+      font-family: var(--jakarta);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .cmp-table th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+    .cmp-table th:last-child  { border-radius: 0 var(--radius-sm) 0 0; }
+
+    .cmp-table td {
+      padding: 11px 14px;
+      background: var(--surface2);
+      color: var(--text-sec);
+      vertical-align: top;
+    }
+    .cmp-table tr:last-child td:first-child { border-radius: 0 0 0 var(--radius-sm); }
+    .cmp-table tr:last-child td:last-child  { border-radius: 0 0 var(--radius-sm) 0; }
+
+    .cmp-table td:first-child { color: var(--text); font-weight: 500; }
+
+    .badge-yes {
+      display: inline-block;
+      color: #10b981;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .badge-no {
+      display: inline-block;
+      color: var(--text-mut);
+      font-size: 12px;
+    }
+
+    /* ── MARKET ROW ── */
+    .market-row {
+      display: flex;
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    .market-cell {
+      flex: 1;
+      padding: 22px 24px;
+      position: relative;
+    }
+    .market-cell + .market-cell::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 20%; height: 60%;
+      width: 1px; background: var(--border);
+    }
+    .market-cell .tam-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-mut);
+      margin-bottom: 4px;
+    }
+    .market-cell .tam-val {
+      font-family: var(--jakarta);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+    .market-cell .tam-desc {
+      font-size: 11px;
+      color: var(--text-mut);
+      margin-top: 5px;
+    }
+
+    /* ── PRICING TABLE ── */
+    .price-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 13px;
+    }
+    .price-table th {
+      text-align: left;
+      padding: 9px 14px;
+      background: var(--surface);
+      color: var(--text-mut);
+      font-size: 11px;
+      font-family: var(--jakarta);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .price-table th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+    .price-table th:last-child  { border-radius: 0 var(--radius-sm) 0 0; }
+    .price-table td {
+      padding: 11px 14px;
+      background: var(--surface2);
+      color: var(--text-sec);
+    }
+    .price-table tr:last-child td:first-child { border-radius: 0 0 0 var(--radius-sm); }
+    .price-table tr:last-child td:last-child  { border-radius: 0 0 var(--radius-sm) 0; }
+    .price-table td:first-child { color: var(--text); font-weight: 500; }
+    .price-table td.amt { color: var(--brand); font-family: var(--jakarta); font-weight: 600; white-space: nowrap; }
+
+    /* ── TEAM ── */
+    .team-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .team-card {
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      padding: 22px;
+    }
+    .team-card h4 {
+      font-family: var(--jakarta);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .team-card .role { font-size: 12px; color: var(--brand); font-weight: 500; margin-bottom: 10px; }
+    .team-card p { font-size: 13px; color: var(--text-mut); margin: 0; max-width: none; }
+
+    /* ── TECH TAGS ── */
+    .tech-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .tech-tag {
+      background: var(--surface);
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-family: var(--jakarta);
+      font-weight: 600;
+      color: var(--text-sec);
+    }
+
+    /* ── INFRA BANNER ── */
+    .infra-banner {
+      background: var(--surface2);
+      border-radius: var(--radius-card);
+      padding: 52px 40px 44px;
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .infra-icon {
+      width: 44px;
+      height: 42px;
+      margin: 0 auto 24px;
+      display: block;
+    }
+
+    .infra-label {
+      font-family: var(--jakarta);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      margin: 0 auto 20px;
+      max-width: none;
+    }
+
+    .infra-body {
+      font-size: 14px;
+      color: var(--text-sec);
+      max-width: 52ch;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+    }
+
+    .infra-logos {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+
+    .infra-logo-wrap {
+      display: flex;
+      align-items: center;
+      opacity: 0.85;
+      transition: opacity 0.2s;
+    }
+
+    .infra-logo-wrap:hover { opacity: 1; }
+
+    /* ── ROADMAP ── */
+    .roadmap-card {
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      padding: 28px;
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .roadmap-label {
+      display: inline-block;
+      background: var(--brand);
+      color: #fff;
+      font-family: var(--jakarta);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 14px;
+    }
+
+    .roadmap-card h3 {
+      font-family: var(--jakarta);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .roadmap-card p {
+      font-size: 13px;
+      color: var(--text-sec);
+      margin: 0;
+      max-width: none;
+    }
+
+    .roadmap-visual {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 12px;
+      color: var(--text-mut);
+      font-family: monospace;
+      line-height: 1.7;
+    }
+
+    .roadmap-visual .chat-bubble {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .roadmap-visual .bubble-user {
+      text-align: right;
+      color: var(--text-sec);
+    }
+
+    .roadmap-visual .bubble-user span {
+      display: inline-block;
+      background: #005c4b;
+      color: #fff;
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 8px 8px 2px 8px;
+      font-family: var(--dm);
+    }
+
+    .roadmap-visual .bubble-bot span {
+      display: inline-block;
+      background: var(--surface);
+      color: var(--text-sec);
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 2px 8px 8px 8px;
+      font-family: var(--dm);
+      border: 1px solid var(--border);
+    }
+
+    .roadmap-visual .bubble-highlight span {
+      border-color: var(--brand);
+      color: var(--text);
+    }
+
+    @media (max-width: 620px) {
+      .roadmap-card { grid-template-columns: 1fr; }
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 72px;
+    }
+    .footer-left { display: flex; align-items: center; gap: 14px; }
+    .footer-info p { font-size: 13px; color: var(--text-sec); margin: 0; max-width: none; opacity: 1; transform: none; }
+    .footer-info a { color: var(--brand); text-decoration: none; font-weight: 500; }
+    .footer-info a:hover { text-decoration: underline; }
+    .footer-info .sub { font-size: 11px; color: var(--text-mut); margin-top: 3px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 620px) {
+      .page { padding: 40px 20px 64px; }
+      .header { flex-direction: column; gap: 20px; }
+      .header-meta { text-align: left; }
+      .metrics { flex-direction: column; }
+      .metric + .metric::before { display: none; }
+      .market-row { flex-direction: column; }
+      .market-cell + .market-cell::before { display: none; }
+      .team-grid { grid-template-columns: 1fr; }
+      .footer { flex-direction: column; gap: 16px; align-items: flex-start; }
+    }
+
+    /* ── REDUCED MOTION ── */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    }
+
+    /* ── LANG HIDE ── */
+    [data-lang] { display: none; }
+    .lang-en [data-lang="en"] { display: block; }
+    .lang-en [data-lang-inline="en"] { display: inline; }
+    .lang-es [data-lang="es"] { display: block; }
+    .lang-es [data-lang-inline="es"] { display: inline; }
+    [data-lang-inline] { display: none; }
+  </style>
+</head>
+<body class="lang-en">
+
+  <!-- LANG TOGGLE -->
+  <div class="lang-bar" role="group" aria-label="Language selector">
+    <button class="lang-btn active" data-switch="en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" data-switch="es" onclick="setLang('es')">ES</button>
+  </div>
+
+  <div class="page">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="logo-wrap">
+        <svg class="logo-svg" viewBox="0 0 255.95 238.82" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <polygon fill="#FF5C3A" points="64.86 4.53 65.09 180.12 140.66 180.12 173.77 234.34 5.78 234.34 5.78 4.53 64.86 4.53"/>
+          <polygon fill="#ffffff" points="79.22 164.66 79.22 131.32 185.31 4.64 247.29 4.48 170.77 102.47 253.38 234.34 192.8 234.34 135.92 144.81 121.73 164.66 79.22 164.66"/>
+        </svg>
+        <span class="logo-text">Look<em>itry</em></span>
+      </div>
+      <div class="header-meta">
+        <p data-lang="en"><strong>AI Virtual Try-On for Latin American Fashion</strong></p>
+        <p data-lang="en">Colombia &middot; Founded 2026 &middot; Pre-seed</p>
+        <p data-lang="es"><strong>Probador Virtual con IA para Moda Latinoamericana</strong></p>
+        <p data-lang="es">Colombia &middot; Fundada 2026 &middot; Pre-seed</p>
+      </div>
+    </div>
+
+    <!-- PROBLEM -->
+    <div class="section">
+      <p class="hero-stat reveal">
+        <span data-lang-inline="en">30% of online fashion purchases in LATAM are returned</span>
+        <span data-lang-inline="es">El 30% de las compras de moda online en LATAM son devueltas</span>
+        — <span data-lang-inline="en">not for quality, but because buyers cannot see how the product looks on them before buying.</span>
+        <span data-lang-inline="es">no por calidad, sino porque el comprador no puede verse usando la prenda antes de comprar.</span>
+      </p>
+
+      <p class="reveal reveal-d1" data-lang="en">
+        For a mid-size fashion retailer, that means <strong>15 to 30% of order value lost to reverse logistics</strong>: return shipping, restocking labor, unsellable inventory, and customers who rarely buy from the same store again after a bad experience.
+      </p>
+      <p class="reveal reveal-d2" data-lang="en">
+        The problem exists across apparel, footwear, and accessories — wherever a buyer has to imagine fit and appearance without physically trying the product.
+      </p>
+
+      <p class="reveal reveal-d1" data-lang="es">
+        Para un retailer de moda mediano, eso representa <strong>entre el 15% y el 30% del valor del pedido perdido en logística inversa</strong>: envío de devolución, mano de obra de restock, inventario no vendible, y clientes que raramente vuelven a comprar en la misma tienda.
+      </p>
+      <p class="reveal reveal-d2" data-lang="es">
+        El problema afecta ropa, calzado y accesorios — cualquier categoría donde el comprador tiene que imaginar cómo le quedará el producto sin probárselo físicamente.
+      </p>
+    </div>
+
+    <div class="divider reveal"></div>
+
+    <!-- SOLUTION -->
+    <div class="section">
+      <div class="eyebrow reveal" data-lang="en">The Solution</div>
+      <div class="eyebrow reveal" data-lang="es">La Solución</div>
+
+      <h2 class="reveal reveal-d1" data-lang="en">A virtual try-on widget that installs in any store in under 10 minutes. No app. No dev team.</h2>
+      <h2 class="reveal reveal-d1" data-lang="es">Un widget de probador virtual que se instala en cualquier tienda en menos de 10 minutos. Sin app. Sin desarrollo técnico.</h2>
+
+      <p class="reveal reveal-d2" data-lang="en">
+        The end customer uploads a selfie, selects a product from the catalog, and sees how it looks on them in under 12 seconds — directly in the browser, without leaving the store.
+        Lookitry integrates with WooCommerce, Shopify, and any HTML site.
+      </p>
+      <p class="reveal reveal-d2" data-lang="es">
+        El cliente final sube una selfie, selecciona una prenda del catálogo y ve cómo le queda en menos de 12 segundos, directamente en el navegador, sin salir de la tienda.
+        Lookitry se integra con WooCommerce, Shopify y cualquier sitio HTML.
+      </p>
+
+      <div class="feature-list reveal reveal-d3">
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <p data-lang="en"><strong>No app required.</strong> Works entirely in the browser on mobile and desktop.</p>
+          <p data-lang="es"><strong>Sin app.</strong> Funciona completamente en el navegador, en móvil y escritorio.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <p data-lang="en"><strong>AI trained on Latin body types.</strong> Results are realistic for the actual target market.</p>
+          <p data-lang="es"><strong>IA entrenada con fisionomía latina.</strong> Los resultados son realistas para el mercado objetivo real.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <p data-lang="en"><strong>Demand intelligence.</strong> Each try-on session generates data on which SKUs are viewed, tried, and purchased — feeding inventory planning decisions.</p>
+          <p data-lang="es"><strong>Inteligencia de demanda.</strong> Cada sesión genera datos sobre qué SKUs se ven, se prueban y se compran, alimentando decisiones de planificación de inventario.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider reveal"></div>
+
+    <!-- TRACTION -->
+    <div class="section">
+      <div class="eyebrow reveal" data-lang="en">Traction</div>
+      <div class="eyebrow reveal" data-lang="es">Tracción</div>
+
+      <h2 class="reveal reveal-d1" data-lang="en">9 registered brands. 86 real try-on generations processed. 72% AI success rate.</h2>
+      <h2 class="reveal reveal-d1" data-lang="es">9 marcas registradas. 86 generaciones de try-on reales procesadas. 72% de tasa de éxito de IA.</h2>
+
+      <p class="reveal reveal-d2" data-lang="en">
+        Lookitry launched with a validation-first approach: 6 brands on trial plans and 3 on paid subscriptions (Basic and Pro). We have processed 86 real try-on generations across these brands, validating both the AI pipeline and the integration workflow before scaling go-to-market.
+      </p>
+      <p class="reveal reveal-d2" data-lang="es">
+        Lookitry arrancó con un enfoque de validación primero: 6 marcas en plan trial y 3 en suscripciones pagas (Basic y Pro). Procesamos 86 generaciones reales de try-on, validando el pipeline de IA y el flujo de integración antes de escalar la adquisición comercial.
+      </p>
+
+      <div class="metrics reveal reveal-d3">
+        <div class="metric">
+          <div class="metric-num">9</div>
+          <div class="metric-label" data-lang="en">registered brands</div>
+          <div class="metric-label" data-lang="es">marcas registradas</div>
+        </div>
+        <div class="metric">
+          <div class="metric-num">86</div>
+          <div class="metric-label" data-lang="en">try-on generations</div>
+          <div class="metric-label" data-lang="es">generaciones de try-on</div>
+        </div>
+        <div class="metric">
+          <div class="metric-num">72%</div>
+          <div class="metric-label" data-lang="en">AI success rate</div>
+          <div class="metric-label" data-lang="es">tasa de éxito de IA</div>
+        </div>
+        <div class="metric">
+          <div class="metric-num">TRL 7</div>
+          <div class="metric-label" data-lang="en">system in operational environment</div>
+          <div class="metric-label" data-lang="es">sistema en entorno operacional</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider reveal"></div>
+
+    <!-- MARKET -->
+    <div class="section">
+      <div class="eyebrow reveal" data-lang="en">Market</div>
+      <div class="eyebrow reveal" data-lang="es">Mercado</div>
+
+      <h2 class="reveal reveal-d1" data-lang="en">$25B fashion e-commerce GMV in LATAM. No established regional virtual try-on player.</h2>
+      <h2 class="reveal reveal-d1" data-lang="es">$25B de GMV en e-commerce de moda en LATAM. Sin un player regional establecido de probador virtual.</h2>
+
+      <p class="reveal reveal-d2" data-lang="en">
+        Global solutions (Wannaby, Vue.Ai) require months of integration and USD $1,000+/month. They are built for enterprise brands in developed markets. Lookitry is designed from day one for Latin American SMB fashion retailers: plug-and-play setup, local support, and pricing accessible to stores that move $10k-$100k/month in GMV.
+      </p>
+      <p class="reveal reveal-d2" data-lang="es">
+        Las soluciones globales (Wannaby, Vue.Ai) requieren meses de integración y USD $1,000+/mes. Están construidas para marcas enterprise en mercados desarrollados. Lookitry está diseñado desde el primer día para retailers PYME de moda en Latinoamérica: instalación plug-and-play, soporte local y precios accesibles para tiendas con $10k-$100k/mes en GMV.
+      </p>
+
+      <div class="market-row reveal reveal-d3">
+        <div class="market-cell">
+          <div class="tam-label">TAM</div>
+          <div class="tam-val">$25B</div>
+          <div class="tam-desc" data-lang="en">LATAM fashion e-commerce GMV</div>
+          <div class="tam-desc" data-lang="es">GMV e-commerce moda LATAM</div>
+        </div>
+        <div class="market-cell">
+          <div class="tam-label">SAM</div>
+          <div class="tam-val">5,000</div>
+          <div class="tam-desc" data-lang="en">fashion retailers with 50+ SKUs in LATAM</div>
+          <div class="tam-desc" data-lang="es">retailers de moda con 50+ SKUs en LATAM</div>
+        </div>
+        <div class="market-cell">
+          <div class="tam-label">SOM</div>
+          <div class="tam-val">1,000</div>
+          <div class="tam-desc" data-lang="en">target retailers, Phase 1 (12-18 months)</div>
+          <div class="tam-desc" data-lang="es">retailers objetivo, Fase 1 (12-18 meses)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider reveal"></div>
+
+    <!-- COMPETITIVE -->
+    <div class="section">
+      <div class="eyebrow reveal" data-lang="en">Competitive Position</div>
+      <div class="eyebrow reveal" data-lang="es">Posición Competitiva</div>
+
+      <h2 class="reveal reveal-d1" data-lang="en">Built for LATAM SMBs — not a global enterprise tool localized for the region.</h2>
+      <h2 class="reveal reveal-d1" data-lang="es">Construido para PYMES de LATAM — no una herramienta enterprise globalizada adaptada a la región.</h2>
+
+      <table class="cmp-table reveal reveal-d2">
+        <thead>
+          <tr>
+            <th><span data-lang="en">Feature</span><span data-lang="es">Feature</span></th>
+            <th>Lookitry</th>
+            <th>Wannaby</th>
+            <th>Vue.Ai</th>
+            <th>Fitonomy</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span data-lang="en">Install &lt;10 min, no-code</span><span data-lang="es">Instalación &lt;10 min, sin código</span></td>
+            <td><span class="badge-yes">Yes</span></td>
+            <td><span class="badge-no">No</span></td>
+            <td><span class="badge-no">No</span></td>
+            <td><span class="badge-no">No</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="en">No app required (browser-only)</span><span data-lang="es">Sin app (solo navegador)</span></td>
+            <td><span class="badge-yes">Yes</span></td>
+            <td><span class="badge-no">No</span></td>
+            <td><span class="badge-no">No</span></td>
+            <td><span class="badge-no">No</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="en">WooCommerce plugin</span><span data-lang="es">Plugin WooCommerce</span></td>
+            <td><span class="badge-yes">Yes</span></td>
+            <td><span class="badge-no">No</span></td>
+            <td><span class="badge-no">No</span></td>
+            <td><span class="badge-no">No</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="en">AI trained on Latin body types</span><span data-lang="es">IA entrenada con fisionomía latina</span></td>
+            <td><span class="badge-yes">Yes</span></td>
+            <td><span class="badge-no">No</span></td>
+            <td><span class="badge-no">No</span></td>
+            <td><span class="badge-no">No</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="en">SMB-accessible pricing</span><span data-lang="es">Precio accesible para PYMES</span></td>
+            <td><span class="badge-yes">Yes</span></td>
+            <td><span class="badge-no">No</span></td>
+            <td><span class="badge-no">No</span></td>
+            <td><span class="badge-no">No</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="divider reveal"></div>
+
+    <!-- BUSINESS MODEL -->
+    <div class="section">
+      <div class="eyebrow reveal" data-lang="en">Business Model</div>
+      <div class="eyebrow reveal" data-lang="es">Modelo de Negocio</div>
+
+      <h2 class="reveal reveal-d1" data-lang="en">SaaS with 4 tiers. 94% gross margin per customer at current cost structure.</h2>
+      <h2 class="reveal reveal-d1" data-lang="es">SaaS con 4 tiers. 94% de margen bruto por cliente con la estructura de costos actual.</h2>
+
+      <table class="price-table reveal reveal-d2">
+        <thead>
+          <tr>
+            <th><span data-lang="en">Plan</span><span data-lang="es">Plan</span></th>
+            <th><span data-lang="en">Price</span><span data-lang="es">Precio</span></th>
+            <th><span data-lang="en">Includes</span><span data-lang="es">Incluye</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Trial</td>
+            <td class="amt">$20,000 COP</td>
+            <td><span data-lang="en">50 generations, 1 product, 7 days</span><span data-lang="es">50 generaciones, 1 producto, 7 días</span></td>
+          </tr>
+          <tr>
+            <td>Basic</td>
+            <td class="amt">$180,000 COP/mo</td>
+            <td><span data-lang="en">400 generations/month, 5 products</span><span data-lang="es">400 generaciones/mes, 5 productos</span></td>
+          </tr>
+          <tr>
+            <td>Pro</td>
+            <td class="amt">$350,000 COP/mo</td>
+            <td><span data-lang="en">1,200 generations/month, 15 products, API</span><span data-lang="es">1.200 generaciones/mes, 15 productos, API</span></td>
+          </tr>
+          <tr>
+            <td>Enterprise</td>
+            <td class="amt">From $800,000 COP/mo</td>
+            <td><span data-lang="en">2,000+ generations, 50 products, white label, analytics</span><span data-lang="es">2.000+ generaciones, 50 productos, white label, analytics</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="divider reveal"></div>
+
+    <!-- TECH -->
+    <div class="section">
+      <div class="eyebrow reveal" data-lang="en">Technology</div>
+      <div class="eyebrow reveal" data-lang="es">Tecnología</div>
+
+      <h2 class="reveal reveal-d1" data-lang="en">AI pipeline built on MobileSAM and Gemini 2.5 Flash — containerized and serving real brands today.</h2>
+      <h2 class="reveal reveal-d1" data-lang="es">Pipeline de IA construido sobre MobileSAM y Gemini 2.5 Flash — contenedorizado y sirviendo marcas reales hoy.</h2>
+
+      <p class="reveal reveal-d2" data-lang="en">
+        <strong>MobileSAM</strong> handles body segmentation from the customer's selfie. <strong>Gemini 2.5 Flash</strong> via Vertex AI generates the garment visualization. The full stack runs on Docker, with Next.js 14 on the frontend and Node.js/Express on the backend, connected to Supabase for data and MinIO for image storage.
+      </p>
+      <p class="reveal reveal-d2" data-lang="es">
+        <strong>MobileSAM</strong> maneja la segmentación corporal a partir de la selfie del cliente. <strong>Gemini 2.5 Flash</strong> vía Vertex AI genera la visualización de la prenda. El stack completo corre en Docker, con Next.js 14 en el frontend y Node.js/Express en el backend, conectado a Supabase para datos y MinIO para almacenamiento de imágenes.
+      </p>
+
+      <div class="tech-row reveal reveal-d3">
+        <div class="tech-tag">Next.js 14</div>
+        <div class="tech-tag">Node.js / Express</div>
+        <div class="tech-tag">Supabase</div>
+        <div class="tech-tag">MobileSAM</div>
+        <div class="tech-tag">Gemini 2.5 Flash</div>
+        <div class="tech-tag">Vertex AI</div>
+        <div class="tech-tag">Docker</div>
+      </div>
+    </div>
+
+    <!-- INFRA BANNER -->
+    <div class="infra-banner reveal">
+      <svg class="infra-icon" viewBox="0 0 255.95 238.82" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <polygon fill="#FF5C3A" points="64.86 4.53 65.09 180.12 140.66 180.12 173.77 234.34 5.78 234.34 5.78 4.53 64.86 4.53"/>
+        <polygon fill="#ffffff" points="79.22 164.66 79.22 131.32 185.31 4.64 247.29 4.48 170.77 102.47 253.38 234.34 192.8 234.34 135.92 144.81 121.73 164.66 79.22 164.66"/>
+      </svg>
+      <p class="infra-label" data-lang="en">INFRASTRUCTURE &amp; INNOVATION</p>
+      <p class="infra-label" data-lang="es">INFRAESTRUCTURA E INNOVACIÓN</p>
+      <p class="infra-body" data-lang="en">Lookitry participates in the AWS Activate and Google Cloud for Startups programs. Infrastructure credits from both programs keep our operational costs low during the growth phase.</p>
+      <p class="infra-body" data-lang="es">Lookitry participa en los programas AWS Activate y Google Cloud for Startups. Los créditos de infraestructura de ambos programas mantienen nuestros costos operativos bajos durante la fase de crecimiento.</p>
+      <div class="infra-logos">
+        <!-- AWS Activate -->
+        <div class="infra-logo-wrap">
+          <svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg" aria-label="AWS Activate" height="36">
+            <!-- AWS smile/arrow -->
+            <path d="M51.3 36.7c-6.1 4.5-14.9 6.9-22.5 6.9-10.7 0-20.3-4-27.5-10.5-.6-.5-.1-1.2.6-.8 7.8 4.6 17.5 7.3 27.4 7.3 6.7 0 14.1-1.4 20.9-4.3.9-.6 1.8.5 1.1 1.4z" fill="#FF9900"/>
+            <path d="M53.8 33.8c-.8-1-5.2-.5-7.2-.2-.6.1-.7-.4-.2-.8 3.5-2.5 9.3-1.8 9.9-1 .7.8-.2 6.5-3.5 9.2-.5.4-1 .2-.8-.4.8-1.8 2.5-5.9 1.8-6.8z" fill="#FF9900"/>
+            <!-- AWS text -->
+            <text x="62" y="30" font-family="'Amazon Ember',Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff" letter-spacing="-0.5">aws</text>
+            <text x="62" y="46" font-family="'Amazon Ember',Arial,sans-serif" font-size="13" font-weight="400" fill="#aaaaaa" letter-spacing="1">activate</text>
+          </svg>
+        </div>
+        <!-- Google for Startups -->
+        <div class="infra-logo-wrap">
+          <svg viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg" aria-label="Google for Startups" height="36">
+            <!-- G icon -->
+            <path d="M28 14c-7.7 0-14 6.3-14 14s6.3 14 14 14c7 0 12.5-4.3 13.7-10.5H28v-5h19.7c.2 1 .3 2 .3 3.1C48 37.7 39.8 46 28 46 15.8 46 6 36.2 6 24S15.8 2 28 2c5.7 0 10.9 2.1 14.8 5.6l-4.2 4.2C36 9.4 32.2 8 28 8c-8.8 0-16 7.2-16 16s7.2 16 16 16c7.5 0 13.8-5.1 15.5-12H28v-8h21.8c.1.9.2 1.9.2 2.9 0 10.5-7.8 18.1-22 18.1" fill="none"/>
+            <circle cx="10" cy="28" r="8" fill="#4285F4"/>
+            <path d="M10 20v8h8c0-4.4-3.6-8-8-8z" fill="#34A853"/>
+            <path d="M10 28v8c4.4 0 8-3.6 8-8H10z" fill="#FBBC05"/>
+            <path d="M10 36v-8H2c0 4.4 3.6 8 8 8z" fill="#EA4335"/>
+            <path d="M2 28V20c0-4.4 3.6-8 8-8" fill="#4285F4"/>
+            <!-- text -->
+            <text x="28" y="33" font-family="'Google Sans',Arial,sans-serif" font-size="16" font-weight="500" fill="#ffffff" letter-spacing="0.2">Google for Startups</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider reveal"></div>
+
+    <!-- ROADMAP -->
+    <div class="section">
+      <div class="eyebrow reveal" data-lang="en">Future Roadmap</div>
+      <div class="eyebrow reveal" data-lang="es">Hoja de Ruta Futura</div>
+
+      <h2 class="reveal reveal-d1" data-lang="en">Next: agentic storefronts — try-on and purchase, entirely inside WhatsApp.</h2>
+      <h2 class="reveal reveal-d1" data-lang="es">Siguiente: tiendas agénticas — probado y compra, completamente dentro de WhatsApp.</h2>
+
+      <p class="reveal reveal-d2" data-lang="en">
+        The current widget operates inside the retailer's website. The next evolution is <strong>Rebecca</strong>, a conversational AI agent that runs entirely within WhatsApp: the customer discovers products, tries them on virtually, and completes the purchase — without ever leaving the chat.
+      </p>
+      <p class="reveal reveal-d2" data-lang="es">
+        El widget actual opera dentro del sitio web del retailer. La siguiente evolución es <strong>Rebecca</strong>, un agente de IA conversacional que funciona completamente dentro de WhatsApp: el cliente descubre productos, se los prueba virtualmente y completa la compra, sin salir jamás del chat.
+      </p>
+
+      <div class="roadmap-card reveal reveal-d3">
+        <div>
+          <div class="roadmap-label" data-lang="en">Future proposal — Q4</div>
+          <div class="roadmap-label" data-lang="es">Propuesta futura — Q4</div>
+          <h3 data-lang="en">Rebecca: The Autonomous Seller</h3>
+          <h3 data-lang="es">Rebecca: La Vendedora Autónoma</h3>
+          <p data-lang="en">WhatsApp is the primary commerce channel for millions of Latin American SMBs. Rebecca brings the full try-on and checkout experience natively into chat — meeting buyers exactly where they already shop.</p>
+          <p data-lang="es">WhatsApp es el canal comercial principal para millones de PYMES latinoamericanas. Rebecca lleva la experiencia completa de try-on y compra nativamente al chat, encontrando a los compradores exactamente donde ya compran.</p>
+        </div>
+        <div class="roadmap-visual">
+          <span class="chat-bubble bubble-user"><span>Busco un vestido rojo para un evento</span></span>
+          <span class="chat-bubble bubble-bot"><span>Perfecto. Enviame una selfie y te muestro cómo te quedan.</span></span>
+          <span class="chat-bubble bubble-bot bubble-highlight"><span>Te queda increible. Link seguro para comprar: lookitry.com/pay/...</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider reveal"></div>
+
+    <!-- TEAM -->
+    <div class="section">
+      <div class="eyebrow reveal" data-lang="en">Team Founders</div>
+      <div class="eyebrow reveal" data-lang="es">Equipo Fundador</div>
+
+      <div class="team-grid reveal reveal-d1">
+        <div class="team-card">
+          <h4>Sam Wilkie</h4>
+          <div class="role" data-lang="en">CEO &amp; Full-Stack Developer</div>
+          <div class="role" data-lang="es">CEO y Desarrollador Full-Stack</div>
+          <p data-lang="en">Product vision, architecture (Next.js, Express, Supabase), AI pipeline, and business development.</p>
+          <p data-lang="es">Visión de producto, arquitectura (Next.js, Express, Supabase), pipeline de IA y desarrollo comercial.</p>
+        </div>
+        <div class="team-card">
+          <h4>Melissa Urbano</h4>
+          <div class="role" data-lang="en">COO &amp;Front-End Developer</div>
+          <div class="role" data-lang="es">COO y Desarrolladora Front-End</div>
+          <p data-lang="en">Consumer-facing widget, brand dashboard, and UX implementation across the platform.</p>
+          <p data-lang="es">Widget para el cliente final, dashboard de marca e implementación de UX en toda la plataforma.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer reveal">
+      <div class="footer-left">
+        <svg width="26" height="24" viewBox="0 0 255.95 238.82" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <polygon fill="#FF5C3A" points="64.86 4.53 65.09 180.12 140.66 180.12 173.77 234.34 5.78 234.34 5.78 4.53 64.86 4.53"/>
+          <polygon fill="#ffffff" points="79.22 164.66 79.22 131.32 185.31 4.64 247.29 4.48 170.77 102.47 253.38 234.34 192.8 234.34 135.92 144.81 121.73 164.66 79.22 164.66"/>
+        </svg>
+        <div class="footer-info">
+          <p>
+            <a href="https://lookitry.com" target="_blank" rel="noopener">lookitry.com</a>
+            &nbsp;&middot;&nbsp;
+            <a href="mailto:admin@lookitry.com">admin@lookitry.com</a>
+          </p>
+          <p class="sub" data-lang="en">Colombia &middot; Founded 2026 &middot; Pre-seed stage</p>
+          <p class="sub" data-lang="es">Colombia &middot; Fundada 2026 &middot; Etapa pre-seed</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── LANGUAGE SWITCH ──
+    function setLang(lang) {
+      document.body.classList.remove('lang-en', 'lang-es');
+      document.body.classList.add('lang-' + lang);
+      document.documentElement.lang = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.switch === lang);
+      });
+      localStorage.setItem('lk-lang', lang);
+    }
+
+    // Restore saved preference
+    const saved = localStorage.getItem('lk-lang');
+    if (saved === 'es' || saved === 'en') setLang(saved);
+
+    // ── SCROLL REVEAL ──
+    const items = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.07, rootMargin: '0px 0px -32px 0px' });
+
+    items.forEach(el => io.observe(el));
+  </script>
+</body>
+</html>
