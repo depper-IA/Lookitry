@@ -136,6 +136,11 @@ backend/eslint-out.json
 backend/find-errors.js
 backend/parse-errors.js
 backend/update-categories.ts
+CLAUDE.md
+AGENTS.md
+memory/
+powers/
+openspec/
 
 # ============================================================
 # SCRIPTS — ARTEFACTOS DE DIAGNÓSTICO
