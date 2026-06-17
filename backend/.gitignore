@@ -33,3 +33,9 @@ Thumbs.db
 # Testing
 coverage/
 .nyc_output/
+
+# Secrets (NEVER commit credentials)
+secrets/
+*.pem
+*.key
+*vertex-key*

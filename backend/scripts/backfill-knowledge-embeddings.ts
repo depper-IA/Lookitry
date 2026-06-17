@@ -2,12 +2,13 @@
 // Run: pnpm exec ts-node scripts/backfill-knowledge-embeddings.ts
 
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 dotenv.config({ path: '.env', override: true });
 
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI } from '@google/genai';
 
-process.env.GOOGLE_APPLICATION_CREDENTIALS = '/home/travis/Lookitry/Lookitry/backend/secrets/vertex-key.json';
+process.env.GOOGLE_APPLICATION_CREDENTIALS = process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(__dirname, '..', 'secrets', 'vertex-key.json');
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,

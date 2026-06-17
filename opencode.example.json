@@ -20,7 +20,7 @@
         "location": "us-central1",
         "timeout": 120000,
         "googleAuthOptions": {
-          "keyFilename": "/home/travis/Lookitry/Lookitry/backend/secrets/vertex-key.json"
+          "keyFilename": "TU_VERTEX_KEY_PATH"
         }
       },
       "models": {
@@ -209,6 +209,11 @@
       "environment": {
         "OBSIDIAN_VAULT": "Lookitry"
       }
+    },
+    "gcloud": {
+      "type": "local",
+      "command": ["npx", "-y", "@google-cloud/gcloud-mcp"],
+      "enabled": true
     }
   }
 }

@@ -13,6 +13,7 @@
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@google-cloud/gcloud-mcp": "^0.5.3",
     "@playwright/test": "^1.59.1",
     "husky": "^9.0.0"
   },

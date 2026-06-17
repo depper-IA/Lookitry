@@ -1,5 +1,58 @@
 # CHANGELOG — Lookitry
 
+## 17 de Junio 2026 (2) — Complete YCLOUD rotation + remove mcp-gcp from git
+
+### Descripcion
+YCLOUD_API_KEY actualizada con nuevo valor en todos los entornos. `mcp-gcp/` eliminado del tracking de git. VPS root password removido del CHANGELOG (estaba expuesto). Limpieza de archivos temporales en VPS.
+
+### Cambios Realizados
+| Archivo | Cambio |
+|---------|--------|
+| `backend/.env` (local+VPS) | YCLOUD_API_KEY actualizado. Duplicado removido en VPS. |
+| `supabase/functions/whatsapp-agent/.env` | YCLOUD_API_KEY actualizado |
+| `mcp-gcp/` | Eliminado del tracking de git (`git rm`) |
+| `CHANGELOG.md` | VPS root password removido (estaba en texto plano) |
+| VPS `/tmp/` | Archivos temporales de rotation limpiados |
+
+## 17 de Junio 2026 — Security: Credential rotation + GCP MCP upgrade
+
+### Descripcion
+Rotacion masiva de credenciales comprometidas tras incidente de filtracion. Eliminacion de `mcp-gcp/` custom (vulnerable), instalacion de `@google-cloud/gcloud-mcp` oficial. Creacion de nueva credencial Vertex AI (service account `lookitry-vertex-sa` recuperada + nuevo key). Refactorizacion de paths hardcodeados en scripts de test/scripts para usar env vars.
+
+### Cambios Realizados
+
+| Archivo | Cambio |
+|---------|--------|
+| `backend/.env` (local) | Rotados: JWT_SECRET, INTERNAL_PROXY_SECRET, JWT_REFRESH_SECRET, KB_SYNC_KEY, N8N_WEBHOOK_SECRET, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, Redis_API, VPS_PASS, YCLOUD_API_KEY (placeholder) |
+| `backend/.env.production` (VPS) | Rotados: mismos campos. YCLOUD_API_KEY=REEMPLAZAR_CON_NUEVA_YCLOUD_KEY. MINIMAX comentado. |
+| `backend/.env` (VPS) | Mismos cambios |
+| `backend/backend/.env` (VPS) | Mismos cambios |
+| `/root/n8n-docker-compose.yml` (VPS) | MINIO creds actualizados |
+| `/docker/lookitry-minio/docker-compose.yml` (VPS) | MINIO_ROOT_USER/PASSWORD actualizados |
+| `/docker/root/docker-compose.yml` (VPS) | MINIO creds actualizados, indentation fija |
+| `/root/creds/gcs-credentials.json` (VPS) | Reemplazado con nueva key Vertex |
+| `/root/virtual-tryon/backend/secrets/vertex-key.json` (VPS) | Reemplazado con nueva key Vertex |
+| `/root/.ssh/authorized_keys` (VPS) | Eliminada key RSA `lookitry-agent` comprometida. Agregada key ed25519 del Windows local. |
+| VPS root password | Rotado (nuevo valor en .env) |
+| `mcp-gcp/` | Eliminado (custom vulnerable) |
+| `package.json` | Agregado `@google-cloud/gcloud-mcp ^0.5.3` |
+| `opencode.json` (local) | Agregado gcloud MCP. Path vertex key actualizado. N8N_API_KEY y API_TOKEN rotados. |
+| `opencode.json` (VPS) | Agregado gcloud MCP. Path vertex key actualizado. N8N_API_KEY y API_TOKEN rotados. |
+| `opencode.example.json` | Agregado gcloud MCP template. Path vertex key como placeholder. |
+| `backend/.gitignore` | Agregado: `secrets/`, `*.pem`, `*.key`, `*vertex-key*` |
+| `backend/test-gemini.ts` | Path hardcodeado removido, usa env var con fallback a `secrets/vertex-key.json` |
+| `backend/test-imagen-v2.ts` | Path hardcodeado removido, usa env var con fallback a `secrets/vertex-key.json` |
+| `backend/scripts/backfill-knowledge-embeddings.ts` | Path hardcodeado removido, usa env var con fallback a `secrets/vertex-key.json` |
+| `backend/src/services/vertex.service.ts` | Sin cambios (ya usa env vars correctamente) |
+| VPS Services | Reiniciados: MinIO, n8n, backend, frontend |
+| `lookitry-vertex-sa@gen-lang-client-0591001769.iam.gserviceaccount.com` | Undeleted + nueva key creada |
+
+### Acciones Manuales Pendientes (CRITICO)
+1. **Rotar Telegram Bot Token** via @BotFather → `/revoke` → actualizar `opencode.json` y VPS
+2. **Verificar HOSTINGER_API_TOKEN nuevo funciona** - el old fue revocado, el nuevo esta en .env
+3. **Context7 API key** - verificar si fue comprometida (no encontrada en repo, pero verificar)
+4. **AWS Bedrock keys** - si estaban en uso, rotar
+
 ## 10 de Junio 2026 — Remove dead GCS code (MinIO-only)
 
 ### Descripcion
