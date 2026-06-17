@@ -3,7 +3,7 @@
 
 # Lookitry
 
-**El Probador Virtual con Inteligencia Artificial para E-Commerce B2B en Latinoamerica**
+**AI-Powered Virtual Try-On for B2B E-Commerce in Latin America**
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js)](https://nodejs.org/)
@@ -11,125 +11,124 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?logo=supabase)](https://supabase.com/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 [![n8n](https://img.shields.io/badge/n8n-Workflows-EA4B71?logo=n8n)](https://n8n.io/)
-[![Wompi](https://img.shields.io/badge/Wompi-Pagos%20COP-blue)](#)
-[![PayPal](https://img.shields.io/badge/PayPal-Pagos%20USD-00457C?logo=paypal)](https://paypal.com/)
+[![Wompi](https://img.shields.io/badge/Wompi-Payments%20COP-blue)](#)
+[![PayPal](https://img.shields.io/badge/PayPal-Payments%20USD-00457C?logo=paypal)](https://paypal.com/)
 
-_Permite a las marcas de moda integrar un widget de prueba virtual en sus tiendas en minutos, reduciendo devoluciones y aumentando la conversion. "Pruebalo antes de comprarlo"._
+_Empower fashion brands to integrate a virtual try-on widget into their stores in minutes, reducing return rates and boosting conversions. "Try it before you buy it."_
 
 </div>
 
 ---
 
-## Pitch & Propuesta de Valor
+## Pitch & Value Proposition
 
-Lookitry es una plataforma SaaS B2B diseñada para revolucionar la forma en que se compra ropa, accesorios y calzado en linea en Latinoamerica. Mediante el uso de Inteligencia Artificial avanzada, los clientes finales pueden subir una selfie y visualizar como les quedaria un producto especifico directamente desde la tienda de la marca.
+Lookitry is a B2B SaaS platform designed to revolutionize the way fashion, accessories, and footwear are purchased online in Latin America. Powered by advanced artificial intelligence, final customers can upload a selfie and instantly visualize how a specific garment fits them directly from the brand's e-commerce store.
 
-Nuestra solucion se integra de dos maneras principales:
-- **Widget Script (`/widget.js`):** Un script liviano y optimizado que inserta el probador virtual como un boton flotante o inline en cualquier plataforma (Shopify, WooCommerce, Wix, o desarrollo a medida).
-- **Mini-Landings Personalizables:** Paginas de destino de alto impacto diseñadas con estetica premium donde las marcas pueden dirigir su trafico y permitir la experiencia de prueba sin fricciones.
+Our solution integrates into stores in two primary ways:
+- **Widget Script (`/widget.js`):** A lightweight, highly optimized script that embeds the virtual try-on experience as a floating or inline button on any major e-commerce platform (Shopify, WooCommerce, Wix, or custom developments).
+- **Customizable Mini-Landings:** High-converting landing pages designed with premium aesthetics where brands can direct social media traffic to offer friction-free virtual try-on sessions.
 
 ---
 
-## Arquitectura del Sistema
+## System Architecture
 
-La arquitectura de Lookitry esta diseñada bajo principios de alta disponibilidad, seguridad estricta y una clara separacion de responsabilidades:
+Lookitry's architecture is engineered for high availability, robust security, and a strict separation of concerns:
 
 ```mermaid
 graph TD;
-    A["Cliente / E-commerce"] -->|"Widget Script / Mini-Landing"| B("Frontend: Next.js 14 App Router")
-    B -->|"API Rest con Dual JWT"| C("Backend: Express Node.js 22")
+    A["Client / E-commerce"] -->|"Widget Script / Mini-Landing"| B("Frontend: Next.js 14 App Router")
+    B -->|"REST API via Dual JWT"| C("Backend: Express Node.js 22")
     C <-->|"PostgreSQL / Service Role"| D[("Supabase")]
     C -->|"Upload / Storage"| E[("MinIO S3 Compatible")]
     C -->|"Queue / Cache"| F("Redis Cache & Job Queue")
     C -->|"FastAPI / Local CPU"| G("MobileSAM Service")
-    C -->|"Webhook Seguro"| H("n8n Orchestrator")
+    C -->|"Secure Webhook"| H("n8n Orchestrator")
     H <-->|"API"| I("Google Vertex AI / Gemini 2.5")
-    H -->|"Resultados Generados"| E
-    C <-->|"Pagos COP"| J("Wompi")
-    C <-->|"Pagos USD"| K("PayPal")
+    H -->|"Generated Outputs"| E
+    C <-->|"COP Payments"| J("Wompi")
+    C <-->|"USD Payments"| K("PayPal")
 ```
 
-### Flujo de Generacion (Virtual Try-On)
-1. **Peticion:** El usuario sube su selfie y selecciona una prenda desde el Frontend.
-2. **Validacion:** El Backend valida la sesion, los creditos de la marca y encola el trabajo en Redis.
-3. **Segmentacion:** El microservicio local de **MobileSAM** (Python/FastAPI en CPU) genera la mascara de la silueta humana en segundos.
-4. **Orquestacion & IA:** Se envia la mascara y el producto al pipeline primario en **Google Vertex AI** utilizando Gemini 2.5 Flash Image para el inpainting de la prenda.
-5. **Entrega:** La imagen resultante es optimizada y guardada en el almacenamiento S3 de MinIO, actualizando Supabase para el consumo del cliente final.
+### Virtual Try-On Generation Pipeline
+1. **Request:** The user uploads a selfie and selects a garment from the Frontend.
+2. **Validation:** The Backend validates the session, confirms available brand credits, and enqueues the job in Redis.
+3. **Segmentation:** A dedicated local **MobileSAM** microservice (Python/FastAPI running on CPU) segments the human silhouette and generates a precise PNG mask in seconds.
+4. **Inpainting & AI:** The segmented mask and garment image are dispatched to the primary AI pipeline in **Google Vertex AI**, using Gemini 2.5 Flash Image to execute highly realistic garment inpainting.
+5. **Delivery:** The generated try-on output is optimized and saved in MinIO's S3-compatible storage, updating Supabase for real-time polling from the client's screen.
 
 ---
 
-## Stack Tecnologico
+## Tech Stack
 
 ### Frontend
 - **Framework:** Next.js 14.2.35 (App Router)
-- **Lenguaje:** TypeScript 5.9.3
-- **Estilos:** Tailwind CSS 3.4.0 (Sistema de diseño premium con soporte Dark Mode nativo)
-- **Animaciones:** Framer Motion & GSAP para micro-interacciones de alta fidelidad
-- **Optimizacion:** Sharp para compresion dinamica y entrega de imagenes WebP de ultra-bajo peso
+- **Language:** TypeScript 5.9.3
+- **Styling:** Tailwind CSS 3.4.0 (Dark-by-default theme with pristine contrast and fluid typography)
+- **Motion & Micro-interactions:** Framer Motion & GSAP for high-end cinematic web experiences
+- **Image Optimization:** Sharp for on-the-fly compression and ultra-fast WebP delivery
 
 ### Backend
-- **Runtime:** Node.js 22 + Express (arquitectura modular, limpia y escalable)
-- **Seguridad:** 
-  - Dual JWT con rotacion de llaves (Access Token + Refresh Token HTTP-only)
-  - Rate limiting distribuido por IP apoyado en Redis
-  - Proteccion anti-abuso y de formularios con Cloudflare Turnstile
-- **Colas y Cache:** Redis (ioredis) para throttling de APIs de IA y procesamiento asincrono de colas
+- **Runtime:** Node.js 22 + Express (Highly modular, clean, and robust architecture)
+- **Security:**
+  - Dual-JWT authentication with key rotation (Access Token + Refresh Token stored in HTTP-only cookies)
+  - Distributed Redis-backed Rate Limiting to prevent API abuse
+  - Form protection and anti-spam supported by Cloudflare Turnstile
+- **Cache & Throttling:** Redis (ioredis) for caching metadata and scheduling background task queues
 
-### Base de Datos y Storage
-- **Base de Datos:** Supabase (PostgreSQL) con extension pgvector para busqueda semantica en RAG
-- **Almacenamiento:** MinIO (S3 compatible) para almacenamiento local y federado de assets
-
----
-
-## Caracteristicas de Ingenieria Destacadas
-
-- **Conversión de Moneda Inteligente:** Metodo unico aprobado para conversion automatica de COP a USD utilizando la TRM oficial mas un margen de seguridad dinamico, protegiendo las finanzas del SaaS en transacciones internacionales.
-- **RAG & Knowledge Base (Rebecca):** Sistema de atencion automatica de ventas via web y WhatsApp que utiliza embeddings vectoriales (Gemini Embedding 001) guardados en pgvector para contestar dudas tecnicas, precios y planes basados en informacion oficial del producto.
-- **Optimizacion de Deploys:** Pipelines Docker independientes por servicio (Backend, Frontend, MobileSAM, n8n, Redis) gestionados por Traefik como reverse proxy principal, asegurando cero caidas y despliegues quirurgicos sin sobrecargar la CPU del servidor.
-- **Proteccion de APIs:** Middleware de seguridad de widget que verifica origenes permitidos (`allowed_origins`) y caches de configuracion en Redis con TTL de 1 hora, evitando uso no autorizado del script en tiendas no registradas.
+### Database & Storage
+- **Database:** Supabase (PostgreSQL) leveraging pgvector for RAG vector similarity search
+- **Storage:** MinIO (S3-compatible) for local and federated assets, protecting client data privacy
 
 ---
 
-## Estructura del Repositorio
+## Core Engineering Highlights
+
+- **Dynamic Currency Conversion:** An elite, secure system to automatically convert COP plans to USD based on the real-time TRM plus a dynamic safety margin, protecting SaaS unit economics.
+- **RAG & Knowledge Base (Rebecca):** A fully automated sales and customer-service assistant (available on web and WhatsApp) that leverages pgvector and Gemini Embedding 001 to resolve brand FAQs, feature details, and onboarding queries directly from official documentation.
+- **Microservice Container Deploys:** Dockerized service isolation (Backend, Frontend, MobileSAM, n8n, Redis) behind Traefik as the main reverse proxy, permitting surgical zero-downtime updates.
+- **API Widget Protection:** A security middleware checking authorized origins (`allowed_origins`) combined with 1-hour Redis configuration caching to prevent script hijacking and hotlinking.
+
+---
+
+## Repository Structure
 
 ```
 LOOKITRY/
-├── frontend/                    # Next.js 14 (App Router) - Panel, checkout, landings
-├── backend/                     # Express API (Node 22) - Servicios de negocio, pagos, seguridad
-├── sam-service/                 # Python/FastAPI MobileSAM - Segmentacion local de siluetas
-├── lookitry-woocommerce/       # Plugin nativo PHP para integracion en tiendas WooCommerce
-├── mcp-gcp/                     # GCP MCP Server para automatizaciones de Cloud Storage y Compute
-└── error-pages/                 # Docker de paginas de mantenimiento y fallos del sistema
+├── frontend/                    # Next.js 14 App Router - Dashboards, checkout, landings
+├── backend/                     # Express API (Node 22) - Core business logic, payments, security
+├── sam-service/                 # Python/FastAPI MobileSAM - On-premise human segmentation
+├── lookitry-woocommerce/       # Native PHP WordPress plugin for custom WooCommerce setups
+├── mcp-gcp/                     # GCP MCP Server for cloud storage & compute automation tasks
+└── error-pages/                 # Maintenance & graceful error landing pages
 ```
 
 ---
 
-## Guia de Inicio Rapido (Desarrollo)
+## Quick Start (Development)
 
-### Requisitos Previos
+### Prerequisites
 - Node.js >= 20
-- pnpm == 9.15.9 (Requerido para evitar vulnerabilidades de paquetes en npm)
+- pnpm == 9.15.9 (Mandatory to avoid npm package vulnerability exploits)
 - Docker & Docker Compose
 
-### Instalacion
+### Local Setup
 
-1. Clonar el repositorio:
+1. Clone the repository:
    ```bash
    git clone https://github.com/depper-IA/Lookitry.git
    cd Lookitry
    ```
 
-2. Configurar variables de entorno:
-   - Copiar `frontend/.env.example` a `frontend/.env`
-   - Copiar `backend/.env.example` a `backend/.env`
+2. Configure environment variables:
+   - Copy `frontend/.env.example` to `frontend/.env`
+   - Copy `backend/.env.example` to `backend/.env`
 
-3. Instalar dependencias utilizando pnpm:
+3. Install packages via pnpm:
    ```bash
-   # En la carpeta root (o en cada carpeta de frontend/backend de forma aislada)
    pnpm install
    ```
 
-4. Levantar entorno local con Docker:
+4. Spin up local development containers:
    ```bash
    docker compose -f docker-compose.dev.yml up -d
    ```
@@ -137,5 +136,5 @@ LOOKITRY/
 ---
 
 <div align="center">
-  <p>Diseñado y construido con pasion para liderar el futuro del e-commerce visual.<br/> <strong>© Lookitry. Todos los derechos reservados.</strong></p>
+  <p>Designed and built with passion to lead the future of visual commerce.<br/> <strong>© Lookitry. All rights reserved.</strong></p>
 </div>

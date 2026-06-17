@@ -125,6 +125,17 @@ backend/supabase/.temp/
 supabase/.temp/
 Interledger/
 brain/
+README.backup-es.md
+scripts/archive/
+backend/test*
+backend/*.txt
+backend/*.js
+backend/tmp*
+backend/update-categories*
+backend/eslint-out.json
+backend/find-errors.js
+backend/parse-errors.js
+backend/update-categories.ts
 
 # ============================================================
 # SCRIPTS — ARTEFACTOS DE DIAGNÓSTICO
