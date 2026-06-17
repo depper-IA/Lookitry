@@ -1,6 +1,11 @@
 import https from 'https';
 
-const BREVO_API_KEY = '***REMOVED-SECRET***';
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+
+if (!BREVO_API_KEY) {
+  console.error('Missing BREVO_API_KEY env var');
+  process.exit(1);
+}
 
 const payload = JSON.stringify({
   sender: {

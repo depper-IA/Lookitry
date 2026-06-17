@@ -5,8 +5,8 @@ const SMTP_CONFIG = {
   port: 587,
   secure: false, // STARTTLS
   auth: {
-    user: 'a7182a001@smtp-brevo.com',
-    pass: 'xsmtpsib-eee0090849bf15adb035eab230230167412d354ed43c37db782d6915247d3d7a-gGEHYB5ehx4GBB9Y'
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_KEY
   }
 };
 
