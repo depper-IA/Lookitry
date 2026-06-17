@@ -123,6 +123,7 @@ test-reports/screenshots/
 backend/.tts_state
 backend/supabase/.temp/
 supabase/.temp/
+Interledger/
 
 # ============================================================
 # SCRIPTS — ARTEFACTOS DE DIAGNÓSTICO
