@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { ProductsService } from '../services/products.service';
 import { AuthRequest } from '../middleware/auth';
 import { asyncHandler, NotFoundError } from '../middleware/errorHandler';

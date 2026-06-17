@@ -168,7 +168,6 @@ export const registerSubscriptionPayment = async (req: Request, res: Response) =
 
     // Enviar email de confirmación al cliente
     const { purchaseConfirmationEmail } = await import('../../templates/email-templates');
-    const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
 
     const nextPaymentDate = updatedBrand.subscription_end_date
       ? new Date(updatedBrand.subscription_end_date).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })

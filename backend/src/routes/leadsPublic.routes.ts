@@ -16,7 +16,7 @@ function isValidEmail(email: string): boolean {
 
 function isValidPhone(phone: string): boolean {
   // Allow formats: +57XXXXXXXXXX, 57XXXXXXXXXX, XXXXXXXXXX (10+ digits)
-  const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+  const cleanPhone = phone.replace(/[\s\-()]/g, '');
   const phoneRegex = /^(\+?\d{10,15})$/;
   return phoneRegex.test(cleanPhone);
 }
@@ -24,7 +24,7 @@ function isValidPhone(phone: string): boolean {
 function detectCountry(phone?: string, country?: string): string {
   if (country) return country;
   if (phone) {
-    const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+    const cleanPhone = phone.replace(/[\s\-()]/g, '');
     if (cleanPhone.startsWith('+1')) return 'US';
     if (cleanPhone.startsWith('+34')) return 'ES';
     if (cleanPhone.startsWith('+57')) return 'CO';

@@ -444,6 +444,38 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               </motion.div>
             </div>
 
+            {/* Trial — horizontal card */}
+            <motion.div
+              variants={cardVariants}
+              className="mt-6 rounded-2xl border border-white/[0.06] bg-[var(--bg-card)] px-6 py-5 md:px-8 md:py-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] font-bold uppercase tracking-[.25em] text-[#FF5C3A]/60 mb-1">Primeros pasos</p>
+                <h3 className="font-jakarta font-bold text-[17px] theme-text mb-3">Trial — 7 dias</h3>
+                <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+                  {[
+                    '50 generaciones con IA',
+                    '7 dias de acceso completo',
+                    '1 producto activo',
+                    'Widget personalizable',
+                    'Logo y colores de marca',
+                  ].map((f, i) => (
+                    <span key={i} className="flex items-center gap-1.5 text-[11px] theme-text-muted">
+                      <IconCheck />
+                      {f}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <a
+                href="/trial-checkout"
+                className="flex-shrink-0 flex items-center justify-center gap-2 px-6 py-3 rounded-xl border theme-border theme-text-muted hover:theme-text hover:border-[#FF5C3A]/40 font-bold text-[12px] transition-all active:scale-95"
+              >
+                Empezar prueba
+                <IconArrow />
+              </a>
+            </motion.div>
+
             <p className="text-center text-[13px] theme-text-muted/80 mt-10 font-medium">
               Pagos seguros con Wompi · Mastercard, Visa, PSE, Nequi
             </p>

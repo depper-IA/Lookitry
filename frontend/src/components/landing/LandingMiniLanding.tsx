@@ -1,28 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Check, ArrowRight } from 'lucide-react';
+import { ArrowRight, Zap } from 'lucide-react';
 import { LANDING_COPY } from './LandingCopy';
+import { LandingShopAccordion } from './LandingShopAccordion';
 
-const listContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.3 },
-  },
-};
-
-const listItem = {
-  hidden: { opacity: 0, y: 12 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
-  },
-};
+const FALLBACK_PRICE = 650000;
+const FALLBACK_ORIGINAL = 850000;
 
 const imageVariants = {
   hidden: { opacity: 0, y: 24 },
@@ -33,8 +20,29 @@ const imageVariants = {
   },
 };
 
+function formatCOP(n: number): string {
+  return new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(n);
+}
+
 export default function LandingMiniLanding() {
   const copy = LANDING_COPY.virtual_shop;
+  const [price, setPrice] = useState(FALLBACK_PRICE);
+  const [originalPrice, setOriginalPrice] = useState(FALLBACK_ORIGINAL);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    fetch(`${apiUrl}/api/pricing-config`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const row = data?.data?.find((d: { id: string }) => d.id === 'mini_landing');
+        if (row?.data?.precio_unico_cop) setPrice(row.data.precio_unico_cop);
+        if (row?.data?.precio_original_cop) setOriginalPrice(row.data.precio_original_cop);
+      })
+      .catch(() => {});
+  }, []);
+
+  const priceBase = formatCOP(price);
+  const originalBase = formatCOP(originalPrice);
 
   return (
     <section
@@ -45,92 +53,106 @@ export default function LandingMiniLanding() {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-16 items-center">
 
-          {/* Imagen: primera en mobile (prueba visual antes del texto), derecha en desktop */}
+          {/* Accordion / imagen: primero en mobile, derecha en desktop */}
           <motion.div
             variants={imageVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
-            className="relative order-1 lg:order-2"
+            className="order-1 lg:order-2"
           >
-            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 dark:border-black/10 shadow-2xl">
+            {/* Mobile: imagen estática */}
+            <div className="lg:hidden relative rounded-2xl overflow-hidden shadow-2xl">
               <Image
                 src="/hero/promo_landing.png"
-                alt="Vista de una tienda Lookitry mostrando el catálogo con probador virtual integrado en el celular de un cliente"
+                alt="Vista de una tienda Lookitry mostrando el catálogo con probador virtual integrado"
                 width={720}
                 height={480}
                 className="w-full h-auto"
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                sizes="100vw"
               />
+            </div>
+
+            {/* Desktop: accordion interactivo */}
+            <div className="hidden lg:block">
+              <LandingShopAccordion />
             </div>
           </motion.div>
 
           {/* Contenido */}
-          <div className="order-2 lg:order-1">
+          <div className="order-2 lg:order-1 flex flex-col">
+
+            {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-5 sm:mb-6 font-semibold text-[10px] sm:text-xs uppercase tracking-[0.18em] bg-accent/10 border border-accent/30 text-accent"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-5 sm:mb-6 font-semibold text-[10px] sm:text-xs uppercase tracking-[0.18em] bg-accent/10 border border-accent/30 text-accent w-fit"
             >
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent" aria-hidden="true" />
               {copy.badge}
             </motion.div>
 
+            {/* Heading */}
             <motion.h2
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.45, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white dark:text-black mb-4 sm:mb-5 leading-[1.1]"
+              className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white dark:text-black mb-4 sm:mb-5 leading-[1.1] text-wrap-balance"
             >
               {copy.title}{' '}
               <span className="text-accent">{copy.titleAccent}</span>
             </motion.h2>
 
+            {/* Description */}
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.45, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="text-white/75 dark:text-text-muted text-base sm:text-lg leading-relaxed mb-8 sm:mb-10 max-w-[58ch]"
+              className="text-white/75 dark:text-text-muted text-base sm:text-lg leading-relaxed max-w-[58ch]"
             >
               {copy.description}
             </motion.p>
 
-            <motion.ul
-              variants={listContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-80px' }}
-              className="flex flex-col gap-5 sm:gap-6 mb-10 sm:mb-12 max-w-[60ch]"
+            {/* Price block */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.45, delay: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="mt-8 sm:mt-10 mb-8 sm:mb-10 px-5 py-4 sm:px-6 sm:py-5 rounded-2xl bg-accent/[0.08]"
             >
-              {copy.features.map((feat, idx) => (
-                <motion.li key={idx} variants={listItem} className="flex gap-3 sm:gap-4">
-                  <span
-                    className="flex-shrink-0 mt-0.5 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center text-accent"
-                    aria-hidden="true"
-                  >
-                    <Check size={14} strokeWidth={3} />
-                  </span>
-                  <div>
-                    <h3 className="font-jakarta font-semibold text-base sm:text-lg text-white dark:text-black leading-tight mb-1">
-                      {feat.title}
-                    </h3>
-                    <p className="text-white/65 dark:text-text-muted text-sm sm:text-[15px] leading-relaxed">
-                      {feat.desc}
-                    </p>
-                  </div>
-                </motion.li>
-              ))}
-            </motion.ul>
+              <p className="text-white/50 dark:text-black/40 text-[11px] font-medium mb-1.5 tracking-wide">
+                desde
+              </p>
+              <div className="flex items-baseline gap-2.5 mb-1.5 flex-wrap">
+                <span className="font-jakarta text-[2.5rem] sm:text-5xl font-bold text-accent leading-none tracking-tight">
+                  ${priceBase}
+                </span>
+                <span className="text-white/55 dark:text-black/45 text-sm sm:text-base font-semibold">
+                  COP
+                </span>
+                <span className="text-white/35 dark:text-black/30 text-sm line-through font-normal">
+                  ${originalBase}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-2">
+                <Zap size={12} className="text-accent opacity-70 flex-shrink-0" aria-hidden="true" />
+                <p className="text-white/50 dark:text-black/40 text-[12px] sm:text-[13px]">
+                  Pago único · Sin mensualidad · Activa en minutos
+                </p>
+              </div>
+            </motion.div>
 
+            {/* CTAs */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.4, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              transition={{ duration: 0.4, delay: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
             >
               <Link

@@ -372,7 +372,7 @@ router.put('/me/widget-products', async (req: any, res) => {
 
 
 
-    // â NUEVO: Validar que todos los productos pertenezcan a esta marca y estén activos
+    // [OK] NUEVO: Validar que todos los productos pertenezcan a esta marca y estén activos
 
     let validIds = productIds;
 

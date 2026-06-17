@@ -89,7 +89,7 @@ export async function verifyGoogleToken(token: string): Promise<GoogleTokenPaylo
   };
 }
 
-async function getActiveCampaign() {
+export async function getActiveCampaign() {
   const now = new Date().toISOString();
   const { data } = await supabaseAdmin
     .from('trial_campaigns')

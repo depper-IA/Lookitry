@@ -1,15 +1,18 @@
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { Request, Response, NextFunction } from 'express';
-import { redis, redisGetSafe } from '../config/redis';
+import { redis } from '../config/redis';
 import { supabaseAdmin } from '../config/supabase';
 
 // ─── IP Whitelist ────────────────────────────────────────────────────────────
 
-const HARDCODED_WHITELIST_IPS = [
-  '161.18.87.45',  // Travis - desarrollo
-  '161.18.93.138', // Sam Wilkie
-];
+// A-5: IPs de whitelist desde env (CSV), no hardcodeadas en el código.
+// Respaldo: la whitelist persistente vive en DB (payment_settings.ip_whitelist
+// y la tabla widget_ip_whitelist), cacheada en whitelistCache.
+const ENV_WHITELIST_IPS = (process.env.RATE_LIMIT_WHITELIST_IPS || '')
+  .split(',')
+  .map((ip) => ip.trim())
+  .filter(Boolean);
 
 interface WhitelistCache {
   ips: string[];
@@ -57,7 +60,7 @@ export const isWhitelistedSync = (ip: string): boolean => {
   if (ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127.') || ip === 'localhost') {
     return true;
   }
-  if (HARDCODED_WHITELIST_IPS.includes(ip)) return true;
+  if (ENV_WHITELIST_IPS.includes(ip)) return true;
   return whitelistCache.ips.includes(ip);
 };
 
@@ -92,10 +95,15 @@ export async function isTestBypassAllowed(): Promise<boolean> {
 // cae automáticamente al store en memoria (comportamiento por defecto).
 
 function makeRedisStore(prefix: string): RedisStore | undefined {
+  if (!redis || (redis as any).status !== 'ready') {
+    return undefined; // Permite al rate-limiter caer al fallback en memoria
+  }
   try {
     return new RedisStore({
-      // @ts-expect-error — diferencias de tipado entre ioredis y rate-limit-redis
-      sendCommand: (...args: string[]) => redis.call(...args),
+      sendCommand: (...args: string[]) => {
+        if (!redis || (redis as any).status !== 'ready') throw new Error('Redis no disponible');
+        return (redis as any).call(...args);
+      },
       prefix,
     });
   } catch {
@@ -122,7 +130,7 @@ const skipWhitelisted = (req: Request): boolean => {
  * Login — 5 intentos / 15 min / IP (Redis)
  * Protección principal contra brute force en credenciales.
  */
-export const loginRateLimiter = rateLimit({
+const internalLoginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   store: makeRedisStore('rl:login:'),
@@ -145,10 +153,21 @@ export const loginRateLimiter = rateLimit({
   skip: skipWhitelisted,
 });
 
+export const loginRateLimiter = (req: Request, res: Response, next: NextFunction) => {
+  if (!redis || (redis as any).status !== 'ready') {
+    console.error(`[RateLimiter] Fail-Closed para login activado para IP: ${req.ip}`);
+    return res.status(503).json({
+      error: 'SERVICE_UNAVAILABLE',
+      message: 'Servicio temporalmente no disponible por mantenimiento de seguridad.',
+    });
+  }
+  return internalLoginRateLimiter(req, res, next);
+};
+
 /**
  * Admin login — 5 intentos / 15 min / IP (Redis)
  */
-export const adminLoginRateLimiter = rateLimit({
+const internalAdminLoginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   store: makeRedisStore('rl:admin-login:'),
@@ -170,6 +189,17 @@ export const adminLoginRateLimiter = rateLimit({
   },
   skip: skipWhitelisted,
 });
+
+export const adminLoginRateLimiter = (req: Request, res: Response, next: NextFunction) => {
+  if (!redis || (redis as any).status !== 'ready') {
+    console.error(`[RateLimiter] Fail-Closed para admin login activado para IP: ${req.ip}`);
+    return res.status(503).json({
+      error: 'SERVICE_UNAVAILABLE',
+      message: 'Servicio temporalmente no disponible por mantenimiento de seguridad.',
+    });
+  }
+  return internalAdminLoginRateLimiter(req, res, next);
+};
 
 /**
  * Registro — 3 intentos / hora / IP (Redis)

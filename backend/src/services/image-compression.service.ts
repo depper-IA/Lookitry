@@ -20,7 +20,9 @@ export async function compressImageFromUrl(url: string, maxPx: number = 1024): P
         finalUrl = originalUrl;
       }
     }
-  } catch {}
+  } catch (err) {
+    // URL parsing failed, keep using original url
+  }
 
   console.log(`[ImageCompression] Descargando imagen para comprimir: ${finalUrl}`);
 
@@ -59,7 +61,7 @@ export async function compressImageFromUrl(url: string, maxPx: number = 1024): P
  * @param originalUrl URL original para derivar el nombre
  * @returns URL pública del archivo subido
  */
-export async function uploadCompressedToMinio(buffer: Buffer, originalUrl: string): Promise<string> {
+export async function uploadCompressedToMinio(buffer: Buffer, _originalUrl: string): Promise<string> {
   const timestamp = Date.now();
   const random = crypto.randomBytes(4).toString('hex');
   const filename = `temp/compressed-${timestamp}-${random}.jpg`;
@@ -91,7 +93,9 @@ export async function compressAndUpload(url: string, maxPx: number = 1024): Prom
       const origUrl = parsed.searchParams.get('url');
       if (origUrl) unproxiedUrl = origUrl;
     }
-  } catch {}
+  } catch (err) {
+    // Keep unproxiedUrl as is
+  }
 
   try {
     const { buffer, originalSize, compressedSize } = await compressImageFromUrl(unproxiedUrl, maxPx);

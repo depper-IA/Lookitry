@@ -35,7 +35,7 @@ export class ImageController {
         res.setHeader('Content-Type', 'image/jpeg');
         res.setHeader('Cache-Control', 'public, max-age=604800'); // Cache persistente del navegador (1 semana)
         res.setHeader('X-Cache', 'HIT');
-        res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+        res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
 
         if (download === 'true') {
@@ -61,8 +61,7 @@ export class ImageController {
       res.setHeader('Content-Type', 'image/jpeg');
       res.setHeader('Cache-Control', 'public, max-age=604800');
       res.setHeader('X-Cache', 'MISS');
-      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
 
       if (download === 'true') {

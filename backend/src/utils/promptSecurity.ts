@@ -27,6 +27,7 @@ export function validateProductName(name: string): string {
     }
 
     // Remove any control characters
+    // eslint-disable-next-line no-control-regex
     return trimmed.replace(/[\x00-\x1F\x7F]/g, '').substring(0, MAX_PRODUCT_NAME_LENGTH);
 }
 
@@ -49,6 +50,7 @@ export function validateProductDescription(description: string | null | undefine
     }
 
     // Remove any control characters
+    // eslint-disable-next-line no-control-regex
     return trimmed.replace(/[\x00-\x1F\x7F]/g, '');
 }
 

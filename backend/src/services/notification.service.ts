@@ -280,13 +280,13 @@ export class NotificationService {
 
 
 
-      console.log(`â Email de bienvenida enviado a ${brand.email}`);
+      console.log(`[OK] Email de bienvenida enviado a ${brand.email}`);
 
     } catch (error) {
 
       // No relanzar — el email de bienvenida nunca debe bloquear el flujo de registro
 
-      console.error(`â Error al enviar email de bienvenida a ${brand.email}:`, error);
+      console.error(`[ERROR] Error al enviar email de bienvenida a ${brand.email}:`, error);
 
     }
 
@@ -362,11 +362,11 @@ export class NotificationService {
 
 
 
-      console.log(`â Email para completar registro enviado a ${pending.email}`);
+      console.log(`[OK] Email para completar registro enviado a ${pending.email}`);
 
     } catch (error) {
 
-      console.error(`â Error al enviar email de registro pendiente a ${pending.email}:`, error);
+      console.error(`[ERROR] Error al enviar email de registro pendiente a ${pending.email}:`, error);
 
     }
 
@@ -444,11 +444,11 @@ export class NotificationService {
 
 
 
-      console.log(`â Recordatorio de registro pendiente enviado a ${pending.email}`);
+      console.log(`[OK] Recordatorio de registro pendiente enviado a ${pending.email}`);
 
     } catch (error) {
 
-      console.error(`â Error al enviar recordatorio de registro pendiente a ${pending.email}:`, error);
+      console.error(`[ERROR] Error al enviar recordatorio de registro pendiente a ${pending.email}:`, error);
 
     }
 
@@ -626,11 +626,11 @@ export class NotificationService {
 
 
 
-      console.log(`â Recordatorio de vencimiento enviado a ${brand.email} (${daysRemaining} días)`);
+      console.log(`[OK] Recordatorio de vencimiento enviado a ${brand.email} (${daysRemaining} días)`);
 
     } catch (error) {
 
-      console.error(`â Error al enviar recordatorio a ${brand.email}:`, error);
+      console.error(`[ERROR] Error al enviar recordatorio a ${brand.email}:`, error);
 
       throw error;
 
@@ -706,11 +706,11 @@ export class NotificationService {
 
 
 
-      console.log(`â Notificación de suspensión enviada a ${brand.email}`);
+      console.log(`[OK] Notificación de suspensión enviada a ${brand.email}`);
 
     } catch (error) {
 
-      console.error(`â Error al enviar notificación de suspensión a ${brand.email}:`, error);
+      console.error(`[ERROR] Error al enviar notificación de suspensión a ${brand.email}:`, error);
 
       throw error;
 
@@ -804,7 +804,7 @@ export class NotificationService {
 
         to: brand.email,
 
-        subject: 'â Renovación Exitosa - Lookitry',
+        subject: '[OK] Renovación Exitosa - Lookitry',
 
         html,
 
@@ -812,11 +812,11 @@ export class NotificationService {
 
 
 
-      console.log(`â Confirmación de renovación enviada a ${brand.email}`);
+      console.log(`[OK] Confirmación de renovación enviada a ${brand.email}`);
 
     } catch (error) {
 
-      console.error(`â Error al enviar confirmación de renovación a ${brand.email}:`, error);
+      console.error(`[ERROR] Error al enviar confirmación de renovación a ${brand.email}:`, error);
 
       throw error;
 
@@ -948,7 +948,7 @@ export class NotificationService {
 
         );
 
-        subject = `â ï¸ Alerta: Has usado el ${percentage}% de tus generaciones`;
+        subject = `Alerta: Has usado el ${percentage}% de tus generaciones`;
 
       }
 
@@ -966,11 +966,11 @@ export class NotificationService {
 
 
 
-      console.log(`â Alerta de uso (${percentage}%) enviada a ${brand.email}`);
+      console.log(`[OK] Alerta de uso (${percentage}%) enviada a ${brand.email}`);
 
     } catch (error) {
 
-      console.error(`â Error al enviar alerta de uso a ${brand.email}:`, error);
+      console.error(`[ERROR] Error al enviar alerta de uso a ${brand.email}:`, error);
 
       throw error;
 
@@ -1308,11 +1308,11 @@ export class NotificationService {
 
       });
 
-      console.log(`â Trial ending soon enviado a ${brand.email} (${daysRemaining} días)`);
+      console.log(`[OK] Trial ending soon enviado a ${brand.email} (${daysRemaining} días)`);
 
     } catch (error) {
 
-      console.error(`â Error enviando trial ending soon a ${brand.email}:`, error);
+      console.error(`[ERROR] Error enviando trial ending soon a ${brand.email}:`, error);
 
     }
 
@@ -1354,11 +1354,11 @@ export class NotificationService {
 
       });
 
-      console.log(`â Trial nudge setup enviado a ${brand.email} (${daysRemaining} días)`);
+      console.log(`[OK] Trial nudge setup enviado a ${brand.email} (${daysRemaining} días)`);
 
     } catch (error) {
 
-      console.error(`â Error enviando trial nudge setup a ${brand.email}:`, error);
+      console.error(`[ERROR] Error enviando trial nudge setup a ${brand.email}:`, error);
 
     }
 
@@ -1400,11 +1400,11 @@ export class NotificationService {
 
       });
 
-      console.log(`â Onboarding product reminder enviado a ${brand.email}`);
+      console.log(`[OK] Onboarding product reminder enviado a ${brand.email}`);
 
     } catch (error) {
 
-      console.error(`â Error enviando onboarding product reminder a ${brand.email}:`, error);
+      console.error(`[ERROR] Error enviando onboarding product reminder a ${brand.email}:`, error);
 
     }
 

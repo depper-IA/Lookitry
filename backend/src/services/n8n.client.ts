@@ -210,7 +210,7 @@ export class N8nClient {
 
           const delay = RETRY_DELAYS[attempt] || 8000;
 
-          console.warn(`â ï¸  Intento ${attempt + 1} falló (${error.message}), reintentando en ${delay}ms...`);
+          console.warn(`[WARN] Intento ${attempt + 1} falló (${error.message}), reintentando en ${delay}ms...`);
 
           await new Promise(resolve => setTimeout(resolve, delay));
 

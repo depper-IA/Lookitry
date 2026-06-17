@@ -1,41 +1,74 @@
 # Checklist de Rotacion de Credenciales
 
-> Estado: **PENDIENTE DE ROTACION**
+> Estado: **PARCIALMENTE EJECUTADO — ACCION URGENTE PENDIENTE**
 > Generado: 2026-05-23
+> Verificado contra git: 2026-06-08
 > Responsable: Travis (rotacion manual — las IAs NO ejecutan este proceso)
+
+---
+
+## Estado Verificado (2026-06-08)
+
+Verificacion hecha con `git ls-files` y lectura del contenido en HEAD.
+
+| Archivo | Trackeado en HEAD | Secretos vivos en HEAD | Estado |
+|---------|-------------------|------------------------|--------|
+| `opencode.json` | **SI** | **SI — 6 secretos** | **URGENTE — sin destrackear** |
+| `scripts/id_rsa_lookitry` | No | — | Destrackeado (sigue en historial) |
+| `scripts/n8n_api_key.txt` | No | — | Destrackeado (sigue en historial) |
+| `bedrock-long-term-api-key.csv` | No | — | Destrackeado (sigue en historial) |
+| `.kiro/steering/LOOKITRY_ARCH.md` | Si | No (placeholders) | Saneado |
+
+### URGENTE — `opencode.json` sigue trackeado con secretos vivos
+
+A 2026-06-08, `opencode.json` esta en el commit actual y expone:
+
+| Linea | Campo | Servicio |
+|-------|-------|----------|
+| 8 | `provider.minimax.options.apiKey` | MiniMax (`sk-cp-...`) |
+| 113 | `provider.groq.options.apiKey` | Groq (`gsk_...`) |
+| 226 | `TELEGRAM_BOT_TOKEN` | Telegram Bot |
+| 239 | `N8N_API_KEY` | n8n (JWT) |
+| 251 | `API_TOKEN` | Hostinger |
+| 263 | `CONTEXT7_API_KEY` | Context7 |
+
+Estos 6 secretos deben rotarse Y el archivo destrackearse de inmediato.
+
+> Nota: `opencode.json` aparece como modificado en el working tree. Antes de
+> `git rm --cached`, confirmar que existe `opencode.example.json` con la
+> estructura de placeholders para el onboarding.
 
 ---
 
 ## Credenciales a Rotar
 
-| Servicio | Archivo Comprometido | Variable/Campo | Prioridad |
-|---------|---------------------|----------------|-----------|
-| VPS SSH | `scripts/id_rsa_lookitry` | Clave privada RSA | CRITICA |
-| VPS Password | `Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md` | Seccion VPS PRODUCCION | CRITICA |
-| n8n JWT | `scripts/n8n_api_key.txt` | Token JWT completo | ALTA |
-| n8n JWT | `opencode.json` | `mcp.n8n.environment.N8N_API_KEY` | ALTA |
-| Telegram Bot | `opencode.json` | `mcp.telegram.environment.TELEGRAM_BOT_TOKEN` | ALTA |
-| Hostinger API | `opencode.json` | `mcp.hostinger-mcp.environment.API_TOKEN` | ALTA |
-| MiniMax API | `opencode.json` | `provider.minimax.options.apiKey` | ALTA |
-| Groq API | `opencode.json` | `provider.groq.options.apiKey` | MEDIA |
-| Context7 API | `opencode.json` | `mcp.context7.environment.CONTEXT7_API_KEY` | MEDIA |
-| AWS Bedrock | `bedrock-long-term-api-key.csv` | Access Key ID + Secret Access Key | ALTA |
-| LOOKITRY_ARCH | `.kiro/steering/LOOKITRY_ARCH.md` | Tabla "Credenciales MCP" (tokens reales) | ALTA |
+| Servicio | Archivo Comprometido | Variable/Campo | Prioridad | Estado |
+|---------|---------------------|----------------|-----------|--------|
+| VPS SSH | `scripts/id_rsa_lookitry` | Clave privada RSA | CRITICA | Destrackeado — rotar + purgar historial |
+| VPS Password | `Lookitry_Brain_Vault/Cerebro/REGLAS_IMPORTANTES.md` | Seccion VPS PRODUCCION | CRITICA | Verificar manualmente |
+| n8n JWT | `scripts/n8n_api_key.txt` | Token JWT completo | ALTA | Destrackeado — rotar + purgar historial |
+| n8n JWT | `opencode.json` | `mcp.n8n.environment.N8N_API_KEY` | ALTA | **Trackeado — rotar YA** |
+| Telegram Bot | `opencode.json` | `mcp.telegram.environment.TELEGRAM_BOT_TOKEN` | ALTA | **Trackeado — rotar YA** |
+| Hostinger API | `opencode.json` | `mcp.hostinger-mcp.environment.API_TOKEN` | ALTA | **Trackeado — rotar YA** |
+| MiniMax API | `opencode.json` | `provider.minimax.options.apiKey` | ALTA | **Trackeado — rotar YA** |
+| Groq API | `opencode.json` | `provider.groq.options.apiKey` | MEDIA | **Trackeado — rotar YA** |
+| Context7 API | `opencode.json` | `mcp.context7.environment.CONTEXT7_API_KEY` | MEDIA | **Trackeado — rotar YA** |
+| AWS Bedrock | `bedrock-long-term-api-key.csv` | Access Key ID + Secret Access Key | ALTA | Destrackeado — rotar + purgar historial |
+| LOOKITRY_ARCH | `.kiro/steering/LOOKITRY_ARCH.md` | Tabla "Credenciales MCP" | ALTA | Saneado (placeholders) |
 
 ---
 
 ## Paso 1 — Dejar de trackear los archivos en git
 
-Ejecutar desde la raiz del repositorio (estos comandos NO eliminan los archivos del disco):
+Solo falta `opencode.json` (los otros 3 ya estan destrackeados):
 
 ```bash
 git rm --cached opencode.json
-git rm --cached scripts/n8n_api_key.txt
-git rm --cached scripts/id_rsa_lookitry
-git rm --cached bedrock-long-term-api-key.csv
-git commit -m "chore(security): untrack credential files from git"
+git commit -m "chore(security): untrack credential file from git"
 git push
 ```
+
+> Verificar que `opencode.json` este en `.gitignore` para evitar re-trackeo.
 
 ---
 
@@ -57,11 +90,15 @@ Actualizar `opencode.json` y `backend/.env` con los nuevos valores despues de ro
 
 ---
 
-## Paso 3 — Purga del historial de git (OPCIONAL pero recomendado)
+## Paso 3 — Purga del historial de git (RECOMENDADO)
 
 > ADVERTENCIA: Este paso reescribe el historial de git. Requiere autorizacion
 > explicita de Travis y coordinacion si hay otros colaboradores.
 > Hacer backup del repo antes de ejecutar.
+>
+> Aplica a TODOS los archivos: los 3 ya destrackeados siguen en el historial
+> (recuperables con `git show <commit>:<archivo>`), mas `opencode.json` despues
+> del Paso 1.
 
 ```bash
 # Instalar git-filter-repo si no esta instalado
@@ -77,6 +114,9 @@ git filter-repo --path bedrock-long-term-api-key.csv --invert-paths
 git push origin --force --all
 git push origin --force --tags
 ```
+
+> Importante: la purga del historial NO sustituye la rotacion. Cualquiera que
+> haya clonado el repo antes de la purga ya tiene los secretos. Rotar SIEMPRE.
 
 ---
 

@@ -1,5 +1,6 @@
 import Redis from 'ioredis';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -54,11 +55,9 @@ export class RedisService {
         }
       });
 
-      /* 
       this.instance.connect().catch(() => {
         // Connection failed — that's ok for local dev without Redis
       });
-      */
     }
     return this.instance;
   }
@@ -110,7 +109,6 @@ export async function blacklistToken(token: string, reason: string = 'logout'): 
     // Calcular TTL restante del token (max 7 días = 604800 segundos)
     let ttl = 7 * 24 * 60 * 60;
     try {
-      const jwt = require('jsonwebtoken');
       const decoded = jwt.decode(token) as { exp?: number } | null;
       if (decoded?.exp) {
         const remaining = decoded.exp - Math.floor(Date.now() / 1000);
@@ -130,7 +128,18 @@ export async function blacklistToken(token: string, reason: string = 'logout'): 
 }
 
 export async function isTokenBlacklisted(token: string): Promise<boolean> {
-  if (!RedisService.isAlive()) return false;
+  // C-5: modo configurable cuando no se puede verificar contra Redis.
+  // fail-closed (estricto) prioriza seguridad: token bloqueado si Redis no responde.
+  // fail-open (default) prioriza disponibilidad: token aceptado (riesgo acotado por el
+  // TTL corto del access token).
+  const failClosed = process.env.JWT_BLACKLIST_STRICT === 'true';
+
+  if (!RedisService.isAlive()) {
+    if (failClosed) {
+      console.warn('[JWT Blacklist] Redis no disponible y modo estricto activo — rechazando token (fail-closed)');
+    }
+    return failClosed;
+  }
   try {
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
     const key = `${JWT_BLACKLIST_PREFIX}${tokenHash}`;
@@ -138,6 +147,6 @@ export async function isTokenBlacklisted(token: string): Promise<boolean> {
     return result !== null;
   } catch (err) {
     console.error('[JWT Blacklist] Error checking blacklist:', err);
-    return false;
+    return failClosed;
   }
 }

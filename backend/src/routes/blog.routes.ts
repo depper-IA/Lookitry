@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express';
+import { Router } from 'express';
 import { blogController } from '../controllers/blog.controller';
 import { blogSettingsController } from '../controllers/blogSettings.controller';
 import { adminAuthMiddleware } from '../middleware/adminAuth';

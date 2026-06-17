@@ -16,7 +16,6 @@ services:
         NEXT_PUBLIC_REBECCA_WIDGET_ENABLED: ${NEXT_PUBLIC_REBECCA_WIDGET_ENABLED:-true}
         NEXT_PUBLIC_WOMPI_PUBLIC_KEY: ${NEXT_PUBLIC_WOMPI_PUBLIC_KEY}
         NEXT_PUBLIC_WOMPI_ENABLED: ${NEXT_PUBLIC_WOMPI_ENABLED:-false}
-        SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
     container_name: lookitry-frontend
     restart: unless-stopped
     environment:

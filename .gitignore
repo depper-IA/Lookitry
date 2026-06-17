@@ -105,6 +105,26 @@ supabase/.branches/
 openspec/cache/
 
 # ============================================================
+# AGENT ARTIFACTS — LOCAL ONLY FOR HACKATHON
+# ============================================================
+.kiro/
+.pi/
+.shared-inbox/
+Lookitry_Brain_Vault/
+MEMORY.md
+IDENTITY.md
+TOOLS.md
+test-results/
+test-reports/screenshots/
+.agents/
+.obsidian/
+.sdd/
+.windsurf/
+backend/.tts_state
+backend/supabase/.temp/
+supabase/.temp/
+
+# ============================================================
 # SCRIPTS — ARTEFACTOS DE DIAGNÓSTICO
 # ============================================================
 scripts/*.log
@@ -118,6 +138,14 @@ scripts/traefik-api.yml
 scripts/traefik-backend-api.yml
 scripts/traefik-compose-fixed.yml
 scripts/n8n-docker-compose.yml
+
+# ============================================================
+# BRAND — ASSETS BINARIOS (NO TRACKEAR)
+# ============================================================
+Brand/*.pdf
+Brand/*.pptx
+Brand/*.docx
+Brand/*.xlsx
 
 # ============================================================
 # ARCHIVOS TEMPORALES DE TEST

@@ -36,7 +36,7 @@ export class ImageService {
       }
 
       // 3. Seleccionar marca de agua
-      let watermarkPath = plan === 'BASIC' ? this.watermarkBasic : this.watermarkTrial;
+      const watermarkPath = plan === 'BASIC' ? this.watermarkBasic : this.watermarkTrial;
       
       // Verificar que el archivo existe
       if (!fs.existsSync(watermarkPath)) {

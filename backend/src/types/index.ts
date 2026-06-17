@@ -287,6 +287,9 @@ export interface JwtPayload {
 
   email: string;
 
+  /** Distingue access de refresh token. Opcional por retrocompatibilidad con tokens viejos. */
+  type?: 'access' | 'refresh';
+
   iat?: number;
 
   exp?: number;

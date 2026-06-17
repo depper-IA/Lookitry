@@ -138,7 +138,9 @@ export class WompiController {
 
         eventData = JSON.parse(rawBody);
 
-      } catch {}
+      } catch (err) {
+        // Ignore parse error
+      }
 
 
 

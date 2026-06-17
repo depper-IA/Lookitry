@@ -21,6 +21,8 @@ import { GenerationsService } from '../services/generations.service';
 
 import { generationConsentsService } from '../services/generation-consents.service';
 
+import { isBiometricConsentGiven } from '../utils/consent';
+
 import { N8nClient } from '../services/n8n.client';
 
 import { sanitizeError } from '../utils/sanitizeError';
@@ -454,6 +456,16 @@ export class PruebaloController {
 
 
 
+    // A-3: gate de consentimiento biométrico (Ley 1581, Art. 10-C). Se rechaza ANTES
+    // de cualquier manejo del dato biométrico si no hay consentimiento expreso.
+    if (!isBiometricConsentGiven(termsAccepted)) {
+      throw new ValidationError(
+        'Debes aceptar el consentimiento de tratamiento de datos biométricos para usar el probador virtual.'
+      );
+    }
+
+
+
     // 1. Validar marca existe por slug
 
     const brand = await brandsService.getBrandBySlug(brandSlug);
@@ -777,6 +789,40 @@ export class PruebaloController {
       status: 'PENDING',
 
     });
+
+
+
+    // 6.1 Registrar consentimiento BIOMÉTRICO y de TÉRMINOS de forma SÍNCRONA, antes
+    // de procesar el dato biométrico (Ley 1581, Art. 10-C). Si no se puede registrar,
+    // se aborta: no se procesa biometría sin prueba de consentimiento.
+    {
+      const consentUserAgent = req.headers['user-agent'] || '';
+      try {
+        await Promise.all([
+          generationConsentsService.createTermsConsent({
+            generation_id: generation.id,
+            user_ip: ip,
+            user_agent: consentUserAgent,
+            client_fingerprint: clientFingerprint || undefined,
+            product_id: product.id,
+            brand_id: brand.id,
+          }),
+          generationConsentsService.createBiometricConsent({
+            generation_id: generation.id,
+            user_ip: ip,
+            user_agent: consentUserAgent,
+            client_fingerprint: clientFingerprint || undefined,
+            product_id: product.id,
+            brand_id: brand.id,
+          }),
+        ]);
+      } catch (consentError: any) {
+        console.error('[pruebalo] No se pudo registrar consentimiento — abortando generación:', consentError?.message);
+        throw new ValidationError(
+          'No se pudo registrar el consentimiento de datos biométricos. Intenta nuevamente.'
+        );
+      }
+    }
 
 
 
@@ -1433,7 +1479,7 @@ export class PruebaloController {
 
 
 
-    // Verificar si hay errores frecuentes del mismo tipo —  notificar admin
+    // Verificar si hay errores frecuentes del mismo tipo - notificar admin
 
     feedbackService.countRecentByType(error_type, productCategory ?? null, 24)
 
@@ -1609,6 +1655,10 @@ export class PruebaloController {
 
   generateSessionToken = asyncHandler(async (req: Request, res: Response) => {
 
+    if (req.query.key) {
+      console.warn(`[DEPRECATION WARNING] Petición a ${req.path} utilizando ?key= detectada desde ${req.headers.referer || 'desconocido'}. Por favor, migrar al uso del header 'x-api-key' con prioridad alta.`);
+    }
+
     const key = (req.query.key as string) || (req.headers['x-api-key'] as string);
 
     const domain = req.query.domain as string;
@@ -1699,6 +1749,10 @@ export class PruebaloController {
 
   validateApiKey = asyncHandler(async (req: Request, res: Response) => {
 
+    if (req.query.key) {
+      console.warn(`[DEPRECATION WARNING] Petición a ${req.path} utilizando ?key= detectada desde ${req.headers.referer || 'desconocido'}. Por favor, migrar al uso del header 'x-api-key' con prioridad alta.`);
+    }
+
     const keyFromHeader = req.headers['x-api-key'] as string;
 
     const keyFromQuery = req.query.key as string;
@@ -1782,6 +1836,10 @@ export class PruebaloController {
    */
 
   getSyncedProducts = asyncHandler(async (req: Request, res: Response) => {
+
+    if (req.query.key) {
+      console.warn(`[DEPRECATION WARNING] Petición a ${req.path} utilizando ?key= detectada desde ${req.headers.referer || 'desconocido'}. Por favor, migrar al uso del header 'x-api-key' con prioridad alta.`);
+    }
 
     const key = (req.query.key as string) || (req.headers['x-api-key'] as string);
 

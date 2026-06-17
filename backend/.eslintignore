@@ -1,0 +1,30 @@
+# Root-level utility scripts not covered by tsconfig
+/audit_payments.ts
+/check-db.ts
+/check_env.ts
+/remove-otra-info.ts
+/seed-bolsos.ts
+/seed-categories.ts
+/seed-categories2.ts
+/test_checkout.ts
+/test-debug.ts
+/test-descriptor.ts
+/test-gemini.ts
+/test-imagen-v2.ts
+/test-prompt.ts
+/test-rules.ts
+/test-sam.ts
+/test-token.ts
+/tmp_run_migration.ts
+/update-categories.ts
+/update-categories-otro.ts
+
+# Root-level scripts directory (not in tsconfig)
+/scripts/
+
+# src/scripts — excluded from tsconfig (utility/admin scripts)
+src/scripts/
+
+# Test directories excluded from tsconfig
+src/__tests__/
+src/routes/__tests__/

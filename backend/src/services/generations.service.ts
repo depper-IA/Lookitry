@@ -28,7 +28,7 @@ export interface UpdateGenerationDto {
 
 export class GenerationsService {
   async createGeneration(data: CreateGenerationDto): Promise<Generation> {
-    let query = supabaseAdmin
+    const query = supabaseAdmin
       .from('generations')
       .insert({
         brand_id: data.brand_id,
@@ -280,8 +280,8 @@ export class GenerationsService {
 
 
   /**
-   * T-5: Purga im\u00e1genes generadas con m\u00e1s de 48h (Art. 10-B t\u00e9rminos)
-   * Elimina de GCS + marca result_image_url como '[EXPIRADO]'
+   * T-5: Purga imágenes generadas con más de 48h (Art. 10-B términos)
+   * Marca result_image_url como '[EXPIRADO]' en la base de datos.
    */
   async purgeExpiredResultImages(limit = 100): Promise<number> {
     const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
@@ -304,16 +304,6 @@ export class GenerationsService {
     let purged = 0;
 
     for (const gen of expired) {
-      try {
-        const path = this._extractPathFromUrl(gen.result_image_url);
-        if (path) {
-          const { uploadService } = await import('./upload.service');
-          await uploadService.deleteFromGCS(path);
-        }
-      } catch (err) {
-        console.warn(`[purgeExpiredResultImages] No se pudo eliminar GCS para ${gen.id}:`, err);
-      }
-
       const { error: updateError } = await supabaseAdmin
         .from('generations')
         .update({
@@ -331,16 +321,7 @@ export class GenerationsService {
   private _extractPathFromUrl(url: string): string | null {
     try {
       const u = new URL(url);
-      const hostname = u.hostname;
-      let path = u.pathname;
-
-      if (hostname.includes('storage.googleapis.com')) {
-        path = path.replace(/^\//, '');
-        const segs = path.split('/');
-        if (segs.length > 1) segs.shift();
-        return segs.join('/');
-      }
-
+      const path = u.pathname;
       const segs = path.split('/').filter(Boolean);
       if (segs.length > 1) segs.shift();
       return segs.join('/') || null;

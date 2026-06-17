@@ -2,7 +2,6 @@
 // Tests for Zod schemas: DescribeProductInputSchema and ProductDescriptionSchema
 // Updated to match new Spanish-specific field schemas
 
-import { z } from 'zod';
 import {
   DescribeProductInputSchema,
   ClothingSchema,

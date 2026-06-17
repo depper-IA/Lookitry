@@ -25,11 +25,14 @@ export class CategoryAttributesService {
     const normalizedCategory = category.toLowerCase().trim();
 
     // Primero intentar coincidencia exacta
-    let { data, error } = await supabaseAdmin
+    const response = await supabaseAdmin
       .from('category_attributes')
       .select('*')
       .eq('category_key', normalizedCategory)
       .single();
+
+    let data = response.data;
+    const error = response.error;
 
     // Si no hay coincidencia exacta, buscar por clave que contenga el texto
     if (error || !data) {

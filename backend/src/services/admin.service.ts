@@ -37,6 +37,9 @@ export class AdminService {
   getAdminByGoogleId(googleId: string) { return this.auth.getAdminByGoogleId(googleId); }
   updateAdminGoogleId(adminId: string, googleId: string) { return this.auth.updateAdminGoogleId(adminId, googleId); }
   verifyPassword(plain: string, hashed: string) { return this.auth.verifyPassword(plain, hashed); }
+  isLockedOut(adminId: string) { return this.auth.isLockedOut(adminId); }
+  recordFailedAttempt(adminId: string, ip: string) { return this.auth.recordFailedAttempt(adminId, ip); }
+  resetFailedAttempts(adminId: string) { return this.auth.resetFailedAttempts(adminId); }
   listAdmins() { return this.auth.listAdmins(); }
   createAdmin(data: Parameters<AuthAdminService['createAdmin']>[0]) { return this.auth.createAdmin(data); }
   updateAdminPermissions(adminId: string, permissions: string[]) { return this.auth.updateAdminPermissions(adminId, permissions); }

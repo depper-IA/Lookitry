@@ -133,7 +133,7 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
     const pendingStatus = String(pending.status || '').toLowerCase();
 
     let paymentConfirmed = pendingStatus === 'paid' || pendingStatus === 'confirmed';
-    let finalMethod = method || 'wompi';
+    const finalMethod = method || 'wompi';
     let transactionDetails = pending.payment_id ? `ID guardado: ${pending.payment_id}` : '';
     let paymentAmount = 0; // Guardará el monto total de la pasarela
 

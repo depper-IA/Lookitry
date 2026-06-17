@@ -5,7 +5,7 @@ import { leadService } from './lead.service';
 const BATCH_SIZE = 50;
 const BATCH_DELAY_MS = 10 * 60 * 1000;
 const MAX_DAILY_EMAILS = 300;
-const DAILY_RESET_HOUR = 0;
+export const DAILY_RESET_HOUR = 0;
 
 export interface EmailCampaign {
   id: string;

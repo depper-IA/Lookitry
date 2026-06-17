@@ -96,7 +96,7 @@ export class CleanupService {
 
             deleted++;
 
-            console.log(`[Cleanup] â Imagen eliminada: ${product.image_url}`);
+            console.log(`[Cleanup] OK - Imagen eliminada: ${product.image_url}`);
 
           }
 
@@ -198,13 +198,13 @@ export class CleanupService {
 
             deleted++;
 
-            console.log(`[Cleanup] â Imagen antigua eliminada: ${product.image_url}`);
+            console.log(`[Cleanup] OK - Imagen antigua eliminada: ${product.image_url}`);
 
           }
 
         } catch (err) {
 
-          console.error(`[Cleanup] â Error al eliminar imagen ${product.image_url}:`, err);
+          console.error(`[Cleanup] ERROR - Error al eliminar imagen ${product.image_url}:`, err);
 
           errors++;
 

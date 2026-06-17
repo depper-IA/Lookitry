@@ -357,7 +357,6 @@ async function eliminarProductosMinIO(brandId: string): Promise<void> {
   try {
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-
     const Minio = require('minio');
 
     const minioClient = new Minio.Client({

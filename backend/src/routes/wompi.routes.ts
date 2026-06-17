@@ -1,10 +1,6 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 
 import { WompiController } from '../controllers/wompi.controller';
-
-import { verifyToken } from '../utils/jwt';
-
-import { AuthService } from '../services/auth.service';
 
 import { optionalAuth } from '../middleware/auth';
 
@@ -15,8 +11,6 @@ import rateLimit from 'express-rate-limit';
 const router = Router();
 
 const wompiController = new WompiController();
-
-const authService = new AuthService();
 
 
 

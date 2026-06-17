@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { receiveWebhook, getConversations, getConversationMessages, replyToConversation } from '../controllers/chat.controller';
+import { receiveWebhook, getConversations } from '../controllers/chat.controller';
 import { supabaseAdmin } from '../config/supabase';
 
 jest.mock('../config/supabase', () => ({
@@ -17,16 +17,11 @@ jest.mock('../config/supabase', () => ({
 describe('Chat Controller', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
-  let responseObject = {};
-
   beforeEach(() => {
     mockRequest = {};
     mockResponse = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockImplementation((result) => {
-        responseObject = result;
-        return mockResponse;
-      })
+      json: jest.fn().mockReturnThis()
     };
   });
 

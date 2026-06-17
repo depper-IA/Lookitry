@@ -34,7 +34,7 @@ const PAYPAL_AMOUNT_TOLERANCE_MIN = 0.50;
 
 
 
-function getPaypalTolerance(expectedAmount: number): number {
+export function getPaypalTolerance(expectedAmount: number): number {
 
   return Math.max(expectedAmount * PAYPAL_AMOUNT_TOLERANCE_PCT, PAYPAL_AMOUNT_TOLERANCE_MIN);
 
@@ -54,7 +54,8 @@ async function insertPaypalPaymentCompat(payload: Record<string, unknown>) {
 
   if (result.error?.message?.toLowerCase().includes('reference') && 'reference' in payload) {
 
-    const { reference, ...fallbackPayload } = payload;
+    const fallbackPayload = { ...payload };
+    delete (fallbackPayload as any).reference;
 
     result = await supabaseAdmin.from('subscription_payments').insert(fallbackPayload);
 

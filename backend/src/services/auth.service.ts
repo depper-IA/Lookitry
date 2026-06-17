@@ -140,7 +140,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
   
 
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
 
     return { isValid: false, message: 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...)' };
 
@@ -166,7 +166,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
   async registerPostPayment(data: RegisterBrandDto & { ref: string; fingerprint?: string }): Promise<AuthResponse> {
 
-  const { ref, name, slug, password, contact_name, fingerprint } = data;
+  const { ref, name, slug, password, contact_name } = data;
 
   const normalizedReference = String(ref || '').toUpperCase();
 
@@ -560,7 +560,8 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
 
   if (paymentInsertError?.message?.toLowerCase().includes('reference')) {
 
-    const { reference, ...fallbackPayload } = paymentPayloadWithSnapshot;
+    const fallbackPayload = { ...paymentPayloadWithSnapshot };
+    delete (fallbackPayload as any).reference;
 
     const retry = await supabaseAdmin.from('subscription_payments').insert(fallbackPayload);
 
@@ -1053,8 +1054,6 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
   async login(data: LoginDto): Promise<AuthResponse> {
 
     const ip = data.ip || 'unknown';
-
-    const fingerprint = data.fingerprint || null;
 
 
 

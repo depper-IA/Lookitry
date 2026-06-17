@@ -1,8 +1,10 @@
-import { Storage, Bucket } from '@google-cloud/storage';
 import sharp from 'sharp';
 import axios from 'axios';
 import crypto from 'crypto';
-import fs from 'fs';
+import { selectExpiredTempPaths } from '../utils/temp-cleanup';
+
+// Re-export para compatibilidad con consumidores previos.
+export { selectExpiredTempPaths };
 
 export interface UploadImageDto {
   image_base64: string;
@@ -35,7 +37,6 @@ export type UploadAssetType =
 /**
  * Sube imágenes a MinIO usando la API S3-compatible con firma HMAC-SHA256.
  * MinIO está en minio.wilkiedevs.com, bucket "images", acceso público de lectura.
- * Opcionalmente sube a GCS si existe gcs-credentials.json
  */
 export class UploadService {
   private readonly endpoint = process.env.MINIO_ENDPOINT;
@@ -43,31 +44,12 @@ export class UploadService {
   private readonly accessKey = process.env.MINIO_ACCESS_KEY;
   private readonly secretKey = process.env.MINIO_SECRET_KEY;
   private readonly publicUrl = process.env.MINIO_PUBLIC_URL;
-  private readonly gcsBucketName = process.env.GCS_BUCKET || 'lookitry-vertex';
-  private gcsDefaultBucket: Bucket | null = null;
-  private storage: Storage | null = null;
-  private hasGcsCredentials = false;
 
   constructor() {
     if (!this.endpoint || !this.bucket || !this.accessKey || !this.secretKey || !this.publicUrl) {
       throw new Error(
         'Variables de entorno de MinIO requeridas: MINIO_ENDPOINT, MINIO_BUCKET, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_PUBLIC_URL'
       );
-    }
-
-    // Intentar inicializar Google Cloud Storage solo si existe el archivo de credenciales
-    try {
-      const keyFilename = 'gcs-credentials.json';
-      if (fs.existsSync(keyFilename)) {
-        this.storage = new Storage({ keyFilename });
-        this.hasGcsCredentials = true;
-        console.log('[Upload Service] GCS credentials found, will upload to GCS');
-        this.gcsDefaultBucket = this.storage.bucket(this.gcsBucketName);
-      } else {
-        console.log('[Upload Service] No GCS credentials file found, skipping GCS upload');
-      }
-    } catch (err) {
-      console.warn('[Upload Service] GCS initialization skipped:', err);
     }
   }
 
@@ -87,7 +69,9 @@ export class UploadService {
 
   async uploadImageBuffer(data: UploadImageBufferDto): Promise<UploadResponse> {
     try {
-      let { buffer, filename, temporary, folder, assetType } = data;
+      let buffer = data.buffer;
+      let filename = data.filename;
+      const { temporary, folder, assetType } = data;
 
       // === VALIDACIÓN DE MAGIC BYTES CON SHARP ===
       try {
@@ -140,16 +124,11 @@ export class UploadService {
       const targetFolder = folder || (temporary ? 'temp' : 'products');
       const uniqueName = `${targetFolder}/${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
 
-      // 1. Subir a MinIO como respaldo interno
       await this.putObject(uniqueName, buffer, contentType);
-      console.log(`[Upload Service] Imagen subida a MinIO (respaldo): ${uniqueName}`);
+      const url = `${this.publicUrl}/${this.bucket}/${uniqueName}`;
+      console.log(`[Upload Service] Imagen subida a MinIO: ${uniqueName}`);
 
-      // 2. Subir a GCS para acceso público de Vertex AI
-      const gcsUrl = await this.uploadToGCS(buffer, uniqueName, contentType);
-      console.log(`[Upload Service] Imagen subida a GCS (público): ${gcsUrl}`);
-
-      // 3. Retornar la URL pública de GCS
-      return { success: true, url: gcsUrl, path: uniqueName };
+      return { success: true, url, path: uniqueName };
     } catch (error: any) {
       console.error('[Upload Service] Error en el proceso de subida:', error.message);
       throw new Error(error.message || 'Error al subir imagen');
@@ -157,92 +136,50 @@ export class UploadService {
   }
 
   /**
-   * Sube un buffer a Google Cloud Storage y retorna su URL pública.
-   * Si no hay credenciales de GCS, retorna la URL de MinIO.
+   * Elimina un objeto de MinIO.
+   * Usado para eliminación inline de datos biométricos (selfies).
    */
-  /**
-   * Genera una signed URL temporal para acceso a un objeto en GCS.
-   * TTL por defecto: 15 minutos.
-   * Usado para dar acceso temporal a Vertex AI y n8n sin exponer objetos públicamente.
-   */
-  async generateSignedUrl(gcsPath: string, ttlMinutes = 15): Promise<string> {
-    if (!this.hasGcsCredentials || !this.gcsDefaultBucket) {
-      console.warn('[Upload Service] GCS no configurado, retornando MinIO URL como fallback');
-      // Fallback: retornar URL de MinIO (que es pública)
-      return `${this.publicUrl}/${this.bucket}/${gcsPath}`;
-    }
+  async deleteBiometricData(path: string): Promise<{ minio: boolean; error?: string }> {
+    const result = { minio: false } as { minio: boolean; error?: string };
 
     try {
-      const file = this.gcsDefaultBucket.file(gcsPath);
-      const [signedUrl] = await file.getSignedUrl({
-        version: 'v4',
-        action: 'read',
-        expires: Date.now() + ttlMinutes * 60 * 1000,
-      });
-      console.log(`[Upload Service] Signed URL generada para ${gcsPath} (TTL: ${ttlMinutes}min)`);
-      return signedUrl;
+      await this.deleteObject(path);
+      result.minio = true;
+      console.log(`[BiometricCleanup] Eliminado de MinIO: ${path}`);
     } catch (err: any) {
-      console.error(`[Upload Service] Error generando signed URL para ${gcsPath}:`, err.message);
-      // En caso de error, fallback a MinIO URL
-      return `${this.publicUrl}/${this.bucket}/${gcsPath}`;
-    }
-  }
-
-  /**
-   * Genera signed URL para selfie del usuario final.
-   * TTL: 15 minutos — suficiente para que Vertex AI o n8n descarguen la imagen.
-   */
-  async generateSelfieSignedUrl(selfiePath: string): Promise<string> {
-    return this.generateSignedUrl(selfiePath, 15);
-  }
-
-  /**
-   * Genera signed URL para máscara SAM.
-   * TTL: 5 minutos — la máscara se usa inmediatamente en el pipeline.
-   */
-  async generateMaskSignedUrl(maskPath: string): Promise<string> {
-    return this.generateSignedUrl(maskPath, 5);
-  }
-
-  /**
-   * Sube un buffer a Google Cloud Storage y retorna signed URL temporal.
-   * NO usa `public: true` — el acceso se controla via signed URLs.
-   * La signed URL tiene TTL de 15 minutos por defecto.
-   */
-  private async uploadToGCS(buffer: Buffer, destination: string, contentType: string): Promise<string> {
-    // Si no hay credenciales de GCS, retornar URL de MinIO
-    if (!this.hasGcsCredentials || !this.storage) {
-      console.log('[Upload Service] Skipping GCS upload, returning MinIO URL');
-      return `${this.publicUrl}/${this.bucket}/${destination}`;
+      console.warn(`[BiometricCleanup] MinIO delete falló: ${path} — ${err.message}`);
+      result.minio = false;
+      result.error = err.message;
     }
 
-    const bucket = this.storage.bucket(this.gcsBucketName);
-    const file = bucket.file(destination);
+    return result;
+  }
 
-    try {
-      // NO public: true — el acceso se controla via signed URLs
-      await file.save(buffer, {
-        contentType: contentType,
-        metadata: {
-          cacheControl: 'private, max-age=0', // No cachear contenido privado
-          metadata: {
-            source: 'lookitry-backend',
-            timestamp: new Date().toISOString(),
-            access: 'signed-url-only', // Flag para auditoría
-          }
-        }
-      });
-
-      // Generar signed URL con TTL de 15 min para retorno inmediato
-      const signedUrl = await this.generateSignedUrl(destination, 15);
-      console.log(`[Upload Service] Imagen subida a GCS (privada): ${destination}`);
-      return signedUrl;
-    } catch (error: any) {
-      console.error(`[Upload Service] Error uploading to GCS bucket "${this.gcsBucketName}":`, error);
-      // En caso de error en GCS, retourner URL de MinIO como fallback
-      console.log('[Upload Service] Falling back to MinIO URL');
-      return `${this.publicUrl}/${this.bucket}/${destination}`;
+  async deleteBiometricDataBatch(paths: string[]): Promise<Array<{ path: string; result: { minio: boolean; error?: string } }>> {
+    const results = [];
+    for (const path of paths) {
+      const result = await this.deleteBiometricData(path);
+      results.push({ path, result });
     }
+    return results;
+  }
+
+  async cleanupTempFiles(paths: string[]): Promise<{ deleted: number; errors: number }> {
+    let deleted = 0;
+    let errors = 0;
+
+    for (const path of paths) {
+      try {
+        await this.deleteObject(path);
+        deleted++;
+        console.log(`[Cleanup] Eliminado: ${path}`);
+      } catch (error: any) {
+        errors++;
+        console.error(`[Cleanup] Error eliminando ${path}:`, error.message);
+      }
+    }
+
+    return { deleted, errors };
   }
 
   private async putObject(key: string, body: Buffer, contentType: string): Promise<void> {
@@ -328,90 +265,6 @@ export class UploadService {
       'image/gif': '.gif', 'image/webp': '.webp', 'image/svg+xml': '.svg',
     };
     return map[contentType] || '.jpg';
-  }
-
-  /**
-   * Elimina un objeto tanto de MinIO como de GCS (si está configurado).
-   * Usado para eliminación inline de datos biométricos (selfies).
-   */
-  async deleteBiometricData(path: string): Promise<{ minio: boolean; gcs: boolean; error?: string }> {
-    const result = { minio: false, gcs: false } as { minio: boolean; gcs: boolean; error?: string };
-
-    // 1. Eliminar de MinIO
-    try {
-      await this.deleteObject(path);
-      result.minio = true;
-      console.log(`[BiometricCleanup] Eliminado de MinIO: ${path}`);
-    } catch (err: any) {
-      // No crítico si falla MinIO — puede que ya se haya movido a GCS o no exista
-      console.warn(`[BiometricCleanup] MinIO delete falló (puede no existir): ${path} — ${err.message}`);
-      result.minio = false;
-    }
-
-    // 2. Eliminar de GCS si está configurado
-    if (this.hasGcsCredentials && this.storage && this.gcsDefaultBucket) {
-      try {
-        const gcsFile = this.gcsDefaultBucket.file(path);
-        await gcsFile.delete({ ignoreNotFound: true });
-        result.gcs = true;
-        console.log(`[BiometricCleanup] Eliminado de GCS: ${path}`);
-      } catch (err: any) {
-        console.warn(`[BiometricCleanup] GCS delete falló: ${path} — ${err.message}`);
-        result.gcs = false;
-        result.error = err.message;
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Elimina múltiples objetos biométricos (batch).
-   * Retorna array de resultados individuales.
-   */
-  async deleteBiometricDataBatch(paths: string[]): Promise<Array<{ path: string; result: { minio: boolean; gcs: boolean; error?: string } }>> {
-    const results = [];
-    for (const path of paths) {
-      const result = await this.deleteBiometricData(path);
-      results.push({ path, result });
-    }
-    return results;
-  }
-
-  async cleanupTempFiles(paths: string[]): Promise<{ deleted: number; errors: number }> {
-    let deleted = 0;
-    let errors = 0;
-
-    for (const path of paths) {
-      try {
-        // Delete from MinIO
-        await this.deleteObject(path);
-        // Also delete from GCS if configured
-        if (this.hasGcsCredentials && this.gcsDefaultBucket) {
-          await this.gcsDefaultBucket.file(path).delete({ ignoreNotFound: true });
-        }
-        deleted++;
-        console.log(`[Cleanup] Eliminado: ${path}`);
-      } catch (error: any) {
-        errors++;
-        console.error(`[Cleanup] Error eliminando ${path}:`, error.message);
-      }
-    }
-
-    return { deleted, errors };
-  }
-
-  /**
-   * Elimina un archivo de GCS por path.
-   */
-  async deleteFromGCS(path: string): Promise<boolean> {
-    if (!this.hasGcsCredentials || !this.gcsDefaultBucket) return false;
-    try {
-      await this.gcsDefaultBucket.file(path).delete({ ignoreNotFound: true });
-      return true;
-    } catch {
-      return false;
-    }
   }
 
   private async deleteObject(key: string): Promise<void> {

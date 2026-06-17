@@ -1,4 +1,4 @@
-import { GoogleGenAI, HarmCategory, HarmBlockThreshold, GenerateContentParameters } from '@google/genai';
+import { GoogleGenAI, GenerateContentParameters } from '@google/genai';
 
 // Configuration
 const VERTEX_PROJECT_ID = process.env.VERTEX_PROJECT_ID || 'gen-lang-client-0591001769';

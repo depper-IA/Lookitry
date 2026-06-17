@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Check, Sparkles, ShieldCheck } from 'lucide-react';
+import { Check, Sparkles, Phone, ArrowRight, Info } from 'lucide-react';
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { PricingConfig } from '@/lib/pricing';
 import { formatCurrency, formatPrice as formatDynamicPrice } from '@/utils/currency';
 import { useActivePromotions } from '@/hooks/useActivePromotions';
@@ -15,21 +16,54 @@ interface LandingPricingProps {
   trm: number;
 }
 
+type Feature = { label: string; info: string };
+
 const EASING_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+
+function FeatureItem({ label, info }: Feature) {
+  return (
+    <TooltipPrimitive.Provider delayDuration={200}>
+      <TooltipPrimitive.Root>
+        <TooltipPrimitive.Trigger asChild>
+          <div className="flex items-center gap-3 cursor-default group select-none">
+            <span className="flex-shrink-0 w-4 h-4 rounded-full bg-accent/15 flex items-center justify-center">
+              <Check size={9} className="text-accent" strokeWidth={3} />
+            </span>
+            <span className="text-[12px] text-white/60 group-hover:text-white/85 transition-colors leading-tight">
+              {label}
+            </span>
+            <Info size={11} className="text-white/15 group-hover:text-white/35 transition-colors flex-shrink-0 ml-auto" />
+          </div>
+        </TooltipPrimitive.Trigger>
+        <TooltipPrimitive.Portal>
+          <TooltipPrimitive.Content
+            sideOffset={6}
+            className="z-50 max-w-[220px] rounded-xl bg-[#1f1f1f] px-3 py-2 text-[12px] text-white/80 shadow-xl animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0"
+          >
+            {info}
+            <TooltipPrimitive.Arrow className="fill-[#1f1f1f]" />
+          </TooltipPrimitive.Content>
+        </TooltipPrimitive.Portal>
+      </TooltipPrimitive.Root>
+    </TooltipPrimitive.Provider>
+  );
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
 
 interface PricingCardProps {
   name: string;
   category: string;
   badge?: string;
   badgeColor?: string;
-  price: number | null;
-  originalPrice?: number;
-  currency: string;
+  priceDisplay: string;
+  originalDisplay?: string;
   period: string;
-  features: string[];
+  features: Feature[];
   ctaText: string;
   ctaHref: string;
-  isDark?: boolean;
   isPro?: boolean;
   isEnterprise?: boolean;
   delay: number;
@@ -40,320 +74,325 @@ function PricingCard({
   category,
   badge,
   badgeColor = '#10B981',
-  price,
-  originalPrice,
-  currency,
+  priceDisplay,
+  originalDisplay,
   period,
   features,
   ctaText,
   ctaHref,
-  isDark = false,
   isPro = false,
   isEnterprise = false,
   delay,
 }: PricingCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const hasDiscount = originalPrice && originalPrice > price!;
-  const discountPct = hasDiscount ? Math.round((1 - price! / originalPrice!) * 100) : 0;
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 60, scale: 0.9, rotateX: 15 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{
-        delay,
-        duration: 0.8,
-        ease: EASING_OUT,
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      initial={{ opacity: 0, y: 50, scale: 0.94 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={
+        isPro
+          ? { y: -8, boxShadow: '0 0 90px rgba(255,92,58,0.28), 0 24px 48px rgba(0,0,0,0.5)' }
+          : { y: -6, boxShadow: '0 24px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06)' }
+      }
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ delay, duration: 0.7, ease: EASING_OUT }}
+      style={{ willChange: 'transform' }}
       className={`
-        relative w-full max-w-sm rounded-3xl p-8 md:p-10
-        flex flex-col
-        transition-all duration-500 ease-out
-        hover:-translate-y-2 hover:shadow-2xl
-        ${isDark
-          ? 'bg-neutral-900 border border-accent/40 shadow-[0_30px_80px_rgba(255,92,58,0.12)]'
-          : 'bg-warm dark:bg-dark-input border border-gray-200 dark:border-white/10 shadow-sm'
+        group relative flex flex-col rounded-[22px] p-4 gap-3.5 cursor-default
+        ${isPro
+          ? 'bg-[#1a0d06] shadow-[0_0_70px_rgba(255,92,58,0.14)]'
+          : 'bg-[#141414]'
         }
-        ${isPro ? 'z-10' : ''}
       `}
     >
       {/* Badge */}
       {badge && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+        <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 z-10">
           <div
-            className="text-white text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-5 py-2 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap z-10"
+            className="flex items-center gap-1.5 text-white text-[9px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap"
             style={{ backgroundColor: badgeColor }}
           >
-            <Sparkles size={10} aria-hidden="true" />
+            <Sparkles size={9} aria-hidden="true" />
             {badge}
           </div>
         </div>
       )}
 
-      {/* Category */}
-      <div className={`font-bold text-[9px] sm:text-[10px] uppercase tracking-[.25em] mb-3 sm:mb-4 ${isDark ? 'text-accent/80' : 'text-accent'}`}>
-        {category}
+      {/* Header */}
+      <div className="pt-0.5">
+        <p className={`text-[8px] font-bold uppercase tracking-[.28em] mb-1 ${isPro ? 'text-accent/80' : 'text-accent/70'}`}>
+          {category}
+        </p>
+        <h3 className={`font-jakarta font-bold text-[20px] leading-tight transition-colors duration-300 ${isPro ? 'text-white group-hover:text-accent' : 'text-white group-hover:text-white/90'}`}>
+          {name}
+        </h3>
       </div>
 
-      {/* Plan name */}
-      <h3 className={`font-jakarta font-bold text-2xl sm:text-3xl mb-5 sm:mb-6 ${isDark ? 'text-white' : 'text-black dark:text-white'}`}>
-        {name}
-      </h3>
+      {/* Features panel */}
+      <div className="rounded-[16px] bg-[#0a0a0a] group-hover:bg-[#0d0d0d] transition-colors duration-300 px-4 py-4 flex flex-col gap-[11px] flex-1">
+        {features.map((f, i) => (
+          <FeatureItem key={i} label={f.label} info={f.info} />
+        ))}
+      </div>
 
-      {/* Price - hide for Enterprise */}
-      {!isEnterprise && price !== null && (
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-baseline gap-2">
-            <span
-              className={`font-jakarta font-black text-3xl sm:text-4xl tracking-tighter ${isDark ? 'text-white' : 'text-black dark:text-white'}`}
-            >
-              {currency === 'USD'
-                ? formatDynamicPrice(price, 'USD', 0)
-                : formatCurrency(price)
-              }
-            </span>
-            <span className={`text-[10px] sm:text-[12px] font-bold uppercase tracking-widest ${isDark ? 'text-white/60' : 'text-black/60 dark:text-white/60'}`}>
-              {currency}/{period}
-            </span>
-          </div>
-
-          {/* Original + discount */}
-          {hasDiscount && originalPrice && (
-            <div className="flex items-center gap-3 mt-2">
-              <span className={`text-[14px] sm:text-[16px] font-medium line-through ${isDark ? 'text-white/40' : 'text-black/40 dark:text-white/40'}`}>
-                {currency === 'USD'
-                  ? formatDynamicPrice(originalPrice, 'USD', 0)
-                  : formatCurrency(originalPrice)
-                }
-              </span>
-              <span
-                className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10B981' }}
-              >
-                -{discountPct}%
-              </span>
-            </div>
-          )}
-
-          {/* Savings */}
-          {hasDiscount && (
-            <div className={`mt-1.5 text-[10px] sm:text-[11px] font-medium ${isDark ? 'text-white/50' : 'text-black/50 dark:text-white/50'}`}>
-              Ahorras {currency === 'USD'
-                ? formatDynamicPrice(originalPrice! - price, 'USD', 0)
-                : formatCurrency(originalPrice! - price)
-              }
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Enterprise placeholder */}
-      {isEnterprise && (
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-baseline gap-2">
-            <span className={`font-jakarta font-black text-2xl sm:text-3xl tracking-tight ${isDark ? 'text-white/60' : 'text-black/60 dark:text-white/60'}`}>
+      {/* Footer */}
+      <div className="flex items-end justify-between gap-3 px-1">
+        {/* Price */}
+        {isEnterprise ? (
+          <div>
+            <p className="text-[10px] text-white/30 mb-0.5">precio</p>
+            <span className="font-jakarta text-[22px] font-semibold text-white/55 leading-none">
               Consultar
             </span>
           </div>
-          <p className={`text-[11px] sm:text-[12px] mt-1 ${isDark ? 'text-white/40' : 'text-black/40 dark:text-white/40'}`}>
-            Precio según necesidades
-          </p>
-        </div>
-      )}
-
-      {/* Divider */}
-      <div className={`h-[1px] w-full mb-6 sm:mb-8 ${isDark ? 'bg-white/10' : 'bg-black/10 dark:bg-white/10'}`} />
-
-      {/* Features */}
-      <ul className="flex flex-col gap-4 sm:gap-5 mb-8 sm:mb-10 flex-1">
-        {features.map((feature: string, idx: number) => (
-          <li
-            key={idx}
-            className={`flex items-center gap-3 text-[13px] sm:text-[14px] font-medium ${isDark ? 'text-white/80' : 'text-text-muted dark:text-white/80'}`}
-          >
-            <div
-              className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isDark ? 'bg-accent/20' : 'bg-accent/10'}`}
-              aria-hidden="true"
-            >
-              <Check size={12} className="text-accent" />
+        ) : (
+          <div>
+            <p className="text-[10px] text-white/30 mb-0.5">desde</p>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="font-jakarta text-[22px] font-bold text-white leading-none">
+                {priceDisplay}
+              </span>
+              {originalDisplay && (
+                <span className="text-[11px] text-white/25 line-through leading-none">
+                  {originalDisplay}
+                </span>
+              )}
             </div>
-            {feature}
-          </li>
-        ))}
-      </ul>
+            <p className="text-[9px] text-white/25 mt-0.5 uppercase tracking-wide">{period}</p>
+          </div>
+        )}
 
-      {/* CTA Button */}
-      <Link
-        href={ctaHref}
-        className={`
-          pricing-cta group mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-sm text-center
-          transition-all duration-300 ease-out
-          ${isEnterprise
-            ? 'pricing-cta-light'
-            : isDark
-              ? 'pricing-cta-dark'
-              : 'pricing-cta-light'
-          }
-        `}
-      >
-        {ctaText}
-      </Link>
+        {/* CTA */}
+        <Link
+          href={ctaHref}
+          className={`
+            flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-[12px] transition-all duration-200
+            hover:scale-[1.03] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+            ${isPro
+              ? 'bg-accent text-white hover:shadow-lg hover:shadow-accent/30'
+              : isEnterprise
+                ? 'bg-white/8 text-white/80 hover:bg-white/12'
+                : 'bg-white/10 text-white hover:bg-white/15'
+            }
+          `}
+        >
+          {isEnterprise ? (
+            <><Phone size={13} aria-hidden="true" /><span>Contactar</span></>
+          ) : (
+            <><span>{ctaText}</span><ArrowRight size={13} aria-hidden="true" /></>
+          )}
+        </Link>
+      </div>
     </motion.div>
   );
 }
 
-const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
-  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 sm:mb-8 font-medium text-[10px] uppercase tracking-[.2em] border shadow-sm ${light
-      ? 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60'
-      : 'bg-accent/5 border-accent/20 text-accent'
-    }`}>
-    <span className={`w-1.5 h-1.5 rounded-full ${light ? 'bg-black/30 dark:bg-white/40' : 'bg-accent'}`} aria-hidden="true" />
+// ── Section Tag ───────────────────────────────────────────────────────────────
+
+const SectionTag = ({ text }: { text: string }) => (
+  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 sm:mb-8 font-medium text-[10px] uppercase tracking-[.2em] bg-accent/5 text-accent">
+    <span className="w-1.5 h-1.5 rounded-full bg-accent" aria-hidden="true" />
     {text}
   </div>
 );
 
+// ── Main Export ───────────────────────────────────────────────────────────────
+
 export default function LandingPricing({ pricing, currency, trm }: LandingPricingProps) {
   const { planOverrides } = useActivePromotions();
+  const [trialPrice, setTrialPrice] = useState<number>(20000);
 
-  // Basic plan
+  React.useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    fetch(`${apiUrl}/api/trial/status`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.priceCOP && Number(data.priceCOP) > 0) setTrialPrice(Number(data.priceCOP));
+      })
+      .catch(() => {});
+  }, []);
+
+  const fmt = (n: number) =>
+    currency === 'USD' ? formatDynamicPrice(n, 'USD', 0) : formatCurrency(n);
+
+  // Basic
   const basicOverride = planOverrides.BASIC;
   const basicPrice = basicOverride ? basicOverride.override_price : pricing.basic.precio_mensual_cop;
   const basicOriginal = basicOverride ? basicOverride.original_price : pricing.basic.precio_original_cop || pricing.basic.precio_mensual_cop;
   const basicLabel = basicOverride?.label;
   const hasBasicDiscount = basicPrice < pricing.basic.precio_mensual_cop;
 
-  // Pro plan
+  // Pro
   const proOverride = planOverrides.PRO;
   const proPrice = proOverride ? proOverride.override_price : pricing.pro.precio_mensual_cop;
   const proOriginal = proOverride ? proOverride.original_price : pricing.pro.precio_original_cop || pricing.pro.precio_mensual_cop;
   const proLabel = proOverride?.label;
   const hasProDiscount = proPrice < pricing.pro.precio_mensual_cop;
 
-  return (
-    <section id="planes" className="py-20 sm:py-24 md:py-32 lg:py-40 px-4 sm:px-6 bg-white dark:bg-black relative overflow-hidden" aria-label="Planes y precios">
+  // Feature arrays
+  const trialFeatures: Feature[] = [
+    { label: '50 generaciones con IA', info: 'Procesa hasta 50 imágenes de prueba virtual durante los 7 días.' },
+    { label: '7 días de acceso completo', info: 'Acceso a todas las funciones sin restricción durante la prueba.' },
+    { label: '1 producto activo', info: 'Carga y activa 1 prenda de tu catálogo con probador virtual.' },
+    { label: 'Widget personalizable', info: 'Tu probador con tu logo y colores, listo para compartir.' },
+    { label: 'Logo y colores de marca', info: 'El probador refleja la identidad visual de tu negocio.' },
+  ];
 
-      <div className="max-w-7xl mx-auto px-0 sm:px-6">
+  const basicFeatures: Feature[] = [
+    { label: `Hasta ${pricing.basic.productos_max ?? 5} productos activos`, info: 'Carga y activa hasta este número de prendas con probador virtual.' },
+    { label: `${pricing.basic.generaciones_mensuales} pruebas virtuales / mes`, info: 'Tus clientes pueden hacer hasta este número de pruebas al mes.' },
+    { label: 'Logo y colores de marca', info: 'El probador refleja la identidad visual de tu negocio.' },
+    { label: 'Diseño limpio y elegante', info: 'Interfaz moderna y profesional lista para compartir.' },
+    { label: 'Link para tu página web', info: 'Integra el probador en cualquier sitio web con un iframe.' },
+    { label: 'Estadísticas de uso', info: 'Ve cuántas pruebas realiza cada cliente y qué prendas se prueban más.' },
+  ];
+
+  const proFeatures: Feature[] = [
+    { label: `Hasta ${pricing.pro.productos_max ?? 15} productos activos`, info: 'Catálogo amplio con probador virtual para cada prenda.' },
+    { label: `${pricing.pro.generaciones_mensuales} pruebas virtuales / mes`, info: 'Volumen alto diseñado para tiendas con mayor tráfico.' },
+    { label: 'Plugin WooCommerce', info: 'Integra el probador directamente en tu tienda WooCommerce sin código.' },
+    { label: 'Diseños personalizados', info: 'Varios estilos visuales para que el probador encaje con tu marca.' },
+    { label: 'Botones y mensajes propios', info: 'Texto de botones CTA y mensaje de bienvenida adaptados a tu voz.' },
+    { label: 'Estadísticas avanzadas', info: 'Reportes de conversión, comportamiento de usuarios y prendas más probadas.' },
+    { label: 'Enlace 100% personalizado', info: 'URL con tu dominio para compartir en Instagram, WhatsApp y web.' },
+    { label: 'Soporte prioritario', info: 'Atención directa con tiempo de respuesta garantizado.' },
+  ];
+
+  const enterpriseFeatures: Feature[] = [
+    { label: '50+ productos activos', info: 'Catálogo sin límite práctico para grandes tiendas y retailers.' },
+    { label: 'Generaciones ilimitadas', info: 'Sin tope mensual de pruebas virtuales para tus clientes.' },
+    { label: 'Acceso API completo', info: 'Integra el probador en cualquier sistema a través de nuestra API.' },
+    { label: 'Gerente de cuenta 24/7', info: 'Un profesional dedicado exclusivamente a tu cuenta.' },
+    { label: 'SLA garantizado', info: 'Contrato de nivel de servicio con uptime y tiempos de respuesta garantizados.' },
+    { label: 'Integraciones a medida', info: 'Conectamos el probador con tu ERP, CRM o plataforma existente.' },
+  ];
+
+  return (
+    <section
+      id="planes"
+      className="py-20 sm:py-24 md:py-32 px-4 sm:px-6 bg-white dark:bg-black relative overflow-hidden"
+      aria-label="Planes y precios"
+    >
+      <div className="max-w-7xl mx-auto">
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: EASING_OUT }}
-          className="text-center mb-12 sm:mb-16 md:mb-20 lg:mb-24"
+          className="text-center mb-14 sm:mb-18"
         >
           <SectionTag text={LANDING_COPY.trust.badge} />
-          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6">
+          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black dark:text-white mb-4">
             {LANDING_COPY.pricing.title}, <span className="text-accent">sin sorpresas.</span>
           </h2>
-          <p className="font-dm-sans text-base sm:text-lg text-text-muted dark:text-white/70 max-w-xl mx-auto">
+          <p className="text-base sm:text-lg text-text-muted dark:text-white/60 max-w-xl mx-auto">
             {LANDING_COPY.trust.guarantee}
           </p>
         </motion.div>
 
-        {/* Cards Grid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="features-grid flex flex-wrap justify-center items-stretch gap-6 sm:gap-8 lg:gap-10"
-        >
+        {/* Cards — 3 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 xl:gap-4 items-stretch">
+
           {/* Basic */}
           <PricingCard
             name="Básico"
             category="Emprendedores"
             badge={hasBasicDiscount && basicLabel ? basicLabel : undefined}
-            badgeColor={hasBasicDiscount ? '#10B981' : undefined}
-            price={basicPrice}
-            originalPrice={basicOriginal}
-            currency={currency}
-            period="mes"
-            features={[
-              '5 productos activos',
-              `${pricing.basic.generaciones_mensuales} pruebas virtuales / mes`,
-              'Link para Instagram',
-              'Link para tu web',
-            ]}
-            ctaText="Contratar Básico"
+            badgeColor="#10B981"
+            priceDisplay={fmt(basicPrice)}
+            originalDisplay={hasBasicDiscount ? fmt(basicOriginal) : undefined}
+            period={`${currency}/mes`}
+            features={basicFeatures}
+            ctaText="Contratar"
             ctaHref={`/checkout?plan=BASIC&currency=${currency}`}
-            delay={0}
+            delay={0.1}
           />
 
           {/* Pro */}
           <PricingCard
             name="Pro"
             category="Profesional"
-            badge={hasProDiscount && proLabel ? proLabel : 'Plan Más Solicitado'}
+            badge={hasProDiscount && proLabel ? proLabel : 'Más solicitado'}
             badgeColor={hasProDiscount ? '#10B981' : '#FF5C3A'}
-            price={proPrice}
-            originalPrice={proOriginal}
-            currency={currency}
-            period="mes"
-            isDark
-            isPro
-            features={[
-              '15 productos activos',
-              `${pricing.pro.generaciones_mensuales} pruebas virtuales / mes`,
-              'Tienda Virtual Premium',
-              'Plugin WooCommerce',
-              'Soporte prioritario',
-            ]}
-            ctaText="Activar Plan Pro"
+            priceDisplay={fmt(proPrice)}
+            originalDisplay={hasProDiscount ? fmt(proOriginal) : undefined}
+            period={`${currency}/mes`}
+            features={proFeatures}
+            ctaText="Activar Pro"
             ctaHref={`/checkout?plan=PRO&currency=${currency}`}
-            delay={0.15}
+            isPro
+            delay={0.2}
           />
 
           {/* Enterprise */}
           <PricingCard
             name="Enterprise"
             category="Retail y Corp"
-            price={null}
-            currency={currency}
-            period="mes"
-            isEnterprise
-            features={[
-              '50+ productos',
-              'Generaciones ilimitadas',
-              'Acceso API completo',
-              'Gerente de cuenta 24/7',
-            ]}
+            priceDisplay=""
+            period=""
+            features={enterpriseFeatures}
             ctaText="Hablar con Ventas"
             ctaHref="/contacto"
+            isEnterprise
             delay={0.3}
           />
-        </motion.div>
+        </div>
 
-        {/* Compare link */}
+        {/* Trial — horizontal card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="text-center mt-12 sm:mt-16"
+          transition={{ duration: 0.6, delay: 0.35, ease: EASING_OUT }}
+          className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111] px-5 py-4 sm:px-8 sm:py-5 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
         >
-          <p className="text-[11px] sm:text-sm text-black/40 dark:text-white/40 mb-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-[9px] font-bold uppercase tracking-[.25em] text-white/30 mb-1">Primeros pasos</p>
+            <h3 className="font-jakarta font-bold text-[17px] text-white mb-2">Trial — 7 dias</h3>
+            <div className="flex flex-wrap gap-x-5 gap-y-1">
+              {trialFeatures.map((f, i) => (
+                <span key={i} className="flex items-center gap-1.5 text-[11px] text-white/45">
+                  <Check size={9} className="text-white/25" />
+                  {f.label}
+                </span>
+              ))}
+            </div>
+          </div>
+          <Link
+            href="/trial-checkout"
+            className="flex-shrink-0 flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white/[0.06] text-white/70 hover:bg-white/10 hover:text-white font-bold text-[12px] transition-all active:scale-95"
+          >
+            <span>Empezar prueba</span>
+            <ArrowRight size={13} />
+          </Link>
+        </motion.div>
+
+        {/* Bottom trust bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4, ease: EASING_OUT }}
+          className="text-center mt-12 sm:mt-14"
+        >
+          <p className="text-sm text-black/40 dark:text-white/40 mb-4">
             ¿No sabes qué plan elegir?{' '}
             <Link href="/planes" className="text-accent hover:underline font-medium">
               Compara todos los features →
             </Link>
           </p>
-
-          {/* Trust indicators */}
-          <div className="flex items-center justify-center gap-6 sm:gap-10 text-[11px] sm:text-[12px] font-medium text-black/40 dark:text-white/40 uppercase tracking-widest">
+          <div className="flex items-center justify-center gap-6 sm:gap-10 text-[11px] font-medium text-black/35 dark:text-white/35 uppercase tracking-widest">
             <span className="flex items-center gap-2">
-              <Check size={14} className="text-emerald-500" />
+              <Check size={13} className="text-emerald-500" />
               Sin contratos
             </span>
             <span className="flex items-center gap-2">
-              <Check size={14} className="text-emerald-500" />
+              <Check size={13} className="text-emerald-500" />
               Cancela cuando quieras
             </span>
             <span className="flex items-center gap-2">
-              <ShieldCheck size={14} className="text-emerald-500" />
+              <Check size={13} className="text-emerald-500" />
               Pagos seguros
             </span>
           </div>

@@ -92,13 +92,15 @@ Next.js 14 App Router + TypeScript + Tailwind.
 
 ### Pipeline de IA
 
-Orquestado en `backend/src/controllers/tryon.controller.ts`:
+Orquestado en `backend/src/controllers/pruebalo.controller.ts` (`generateTryOn`). El backend NO genera imágenes directamente: arma el prompt, sube la selfie a almacenamiento temporal y delega la generación a **n8n**, que internamente ejecuta la segmentación (MobileSAM) y la generación (Nano Banana / Gemini 2.5 Flash Image en Vertex AI).
 
-1. **Máscara — MobileSAM** (`sam-service/`, microservicio Python/FastAPI en Docker, puerto 8000, modelo `mobile_sam.pt`). Segmenta la silueta de la selfie. Se invoca si `SAM_LOCAL_URL` está configurado. No reemplazar sin autorización.
-2. **Generación — Nano Banana (Gemini 2.5 Flash Image)** en Vertex AI (`gemini-2.5-flash-image`), vía `services/vertex-ai.service.ts` (`generateWithNanoBanana`). Es el motor primario de try-on cuando `VERTEX_AI_ENABLED=true`.
-3. **Fallback — n8n**: si Vertex falla o está deshabilitado, se cae a n8n con la máscara incluida. Cliente en `services/n8n.client.ts` (webhooks con Bearer token, retry con backoff para errores transitorios/5xx, timeout 90s).
+1. **Gate de consentimiento** (Ley 1581, Art. 10-C): se rechaza el request si no hay consentimiento biométrico (`utils/consent.ts` → `isBiometricConsentGiven`); el consentimiento TERMS + BIOMETRIC se registra de forma síncrona antes de procesar.
+2. **Generación — n8n**: `pruebalo.controller` llama a `n8nClient.callTryOnWebhook` (`services/n8n.client.ts`, webhooks con Bearer token, retry con backoff, timeout 90s). El workflow de n8n hace SAM + Nano Banana (Vertex).
+3. **Máscara — MobileSAM** (`sam-service/`, microservicio Python/FastAPI en Docker, puerto 8000, modelo `mobile_sam.pt`). Consumido por el workflow de n8n. No reemplazar sin autorización.
 
-Tras una generación exitosa o fallida, el dato biométrico (selfie + máscara) se elimina inline (cumplimiento Ley 1581 de 2012).
+Tras una generación exitosa o fallida, el dato biométrico (selfie) se elimina inline (cumplimiento Ley 1581 de 2012). Como red de seguridad, `UploadService.cleanupOrphanedTempFiles()` (scheduler diario) borra temporales huérfanos > 24h.
+
+> Nota histórica: existió una integración directa backend→Vertex (`tryon.controller.ts` + `vertex-ai.service.ts`, `executeTryOnPipeline` / `generateWithNanoBanana`) que nunca se cableó al flujo real. Se eliminó. Si a futuro se quiere sacar la dependencia de n8n, hay que reconstruir esa orquestación directa.
 
 ### Integraciones externas
 
@@ -123,3 +125,14 @@ Tras una generación exitosa o fallida, el dato biométrico (selfie + máscara) 
 - Conventional commits (`feat:`, `fix:`, `docs:`, `refactor:`, etc.). NO añadir atribución de IA / "Co-Authored-By".
 - NO hacer push automático ni deploy sin autorización del usuario.
 - Cambios estructurales deben reflejarse en `CHANGELOG.md` y en el "Cerebro" (REGLAS_IMPORTANTES.md). Regla de oro: no eliminar info técnica válida, solo agregar/actualizar.
+
+## Reglas del Asesor
+
+Este proyecto prioriza la integridad técnica y la eficiencia operativa por encima de cualquier otro criterio. Como asesor, la función es maximizar la efectividad del sistema y evitar errores de diseño.
+
+1. **Prioridad en la Verificación**: Toda instrucción debe ser verificada técnicamente antes de considerarse exitosa. Si una tarea reporta éxito pero no materializa el resultado esperado (archivos, datos, estado), se considera un fallo.
+2. **Discrepancia Técnica**: Si una decisión compromete la estabilidad o calidad del proyecto, señalar la falla, explicar por qué es subóptima y proponer la alternativa técnica superior. No se aceptarán atajos.
+3. **Cero Introducciones**: Las respuestas irán directo al punto técnico. Se eliminarán introducciones innecesarias o frases que no aporten valor al estado del proyecto.
+4. **Veracidad del Estado**: Mantener una contabilidad estricta del estado del repositorio. Si el código no existe o no es ejecutable, reportar inmediatamente para corrección antes de avanzar a la siguiente fase (SDD).
+5. **Calidad de Herramientas**: Siempre utilizar las herramientas de diagnóstico y ejecución más adecuadas (bash, git, tests, auditorías de archivos) antes de dar por finalizada cualquier implementación.
+6. **Integridad del Pipeline**: Cualquier error en tiempo de ejecución (runtime) o de configuración debe ser resuelto antes de proceder con nuevas funcionalidades. No documentar ni probar un sistema que no sea funcional en su base.

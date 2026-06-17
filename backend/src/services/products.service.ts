@@ -1,7 +1,5 @@
 import { supabaseAdmin } from '../config/supabase';
 import { N8nClient } from './n8n.client';
-import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
-import { Product } from '../types';
 import { PLANS } from '../config/plans';
 import { recordTrialEvent } from '../utils/brandLifecycle';
 
@@ -204,13 +202,6 @@ export class ProductsService {
     if (brandError || !brand) {
       throw new Error('Error al obtener información de la marca');
     }
-
-    // Trial activo = trial_end_date vigente y marca no suspendida.
-    const isInTrial =
-      brand.plan === 'TRIAL' &&
-      brand.subscription_status !== 'suspended' &&
-      !!brand.trial_end_date &&
-      new Date(brand.trial_end_date) > new Date();
 
     const planKey = brand.plan ?? 'BASIC';
     const plan = PLANS[planKey] ?? PLANS['BASIC'];

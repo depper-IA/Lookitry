@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { AdminService } from '../../services/admin.service';
 import { auditService } from '../../services/audit.service';
-import axios from 'axios';
 
 const adminService = new AdminService();
 

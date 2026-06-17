@@ -74,8 +74,6 @@ export const authMiddleware = async (
 
 
 if (!token) {
-      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(401).json({
         error: 'UNAUTHORIZED',
         message: 'Token de autenticación requerido',
@@ -87,8 +85,6 @@ if (!token) {
     // Verificar token no está en blacklist (revocado)
     const isBlacklisted = await isTokenBlacklisted(token);
     if (isBlacklisted) {
-      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(401).json({
         error: 'TOKEN_REVOKED',
         message: 'Token ha sido revocado',
@@ -101,8 +97,6 @@ if (!token) {
 
 
 if (!payload.brandId) {
-      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(401).json({
         error: 'UNAUTHORIZED',
         message: 'Token inválido',
@@ -114,8 +108,6 @@ if (!payload.brandId) {
     const brand = await authService.getBrandById(payload.brandId);
 
     if (!brand) {
-      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(401).json({
         error: 'UNAUTHORIZED',
         message: 'Marca no encontrada',
@@ -146,8 +138,6 @@ if (!payload.brandId) {
     next();
 
 } catch (error: any) {
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
     return res.status(401).json({
       error: 'UNAUTHORIZED',
       message: error.message || 'Token inválido',
@@ -180,7 +170,7 @@ export const optionalAuth = async (
 
     const token = extractToken(req);
 
-    if (token) {
+    if (token && !(await isTokenBlacklisted(token))) {
 
       const payload = verifyToken(token);
 

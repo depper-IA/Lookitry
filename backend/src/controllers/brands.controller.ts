@@ -54,8 +54,6 @@ export class BrandsController {
       const brand = await authService.getBrandById(req.brand.id);
 
       if (!brand) {
-        res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
         return res.status(404).json({
           error: 'NOT_FOUND',
           message: 'Marca no encontrada',
@@ -66,7 +64,8 @@ export class BrandsController {
 
       // No devolver la contraseññ—±a
 
-      const { password, ...brandWithoutPassword } = brand;
+      const brandWithoutPassword = { ...brand };
+      delete (brandWithoutPassword as any).password;
 
 
 
@@ -522,15 +521,14 @@ export class BrandsController {
 
       // No devolver la contraseññ—±a
 
-      const { password, ...brandWithoutPassword } = updatedBrand;
+      const brandWithoutPassword = { ...updatedBrand };
+      delete (brandWithoutPassword as any).password;
 
 
 
       return res.status(200).json(brandWithoutPassword);
 
     } catch (error: any) {
-      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
       console.error('Error en updateMe:', error);
 
 
@@ -978,7 +976,7 @@ export class BrandsController {
 
         to: adminEmail,
 
-        subject: `Solicitud de ${changeType} ñ— ${brand.name} (${brand.plan} —  ${targetPlan})`,
+        subject: `Solicitud de ${changeType} - ${brand.name} (${brand.plan} -> ${targetPlan})`,
 
         html: `
 

@@ -12,7 +12,6 @@
 import cron from 'node-cron';
 import { runDailySubscriptionCheck } from './scripts/daily-subscription-check';
 import { checkAndSendUsageAlerts } from './scripts/usage-alerts';
-import { cleanupTempSelfies } from './controllers/upload.controller';
 import { startEmailCampaignJob } from './jobs/email-campaign.job';
 import { initSalesPatternsAnalyzer } from './scheduler/sales-patterns-analyzer';
 import { initReminderProcessor } from './scheduler/reminder-processor';
@@ -49,21 +48,9 @@ export function startSchedulers() {
     }
   });
 
-  // —Limpieza de archivos temporales—
-  // Se ejecuta todos los días a las 03:00
-  cron.schedule('0 3 * * *', async () => {
-    console.log('\n[Scheduler] Limpiando archivos temporales...');
-    try {
-      await cleanupTempSelfies({} as any, {} as any);
-    } catch (error) {
-      console.error('[Scheduler] Error en limpieza de temporales:', error);
-    }
-  });
-
   console.log('[Scheduler] Tareas automáticas configuradas:');
   console.log('  - Suscripciones: diario a las 08:00');
   console.log('  - Alertas de uso: cada 6 horas');
-  console.log('  - Limpieza temporales: diario a las 03:00');
   console.log('  - Email Campaigns: cada 5 minutos');
   console.log('  - Sales Patterns Analyzer: domingo a las 02:00');
   console.log('  - Reminder Processor: cada hora');

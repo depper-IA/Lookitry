@@ -70,7 +70,7 @@ async function savePendingReminder(sessionId: string, reminder: PendingReminder)
 /**
  * Obtiene el mensaje de recordatorio según el tipo.
  */
-function getReminderMessage(type: string, pageUrl?: string): string {
+export function getReminderMessage(type: string, pageUrl?: string): string {
   switch (type) {
     case 'checkout_abandoned':
       return "Vi que quedaste en el checkout ayer. ¿Necesitás ayuda con el proceso de activación?";

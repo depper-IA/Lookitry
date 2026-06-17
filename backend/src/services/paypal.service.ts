@@ -585,8 +585,6 @@ export class PaypalService {
 
     // En producción, rechazamos si no se puede verificar.
 
-    const strict = this.isProd();
-
 
 
     const webhookId =

@@ -375,7 +375,7 @@ async getBrandById(brandId: string): Promise<Brand | null> {
 
   isValidDomain(domain: string): boolean {
 
-    return /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,10}$/i.test(domain);
+    return /^[a-z0-9]+([-.]{1}[a-z0-9]+)*\.[a-z]{2,10}$/i.test(domain);
 
   }
 

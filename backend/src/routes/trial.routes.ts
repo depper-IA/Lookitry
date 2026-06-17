@@ -4,6 +4,8 @@ import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { supabaseAdmin } from '../config/supabase';
 import { generateToken } from '../utils/jwt';
 import { wompiService } from '../services/wompi.service';
+import { paypalService } from '../services/paypal.service';
+import { pricingService } from '../services/pricing.service';
 
 const router = Router();
 
@@ -140,8 +142,6 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
   const successUrl = `${frontendUrl}/pago-exitoso?method=paypal&ref=${reference}&isGuestTrial=true`;
 
   if (method === 'paypal') {
-    const { paypalService } = require('../services/paypal.service');
-    const { pricingService } = require('../services/pricing.service');
     const { trm } = await pricingService.getEffectiveTrm(
       trmOverride ? Number(trmOverride) : undefined
     );

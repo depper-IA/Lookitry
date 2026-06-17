@@ -28,8 +28,6 @@ import * as XLSX from 'xlsx';
 
 import * as fs from 'fs';
 
-import * as path from 'path';
-
 import https from 'https';
 
 import http from 'http';
@@ -1842,7 +1840,7 @@ export class LeadEnrichmentService {
 
    */
 
-  private async findEmailViaDorking(domain: string): Promise<string | null> {
+  private async findEmailViaDorking(_domain: string): Promise<string | null> {
 
     // Using a simpler approach - check if domain has a common contact email pattern
 

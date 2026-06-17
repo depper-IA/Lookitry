@@ -67,7 +67,7 @@ const SUSPICIOUS_SENTENCES = [
   'show your',
 ];
 
-const BRAND_SAFE_KEYWORDS = [
+export const BRAND_SAFE_KEYWORDS = [
   'lookitry',
   'rebecca',
   'producto',

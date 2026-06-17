@@ -8,11 +8,6 @@ const mockSendWelcomeEmail = jest.fn();
 
 const pendingMaybeSingle = jest.fn();
 const brandSingle = jest.fn();
-const insertOrUpdate = jest.fn().mockReturnThis();
-const eq = jest.fn().mockReturnThis();
-const select = jest.fn().mockReturnThis();
-const maybeSingle = jest.fn();
-const single = jest.fn();
 
 jest.mock('../../services/auth.service', () => ({
   AuthService: jest.fn().mockImplementation(() => ({

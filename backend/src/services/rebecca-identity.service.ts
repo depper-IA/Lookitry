@@ -289,30 +289,6 @@ export class RebeccaIdentityService {
 
     const extraInstructions = systemPromptExtra ? `\n\n## INSTRUCCIONES ADICIONALES\n${systemPromptExtra}` : '';
 
-    let contextualLinksBlock = '';
-    if (contextualLinks) {
-      contextualLinksBlock = `
-
-## ENLACES — OBLIGATORIO INCLUIR EN CADA RESPUESTA RELEVANTE
-Tenés estos enlaces disponibles. DEBES incluir el más relevante al final de cada respuesta, sin excepción:
-- Planes y precios: ${contextualLinks.plans_url}
-- Empezar ahora (checkout): ${contextualLinks.checkout_url}
-- Ver cómo funciona (demo): ${contextualLinks.demo_url}
-
-CUÁNDO incluir cada uno:
-- Mencionás precios o planes → incluí ${contextualLinks.plans_url}
-- El lead quiere empezar, probar o pagar → incluí ${contextualLinks.checkout_url}
-- El lead pregunta cómo funciona o quiere verlo → incluí ${contextualLinks.demo_url}
-- En duda → incluí siempre ${contextualLinks.checkout_url}
-
-Formato OBLIGATORIO al final del mensaje:
-👉 [Ver planes y precios](${contextualLinks.plans_url})
-o
-👉 [Empezar ahora](${contextualLinks.checkout_url})
-
-NUNCA termines una respuesta sobre Lookitry sin incluir un enlace.`;
-    }
-
     let pageContextBlock = '';
     if (pageContext) {
       const pageContextMap: Record<string, string> = {

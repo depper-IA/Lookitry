@@ -8,8 +8,6 @@ import { supabaseAdmin } from '../config/supabase';
 
 import { emailService } from '../services/email.service';
 
-import { N8nClient } from '../services/n8n.client';
-
 import { createAdminNotification } from '../utils/adminNotifications';
 
 import { redis } from '../config/redis';
@@ -28,9 +26,6 @@ interface ServiceResult {
 
 }
 
-
-
-const n8nClient = new N8nClient();
 
 
 

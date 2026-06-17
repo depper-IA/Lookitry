@@ -1,5 +1,62 @@
 # CHANGELOG — Lookitry
 
+## 10 de Junio 2026 — Remove dead GCS code (MinIO-only)
+
+### Descripcion
+Eliminacion de todo el codigo muerto de Google Cloud Storage del proyecto. El proyecto solo usa MinIO para almacenamiento de imagenes. El codigo GCS nunca se ejecutaba porque no existian credenciales (`gcs-credentials.json`).
+
+### Cambios Realizados
+
+| Archivo | Cambio |
+|---------|--------|
+| `backend/src/services/upload.service.ts` | Eliminado: import `@google-cloud/storage`, propiedades GCS, `uploadToGCS()`, `generateSignedUrl()`, `generateSelfieSignedUrl()`, `generateMaskSignedUrl()`, `deleteFromGCS()`, `cleanupOrphanedTempFiles()`. Simplificado `deleteBiometricData` y `cleanupTempFiles` (solo MinIO). -150 lineas de codigo muerto |
+| `backend/src/services/generations.service.ts` | Eliminado: `refreshSignedUrl()`, llamada a `deleteFromGCS` en purge, parsing de URLs GCS en `_extractPathFromUrl` |
+| `backend/src/scheduler.ts` | Eliminado: cron job `cleanupOrphanedTempFiles` (solo funcionaba con GCS). Removido import de `uploadService` |
+| `backend/package.json` | Removida dependencia `@google-cloud/storage` |
+
+### Motivo
+Codigo muerto que nunca se ejecutaba. Confundia al leer el codigo y sugeria que GCS se usaba cuando en realidad solo se usa MinIO.
+
+## 10 de Junio 2026 — Fix: Thumbnails no cargan en dashboard/generations
+
+### Descripcion
+Las imagenes de MinIO se cargaban directamente en el frontend sin proxy, causando bloqueos por CORS/hotlinking protection de MinIO.
+
+### Cambios Realizados
+
+| Archivo | Cambio |
+|---------|--------|
+| `backend/src/controllers/generations.controller.ts` | Funcion `toProxiedUrl()` que convierte URLs de MinIO en URLs proxied via `/api/pruebalo/img-proxy`. Se aplica a `resultImageUrl` y `productImageUrl` antes de retornarlas al frontend |
+
+### Motivo
+MinIO bloquea requests directos desde el navegador (CORS/hotlinking). Las URLs deben proxearse a traves del backend.
+
+---
+
+## 10 de Junio 2026 — Integridad del Proyecto y Limpieza
+
+### Descripcion
+Verificacion de integridad completa del proyecto. Limpieza de artifacts, eliminacion de duplicados, remocion de binarios innecesarios del historial git, y commit masivo de cambios de seguridad pendientes.
+
+### Cambios Realizados
+
+| Accion | Detalle |
+|--------|---------|
+| Archivos basura eliminados | `QUITAR_LOOKITRY_WORKSPACE.md`, `rls.txt`, `tables.txt`, `exploration.md`, `maestro.md`, `excalidraw.log` |
+| Duplicado eliminado | `backend/BASE_CLIENTES_CRM.xlsx` (copia redundante del Brain Vault) |
+| Lockfile npm eliminado | `package-lock.json` removido del tracking git (proyecto usa pnpm) |
+| Binarios eliminados del git | `Brand/Manual-Marca-Lookitry.pdf`, `evidence/*.md`, `mission-control` |
+| Cambios de seguridad commiteados | Security hardening SDD: sanitizacion de logs, CORS dinamico, rate-limiting Redis, lockout de cuentas, TTL de sesiones |
+| Cleanup de codigo | Eliminacion de `vertex-ai.service.ts` (reemplazado por `vertex.service.ts`), `tryon.controller.ts` (codigo muerto) |
+
+### Archivos Modificados
+- ~80 archivos entre backend y frontend (seguridad, cleanup, refactors)
+
+### Motivo
+Mantener la integridad del repositorio, eliminar deuda tecnica acumulada, y consolidar los cambios de seguridad del Phase 1 del SDD.
+
+---
+
 ## 18 de Mayo 2026 — GitHub Profile & Repos Públicos
 
 ### Descripción

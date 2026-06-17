@@ -1,17 +1,16 @@
 #!/usr/bin/env sh
 # Husky pre-commit hook - runs frontend lint only
-# Backend lint is skipped due to corrupted node_modules (missing report-translator.js)
 
-echo "🔍 Verificando código..."
+echo "Verificando codigo..."
 
-cd frontend && npm run lint
+cd frontend && pnpm run lint
 FRONTEND_LINT=$?
 cd ..
 
 if [ $FRONTEND_LINT -ne 0 ]; then
-  echo "❌ Frontend lint falló"
+  echo "Frontend lint fallo"
   exit 1
 fi
 
-echo "✅ Lint pasado"
+echo "Lint pasado"
 exit 0

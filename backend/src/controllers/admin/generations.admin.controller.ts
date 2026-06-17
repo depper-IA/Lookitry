@@ -18,7 +18,6 @@ export const getGenerations = async (req: any, res: Response) => {
       start_date,
       end_date,
       limit = '20',
-      offset = '0',
       page = '1'
     } = req.query;
 

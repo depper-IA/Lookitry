@@ -261,7 +261,7 @@ export class SubscriptionService {
     return updatedBrand as Brand;
   }
 
-  private isEligibleReferralConversion(planPurchased: string, isUpgrade: boolean): boolean {
+  private isEligibleReferralConversion(planPurchased: string, _isUpgrade: boolean): boolean {
     // TRIAL purchases do NOT trigger referral rewards — only paid plans (BASIC, PRO, ENTERPRISE)
     if (planPurchased === 'TRIAL') return false;
     return referralService.isEligiblePlan(planPurchased);
@@ -564,7 +564,9 @@ export class SubscriptionService {
       try {
         const { data: existing } = await supabaseAdmin.from('subscription_payments').select('*').eq('reference', paymentData.reference).limit(1).maybeSingle();
         if (existing) return existing as SubscriptionPayment;
-      } catch (e) {}
+      } catch (e) {
+        // Ignore check errors
+      }
     }
 
     const notes = paymentData.ledger_snapshot ? attachLedgerSnapshotToNotes(paymentData.notes || null, paymentData.ledger_snapshot as any) : (paymentData.notes || null);

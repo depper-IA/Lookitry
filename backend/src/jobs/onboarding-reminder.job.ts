@@ -66,21 +66,21 @@ export async function runOnboardingReminder() {
           await notificationService.sendOnboardingProductReminder(brand as Brand);
           sentCount++;
         } catch (err) {
-          console.error(`   â Error enviando onboarding reminder a ${brand.email}:`, err);
+          console.error(`   [ERROR] Error enviando onboarding reminder a ${brand.email}:`, err);
         }
       } else {
-        console.log(`   â­ï¸  ${brand.email} ya tiene productos — omitido`);
+        console.log(`   [SKIP]  ${brand.email} ya tiene productos — omitido`);
       }
     }
 
-    console.log(`\n   â ${sentCount} recordatorio(s) de onboarding enviado(s)`);
+    console.log(`\n   [OK] ${sentCount} recordatorio(s) de onboarding enviado(s)`);
     console.log('\n=================================================');
     console.log('Job completado');
     console.log('=================================================');
 
     return { processed: brands.length, sent: sentCount };
   } catch (error) {
-    console.error('\nâ Error durante job de onboarding:', error);
+    console.error('\n[ERROR] Error durante job de onboarding:', error);
     console.error('\n=================================================');
     console.error('Job finalizado con errores');
     console.error('=================================================');

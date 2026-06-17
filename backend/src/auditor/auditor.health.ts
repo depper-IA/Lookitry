@@ -9,7 +9,7 @@ export async function auditHealth(): Promise<HealthAuditResult> {
   const sections: string[] = [];
 
   try {
-    const { data: brands, error: brandsError } = await supabaseAdmin
+    const { error: brandsError } = await supabaseAdmin
       .from('brands')
       .select('id')
       .limit(1);

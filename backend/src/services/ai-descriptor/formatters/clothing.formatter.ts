@@ -5,15 +5,6 @@ import { BaseFormatter, ProductType } from './base.formatter';
 import { ClothingDescription } from '../schemas';
 import { getPromptRules } from '../../../config/prompt-rules';
 
-const CLOTHING_CATEGORIES = new Set([
-  'VESTIDO', 'DRESS',
-  'CAMISA', 'SHIRT', 'TOP', 'BLUSA', 'BLOUSE',
-  'PANTALON', 'PANTS', 'JEANS',
-  'FALDA', 'SKIRT',
-  'CHAQUETA', 'JACKET', 'ABRIGO', 'COAT',
-  'CONJUNTO', 'SET', 'OUTFIT',
-]);
-
 export class ClothingFormatter extends BaseFormatter {
   getProductType(): ProductType {
     return 'CLOTHING';

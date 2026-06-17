@@ -1,5 +1,5 @@
 /**
- * â ï¸ DEPRECATED/OBSOLETE SCRIPT â ï¸
+ * [WARN] DEPRECATED/OBSOLETE SCRIPT [WARN]
  * 
  * ESTE SCRIPT NO DEBE EJECUTARSE SOBRE ARTñCULOS GENERADOS POR generateArticleHTML().
  * 
@@ -85,7 +85,7 @@ async function main() {
   const interlinkHtml = `
   <div class="blog-interlink-box" style="background: rgba(255, 92, 58, 0.05); border-left: 4px solid #FF5C3A; padding: 1.5rem; margin: 3rem 0; border-radius: 0 8px 8px 0;">
     <h3 style="margin-top: 0; color: #FF5C3A; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">
-      ð Lectura Recomendada
+      Lectura Recomendada
     </h3>
     <ul style="margin: 0; padding-left: 1.2rem; list-style-type: disc;">
       ${recentPosts.map(p => `<li style="margin-bottom: 0.8rem;"><a href="/blog/${p.slug}" style="color: #fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.3); text-underline-offset: 4px; font-weight: 500; transition: color 0.2s;">${p.title}</a></li>`).join('')}
@@ -93,7 +93,7 @@ async function main() {
   </div>`;
 
   // 5. Build Neon CTAs
-  const getCta = (title: string, desc: string, btn: string) => `
+  const getCta = (title: string, desc: string, _btn: string) => `
   <div class="blog-cta-inline" style="background: linear-gradient(135deg, #141414 0%, #1a1a1a 100%); border: 1px solid #333; padding: 2.5rem 2rem; border-radius: 16px; margin: 3rem 0; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);">
     <div style="background: rgba(255,92,58,0.1); color: #FF5C3A; padding: 0.4rem 1rem; border-radius: 9999px; display: inline-block; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Destaca tu tienda</div>
     <h3 style="color: #fff; margin-top: 0; margin-bottom: 1rem; font-size: 1.6rem; font-weight: 700;">${title}</h3>

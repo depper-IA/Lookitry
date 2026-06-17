@@ -305,7 +305,7 @@ export class AuthController {
 
       const hasNumber = /[0-9]/.test(data.password);
 
-      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(data.password);
+      const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(data.password);
 
       
 
@@ -786,7 +786,7 @@ export class AuthController {
 
       const hasNumber = /[0-9]/.test(password);
 
-      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+      const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
 
       
 
@@ -904,7 +904,7 @@ export class AuthController {
 
       const hasNumber = /[0-9]/.test(newPassword);
 
-      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword);
+      const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(newPassword);
 
       
 

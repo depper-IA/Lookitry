@@ -1,10 +1,9 @@
 import { Response } from 'express';
 import { AdminService } from '../../services/admin.service';
 import { auditService } from '../../services/audit.service';
-import { generateToken } from '../../utils/jwt';
+import { generateAdminToken } from '../../utils/jwt';
 import { emailService } from '../../services/email.service';
 import { authAdminService } from '../../services/admin/auth.admin.service';
-import { GOOGLE_CONFIG } from '../../config/google';
 import { verifyGoogleAccessToken, verifyGoogleToken } from '../../services/google-auth.service';
 import { sanitizeError } from '../../utils/sanitizeError';
 
@@ -47,18 +46,31 @@ export const adminLogin = async (req: any, res: Response) => {
       });
     }
 
+    // Verificar si está bloqueada
+    const lockCheck = await adminService.isLockedOut(admin.id);
+    if (lockCheck.locked) {
+      return res.status(423).json({
+        error: 'LOCKED',
+        message: lockCheck.reason,
+      });
+    }
+
     // Verificar contraseña
     const isValidPassword = await adminService.verifyPassword(password, (admin as any).password);
 
     if (!isValidPassword) {
+      await adminService.recordFailedAttempt(admin.id, req.ip || 'unknown');
       return res.status(401).json({
         error: 'UNAUTHORIZED',
         message: 'Credenciales inválidas',
       });
     }
 
+    // Login exitoso - resetear contadores
+    await adminService.resetFailedAttempts(admin.id);
+
     // Generar token
-    const token = generateToken({
+    const token = generateAdminToken({
       adminId: admin.id,
       email: admin.email,
     });
@@ -312,7 +324,7 @@ export const adminGoogleLogin = async (req: any, res: Response) => {
       });
     }
 
-    const token = generateToken({
+    const token = generateAdminToken({
       adminId: admin.id,
       email: admin.email,
     });

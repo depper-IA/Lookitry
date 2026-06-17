@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../../config/supabase';
+import { redis } from '../../config/redis';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
@@ -18,6 +19,11 @@ type AdminRecord = Admin & {
   reset_token_expires_at?: string | null;
 };
 
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MINUTES = 15;
+const LOCKOUT_KEY_PREFIX = 'admin:lockout:';
+const FAILED_KEY_PREFIX = 'admin:failed:';
+
 /**
  * Auth Admin Service — Autenticación y gestión de administradores.
  * Extraído de AdminService para mejorar mantenibilidad.
@@ -35,10 +41,111 @@ export class AuthAdminService {
     if (!/[A-Z]/.test(password)) return { isValid: false, message: 'La contraseña debe contener al menos una letra mayúscula' };
     if (!/[a-z]/.test(password)) return { isValid: false, message: 'La contraseña debe contener al menos una letra minúscula' };
     if (!/[0-9]/.test(password)) return { isValid: false, message: 'La contraseña debe contener al menos un número' };
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
       return { isValid: false, message: 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...)' };
     }
     return { isValid: true };
+  }
+
+  private async recordFailedAttemptDB(adminId: string): Promise<void> {
+    const { data: admin } = await supabaseAdmin
+      .from('admins')
+      .select('failed_login_attempts')
+      .eq('id', adminId)
+      .single();
+
+    const currentAttempts = admin?.failed_login_attempts || 0;
+    const newAttempts = currentAttempts + 1;
+
+    if (newAttempts >= MAX_FAILED_ATTEMPTS) {
+      const lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60000);
+      await supabaseAdmin
+        .from('admins')
+        .update({
+          failed_login_attempts: 0,
+          locked_until: lockedUntil.toISOString(),
+        })
+        .eq('id', adminId);
+    } else {
+      await supabaseAdmin
+        .from('admins')
+        .update({ failed_login_attempts: newAttempts })
+        .eq('id', adminId);
+    }
+  }
+
+  // ———————————————————— Account Lockout —
+
+  async isLockedOut(adminId: string): Promise<{ locked: boolean; reason?: string }> {
+    const redisKey = `${LOCKOUT_KEY_PREFIX}${adminId}`;
+
+    try {
+      const ttl = await redis.ttl(redisKey);
+      if (ttl > 0) {
+        const minutesLeft = Math.ceil(ttl / 60);
+        return {
+          locked: true,
+          reason: `Cuenta bloqueada por exceso de intentos fallidos. Intenta de nuevo en ${minutesLeft} minuto(s).`,
+        };
+      }
+    } catch {
+      // Fallback a DB
+    }
+
+    const { data: admin } = await supabaseAdmin
+      .from('admins')
+      .select('locked_until')
+      .eq('id', adminId)
+      .single();
+
+    if (admin?.locked_until) {
+      const lockedUntil = new Date(admin.locked_until);
+      if (lockedUntil > new Date()) {
+        const minutesLeft = Math.ceil((lockedUntil.getTime() - Date.now()) / 60000);
+        return {
+          locked: true,
+          reason: `Cuenta bloqueada por exceso de intentos fallidos. Intenta de nuevo en ${minutesLeft} minuto(s).`,
+        };
+      }
+    }
+
+    return { locked: false };
+  }
+
+  async recordFailedAttempt(adminId: string, ip: string): Promise<void> {
+    const redisKey = `${FAILED_KEY_PREFIX}${adminId}`;
+
+    try {
+      const attempts = await redis.incr(redisKey);
+      await redis.expire(redisKey, LOCKOUT_DURATION_MINUTES * 60);
+
+      if (attempts >= MAX_FAILED_ATTEMPTS) {
+        await redis.setex(`${LOCKOUT_KEY_PREFIX}${adminId}`, LOCKOUT_DURATION_MINUTES * 60, '1');
+        await redis.del(redisKey);
+        console.warn(`[AuthAdmin] Admin ${adminId} bloqueado por ${LOCKOUT_DURATION_MINUTES} minutos (IP: ${ip})`);
+      }
+    } catch {
+      await this.recordFailedAttemptDB(adminId);
+    }
+  }
+
+  async resetFailedAttempts(adminId: string): Promise<void> {
+    const redisKey = `${FAILED_KEY_PREFIX}${adminId}`;
+
+    try {
+      await redis.del(redisKey);
+      await redis.del(`${LOCKOUT_KEY_PREFIX}${adminId}`);
+    } catch {
+      // Ignorar
+    }
+
+    await supabaseAdmin
+      .from('admins')
+      .update({
+        failed_login_attempts: 0,
+        locked_until: null,
+      })
+      .eq('id', adminId);
   }
 
   // ———————————————————— Lookup —

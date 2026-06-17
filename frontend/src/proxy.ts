@@ -147,7 +147,7 @@ export async function proxy(request: NextRequest) {
 
   // ── Proteger rutas del panel de admin ─────────────────────────────────────────
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-    if (!adminToken && !token && !allowDevBypass) {
+    if (!adminToken && !allowDevBypass) {
       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
     const response = NextResponse.next();

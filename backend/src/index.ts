@@ -6,6 +6,8 @@ import { startCleanupJob } from './jobs/cleanup.job';
 
 import { startBlogJob } from './jobs/blog.job';
 
+import { startCpuMonitorJob } from './jobs/cpu-monitor.job';
+
 
 
 // Capturar CUALQUIER error no manejado antes de que mate el proceso
@@ -61,6 +63,8 @@ app.listen(PORT, () => {
   startCleanupJob();
 
   startBlogJob();
+
+  startCpuMonitorJob();
 
 });
 

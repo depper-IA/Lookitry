@@ -2,6 +2,8 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { addonCreditsService } from '../services/addonCredits.service';
 import { sanitizeError } from '../utils/sanitizeError';
+import { wompiService } from '../services/wompi.service';
+import { paypalService } from '../services/paypal.service';
 
 export class PaymentsController {
   async checkoutAddon(req: AuthRequest, res: Response) {
@@ -35,7 +37,6 @@ export class PaymentsController {
       if (!reference) return res.status(400).json({ error: 'Falta la referencia' });
 
       // Verificar en Wompi primero
-      const { wompiService } = require('../services/wompi.service');
       const tx = await wompiService.getTransactionByReference(reference);
 
       if (tx && tx.status === 'APPROVED') {
@@ -49,7 +50,6 @@ export class PaymentsController {
       }
 
       // Si no es Wompi, verificamos en PayPal
-      const { paypalService } = require('../services/paypal.service');
       const paypalOrder = await paypalService.getTrackedOrder(reference);
       if (paypalOrder && paypalOrder.order_id) {
         const order = await paypalService.getOrder(paypalOrder.order_id);

@@ -15,21 +15,37 @@ if (!process.env.JWT_REFRESH_SECRET) {
 }
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d'; // Refresh token is long-lived
 
+// C-4: cada token lleva un claim `type` para que un refresh token nunca pueda
+// usarse donde se espera un access token, independientemente del secret.
+type TokenType = 'access' | 'refresh';
+
+/**
+ * Verifica firma y, si el token trae claim `type`, que coincida con el esperado.
+ * Los tokens viejos sin claim `type` se aceptan (retrocompatibilidad durante la transición).
+ */
+function verifyWithType(token: string, secret: string, expected: TokenType): JwtPayload {
+  const decoded = jwt.verify(token, secret) as JwtPayload;
+  if (decoded.type && decoded.type !== expected) {
+    throw new Error(`Token type inválido: se esperaba ${expected}`);
+  }
+  return decoded;
+}
+
 export const generateAccessToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, JWT_SECRET!, {
+  return jwt.sign({ ...payload, type: 'access' }, JWT_SECRET!, {
     expiresIn: JWT_EXPIRES_IN as any,
   });
 };
 
 export const generateRefreshToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, JWT_REFRESH_SECRET!, {
+  return jwt.sign({ ...payload, type: 'refresh' }, JWT_REFRESH_SECRET!, {
     expiresIn: JWT_REFRESH_EXPIRES_IN as any,
   });
 };
 
 export const verifyAccessToken = (token: string): JwtPayload => {
   try {
-    return jwt.verify(token, JWT_SECRET!) as JwtPayload;
+    return verifyWithType(token, JWT_SECRET!, 'access');
   } catch (error) {
     throw new Error('Access Token inválido o expirado');
   }
@@ -37,33 +53,30 @@ export const verifyAccessToken = (token: string): JwtPayload => {
 
 export const verifyRefreshToken = (token: string): JwtPayload => {
   try {
-    return jwt.verify(token, JWT_REFRESH_SECRET!) as JwtPayload;
+    return verifyWithType(token, JWT_REFRESH_SECRET!, 'refresh');
   } catch (error) {
     throw new Error('Refresh Token inválido o expirado');
   }
 };
 
-// Backward compatibility (fallback to access token behavior but with old 7d expiration logic if needed,
-// though here we just alias to generateAccessToken which now uses 15m.
-// Note: If transition requires 7d for existing endpoints, we could keep generateToken with 7d.
-// But for dual token, access token should be short. 
-// We will just keep it mapped to generateAccessToken for simplicity, unless it breaks existing tests.
+// Backward compatibility: alias histórico usado por admin/google/trial.
+// Emite un access token (con claim type=access) usando el secret de access.
 export const generateToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, JWT_SECRET!, {
+  return jwt.sign({ ...payload, type: 'access' }, JWT_SECRET!, {
     expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any,
   });
 };
-export const verifyToken = (token: string): JwtPayload => {
 
-  try {
-
-    return jwt.verify(token, JWT_SECRET!) as JwtPayload;
-
-  } catch (error) {
-
-    throw new Error('Token inválido o expirado');
-
-  }
-
+export const generateAdminToken = (payload: JwtPayload): string => {
+  return jwt.sign({ ...payload, type: 'access' }, JWT_SECRET!, {
+    expiresIn: '7d', // Admin tokens always have a consistent 7-day TTL
+  });
 };
 
+export const verifyToken = (token: string): JwtPayload => {
+  try {
+    return verifyWithType(token, JWT_SECRET!, 'access');
+  } catch (error) {
+    throw new Error('Token inválido o expirado');
+  }
+};

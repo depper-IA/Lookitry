@@ -16,7 +16,6 @@ jest.mock('../../../services/vertex.service', () => ({
 
 // Import after mock
 import { DescriptorService } from '../ai-descriptor.service';
-import { ZodError } from 'zod';
 
 describe('DescriptorService', () => {
   let service: DescriptorService;

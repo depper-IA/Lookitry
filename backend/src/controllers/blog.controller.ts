@@ -160,7 +160,7 @@ function generateArticleHTML(
   ctaTemplates: Record<string, CtaTemplate>,
   interlinkPosts: InterlinkingPost[] = []
 ): string {
-  const { title, excerpt, tags, sections, faqs, cta_context, image_prompts, reading_time_minutes } = draft;
+  const { title, excerpt, sections, faqs, cta_context } = draft;
 
   //Construir Table of Contents desde sections
   let tocHtml = '';
@@ -589,7 +589,7 @@ async function autoAssembleIfReady(topicId: string): Promise<{ success: boolean;
       updated_at: new Date().toISOString(),
     };
 
-    const { data: publishedPost, error: publishError } = await supabaseAdmin
+    const { error: publishError } = await supabaseAdmin
       .from('blogs')
       .upsert(upsertData, { onConflict: 'topic_id' })
       .select()

@@ -486,7 +486,7 @@ export const reminder3DaysEmail = (brand: BrandInfo, daysRemaining: number, amou
 
  */
 
-export const expirationTodayEmail = (brand: BrandInfo, amount: string): string => {
+export const expirationTodayEmail = (brand: BrandInfo, _amount: string): string => {
 
   const content = `
 
@@ -656,7 +656,7 @@ export const renewalConfirmationEmail = (brand: BrandInfo, newExpirationDate: st
 
  */
 
-export const usageAlert80Email = (brand: BrandInfo, used: number, limit: number, daysRemaining: number, amount: string): string => {
+export const usageAlert80Email = (brand: BrandInfo, used: number, limit: number, _daysRemaining: number, _amount: string): string => {
 
   const percentage = Math.round((used / limit) * 100);
 
@@ -720,7 +720,7 @@ export const usageAlert80Email = (brand: BrandInfo, used: number, limit: number,
 
  */
 
-export const usageAlert100Email = (brand: BrandInfo, limit: number, daysRemaining: number, amount: string): string => {
+export const usageAlert100Email = (brand: BrandInfo, limit: number, _daysRemaining: number, _amount: string): string => {
 
   const content = `
 
@@ -918,7 +918,7 @@ export const landingDeletionWarningEmail = (
 
   diasRestantes: number,
 
-  frontendUrl: string
+  _frontendUrl: string
 
 ): string => {
 
@@ -1304,7 +1304,7 @@ export const purchaseConfirmationEmail = (
 
  */
 
-export const landingDeletedNoticeEmail = (brand: BrandInfo): string => {
+export const landingDeletedNoticeEmail = (_brand: BrandInfo): string => {
 
   const content = `
 

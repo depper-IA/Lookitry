@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { sanitizeObject, sanitizeUrl } from '../utils/logSanitizer';
 
 
 
@@ -190,13 +191,13 @@ class ErrorLogger {
 
       method: req?.method,
 
-      path: req?.path,
+      path: req?.path ? sanitizeUrl(req.path) : undefined,
 
-      body: req?.body,
+      body: req?.body ? sanitizeObject(req.body) : undefined,
 
-      query: req?.query,
+      query: req?.query ? sanitizeObject(req.query) : undefined,
 
-      params: req?.params,
+      params: req?.params ? sanitizeObject(req.params) : undefined,
 
       ip: req?.ip,
 

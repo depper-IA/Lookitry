@@ -1,5 +1,7 @@
 import { Router, Response } from 'express';
 
+import { generateToken, verifyRefreshToken, generateAccessToken, generateRefreshToken } from '../utils/jwt';
+
 import { AuthController } from '../controllers/auth.controller';
 
 import { registerPostPayment, getPendingRegistration } from '../controllers/auth-post-payment.controller';
@@ -258,8 +260,6 @@ router.post('/refresh-session', authMiddleware, asyncHandler(async (req: any, re
 
   const { brand } = req;
 
-  const { generateToken } = require('../utils/jwt');
-
   const newToken = generateToken({ brandId: brand.id, email: brand.email });
 
   
@@ -304,8 +304,6 @@ router.post('/refresh', asyncHandler(async (req: any, res: Response) => {
     return res.status(401).json({ error: 'NO_REFRESH_TOKEN', message: 'Refresh token no proporcionado' });
   }
 
-  const { verifyRefreshToken, generateAccessToken, generateRefreshToken } = require('../utils/jwt');
-  
   try {
     const payload = verifyRefreshToken(refreshToken);
     

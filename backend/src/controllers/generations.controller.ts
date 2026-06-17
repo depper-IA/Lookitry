@@ -12,6 +12,25 @@ const generationsService = new GenerationsService();
 
 const productsService = new ProductsService();
 
+const MINIO_PUBLIC = process.env.MINIO_PUBLIC_URL || 'https://minio.wilkiedevs.com';
+
+const IS_PROD = process.env.NODE_ENV === 'production';
+
+/**
+ * En produccion, proxea URLs de MinIO a traves del backend para evitar CORS/hotlinking.
+ * En desarrollo, retorna la URL directa de MinIO (sin restricciones).
+ */
+function toProxiedUrl(url: string | null): string | null {
+  if (!url || url === '[EXPIRADO]' || url.startsWith('[')) return url;
+  if (url.startsWith('data:')) return url;
+  // En desarrollo, cargar directo de MinIO (no hay restricciones CORS en localhost)
+  if (!IS_PROD) return url;
+  // En produccion, proxear a traves del backend
+  if (url.includes(MINIO_PUBLIC) || url.includes('minio.wilkiedevs.com')) {
+    return `${process.env.API_URL || 'https://api.lookitry.com'}/api/pruebalo/img-proxy?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+}
 
 
 export class GenerationsController {
@@ -55,35 +74,23 @@ export class GenerationsController {
 
 
     // Ley 1581 Art. 10-C: solo resultImageUrl (imagen generada sintética), nunca selfie_url
-    const result = generations
+    // Proxear URLs de MinIO para evitar bloqueos CORS/hotlinking en el frontend
+    const result = generations.map(g => ({
 
-      .map(g => ({
-
-        id: g.id,
-
-        productId: g.product_id,
-
-        productName: productMap[g.product_id]?.name ?? 'Producto eliminado',
-
-        productImageUrl: productMap[g.product_id]?.imageUrl ?? null,
-
-        resultImageUrl: g.result_image_url,
-        resultImageDeletedAt: (g as any).result_image_deleted_at ?? null,
-        status: g.status,
-
-        error_message: g.error_message,
-
-        generatedAt: g.generated_at,
-
-        processingTime: g.processing_time ?? null,
-
-        has_feedback: g.has_feedback ?? false,
-
-        feedback_types: g.feedback_types ?? [],
-
-        feedback_count: g.feedback_count ?? 0,
-
-      }));
+      id: g.id,
+      productId: g.product_id,
+      productName: productMap[g.product_id]?.name ?? 'Producto eliminado',
+      productImageUrl: toProxiedUrl(productMap[g.product_id]?.imageUrl ?? null),
+      resultImageUrl: toProxiedUrl(g.result_image_url),
+      resultImageDeletedAt: (g as any).result_image_deleted_at ?? null,
+      status: g.status,
+      error_message: g.error_message,
+      generatedAt: g.generated_at,
+      processingTime: g.processing_time ?? null,
+      has_feedback: g.has_feedback ?? false,
+      feedback_types: g.feedback_types ?? [],
+      feedback_count: g.feedback_count ?? 0,
+    }));
 
 
 

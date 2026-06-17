@@ -17,7 +17,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!);
 
 async function cleanupBlog(blogId: string, slug: string): Promise<void> {
-  console.log(`\nð Limpiando: ${slug} (${blogId})`);
+  console.log(`\n[INFO] Limpiando: ${slug} (${blogId})`);
   
   // 1. Fetch el artículo
   const { data: blog, error: fetchError } = await supabase
@@ -27,7 +27,7 @@ async function cleanupBlog(blogId: string, slug: string): Promise<void> {
     .single();
     
   if (fetchError || !blog) {
-    console.error(`  â Error fetching: ${fetchError?.message}`);
+    console.error(`  [ERROR] Error fetching: ${fetchError?.message}`);
     return;
   }
   
@@ -39,6 +39,7 @@ async function cleanupBlog(blogId: string, slug: string): Promise<void> {
   const dropCapPositions: number[] = [];
   let searchPos = 0;
   const dropCapMarker = '<span class="drop-cap"';
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const pos = html.indexOf(dropCapMarker, searchPos);
     if (pos === -1) break;
@@ -99,17 +100,17 @@ async function cleanupBlog(blogId: string, slug: string): Promise<void> {
       .eq('id', blogId);
       
     if (updateError) {
-      console.error(`  â Error actualizando: ${updateError.message}`);
+      console.error(`  [ERROR] Error actualizando: ${updateError.message}`);
     } else {
-      console.log(`  â Actualizado: ${originalLen} -> ${html.length} bytes`);
+      console.log(`  [OK] Actualizado: ${originalLen} -> ${html.length} bytes`);
     }
   } else {
-    console.log(`  â Sin cambios necesarios`);
+    console.log(`  [OK] Sin cambios necesarios`);
   }
 }
 
 async function main() {
-  console.log('ð§¹ Blog Cleanup Script');
+  console.log('[INFO] Blog Cleanup Script');
   console.log('====================\n');
   
   // Artículos conocidos con problemas

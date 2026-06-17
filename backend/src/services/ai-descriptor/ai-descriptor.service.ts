@@ -3,7 +3,7 @@
 
 import { vertexService } from '../vertex.service';
 import axios from 'axios';
-import { BaseFormatter, ProductType } from './formatters/base.formatter';
+import { BaseFormatter } from './formatters/base.formatter';
 import { ClothingFormatter } from './formatters/clothing.formatter';
 import { AccessoryFormatter } from './formatters/accessory.formatter';
 import { FootwearFormatter } from './formatters/footwear.formatter';
