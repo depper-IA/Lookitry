@@ -124,6 +124,7 @@ backend/.tts_state
 backend/supabase/.temp/
 supabase/.temp/
 Interledger/
+brain/
 
 # ============================================================
 # SCRIPTS — ARTEFACTOS DE DIAGNÓSTICO
