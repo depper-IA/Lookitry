@@ -9,7 +9,6 @@ export const VERTEX_MODELS = {
   // Preview models
   'gemini-3.1-pro-preview': { contextWindow: 1048576, supportsMultimodal: true, preview: true },
   'gemini-3-pro-preview': { contextWindow: 1048576, supportsMultimodal: true, preview: true },
-  'gemini-3-pro-image-preview': { contextWindow: 1048576, supportsMultimodal: true, preview: true, supportsImageGen: true },
   'gemini-3-flash-preview': { contextWindow: 1048576, supportsMultimodal: true, preview: true },
   'gemini-3.1-flash-preview': { contextWindow: 1048576, supportsMultimodal: true, preview: true },
   'gemini-3.1-flash-lite-preview': { contextWindow: 1048576, supportsMultimodal: true, preview: true },
