@@ -16,7 +16,7 @@
     "google-vertex": {
       "npm": "@ai-sdk/google-vertex",
       "options": {
-        "project": "gen-lang-client-0591001769",
+        "project": "YOUR_GCP_PROJECT_ID",
         "location": "us-central1",
         "timeout": 120000,
         "googleAuthOptions": {
