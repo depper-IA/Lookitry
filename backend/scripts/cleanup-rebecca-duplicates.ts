@@ -3,8 +3,12 @@
  * Normaliza phones (sin +) y elimina duplicados
  */
 
-const SUPABASE_URL = 'https://vkdooutklowctuudjnkl.supabase.co';
-const SUPABASE_KEY = '***REMOVED-SECRET***';
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env vars');
+}
 
 interface LeadRecord {
   id: string;

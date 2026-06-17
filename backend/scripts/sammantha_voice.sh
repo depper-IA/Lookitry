@@ -2,7 +2,7 @@
 # Gemini TTS Pro - Voz energica y juvenil
 # Modelo: gemini-2.5-flash-preview-tts (gratis hasta 1M chars/mes)
 
-API_KEY="${GEMINI_API_KEY:-***REMOVED-SECRET***}"
+API_KEY="${GEMINI_API_KEY:?GEMINI_API_KEY env var is required}"
 LOG_DIR="/home/travis/Lookitry/Lookitry/backend/logs"
 STATE_FILE="/home/travis/Lookitry/Lookitry/backend/.tts_state"
 

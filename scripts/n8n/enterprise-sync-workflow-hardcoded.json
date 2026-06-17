@@ -26,11 +26,11 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "***REMOVED-SECRET***"
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "Bearer ***REMOVED-SECRET***"
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
             }
           ]
         },

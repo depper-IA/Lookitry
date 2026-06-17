@@ -2,7 +2,7 @@
 # TTS Manager v2 - Control de uso y límite mensual
 # Solo usa Gemini 2.5 Flash TTS (gratis hasta 1M caracteres/mes)
 
-API_KEY="${GEMINI_API_KEY:-***REMOVED-SECRET***}"
+API_KEY="${GEMINI_API_KEY:?GEMINI_API_KEY env var is required}"
 LOG_DIR="/home/travis/Lookitry/Lookitry/backend/logs"
 STATE_FILE="/home/travis/Lookitry/Lookitry/backend/.tts_state"
 
