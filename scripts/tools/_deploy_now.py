@@ -131,7 +131,7 @@ if restart_only:
     print("\nRestart completado.")
     sys.exit(0)
 
-run(ssh, f"cd {REPO} && git fetch {REPO_URL} main:refs/remotes/origin/main")
+run(ssh, f"cd {REPO} && git fetch {REPO_URL} +main:refs/remotes/origin/main")
 current_sha, _, _ = run(ssh, f"cd {REPO} && git rev-parse HEAD")
 remote_sha, _, _ = run(ssh, f"cd {REPO} && git rev-parse origin/main")
 current_sha = current_sha.strip()
