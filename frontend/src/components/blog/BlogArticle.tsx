@@ -574,9 +574,24 @@ function InfoBox({ type, title, children }: { type: 'tip' | 'warning' | 'stat' |
 // ARTICLE CONTENT
 // ============================================================================
 
-function ArticleContent({ html }: { html: string }) {
+function ArticleContent({ html, featuredImage }: { html: string; featuredImage?: string }) {
   const processedHtml = React.useMemo(() => {
+    if (typeof window === 'undefined') return html;
     const doc = new DOMParser().parseFromString(html, 'text/html');
+    
+    // Check and remove duplicate first image if its filename matches the featuredImage
+    if (featuredImage) {
+      const firstImg = doc.querySelector('img');
+      if (firstImg) {
+        const src = firstImg.getAttribute('src') || '';
+        const featuredFilename = featuredImage.split('/').pop()?.split('?')[0];
+        const srcFilename = src.split('/').pop()?.split('?')[0];
+        if (featuredFilename && srcFilename && featuredFilename === srcFilename) {
+          firstImg.remove();
+        }
+      }
+    }
+
     const h2s = doc.querySelectorAll('h2');
     h2s.forEach((h2) => {
       if (!h2.id) {
@@ -1259,7 +1274,7 @@ export default function BlogArticle({
           ? "border-white/10 bg-[#111111] shadow-[0_24px_70px_rgba(0,0,0,0.22)]" 
           : "border-black/5 bg-white shadow-[0_24px_70px_rgba(0,0,0,0.05)]"
       )}>
-        <ArticleContent html={content} />
+        <ArticleContent html={content} featuredImage={featuredImage} />
         
         {/* Inline CTA after main content */}
         <InlineCTA type="minimal" />

@@ -231,6 +231,7 @@ export default function BlogPostContent({ post, recentPosts, shareUrl }: BlogPos
               <BlogArticle 
                 title={post.title}
                 content={post.content}
+                featuredImage={heroImage || undefined}
                 tags={post.tags}
                 publishedAt={post.published_at || post.created_at}
                 readingTime={post.reading_time}
