@@ -19,6 +19,7 @@ services:
       - "traefik.http.routers.vt-backend.rule=Host(`api.lookitry.com`)"
       - "traefik.http.routers.vt-backend.entrypoints=websecure"
       - "traefik.http.routers.vt-backend.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.vt-backend.middlewares=secHeaders,rateLimit"
       - "traefik.http.services.vt-backend.loadbalancer.server.port=3001"
     deploy:
       resources:

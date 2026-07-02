@@ -7,6 +7,18 @@ export interface BlogCategory {
   slug: string;
 }
 
+export interface BlogAuthor {
+  id: string;
+  slug: string;
+  name: string;
+  role: string;
+  bio: string | null;
+  avatar_url: string | null;
+  social_links: Record<string, string> | null;
+  expertise: string[] | null;
+  credentials: string | null;
+}
+
 export interface BlogPost {
   id: string;
   slug: string;
@@ -23,6 +35,7 @@ export interface BlogPost {
   updated_at?: string;
   topic_id?: string;
   category?: BlogCategory;
+  author?: BlogAuthor | null;
   toc_items?: Array<{ title: string; id: string }>;
   reading_time?: string;
 }

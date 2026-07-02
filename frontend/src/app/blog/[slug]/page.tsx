@@ -60,7 +60,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     publishedAt: post.published_at || post.created_at,
     updatedAt: post.updated_at || post.published_at || post.created_at,
     imageUrl: getBlogShareImage(post) || undefined,
-    authorName: 'Lookitry' // Assuming we don't have author field easily available, defaulting to Lookitry
+    author: post.author
+      ? {
+          slug: post.author.slug,
+          name: post.author.name,
+          role: post.author.role,
+          avatarUrl: post.author.avatar_url || undefined,
+          socialLinks: post.author.social_links || undefined,
+        }
+      : undefined,
   });
 
   return (

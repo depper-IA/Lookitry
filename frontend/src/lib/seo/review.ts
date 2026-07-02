@@ -1,12 +1,19 @@
 import { ReviewSchema, AggregateRatingSchema } from './types';
 
+export interface ReviewItemReviewed {
+  type: 'Product' | 'Service' | 'Organization';
+  name: string;
+  url?: string;
+}
+
 export function reviewSchema(params: {
   reviewerName: string;
   rating: number;
   comment: string;
   date?: string;
+  itemReviewed?: ReviewItemReviewed;
 }): ReviewSchema {
-  return {
+  const schema: ReviewSchema = {
     '@context': 'https://schema.org',
     '@type': 'Review',
     reviewRating: {
@@ -22,6 +29,16 @@ export function reviewSchema(params: {
     reviewBody: params.comment,
     datePublished: params.date ?? new Date().toISOString(),
   };
+
+  if (params.itemReviewed) {
+    schema.itemReviewed = {
+      '@type': params.itemReviewed.type,
+      name: params.itemReviewed.name,
+      url: params.itemReviewed.url,
+    };
+  }
+
+  return schema;
 }
 
 export function aggregateRatingSchema(

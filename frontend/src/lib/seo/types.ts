@@ -3,18 +3,50 @@ export interface BaseSchema {
   '@type': string;
 }
 
+export interface ContactPointSchema {
+  '@type': 'ContactPoint';
+  contactType?: string;
+  email?: string;
+  telephone?: string;
+  url?: string;
+  availableLanguage?: string[];
+  areaServed?: string[] | { '@type': string; name: string }[];
+  hoursAvailable?: string;
+}
+
+export interface PersonRefSchema {
+  '@type': 'Person';
+  name: string;
+  url?: string;
+  jobTitle?: string;
+  sameAs?: string[];
+  image?: string;
+}
+
 export interface OrganizationSchema extends BaseSchema {
   '@type': 'Organization';
   name: string;
   url: string;
   logo?: string;
   sameAs?: string[];
+  description?: string;
+  foundingDate?: string;
+  founder?: PersonRefSchema;
+  contactPoint?: ContactPointSchema | ContactPointSchema[];
+  knowsAbout?: string[];
+  areaServed?: string[];
 }
 
 export interface WebSiteSchema extends BaseSchema {
   '@type': 'WebSite';
   name: string;
   url: string;
+  description?: string;
+  inLanguage?: string[];
+  publisher?: {
+    '@type': 'Organization';
+    name: string;
+  };
   potentialAction?: {
     '@type': 'SearchAction';
     target: string;
@@ -39,8 +71,12 @@ export interface ArticleSchema extends BaseSchema {
   datePublished: string;
   dateModified?: string;
   author: {
-    '@type': 'Organization' | 'Person';
+    '@type': 'Person';
     name: string;
+    url?: string;
+    image?: string;
+    sameAs?: string[];
+    jobTitle?: string;
   };
   publisher?: {
     '@type': 'Organization';
@@ -66,6 +102,12 @@ export interface BrandPageSchema extends BaseSchema {
   };
 }
 
+export interface ReviewSchemaItemReviewed {
+  '@type': 'Product' | 'Service' | 'Organization';
+  name: string;
+  url?: string;
+}
+
 export interface ReviewSchema extends BaseSchema {
   '@type': 'Review';
   reviewRating?: {
@@ -80,6 +122,7 @@ export interface ReviewSchema extends BaseSchema {
   };
   reviewBody?: string;
   datePublished?: string;
+  itemReviewed?: ReviewSchemaItemReviewed;
 }
 
 export interface AggregateRatingSchema extends BaseSchema {

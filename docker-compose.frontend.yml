@@ -30,7 +30,24 @@ services:
       - "traefik.http.routers.vt-frontend.rule=Host(`lookitry.com`) || Host(`www.lookitry.com`)"
       - "traefik.http.routers.vt-frontend.entrypoints=websecure"
       - "traefik.http.routers.vt-frontend.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.vt-frontend.middlewares=secHeaders,rateLimit"
       - "traefik.http.services.vt-frontend.loadbalancer.server.port=3000"
+
+      # Security Headers
+      - "traefik.http.middlewares.secHeaders.headers.frameDeny=true"
+      - "traefik.http.middlewares.secHeaders.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.secHeaders.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.secHeaders.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.secHeaders.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.secHeaders.headers.stsPreload=true"
+      - "traefik.http.middlewares.secHeaders.headers.customFrameOptionsValue=SAMEORIGIN"
+      - "traefik.http.middlewares.secHeaders.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.lookitry.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co; frame-ancestors 'self'"
+      - "traefik.http.middlewares.secHeaders.headers.referrerPolicy=strict-origin-when-cross-origin"
+      - "traefik.http.middlewares.secHeaders.headers.permissionsPolicy=camera=(), microphone=(), geolocation=()"
+
+      # Rate Limiting
+      - "traefik.http.middlewares.rateLimit.rateLimit.average=100"
+      - "traefik.http.middlewares.rateLimit.rateLimit.burst=50"
     deploy:
       resources:
         limits:

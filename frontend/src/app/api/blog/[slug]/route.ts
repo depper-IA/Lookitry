@@ -14,7 +14,7 @@ export async function GET(
     const { slug } = await params;
     const url =
       `${SUPABASE_URL}/rest/v1/blogs` +
-      `?select=*,category:blog_categories(*)` +
+      `?select=*,category:blog_categories(*),author:authors(*)` +
       `&slug=eq.${encodeURIComponent(slug)}` +
       `&status=eq.published` +
       `&limit=1`;

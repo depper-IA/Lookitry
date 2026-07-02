@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Calendar, Tag, ChevronLeft, ArrowUpRight, Zap, BarChart3 } from 'lucide-react';
+import Image from 'next/image';
+import { Calendar, Tag, ChevronLeft, ArrowUpRight, Zap, BarChart3, User } from 'lucide-react';
 import BlogArticle, { TableOfContents } from './BlogArticle';
 import { BlogImageWithFallback } from './BlogImageWithFallback';
 import { useTheme } from './BlogThemeWrapper';
@@ -43,6 +44,27 @@ export default function BlogPostContent({ post, recentPosts, shareUrl }: BlogPos
   };
 
   // Schema.org structured data for SEO
+  const authorData = post.author
+    ? {
+        '@type': 'Person' as const,
+        name: post.author.name,
+        url: `https://lookitry.com/autores/${post.author.slug}`,
+        jobTitle: post.author.role,
+        image: post.author.avatar_url
+          ? post.author.avatar_url.startsWith('http')
+            ? post.author.avatar_url
+            : `https://lookitry.com${post.author.avatar_url}`
+          : undefined,
+        sameAs: post.author.social_links
+          ? Object.values(post.author.social_links).filter(Boolean)
+          : undefined,
+      }
+    : {
+        '@type': 'Person' as const,
+        name: 'Sam Wilkie',
+        url: 'https://lookitry.com/autores/sam-wilkie',
+      };
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -51,11 +73,7 @@ export default function BlogPostContent({ post, recentPosts, shareUrl }: BlogPos
     image: heroImage ? [heroImage] : undefined,
     datePublished: post.published_at || post.created_at,
     dateModified: post.updated_at || post.published_at || post.created_at,
-    author: {
-      '@type': 'Organization',
-      name: 'Lookitry Editorial',
-      url: 'https://lookitry.com'
-    },
+    author: authorData,
     publisher: {
       '@type': 'Organization',
       name: 'Lookitry',
@@ -141,6 +159,30 @@ export default function BlogPostContent({ post, recentPosts, shareUrl }: BlogPos
                 "flex flex-wrap items-center gap-6 text-sm mb-12 border-b pb-8 transition-colors",
                 isDark ? "text-[#999] border-white/5" : "text-gray-500 border-black/5"
               )}>
+                {post.author && (
+                  <Link
+                    href={`/autores/${post.author.slug}`}
+                    className="flex items-center gap-2 hover:text-[#FF5C3A] transition-colors group"
+                    rel="author"
+                  >
+                    {post.author.avatar_url ? (
+                      <div className="relative w-7 h-7 rounded-full overflow-hidden border border-[#FF5C3A]/30">
+                        <Image
+                          src={post.author.avatar_url}
+                          alt={post.author.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <User size={16} className="text-[#FF5C3A]" />
+                    )}
+                    <span className="font-medium text-white group-hover:text-[#FF5C3A] transition-colors">
+                      {post.author.name}
+                    </span>
+                    <span className="text-xs text-[#777]">· {post.author.role}</span>
+                  </Link>
+                )}
                 <div className="flex items-center gap-2">
                   <Calendar size={16} className="text-[#FF5C3A]" />
                   <span>{formatDate(post.published_at || post.created_at)}</span>
@@ -193,6 +235,53 @@ export default function BlogPostContent({ post, recentPosts, shareUrl }: BlogPos
                 publishedAt={post.published_at || post.created_at}
                 readingTime={post.reading_time}
               />
+
+              {/* About the Author */}
+              {post.author && post.author.bio && (
+                <section className={cn(
+                  "mt-10 rounded-[2rem] border p-8 md:p-10 transition-all duration-300",
+                  isDark
+                    ? "border-white/10 bg-[#111111]"
+                    : "border-black/10 bg-white shadow-sm"
+                )}>
+                  <div className="flex flex-col md:flex-row gap-6 items-start">
+                    {post.author.avatar_url && (
+                      <Link href={`/autores/${post.author.slug}`} className="flex-shrink-0">
+                        <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-[#FF5C3A]/30 hover:scale-105 transition-transform">
+                          <Image
+                            src={post.author.avatar_url}
+                            alt={post.author.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      </Link>
+                    )}
+                    <div className="flex-1">
+                      <p className={cn("text-[10px] font-bold uppercase tracking-[0.2em] mb-2", isDark ? "text-[#FF5C3A]" : "text-[#FF5C3A]")}>
+                        Sobre el autor
+                      </p>
+                      <h3 className={cn("font-syne font-bold text-xl mb-2", isDark ? "text-white" : "text-gray-900")}>
+                        <Link href={`/autores/${post.author.slug}`} className="hover:text-[#FF5C3A] transition-colors">
+                          {post.author.name}
+                        </Link>
+                      </h3>
+                      <p className={cn("text-xs font-medium mb-3", isDark ? "text-[#FF5C3A]" : "text-[#FF5C3A]")}>
+                        {post.author.role}
+                      </p>
+                      <p className={cn("text-sm leading-relaxed font-light mb-4", isDark ? "text-[#bbb]" : "text-gray-600")}>
+                        {post.author.bio}
+                      </p>
+                      <Link
+                        href={`/autores/${post.author.slug}`}
+                        className="inline-flex items-center gap-1 text-sm font-medium text-[#FF5C3A] hover:underline"
+                      >
+                        Ver perfil completo <ArrowUpRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
+                </section>
+              )}
 
               {/* Lead Magnet Banner */}
               <LeadMagnetBanner />

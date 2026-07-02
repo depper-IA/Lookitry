@@ -60,8 +60,9 @@ const TEAM = [
     role: 'Full Stack Developer & Founder',
     desc: 'Líder técnico y visionario venezolano detrás de Lookitry. Especialista en arquitectura de software y soluciones de IA escalables para el mercado global.',
     img: '/team/sam.webp',
+    slug: 'sam-wilkie',
     social: {
-      linkedin: 'https://www.linkedin.com/in/samu-wilkie/', 
+      linkedin: 'https://www.linkedin.com/in/samu-wilkie/',
       instagram: 'https://www.instagram.com/wilkie_design/',
       github: 'https://github.com/depper-IA',
       behance: 'https://www.behance.net/samuelwilkie'
@@ -72,6 +73,7 @@ const TEAM = [
     role: 'Junior Front-End Developer',
     desc: 'Desarrolladora colombiana especialista en interfaces modernas. Encargada de la evolución estética y experiencia de usuario en Lookitry.',
     img: '/team/juli.webp',
+    slug: 'melissa-urbano',
     social: {
       linkedin: 'https://www.linkedin.com/in/juliana-urbano-69b13939b/',
       behance: 'https://www.behance.net/ummell',
@@ -266,7 +268,15 @@ export default function SobreNosotrosPage() {
                       </motion.div>
                       <h3 className="font-syne font-bold text-xl text-white mb-1 group-hover:text-[#FF5C3A] transition-colors">{m.name}</h3>
                       <p className="text-[#FF5C3A] font-bold text-[10px] uppercase tracking-widest mb-4">{m.role}</p>
-                      <p className="text-[#777] leading-relaxed text-sm font-light mb-6 group-hover:text-[#999] transition-colors">{m.desc}</p>
+                      <p className="text-[#777] leading-relaxed text-sm font-light mb-4 group-hover:text-[#999] transition-colors">{m.desc}</p>
+
+                      <Link
+                        href={`/autores/${m.slug}`}
+                        className="inline-flex items-center gap-1 text-xs text-[#FF5C3A] hover:text-[#ff7a5f] font-medium mb-5 transition-colors"
+                      >
+                        Ver perfil completo →
+                      </Link>
+
                       <div className="flex gap-4">
                         {m.social.linkedin && (
                           <motion.a 
